@@ -1,0 +1,40 @@
+{
+  "files.exclude": {
+    "**/.venv": true,
+    "**/__pycache__": true,
+    "**/output": true,
+    "**/outputs": true
+  },
+  "search.exclude": {
+    "**/.venv": true,
+    "**/__pycache__": true,
+    "**/output": true,
+    "**/outputs": true,
+    "**/*.csv": true,
+    "**/*.jsonl": true,
+    "**/*.parquet": true,
+    "**/*.png": true,
+    "**/*.jpg": true,
+    "**/*.jpeg": true,
+    "**/*.gif": true,
+    "**/*.mp4": true
+  },
+  "files.watcherExclude": {
+    "**/.venv/**": true,
+    "**/__pycache__/**": true,
+    "**/output/**": true,
+    "**/outputs/**": true
+  },
+  "python.analysis.exclude": [
+    "**/.venv",
+    "**/__pycache__",
+    "**/output",
+    "**/outputs"
+  ],
+  "python.testing.pytestEnabled": false,
+  "python.testing.unittestEnabled": false,
+  "python.testing.nosetestsEnabled": false,
+  "editor.formatOnSave": true,
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true
+}
