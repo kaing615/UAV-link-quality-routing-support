@@ -1,0 +1,38 @@
+# config.py
+from pathlib import Path
+
+SEED = 42
+NUM_UAVS = 5
+TIME_STEPS = 100
+DT = 1.0  
+
+X_LIMIT = (0.0, 500.0)
+Y_LIMIT = (0.0, 500.0)
+Z_LIMIT = (50.0, 150.0)
+
+VELOCITY_COMPONENT_RANGE = (-8.0, 8.0)
+
+COMM_RANGE = 120.0
+
+SOURCE_ID = 0
+DEST_ID = 4
+
+OUTPUT_DIR = Path("output")
+NODES_CSV = OUTPUT_DIR / "nodes.csv"
+EDGES_CSV = OUTPUT_DIR / "edges.csv"
+TRAFFIC_CSV = OUTPUT_DIR / "traffic_log.csv"
+
+PLOTS_DIR = OUTPUT_DIR / "plots"
+SAVE_PLOTS = True
+TOPOLOGY_SNAPSHOT_STEPS = [0, 25, 50, 75, 99]
+FINAL_FRAME_PNG = PLOTS_DIR / "final_frame.png"
+
+PRINT_EVERY = 10
+
+LIVE_SIMULATION = True
+LIVE_PAUSE = 0.1
+SHOW_NODE_LABELS = True
+SHOW_EDGE_LINES = True
+FIGSIZE = (10, 8)
+
+HIGHLIGHT_ROUTE = True
