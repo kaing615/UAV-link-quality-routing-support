@@ -11,6 +11,7 @@ from dataclasses import dataclass
 import matplotlib.pyplot as plt
 
 import config
+import mobility
 
 
 @dataclass
@@ -27,11 +28,13 @@ class UAV:
     def speed(self) -> float:
         return math.sqrt(self.vx**2 + self.vy**2 + self.vz**2)
 
+# Lưu file kết quả vào thư mục output, tạo thư mục nếu chưa tồn tại
 def ensure_output_dir() -> None:
     config.OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     if getattr(config, "SAVE_PLOTS", False):
         config.PLOTS_DIR.mkdir(parents=True, exist_ok=True)
 
+# Tạo vận tốc ngẫu nhiên cho UAV, đảm bảo không phải là (0, 0, 0)
 def random_nonzero_velocity() -> tuple[float, float, float]:
     low, high = config.VELOCITY_COMPONENT_RANGE
     while True:
@@ -41,7 +44,7 @@ def random_nonzero_velocity() -> tuple[float, float, float]:
         if abs(vx) + abs(vy) + abs(vz) > 1e-9:
             return vx, vy, vz
 
-
+# Khởi tạo UAV với vị trí và vận tốc ngẫu nhiên trong giới hạn cấu hình
 def initialize_uavs() -> list[UAV]:
     random.seed(config.SEED)
     uavs: list[UAV] = []
@@ -66,7 +69,8 @@ def initialize_uavs() -> list[UAV]:
 
     return uavs
 
-
+"""
+# Khi UAV chạm vào giới hạn không gian, phản xạ lại và đảo chiều vận tốc tương ứng
 def reflect_position(pos: float, vel: float, lower: float, upper: float) -> tuple[float, float]:
     while pos < lower or pos > upper:
         if pos < lower:
@@ -77,7 +81,7 @@ def reflect_position(pos: float, vel: float, lower: float, upper: float) -> tupl
             vel = -vel
     return pos, vel
 
-
+# Cập nhật vị trí của tất cả UAV dựa trên vận tốc và thời gian dt, đồng thời xử lý phản xạ nếu chạm giới hạn
 def update_positions(uavs: list[UAV], dt: float) -> None:
     for uav in uavs:
         uav.x += uav.vx * dt
@@ -87,8 +91,9 @@ def update_positions(uavs: list[UAV], dt: float) -> None:
         uav.x, uav.vx = reflect_position(uav.x, uav.vx, *config.X_LIMIT)
         uav.y, uav.vy = reflect_position(uav.y, uav.vy, *config.Y_LIMIT)
         uav.z, uav.vz = reflect_position(uav.z, uav.vz, *config.Z_LIMIT)
+"""
 
-
+# Tính khoảng cách Euclidean 3D giữa hai UAV
 def euclidean_distance_3d(a: UAV, b: UAV) -> float:
     return math.sqrt(
         (a.x - b.x) ** 2 +
@@ -96,7 +101,7 @@ def euclidean_distance_3d(a: UAV, b: UAV) -> float:
         (a.z - b.z) ** 2
     )
 
-
+# Xây dựng topology dựa trên khoảng cách giữa các UAV, trả về danh sách cạnh, bậc của mỗi node và bảng kề
 def build_topology(uavs: list[UAV]) -> tuple[list[dict], dict[int, int], dict[int, list[int]]]:
     edges: list[dict] = []
     degree_map = {uav.node_id: 0 for uav in uavs}
@@ -125,7 +130,7 @@ def build_topology(uavs: list[UAV]) -> tuple[list[dict], dict[int, int], dict[in
 
     return edges, degree_map, adjacency
 
-
+# Tìm đường đi ngắn nhất giữa source và destination trong đồ thị không trọng số sử dụng BFS, trả về danh sách node trên đường đi hoặc None nếu không thể đến được
 def shortest_path(adjacency: dict[int, list[int]], source: int, destination: int) -> list[int] | None:
     """
     BFS shortest path in unweighted graph.
@@ -155,7 +160,7 @@ def shortest_path(adjacency: dict[int, list[int]], source: int, destination: int
 
     return None
 
-
+# Tạo các hàng dữ liệu cho nodes.csv, bao gồm thời gian, id node, vị trí, vận tốc, tốc độ và bậc của node
 def make_node_rows(time_step: int, uavs: list[UAV], degree_map: dict[int, int]) -> list[dict]:
     rows: list[dict] = []
 
@@ -177,7 +182,7 @@ def make_node_rows(time_step: int, uavs: list[UAV], degree_map: dict[int, int]) 
 
     return rows
 
-
+# Tạo các hàng dữ liệu cho edges.csv, bao gồm thời gian, node nguồn, node đích, khoảng cách và trạng thái kết nối
 def make_edge_rows(time_step: int, edges: list[dict]) -> list[dict]:
     rows: list[dict] = []
 
@@ -194,14 +199,14 @@ def make_edge_rows(time_step: int, edges: list[dict]) -> list[dict]:
 
     return rows
 
-
+# Ghi dữ liệu vào file CSV với đường dẫn, danh sách hàng và tên cột được chỉ định
 def write_csv(path, rows: list[dict], fieldnames: list[str]) -> None:
     with open(path, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(rows)
 
-
+# Thiết lập đồ thị 3D cho mô phỏng trực tiếp, trả về đối tượng figure và axes hoặc None nếu không bật chế độ trực tiếp
 def setup_live_plot():
     if not config.LIVE_SIMULATION:
         return None, None
@@ -211,11 +216,13 @@ def setup_live_plot():
     ax = fig.add_subplot(111, projection="3d")
     return fig, ax
 
+# Tính toán các bước thời gian mà tại đó sẽ lưu ảnh chụp topology nếu bật tùy chọn SAVE_PLOTS, đảm bảo chỉ bao gồm các bước hợp lệ trong khoảng thời gian mô phỏng
 snapshot_steps = {
     step for step in getattr(config, "TOPOLOGY_SNAPSHOT_STEPS", [])
     if 0 <= step < config.TIME_STEPS
 }
 
+# Vẽ cảnh mô phỏng trực tiếp, bao gồm các UAV, cạnh nối và đường đi được chọn nếu có, đồng thời cập nhật tiêu đề với thông tin thời gian, số cạnh, trạng thái kết nối và đường đi hiện tại
 def draw_live_scene(
     ax,
     uavs: list[UAV],
@@ -289,6 +296,7 @@ def draw_live_scene(
     plt.draw()
     plt.pause(config.LIVE_PAUSE)
 
+# Lưu ảnh chụp topology hiện tại vào thư mục plots nếu bật tùy chọn SAVE_PLOTS, bao gồm các UAV, cạnh nối và đường đi được chọn nếu có, đồng thời cập nhật tiêu đề với thông tin thời gian, số cạnh, trạng thái kết nối và đường đi hiện tại
 def save_topology_snapshot(
     uavs: list[UAV],
     edges: list[dict],
@@ -361,6 +369,7 @@ def save_topology_snapshot(
     plt.savefig(output_path, dpi=200, bbox_inches="tight")
     plt.close(fig)
 
+# Hàm main để chạy mô phỏng, bao gồm khởi tạo UAV, xây dựng topology, tìm đường đi, lưu dữ liệu và vẽ cảnh mô phỏng trực tiếp nếu được bật
 def main() -> None:
     ensure_output_dir()
 
@@ -411,7 +420,7 @@ def main() -> None:
             if getattr(config, "SAVE_PLOTS", False) and t in snapshot_steps:
                 save_topology_snapshot(uavs, edges, reachable, t, route_path)
 
-            update_positions(uavs, config.DT)
+            mobility.update_positions(uavs, config.DT)
 
     except KeyboardInterrupt:
         print("\nSimulation stopped by user.")
@@ -446,6 +455,6 @@ def main() -> None:
             plt.ioff()
             plt.show()
 
-
+# Entry point của chương trình, gọi hàm main để bắt đầu mô phỏng
 if __name__ == "__main__":
     main()
