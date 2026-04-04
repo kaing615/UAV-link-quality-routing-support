@@ -21,8 +21,8 @@
   **ThS. Đặng Lê Bảo Chương**
 
 - **Sinh viên thực hiện:**
-  - **Nguyễn Đình Tâm**
-  - **Võ Công Vinh**
+  - **Nguyễn Đình Tâm - 23521389**
+  - **Võ Công Vinh - 23521800**
 
 ---
 
@@ -68,7 +68,7 @@ Nói ngắn gọn, đề tài không nhằm xây dựng một giao thức địn
 
 ---
 
-## 🏗️ Công nghệ và hướng triển khai
+## Công nghệ và hướng triển khai
 
 - **Ngôn ngữ chính:** Python
 - **Mô phỏng:** Python-based UAV simulator
