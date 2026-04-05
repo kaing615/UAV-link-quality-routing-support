@@ -1,23 +1,11 @@
 {
   "files.exclude": {
     "**/.venv": true,
-    "**/__pycache__": true,
-    "**/output": true,
-    "**/outputs": true
+    "**/__pycache__": true
   },
   "search.exclude": {
     "**/.venv": true,
-    "**/__pycache__": true,
-    "**/output": true,
-    "**/outputs": true,
-    "**/*.csv": true,
-    "**/*.jsonl": true,
-    "**/*.parquet": true,
-    "**/*.png": true,
-    "**/*.jpg": true,
-    "**/*.jpeg": true,
-    "**/*.gif": true,
-    "**/*.mp4": true
+    "**/__pycache__": true
   },
   "files.watcherExclude": {
     "**/.venv/**": true,
