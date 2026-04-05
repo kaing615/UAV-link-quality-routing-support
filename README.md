@@ -16,12 +16,12 @@
 
 ---
 
-**Tên đề tài:** Ứng dụng Graph Neural Network trong dự đoán chất lượng liên kết và hỗ trợ định tuyến trong mạng UAV
-**Tên tiếng Anh:** Application of Graph Neural Networks for Link Quality Prediction and Routing Support in UAV Networks
-**Trường:** Trường Đại học Công nghệ Thông tin - Đại học Quốc gia Thành phố Hồ Chí Minh
-**Khoa:** Khoa Mạng máy tính và Truyền thông
-**Giảng viên hướng dẫn:** ThS. Đặng Lê Bảo Chương
-**Sinh viên thực hiện:** Nguyễn Đình Tâm - 23521389, Võ Công Vinh - 23521800
+- **Tên đề tài:** Ứng dụng Graph Neural Network trong dự đoán chất lượng liên kết và hỗ trợ định tuyến trong mạng UAV
+- **Tên tiếng Anh:** Application of Graph Neural Networks for Link Quality Prediction and Routing Support in UAV Networks
+- **Trường:** Trường Đại học Công nghệ Thông tin - Đại học Quốc gia Thành phố Hồ Chí Minh
+- **Khoa:** Khoa Mạng máy tính và Truyền thông
+- **Giảng viên hướng dẫn:** ThS. Đặng Lê Bảo Chương
+- **Sinh viên thực hiện:** Nguyễn Đình Tâm - 23521389, Võ Công Vinh - 23521800
 
 ---
 

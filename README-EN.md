@@ -16,11 +16,11 @@
 
 ---
 
-**Project Title:** Application of Graph Neural Networks for Link Quality Prediction and Routing Support in UAV Networks
-**University:** University of Information Technology - Vietnam National University Ho Chi Minh City
-**Faculty:** Faculty of Computer Networks and Communications
-**Supervisor:** M.Sc. Dang Le Bao Chuong
-**Students:** Nguyen Dinh Tam - 23521389, Vo Cong Vinh - 23521800
+- **Project Title:** Application of Graph Neural Networks for Link Quality Prediction and Routing Support in UAV Networks
+- **University:** University of Information Technology - Vietnam National University Ho Chi Minh City
+- **Faculty:** Faculty of Computer Networks and Communications
+- **Supervisor:** M.Sc. Dang Le Bao Chuong
+- **Students:** Nguyen Dinh Tam - 23521389, Vo Cong Vinh - 23521800
 
 ---
 
