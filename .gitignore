@@ -28,8 +28,10 @@ dist/
 
 output/
 outputs/
+data/
 data/raw/
-data/interim/
+data/graph/
+data/splits/
 data/processed/
 
 *.csv

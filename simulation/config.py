@@ -15,15 +15,21 @@ COMM_RANGE = 230.0
 SOURCE_ID = 0
 DEST_ID = 4
 
-OUTPUT_DIR = Path("output")
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+
+DATA_DIR = PROJECT_ROOT / "data"
+RAW_DIR = DATA_DIR / "raw"
+OUTPUT_DIR = RAW_DIR
+
 NODES_CSV = OUTPUT_DIR / "nodes.csv"
 EDGES_CSV = OUTPUT_DIR / "edges.csv"
 TRAFFIC_CSV = OUTPUT_DIR / "traffic_log.csv"
+
 NODES_PARQUET = OUTPUT_DIR / "nodes.parquet"
 EDGES_PARQUET = OUTPUT_DIR / "edges.parquet"
 TRAFFIC_PARQUET = OUTPUT_DIR / "traffic_log.parquet"
 
-PLOTS_DIR = OUTPUT_DIR / "plots"
+PLOTS_DIR = PROJECT_ROOT / "outputs" / "plots"
 SAVE_PLOTS = True
 TOPOLOGY_SNAPSHOT_STEPS = [0, 25, 50, 75, 99]
 FINAL_FRAME_PNG = PLOTS_DIR / "final_frame.png"
