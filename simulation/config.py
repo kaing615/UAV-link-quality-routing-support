@@ -19,6 +19,9 @@ OUTPUT_DIR = Path("output")
 NODES_CSV = OUTPUT_DIR / "nodes.csv"
 EDGES_CSV = OUTPUT_DIR / "edges.csv"
 TRAFFIC_CSV = OUTPUT_DIR / "traffic_log.csv"
+NODES_PARQUET = OUTPUT_DIR / "nodes.parquet"
+EDGES_PARQUET = OUTPUT_DIR / "edges.parquet"
+TRAFFIC_PARQUET = OUTPUT_DIR / "traffic_log.parquet"
 
 PLOTS_DIR = OUTPUT_DIR / "plots"
 SAVE_PLOTS = True

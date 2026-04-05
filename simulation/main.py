@@ -3,6 +3,7 @@ from __future__ import annotations
 import csv
 import math
 import random
+import pandas as pd
 from collections import defaultdict, deque
 from dataclasses import dataclass
 
@@ -306,6 +307,9 @@ def write_csv(path, rows: list[dict], fieldnames: list[str]) -> None:
         writer.writeheader()
         writer.writerows(rows)
 
+def write_parquet(path, rows: list[dict]) -> None:
+    df = pd.DataFrame(rows)
+    df.to_parquet(path, index=False)
 
 live_view_state = {
     "mode": getattr(config, "VIEW_MODE", "iso").lower(),
@@ -808,10 +812,17 @@ def main() -> None:
             ["time", "source", "destination", "reachable", "route_path", "num_edges"],
         )
 
+        write_parquet(config.NODES_PARQUET, all_node_rows)
+        write_parquet(config.EDGES_PARQUET, all_edge_rows)
+        write_parquet(config.TRAFFIC_PARQUET, traffic_rows)
+
         print("\nDone.")
-        print(f"- Nodes CSV   : {config.NODES_CSV}")
-        print(f"- Edges CSV   : {config.EDGES_CSV}")
-        print(f"- Traffic CSV : {config.TRAFFIC_CSV}")
+        print(f"- Nodes CSV      : {config.NODES_CSV}")
+        print(f"- Edges CSV      : {config.EDGES_CSV}")
+        print(f"- Traffic CSV    : {config.TRAFFIC_CSV}")
+        print(f"- Nodes Parquet  : {config.NODES_PARQUET}")
+        print(f"- Edges Parquet  : {config.EDGES_PARQUET}")
+        print(f"- Traffic Parquet: {config.TRAFFIC_PARQUET}")
 
         if config.LIVE_SIMULATION:
             if getattr(config, "SAVE_PLOTS", False) and ax is not None:
