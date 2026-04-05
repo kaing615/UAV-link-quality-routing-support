@@ -6,6 +6,7 @@ import random
 import pandas as pd
 from collections import defaultdict, deque
 from dataclasses import dataclass
+import heapq
 
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
@@ -173,11 +174,28 @@ def estimate_throughput(
     throughput = max_rate_mbps * snr_eff * (1.0 - packet_loss) * (1.0 - 0.35 * load_factor)
     return round(max(throughput, 0.0), 4)
 
+def clamp01(x: float) -> float:
+    return max(0.0, min(1.0, x))
 
-def build_topology(uavs: list[UAV]) -> tuple[list[dict], dict[int, int], dict[int, list[int]]]:
+
+def estimate_p_stable(snr: float, packet_loss: float, delay: float, connected: int) -> float:
+    if not connected:
+        return 0.0
+
+    snr_score = clamp01((snr - 5.0) / 20.0)
+    loss_score = clamp01(1.0 - packet_loss)
+    delay_score = clamp01(1.0 - delay / 50.0)
+
+    p_stable = 0.45 * snr_score + 0.35 * loss_score + 0.20 * delay_score
+    return round(clamp01(p_stable), 4)
+
+def build_topology(
+    uavs: list[UAV],
+) -> tuple[list[dict], dict[int, int], dict[int, list[int]], dict[int, list[tuple[int, float]]]]:
     edges: list[dict] = []
     degree_map = {uav.node_id: 0 for uav in uavs}
     adjacency = {uav.node_id: [] for uav in uavs}
+    weighted_adjacency = {uav.node_id: [] for uav in uavs}
 
     for i in range(len(uavs)):
         for j in range(i + 1, len(uavs)):
@@ -219,6 +237,9 @@ def build_topology(uavs: list[UAV]) -> tuple[list[dict], dict[int, int], dict[in
         packet_loss = estimate_packet_loss(snr, edge["connected"], load_factor)
         throughput = estimate_throughput(snr, packet_loss, edge["connected"], load_factor)
 
+        p_stable = estimate_p_stable(snr, packet_loss, delay, edge["connected"])
+        weight = round(1.0 - p_stable, 4) if edge["connected"] else float("inf")
+
         edge["distance"] = round(edge["distance"], 4)
         edge["relative_speed"] = round(relative_speed, 4)
         edge["rssi"] = round(rssi, 4)
@@ -226,35 +247,55 @@ def build_topology(uavs: list[UAV]) -> tuple[list[dict], dict[int, int], dict[in
         edge["delay"] = delay
         edge["packet_loss"] = packet_loss
         edge["throughput"] = throughput
+        edge["p_stable"] = p_stable
+        edge["weight"] = weight
 
-    return edges, degree_map, adjacency
+        if edge["connected"]:
+            weighted_adjacency[edge["src"]].append((edge["dst"], weight))
+            weighted_adjacency[edge["dst"]].append((edge["src"], weight))
 
+    return edges, degree_map, adjacency, weighted_adjacency
 
-def shortest_path(adjacency: dict[int, list[int]], source: int, destination: int) -> list[int] | None:
+def dijkstra_shortest_path(
+    weighted_adjacency: dict[int, list[tuple[int, float]]],
+    source: int,
+    destination: int,
+) -> list[int] | None:
     if source == destination:
         return [source]
 
-    queue = deque([source])
+    dist = {node: float("inf") for node in weighted_adjacency}
     parent: dict[int, int | None] = {source: None}
+    dist[source] = 0.0
 
-    while queue:
-        current = queue.popleft()
+    heap: list[tuple[float, int]] = [(0.0, source)]
 
-        for neighbor in adjacency.get(current, []):
-            if neighbor not in parent:
+    while heap:
+        current_dist, current = heapq.heappop(heap)
+
+        if current_dist > dist[current]:
+            continue
+
+        if current == destination:
+            break
+
+        for neighbor, weight in weighted_adjacency.get(current, []):
+            new_dist = current_dist + weight
+            if new_dist < dist[neighbor]:
+                dist[neighbor] = new_dist
                 parent[neighbor] = current
-                if neighbor == destination:
-                    path = [destination]
-                    node = destination
-                    while parent[node] is not None:
-                        node = parent[node]
-                        path.append(node)
-                    path.reverse()
-                    return path
-                queue.append(neighbor)
+                heapq.heappush(heap, (new_dist, neighbor))
 
-    return None
+    if destination not in parent:
+        return None
 
+    path = [destination]
+    node = destination
+    while parent[node] is not None:
+        node = parent[node]
+        path.append(node)
+    path.reverse()
+    return path
 
 def make_node_rows(time_step: int, uavs: list[UAV], degree_map: dict[int, int]) -> list[dict]:
     rows: list[dict] = []
@@ -295,6 +336,8 @@ def make_edge_rows(time_step: int, edges: list[dict]) -> list[dict]:
                 "delay": edge["delay"],
                 "packet_loss": edge["packet_loss"],
                 "throughput": edge["throughput"],
+                "p_stable": edge["p_stable"],
+                "weight": edge["weight"],
             }
         )
 
@@ -741,10 +784,10 @@ def main() -> None:
 
     try:
         for t in range(config.TIME_STEPS):
-            edges, degree_map, adjacency = build_topology(uavs)
+            edges, degree_map, adjacency, weighted_adjacency = build_topology(uavs)
             connected_edge_count = sum(edge["connected"] for edge in edges)
 
-            route_path = shortest_path(adjacency, config.SOURCE_ID, config.DEST_ID)
+            route_path = dijkstra_shortest_path(weighted_adjacency, config.SOURCE_ID, config.DEST_ID)
             reachable = route_path is not None
 
             node_rows = make_node_rows(t, uavs, degree_map)
@@ -803,6 +846,8 @@ def main() -> None:
                 "delay",
                 "packet_loss",
                 "throughput",
+                "p_stable",
+                "weight",
             ],
         )
 
