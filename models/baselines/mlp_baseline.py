@@ -78,7 +78,7 @@ def resolve_paths(args: argparse.Namespace) -> tuple[Path, Path, Path, Path, Pat
         if test_csv == DEFAULT_TEST:
             test_csv = run_root / "test_scaled.csv"
         if output_dir == DEFAULT_OUTPUT_DIR:
-            output_dir = Path("outputs/baselines") / args.run_name / MODEL_ID
+            output_dir = Path("outputs/baselines") / MODEL_ID / args.run_name
 
     return train_weighted, train_oversampled, val_csv, test_csv, output_dir
 
