@@ -7,6 +7,9 @@ from pathlib import Path
 
 import pandas as pd
 
+DEFAULT_TRAIN_CSV = Path("data/processed/baseline_standardized/train_scaled.csv")
+DEFAULT_OUTPUT_DIR = Path("data/processed/baseline_standardized/imbalance")
+
 
 def validate_label_column(df: pd.DataFrame, label_column: str) -> None:
     if label_column not in df.columns:
@@ -63,8 +66,7 @@ def oversample_minority_class(
 
     extra_needed = target_minority_count - minority_count
     if extra_needed <= 0:
-        balanced_df = df.sample(frac=1.0, random_state=random_state).reset_index(drop=True)
-        return balanced_df
+        return df.sample(frac=1.0, random_state=random_state).reset_index(drop=True)
 
     sampled_minority = minority_df.sample(
         n=extra_needed,
@@ -73,8 +75,22 @@ def oversample_minority_class(
     )
 
     balanced_df = pd.concat([majority_df, minority_df, sampled_minority], ignore_index=True)
-    balanced_df = balanced_df.sample(frac=1.0, random_state=random_state).reset_index(drop=True)
-    return balanced_df
+    return balanced_df.sample(frac=1.0, random_state=random_state).reset_index(drop=True)
+
+
+def resolve_paths(args: argparse.Namespace) -> tuple[Path, Path]:
+    train_csv = args.train_csv
+    output_dir = args.output_dir
+
+    if args.run_name:
+        run_root = Path("data/preprocessed_runs") / args.run_name / "baseline_standardized"
+
+        if train_csv == DEFAULT_TRAIN_CSV:
+            train_csv = run_root / "train_scaled.csv"
+        if output_dir == DEFAULT_OUTPUT_DIR:
+            output_dir = run_root / "imbalance"
+
+    return train_csv, output_dir
 
 
 def parse_args() -> argparse.Namespace:
@@ -82,15 +98,22 @@ def parse_args() -> argparse.Namespace:
         description="Handle class imbalance for non-GNN baseline training data."
     )
     parser.add_argument(
+        "--run-name",
+        type=str,
+        default=None,
+        help="Preprocessed run name under data/preprocessed_runs/<RUN_NAME>/baseline_standardized. "
+        "If provided, default train/output paths are resolved from that run.",
+    )
+    parser.add_argument(
         "--train-csv",
         type=Path,
-        default=Path("data/processed/baseline_standardized/train_scaled.csv"),
+        default=DEFAULT_TRAIN_CSV,
         help="Path to the standardized train CSV.",
     )
     parser.add_argument(
         "--output-dir",
         type=Path,
-        default=Path("data/processed/baseline_standardized/imbalance"),
+        default=DEFAULT_OUTPUT_DIR,
         help="Directory to save imbalance-handling outputs.",
     )
     parser.add_argument(
@@ -120,17 +143,29 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def validate_args(train_csv: Path, output_dir: Path) -> None:
+    if not train_csv.exists():
+        raise FileNotFoundError(f"train_scaled.csv not found: {train_csv}")
+    output_dir.parent.mkdir(parents=True, exist_ok=True)
+
+
 def main() -> None:
     args = parse_args()
+    train_csv, output_dir = resolve_paths(args)
+    validate_args(train_csv, output_dir)
 
-    train_df = pd.read_csv(args.train_csv)
+    print(f"[RUN] run_name={args.run_name or 'default'}")
+    print(f"- train_csv : {train_csv}")
+    print(f"- output_dir: {output_dir}")
+
+    train_df = pd.read_csv(train_csv)
     validate_label_column(train_df, args.label_column)
 
-    args.output_dir.mkdir(parents=True, exist_ok=True)
+    output_dir.mkdir(parents=True, exist_ok=True)
 
     outputs: dict[str, str] = {}
     summary = {
-        "input_csv": str(args.train_csv),
+        "input_csv": str(train_csv),
         "label_column": args.label_column,
         "method": args.method,
         "target_ratio": args.target_ratio,
@@ -140,12 +175,17 @@ def main() -> None:
 
     if args.method in {"weights", "both"}:
         weighted_df = add_sample_weights(train_df, args.label_column)
-        weighted_path = args.output_dir / "train_weighted.csv"
+        weighted_path = output_dir / "train_weighted.csv"
         weighted_df.to_csv(weighted_path, index=False)
         outputs["train_weighted"] = str(weighted_path)
         summary["weight_class_counts"] = class_counts(weighted_df, args.label_column)
         summary["weight_map"] = {
-            str(label): float(weighted_df.loc[weighted_df[args.label_column] == label, "sample_weight"].iloc[0])
+            str(label): float(
+                weighted_df.loc[
+                    weighted_df[args.label_column] == label,
+                    "sample_weight",
+                ].iloc[0]
+            )
             for label in sorted(weighted_df[args.label_column].unique().tolist())
         }
 
@@ -156,14 +196,14 @@ def main() -> None:
             target_ratio=args.target_ratio,
             random_state=args.random_state,
         )
-        oversampled_path = args.output_dir / "train_oversampled.csv"
+        oversampled_path = output_dir / "train_oversampled.csv"
         oversampled_df.to_csv(oversampled_path, index=False)
         outputs["train_oversampled"] = str(oversampled_path)
         summary["oversampled_class_counts"] = class_counts(oversampled_df, args.label_column)
 
     summary["outputs"] = outputs
 
-    summary_path = args.output_dir / "imbalance_summary.json"
+    summary_path = output_dir / "imbalance_summary.json"
     summary_path.write_text(json.dumps(summary, indent=2), encoding="utf-8")
 
     print("[OK] Imbalance handling outputs saved.")

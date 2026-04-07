@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+
 import config
 import mobility
 from config_utils import validate_config
@@ -17,9 +19,52 @@ from visualization import (
 )
 
 
+def save_scenario_metadata() -> None:
+    scenario = {
+        "run_name": config.RUN_NAME,
+        "seed": config.SEED,
+        "mobility_model": config.MOBILITY_MODEL,
+        "num_uavs": config.NUM_UAVS,
+        "time_steps": config.TIME_STEPS,
+        "dt": config.DT,
+        "x_limit": list(config.X_LIMIT),
+        "y_limit": list(config.Y_LIMIT),
+        "z_limit": list(config.Z_LIMIT),
+        "velocity_component_range": list(config.VELOCITY_COMPONENT_RANGE),
+        "comm_range": config.COMM_RANGE,
+        "source_id": config.SOURCE_ID,
+        "dest_id": config.DEST_ID,
+        "gauss_markov_alpha": config.GAUSS_MARKOV_ALPHA,
+        "gauss_markov_mean_velocity": list(config.GAUSS_MARKOV_MEAN_VELOCITY),
+        "gauss_markov_stddev": config.GAUSS_MARKOV_STDDEV,
+        "rwp_speed_range": list(config.RWP_SPEED_RANGE),
+        "rwp_pause_steps": config.RWP_PAUSE_STEPS,
+        "rwp_reach_threshold": config.RWP_REACH_THRESHOLD,
+        "tx_power_dbm": config.TX_POWER_DBM,
+        "reference_path_loss_db": config.REFERENCE_PATH_LOSS_DB,
+        "path_loss_exponent": config.PATH_LOSS_EXPONENT,
+        "noise_floor_dbm": config.NOISE_FLOOR_DBM,
+        "base_delay_ms": config.BASE_DELAY_MS,
+        "disconnected_delay_ms": config.DISCONNECTED_DELAY_MS,
+        "max_throughput_mbps": config.MAX_THROUGHPUT_MBPS,
+        "output_dir": str(config.OUTPUT_DIR),
+        "plots_dir": str(config.PLOTS_DIR),
+    }
+
+    scenario_path = config.OUTPUT_DIR / "scenario.json"
+    scenario_path.write_text(json.dumps(scenario, indent=2), encoding="utf-8")
+    print(f"- Scenario JSON  : {scenario_path}")
+
+
 def main() -> None:
     ensure_output_dir()
     validate_config()
+    save_scenario_metadata()
+
+    print(
+        f"[RUN] name={config.RUN_NAME}, seed={config.SEED}, "
+        f"mobility={config.MOBILITY_MODEL}, output={config.OUTPUT_DIR}"
+    )
 
     uavs = initialize_uavs()
 

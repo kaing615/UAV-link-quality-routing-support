@@ -1,8 +1,11 @@
+import os
 from pathlib import Path
 
-SEED = 42
-NUM_UAVS = 6
-TIME_STEPS = 100
+SEED = int(os.getenv("SIM_SEED", "42"))
+RUN_NAME = os.getenv("SIM_RUN_NAME", f"seed_{SEED}")
+
+NUM_UAVS = int(os.getenv("SIM_NUM_UAVS", "6"))
+TIME_STEPS = int(os.getenv("SIM_TIME_STEPS", "100"))
 DT = 1.0
 
 X_LIMIT = (0.0, 500.0)
@@ -10,7 +13,7 @@ Y_LIMIT = (0.0, 500.0)
 Z_LIMIT = (50.0, 150.0)
 
 VELOCITY_COMPONENT_RANGE = (-8.0, 8.0)
-COMM_RANGE = 230.0
+COMM_RANGE = float(os.getenv("SIM_COMM_RANGE", "230.0"))
 
 SOURCE_ID = 0
 DEST_ID = 4
@@ -18,8 +21,8 @@ DEST_ID = 4
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 DATA_DIR = PROJECT_ROOT / "data"
-RAW_DIR = DATA_DIR / "raw"
-OUTPUT_DIR = RAW_DIR
+RAW_ROOT = PROJECT_ROOT / "data" / "raw_runs"
+OUTPUT_DIR = RAW_ROOT / RUN_NAME
 
 NODES_CSV = OUTPUT_DIR / "nodes.csv"
 EDGES_CSV = OUTPUT_DIR / "edges.csv"
@@ -29,7 +32,7 @@ NODES_PARQUET = OUTPUT_DIR / "nodes.parquet"
 EDGES_PARQUET = OUTPUT_DIR / "edges.parquet"
 TRAFFIC_PARQUET = OUTPUT_DIR / "traffic_log.parquet"
 
-PLOTS_DIR = PROJECT_ROOT / "outputs" / "plots"
+PLOTS_DIR = PROJECT_ROOT / "outputs" / "plots" / RUN_NAME
 SAVE_PLOTS = True
 TOPOLOGY_SNAPSHOT_STEPS = [0, 25, 50, 75, 99]
 FINAL_FRAME_PNG = PLOTS_DIR / "final_frame.png"
@@ -63,13 +66,16 @@ EDGE_LINE_ALPHA = 0.35
 EDGE_LINE_WIDTH = 1.2
 ROUTE_LINE_WIDTH = 4.0
 
-MOBILITY_MODEL = "random-waypoint"  # "gauss-markov" or "random-waypoint"
+MOBILITY_MODEL = os.getenv("SIM_MOBILITY_MODEL", "random-waypoint")  # "gauss-markov" or "random-waypoint"
 
 GAUSS_MARKOV_ALPHA = 0.85
 GAUSS_MARKOV_MEAN_VELOCITY = (0.0, 0.0, 0.0)
 GAUSS_MARKOV_STDDEV = 2.0
 
-RWP_SPEED_RANGE = (3.0, 8.0)
+RWP_SPEED_RANGE = (
+    float(os.getenv("SIM_RWP_SPEED_MIN", "3.0")),
+    float(os.getenv("SIM_RWP_SPEED_MAX", "8.0")),
+)
 RWP_PAUSE_STEPS = 0
 RWP_REACH_THRESHOLD = 2.0
 

@@ -17,6 +17,10 @@ FEATURE_COLUMNS = [
     "throughput",
 ]
 
+DEFAULT_EDGES_LABELED = Path("data/processed/edges_labeled.csv")
+DEFAULT_SPLITS = Path("data/splits/time_splits.csv")
+DEFAULT_OUTPUT_DIR = Path("data/processed/baseline_standardized")
+
 
 def load_edges_with_splits(edges_labeled_csv: Path, splits_csv: Path) -> pd.DataFrame:
     edges = pd.read_csv(edges_labeled_csv)
@@ -109,41 +113,81 @@ def save_outputs(
     return outputs
 
 
+def resolve_paths(args: argparse.Namespace) -> tuple[Path, Path, Path]:
+    edges_labeled_csv = args.edges_labeled
+    splits_csv = args.splits
+    output_dir = args.output_dir
+
+    if args.run_name:
+        run_root = Path("data/preprocessed_runs") / args.run_name
+
+        if edges_labeled_csv == DEFAULT_EDGES_LABELED:
+            edges_labeled_csv = run_root / "processed" / "edges_labeled.csv"
+        if splits_csv == DEFAULT_SPLITS:
+            splits_csv = run_root / "splits" / "time_splits.csv"
+        if output_dir == DEFAULT_OUTPUT_DIR:
+            output_dir = run_root / "baseline_standardized"
+
+    return edges_labeled_csv, splits_csv, output_dir
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Standardize baseline tabular features using train split statistics."
     )
     parser.add_argument(
+        "--run-name",
+        type=str,
+        default=None,
+        help="Preprocessed run name under data/preprocessed_runs/<RUN_NAME>. "
+        "If provided, default edges/splits/output paths are resolved from that run.",
+    )
+    parser.add_argument(
         "--edges-labeled",
         type=Path,
-        default=Path("data/processed/edges_labeled.csv"),
+        default=DEFAULT_EDGES_LABELED,
         help="Path to labeled edge table.",
     )
     parser.add_argument(
         "--splits",
         type=Path,
-        default=Path("data/splits/time_splits.csv"),
+        default=DEFAULT_SPLITS,
         help="Path to time-based train/val/test split file.",
     )
     parser.add_argument(
         "--output-dir",
         type=Path,
-        default=Path("data/processed/baseline_standardized"),
+        default=DEFAULT_OUTPUT_DIR,
         help="Directory to save standardized CSV files.",
     )
     return parser.parse_args()
 
 
+def validate_args(edges_labeled_csv: Path, splits_csv: Path, output_dir: Path) -> None:
+    if not edges_labeled_csv.exists():
+        raise FileNotFoundError(f"edges_labeled.csv not found: {edges_labeled_csv}")
+    if not splits_csv.exists():
+        raise FileNotFoundError(f"time_splits.csv not found: {splits_csv}")
+    output_dir.parent.mkdir(parents=True, exist_ok=True)
+
+
 def main() -> None:
     args = parse_args()
+    edges_labeled_csv, splits_csv, output_dir = resolve_paths(args)
+    validate_args(edges_labeled_csv, splits_csv, output_dir)
+
+    print(f"[RUN] run_name={args.run_name or 'default'}")
+    print(f"- edges_labeled: {edges_labeled_csv}")
+    print(f"- splits       : {splits_csv}")
+    print(f"- output_dir   : {output_dir}")
 
     df = load_edges_with_splits(
-        edges_labeled_csv=args.edges_labeled,
-        splits_csv=args.splits,
+        edges_labeled_csv=edges_labeled_csv,
+        splits_csv=splits_csv,
     )
     scaler, split_frames = standardize_by_train_split(df)
     outputs = save_outputs(
-        output_dir=args.output_dir,
+        output_dir=output_dir,
         split_frames=split_frames,
         scaler=scaler,
     )
