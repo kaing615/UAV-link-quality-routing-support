@@ -122,7 +122,7 @@ def resolve_paths(args: argparse.Namespace) -> tuple[Path, Path, Path]:
         run_root = Path("data/graph_dataset") / args.run_name
 
         if edges_labeled_csv == DEFAULT_EDGES_LABELED:
-            edges_labeled_csv = run_root / "processed" / "edges_labeled.csv"
+            edges_labeled_csv = run_root / "features" / "edges_labeled.csv"
         if splits_csv == DEFAULT_SPLITS:
             splits_csv = run_root / "splits" / "time_splits.csv"
         if output_dir == DEFAULT_OUTPUT_DIR:

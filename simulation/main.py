@@ -72,7 +72,7 @@ def main() -> None:
     all_edge_rows: list[dict] = []
     traffic_rows: list[dict] = []
 
-    _, ax = setup_live_plot()
+    fig, ax = setup_live_plot()
 
     try:
         for t in range(config.TIME_STEPS):
@@ -123,6 +123,10 @@ def main() -> None:
     finally:
         save_all_outputs(all_node_rows, all_edge_rows, traffic_rows)
         finalize_live_plot(ax)
+
+        import matplotlib.pyplot as plt
+        plt.close(fig)
+        plt.close("all")
 
 
 if __name__ == "__main__":

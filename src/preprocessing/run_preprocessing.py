@@ -60,7 +60,7 @@ def run_pipeline(
         output_dir=graph_dir,
     )
 
-    results = {
+    return {
         "nodes_features": nodes_features_csv,
         "edges_features": edges_features_csv,
         "edges_labeled": edges_labeled_csv,
@@ -70,31 +70,16 @@ def run_pipeline(
         "test_pt": graph_dir / "test.pt",
         "summary": summary_json,
     }
-    return results
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Run the full graph dataset preprocessing pipeline."
     )
-    parser.add_argument(
-        "--nodes",
-        type=Path,
-        default=Path("data/raw/nodes.csv"),
-        help="Path to raw nodes.csv",
-    )
-    parser.add_argument(
-        "--edges",
-        type=Path,
-        default=Path("data/raw/edges.csv"),
-        help="Path to raw edges.csv",
-    )
-    parser.add_argument(
-        "--output-root",
-        type=Path,
-        default=Path("data"),
-        help="Root directory for processed, splits, and graph outputs",
-    )
+    parser.add_argument("--run-name", type=str, default=None)
+    parser.add_argument("--nodes", type=Path, default=None)
+    parser.add_argument("--edges", type=Path, default=None)
+    parser.add_argument("--output-root", type=Path, default=None)
     parser.add_argument("--tau-snr", type=float, default=18.0)
     parser.add_argument("--tau-loss", type=float, default=0.10)
     parser.add_argument("--tau-delay", type=float, default=10.0)
@@ -103,7 +88,21 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def resolve_paths(args: argparse.Namespace) -> None:
+    if args.run_name:
+        args.nodes = Path("data/raw_snapshots") / args.run_name / "nodes.csv"
+        args.edges = Path("data/raw_snapshots") / args.run_name / "edges.csv"
+        args.output_root = Path("data/graph_dataset") / args.run_name
+
+
 def validate_args(args: argparse.Namespace) -> None:
+    if args.nodes is None:
+        raise ValueError("Missing --nodes or --run-name")
+    if args.edges is None:
+        raise ValueError("Missing --edges or --run-name")
+    if args.output_root is None:
+        raise ValueError("Missing --output-root or --run-name")
+
     if not args.nodes.exists():
         raise FileNotFoundError(f"Raw nodes file not found: {args.nodes}")
     if not args.edges.exists():
@@ -119,6 +118,7 @@ def validate_args(args: argparse.Namespace) -> None:
 
 if __name__ == "__main__":
     args = parse_args()
+    resolve_paths(args)
     validate_args(args)
 
     outputs = run_pipeline(
