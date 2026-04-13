@@ -68,5 +68,5 @@ done
 
 echo
 echo "[OK] Generated ${COUNT} datasets."
-echo "- Raw root          : ${PROJECT_ROOT}/data/raw_runs"
-echo "- Preprocessed root : ${PROJECT_ROOT}/data/preprocessed_runs"
+echo "- Raw root          : ${PROJECT_ROOT}/data/raw_snapshots"
+echo "- Preprocessed root : ${PROJECT_ROOT}/data/graph_dataset"

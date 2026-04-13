@@ -3,10 +3,10 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from preprocessing.gnn.build_features import build_feature_tables
-from preprocessing.gnn.build_labels import build_labeled_edges
-from preprocessing.common.split_dataset import build_time_split
-from preprocessing.gnn.build_graph_dataset import build_graph_records
+from src.preprocessing.gnn.build_features import build_feature_tables
+from src.preprocessing.gnn.build_labels import build_labeled_edges
+from src.preprocessing.common.split_dataset import build_time_split
+from src.preprocessing.gnn.build_graph_dataset import build_graph_records
 
 
 def run_pipeline(
@@ -19,9 +19,9 @@ def run_pipeline(
     train_ratio: float = 0.70,
     val_ratio: float = 0.15,
 ) -> dict[str, Path]:
-    processed_dir = output_root / "processed"
+    processed_dir = output_root / "features"
     splits_dir = output_root / "splits"
-    graph_dir = output_root / "graph"
+    graph_dir = output_root / "graph_dataset"
 
     processed_dir.mkdir(parents=True, exist_ok=True)
     splits_dir.mkdir(parents=True, exist_ok=True)

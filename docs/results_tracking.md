@@ -13,13 +13,13 @@ Quy định cách lưu, đọc, và tổng hợp metric từ nhiều `RUN_NAME` 
 ### Raw data
 
 ```text
-data/raw_runs/<RUN_NAME>/
+data/raw_snapshots/<RUN_NAME>/
 ```
 
 ### Preprocessed data
 
 ```text
-data/preprocessed_runs/<RUN_NAME>/
+data/graph_dataset/<RUN_NAME>/
 ```
 
 ### Baseline outputs

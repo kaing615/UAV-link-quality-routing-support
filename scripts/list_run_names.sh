@@ -4,7 +4,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
-RUNS_ROOT="${PROJECT_ROOT}/data/preprocessed_runs"
+RUNS_ROOT="${PROJECT_ROOT}/data/graph_dataset"
 PATTERN="${1:-*}"
 
 if [[ ! -d "${RUNS_ROOT}" ]]; then

@@ -21,7 +21,7 @@ DEST_ID = 4
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 DATA_DIR = PROJECT_ROOT / "data"
-RAW_ROOT = PROJECT_ROOT / "data" / "raw_runs"
+RAW_ROOT = PROJECT_ROOT / "data" / "raw_snapshots"
 OUTPUT_DIR = RAW_ROOT / RUN_NAME
 
 NODES_CSV = OUTPUT_DIR / "nodes.csv"

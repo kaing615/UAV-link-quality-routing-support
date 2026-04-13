@@ -15,7 +15,7 @@ Sinh nhiều dataset UAV riêng biệt từ simulator để:
 Mỗi lần chạy simulator với một `RUN_NAME` sẽ tạo một thư mục riêng:
 
 ```text
-data/raw_runs/<RUN_NAME>/
+data/raw_snapshots/<RUN_NAME>/
 ```
 
 Gồm:
@@ -33,7 +33,7 @@ Gồm:
 Mỗi `RUN_NAME` sau khi chạy preprocessing sẽ có:
 
 ```text
-data/preprocessed_runs/<RUN_NAME>/
+data/graph_dataset/<RUN_NAME>/
 ```
 
 Gồm:

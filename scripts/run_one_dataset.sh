@@ -65,7 +65,7 @@ echo "[4/4] Handling class imbalance"
 
 echo
 echo "[OK] Pipeline completed for ${RUN_NAME}"
-echo "- Raw data            : data/raw_runs/${RUN_NAME}"
-echo "- Preprocessed data   : data/preprocessed_runs/${RUN_NAME}"
-echo "- Standardized data   : data/preprocessed_runs/${RUN_NAME}/baseline_standardized"
-echo "- Imbalance outputs   : data/preprocessed_runs/${RUN_NAME}/baseline_standardized/imbalance"
+echo "- Raw data            : data/raw_snapshots/${RUN_NAME}"
+echo "- Preprocessed data   : data/graph_dataset/${RUN_NAME}"
+echo "- Standardized data   : data/graph_dataset/${RUN_NAME}/baseline_standardized"
+echo "- Imbalance outputs   : data/graph_dataset/${RUN_NAME}/baseline_standardized/imbalance"

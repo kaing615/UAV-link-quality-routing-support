@@ -65,7 +65,7 @@ Với mỗi `RUN_NAME`, dữ liệu sẽ được lưu ở:
 ### Raw từ simulator
 
 ```text
-data/raw_runs/<RUN_NAME>/
+data/raw_snapshots/<RUN_NAME>/
 ```
 
 Gồm:
@@ -78,7 +78,7 @@ Gồm:
 ### Dữ liệu đã preprocessing
 
 ```text
-data/preprocessed_runs/<RUN_NAME>/
+data/graph_dataset/<RUN_NAME>/
 ```
 
 Gồm:

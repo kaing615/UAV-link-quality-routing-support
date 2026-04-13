@@ -66,7 +66,7 @@ def resolve_paths(args: argparse.Namespace) -> tuple[Path, Path, Path, Path, Pat
     output_dir = args.output_dir
 
     if args.run_name:
-        run_root = Path("data/preprocessed_runs") / args.run_name / "baseline_standardized"
+        run_root = Path("data/graph_dataset") / args.run_name / "baseline_standardized"
         imbalance_root = run_root / "imbalance"
 
         if train_weighted == DEFAULT_TRAIN_WEIGHTED:
@@ -181,7 +181,7 @@ def parse_args() -> argparse.Namespace:
         "--run-name",
         type=str,
         default=None,
-        help="Preprocessed run name under data/preprocessed_runs/<RUN_NAME>/baseline_standardized. "
+        help="Preprocessed run name under data/graph_dataset/<RUN_NAME>/baseline_standardized. "
         "If provided, default input/output paths are resolved from that run.",
     )
     parser.add_argument("--train-weighted", type=Path, default=DEFAULT_TRAIN_WEIGHTED)
