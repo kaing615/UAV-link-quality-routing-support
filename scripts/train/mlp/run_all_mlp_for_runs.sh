@@ -3,13 +3,13 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../../.." && pwd)"
 RUNS_ROOT="${PROJECT_ROOT}/data/graph_dataset"
-MLP_SCRIPT="${PROJECT_ROOT}/models/baselines/mlp_baseline.py"
+MLP_MODULE="src.training.baselines.mlp_baseline"
 RUN_PATTERN="${1:-*}"
 
-if [[ ! -f "${MLP_SCRIPT}" ]]; then
-  echo "MLP baseline script not found: ${MLP_SCRIPT}"
+if [[ ! -f "${PROJECT_ROOT}/src/training/baselines/mlp_baseline.py" ]]; then
+  echo "MLP baseline script not found: ${PROJECT_ROOT}/src/training/baselines/mlp_baseline.py"
   exit 1
 fi
 
@@ -52,7 +52,7 @@ for run_dir in "${matching_runs[@]}"; do
   echo "[MLP] ${run_name}"
   echo "============================================================"
 
-  if "${PYTHON_BIN}" "${MLP_SCRIPT}" --run-name "${run_name}"; then
+  if "${PYTHON_BIN}" -m "${MLP_MODULE}" --run-name "${run_name}"; then
     echo "[OK] MLP completed for ${run_name}"
   else
     echo "[FAIL] MLP failed for ${run_name}"

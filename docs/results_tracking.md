@@ -106,6 +106,14 @@ Một `RUN_NAME` tương ứng với một dataset mô phỏng riêng.
 
 ## 8. Cách gom kết quả nhiều run
 
+Có thể dùng utility:
+
+```bash
+python3 -m src.evaluation.aggregate_baseline_metrics
+python3 -m src.evaluation.aggregate_baseline_metrics --model-pattern 'xgb' --run-pattern 'batch_*'
+./scripts/train/aggregate_baselines.sh
+```
+
 ### Gom theo model
 
 Ví dụ:

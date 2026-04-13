@@ -114,14 +114,14 @@ Ví dụ:
 ### Bước 1. Sinh dữ liệu
 
 ```bash
-./scripts/run_many_random_datasets.sh 10 exp01
+./scripts/dataset/run_many_random_datasets.sh 10 exp01
 ```
 
 Hoặc chạy scenario cố định bằng tay:
 
 ```bash
-./scripts/run_one_dataset.sh seed_42_rwp 42 random-waypoint
-./scripts/run_one_dataset.sh seed_42_gm 42 gauss-markov
+./scripts/dataset/run_one_dataset.sh seed_42_rwp 42 random-waypoint
+./scripts/dataset/run_one_dataset.sh seed_42_gm 42 gauss-markov
 ```
 
 ### Bước 2. Chạy baseline
@@ -129,7 +129,7 @@ Hoặc chạy scenario cố định bằng tay:
 Ví dụ với MLP:
 
 ```bash
-./scripts/run_all_mlp_for_runs.sh 'exp01_*'
+./scripts/train/mlp/run_all_mlp_for_runs.sh 'exp01_*'
 ```
 
 ### Bước 3. Gom kết quả

@@ -16,6 +16,8 @@
 
 ---
 
+> Quick start: see [docs/quick_start.md](./docs/quick_start.md)
+
 - **Project Title:** Application of Graph Neural Networks for Link Quality Prediction and Routing Support in UAV Networks
 - **University:** University of Information Technology - Vietnam National University Ho Chi Minh City
 - **Faculty:** Faculty of Computer Networks and Communications
@@ -145,19 +147,22 @@ By combining **node features**, **edge features**, and **graph topology**, the m
 
 ---
 
-## Proposed Project Structure
+## Current Project Structure
 
 ```text
-uav-link-quality-routing
-├── data/                     # Raw data, processed data, graph snapshots
+UAV-link-quality-routing-support
+├── docs/                     # Pipeline docs, dataset notes, experiment references
 ├── simulation/               # UAV simulation environment and topology generation
-├── preprocessing/            # Data preprocessing and node/edge feature extraction
-├── models/                   # GraphSAGE, GAT, and baseline implementations
-├── training/                 # Training, validation, and testing scripts
-├── routing/                  # Logic for mapping predictions into routing support
-├── evaluation/               # Model evaluation and network-level assessment
-├── utils/                    # Utility functions
-├── configs/                  # Configuration files for simulation and training
-├── outputs/                  # Logs, figures, checkpoints, and experiment results
-└── README.md
+├── data/
+│   ├── raw_snapshots/        # Raw simulator outputs
+│   └── graph_dataset/        # Preprocessed datasets for GNN and baselines
+├── src/
+│   ├── preprocessing/        # Data preprocessing
+│   ├── models/               # GNN and baseline models
+│   ├── routing/              # Routing support logic
+│   ├── training/             # Training/validation/testing scripts
+│   ├── utils/                # Shared utility helpers
+│   └── evaluation/           # Evaluation and result aggregation
+├── outputs/                  # Run outputs, baseline artifacts, plots, logs
+└── scripts/                  # Dataset, training, and utility scripts
 ```

@@ -28,7 +28,7 @@ Mục đích:
 Ví dụ:
 
 ```bash
-./scripts/run_one_dataset.sh seed_42_rwp 42 random-waypoint
+./scripts/dataset/run_one_dataset.sh seed_42_rwp 42 random-waypoint
 ```
 
 ### 2.2 `gm`
@@ -49,7 +49,7 @@ Mục đích:
 Ví dụ:
 
 ```bash
-./scripts/run_one_dataset.sh seed_42_gm 42 gauss-markov
+./scripts/dataset/run_one_dataset.sh seed_42_gm 42 gauss-markov
 ```
 
 ### 2.3 `dense`
@@ -69,7 +69,7 @@ Ví dụ:
 ```bash
 SIM_NUM_UAVS=8 \
 SIM_COMM_RANGE=280 \
-./scripts/run_one_dataset.sh dense_rwp_seed42 42 random-waypoint
+./scripts/dataset/run_one_dataset.sh dense_rwp_seed42 42 random-waypoint
 ```
 
 ### 2.4 `sparse`
@@ -89,7 +89,7 @@ Ví dụ:
 ```bash
 SIM_NUM_UAVS=6 \
 SIM_COMM_RANGE=180 \
-./scripts/run_one_dataset.sh sparse_rwp_seed42 42 random-waypoint
+./scripts/dataset/run_one_dataset.sh sparse_rwp_seed42 42 random-waypoint
 ```
 
 ### 2.5 `fast`
@@ -109,7 +109,7 @@ Ví dụ:
 ```bash
 SIM_RWP_SPEED_MIN=6 \
 SIM_RWP_SPEED_MAX=10 \
-./scripts/run_one_dataset.sh fast_rwp_seed42 42 random-waypoint
+./scripts/dataset/run_one_dataset.sh fast_rwp_seed42 42 random-waypoint
 ```
 
 ## 3. Scenario phụ có thể thêm
@@ -123,7 +123,7 @@ Ví dụ:
 
 ```bash
 SIM_TIME_STEPS=150 \
-./scripts/run_one_dataset.sh long_rwp_seed42 42 random-waypoint
+./scripts/dataset/run_one_dataset.sh long_rwp_seed42 42 random-waypoint
 ```
 
 ### `multi_seed`
@@ -134,9 +134,9 @@ SIM_TIME_STEPS=150 \
 Ví dụ:
 
 ```bash
-./scripts/run_one_dataset.sh seed_42_rwp 42 random-waypoint
-./scripts/run_one_dataset.sh seed_43_rwp 43 random-waypoint
-./scripts/run_one_dataset.sh seed_44_rwp 44 random-waypoint
+./scripts/dataset/run_one_dataset.sh seed_42_rwp 42 random-waypoint
+./scripts/dataset/run_one_dataset.sh seed_43_rwp 43 random-waypoint
+./scripts/dataset/run_one_dataset.sh seed_44_rwp 44 random-waypoint
 ```
 
 ## 4. Gợi ý bộ scenario cho báo cáo

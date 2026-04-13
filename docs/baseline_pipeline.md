@@ -23,13 +23,13 @@ Các baseline mục tiêu:
 Script:
 
 ```bash
-./scripts/run_one_dataset.sh <RUN_NAME> <SEED> <MOBILITY_MODEL>
+./scripts/dataset/run_one_dataset.sh <RUN_NAME> <SEED> <MOBILITY_MODEL>
 ```
 
 Hoặc chạy nhiều dataset:
 
 ```bash
-./scripts/run_many_random_datasets.sh
+./scripts/dataset/run_many_random_datasets.sh
 ```
 
 ### Bước 2. Graph preprocessing
@@ -37,25 +37,25 @@ Hoặc chạy nhiều dataset:
 Script:
 
 ```bash
-python3 preprocessing/run_preprocessing.py --run-name <RUN_NAME>
+python3 src/preprocessing/run_preprocessing.py --run-name <RUN_NAME>
 ```
 
 Output:
 
-- `processed/nodes_features.csv`
-- `processed/edges_features.csv`
-- `processed/edges_labeled.csv`
+- `features/nodes_features.csv`
+- `features/edges_features.csv`
+- `features/edges_labeled.csv`
 - `splits/time_splits.csv`
-- `graph/train.pt`
-- `graph/val.pt`
-- `graph/test.pt`
+- `graph_dataset/train.pt`
+- `graph_dataset/val.pt`
+- `graph_dataset/test.pt`
 
 ### Bước 3. Standardize cho baseline non-GNN
 
 Script:
 
 ```bash
-python3 preprocessing/non-gnn/standardize_baseline_data.py --run-name <RUN_NAME>
+python3 src/preprocessing/non-gnn/standardize_baseline_data.py --run-name <RUN_NAME>
 ```
 
 Output:
@@ -71,7 +71,7 @@ Output:
 Script:
 
 ```bash
-python3 preprocessing/non-gnn/handle_imbalance.py --run-name <RUN_NAME>
+python3 src/preprocessing/non-gnn/handle_imbalance.py --run-name <RUN_NAME>
 ```
 
 Output:
@@ -111,7 +111,7 @@ Output:
 Script:
 
 ```bash
-python3 models/baselines/mlp_baseline.py --run-name <RUN_NAME>
+python3 -m src.training.baselines.mlp_baseline --run-name <RUN_NAME>
 ```
 
 Output:
@@ -131,8 +131,15 @@ Gồm:
 ### Chạy MLP cho tất cả run
 
 ```bash
-./scripts/run_all_mlp_for_runs.sh
-./scripts/run_all_mlp_for_runs.sh 'batch_*'
+./scripts/train/mlp/run_all_mlp_for_runs.sh
+./scripts/train/mlp/run_all_mlp_for_runs.sh 'batch_*'
+```
+
+### Tổng hợp metric nhiều baseline
+
+```bash
+./scripts/train/aggregate_baselines.sh
+./scripts/train/aggregate_baselines.sh '*' 'batch_*'
 ```
 
 ## 5. Quy tắc dùng weighted và oversampled

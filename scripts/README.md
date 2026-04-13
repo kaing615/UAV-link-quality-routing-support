@@ -1,107 +1,97 @@
-# Hướng dẫn chạy pipeline sinh dữ liệu
+# Scripts
 
-## 1. Chạy một dataset
+Tổng quan nhanh các script trong thư mục `scripts/`.
 
-Script:
+`docs/quick_start.md` là tài liệu chuẩn duy nhất cho các lệnh vận hành hằng ngày.
 
-```bash
-./scripts/run_one_dataset.sh RUN_NAME [SEED] [MOBILITY_MODEL]
+## Cấu trúc
+
+```text
+scripts/
+├── dataset/
+│   ├── run_one_dataset.sh
+│   └── run_many_random_datasets.sh
+├── train/
+│   ├── aggregate_baselines.sh
+│   ├── mlp/run_all_mlp_for_runs.sh
+│   └── xgb/run_all_xgb_for_runs.sh
+├── utils/
+│   └── list_run_names.sh
 ```
+
+## Dataset
+
+### `scripts/dataset/run_one_dataset.sh`
+
+- Sinh một dataset từ simulator.
+- Tự chạy preprocessing, standardize, và imbalance handling cho baseline non-GNN.
 
 Ví dụ:
 
 ```bash
-./scripts/run_one_dataset.sh seed_42_rwp 42 random-waypoint
-./scripts/run_one_dataset.sh seed_42_gm 42 gauss-markov
+./scripts/dataset/run_one_dataset.sh seed_42_rwp 42 random-waypoint
 ```
 
-### Có thể truyền thêm biến môi trường
+### `scripts/dataset/run_many_random_datasets.sh`
 
-```bash
-SIM_NUM_UAVS=8 \
-SIM_COMM_RANGE=245 \
-SIM_TIME_STEPS=120 \
-SIM_RWP_SPEED_MIN=3 \
-SIM_RWP_SPEED_MAX=7 \
-./scripts/run_one_dataset.sh seed_custom 42 random-waypoint
-```
-
-### Script sẽ tự chạy 4 bước
-
-1. `simulation/main.py`
-2. `preprocessing/run_preprocessing.py --run-name ...`
-3. `preprocessing/non-gnn/standardize_baseline_data.py --run-name ...`
-4. `preprocessing/non-gnn/handle_imbalance.py --run-name ...`
-
-## 2. Chạy nhiều dataset ngẫu nhiên
-
-Script:
-
-```bash
-./scripts/run_many_random_datasets.sh [COUNT] [PREFIX]
-```
+- Sinh nhiều dataset ngẫu nhiên.
+- Mỗi run được lưu riêng trong `data/raw_snapshots/` và `data/graph_dataset/`.
 
 Ví dụ:
 
 ```bash
-./scripts/run_many_random_datasets.sh
-./scripts/run_many_random_datasets.sh 10 exp01
-./scripts/run_many_random_datasets.sh 5 testbatch
+./scripts/dataset/run_many_random_datasets.sh 10 exp01
 ```
 
-### Script này sẽ random cho từng dataset
+## Train
 
-- `SEED`
-- `MOBILITY_MODEL`
-- `NUM_UAVS`
-- `COMM_RANGE`
-- `TIME_STEPS`
-- `RWP_SPEED_RANGE`
+### `scripts/train/mlp/run_all_mlp_for_runs.sh`
 
-## 3. Output nằm ở đâu
+- Chạy baseline MLP cho nhiều run.
 
-Với mỗi `RUN_NAME`, dữ liệu sẽ được lưu ở:
+Ví dụ:
 
-### Raw từ simulator
-
-```text
-data/raw_snapshots/<RUN_NAME>/
+```bash
+./scripts/train/mlp/run_all_mlp_for_runs.sh 'batch_*'
 ```
 
-Gồm:
+### `scripts/train/xgb/run_all_xgb_for_runs.sh`
 
-- `nodes.csv`
-- `edges.csv`
-- `traffic_log.csv`
-- `scenario.json`
+- Chạy baseline XGBoost cho nhiều run.
 
-### Dữ liệu đã preprocessing
+Ví dụ:
 
-```text
-data/graph_dataset/<RUN_NAME>/
+```bash
+./scripts/train/xgb/run_all_xgb_for_runs.sh 'batch_*'
 ```
 
-Gồm:
+### `scripts/train/aggregate_baselines.sh`
 
-- `processed/`
-- `splits/`
-- `graph/`
-- `baseline_standardized/`
-- `baseline_standardized/imbalance/`
+- Tổng hợp `metrics.csv` từ nhiều model và nhiều run.
+- Wrapper cho `python -m src.evaluation.aggregate_baseline_metrics`.
 
-### Plot của simulator
+Ví dụ:
 
-```text
-outputs/plots/<RUN_NAME>/
+```bash
+./scripts/train/aggregate_baselines.sh
+./scripts/train/aggregate_baselines.sh '*' 'batch_*'
+./scripts/train/aggregate_baselines.sh 'xgb' 'exp01_*'
 ```
 
-## 4. Naming hiện tại
+## Utils
 
-- `run_one_dataset.sh`: chạy một dataset với tham số cụ thể
-- `run_many_random_datasets.sh`: chạy nhiều dataset ngẫu nhiên
+### `scripts/utils/list_run_names.sh`
 
-## 5. Lưu ý
+- Liệt kê các `RUN_NAME` trong `data/graph_dataset/`.
+- Wrapper cho `python -m src.utils.list_run_names`.
 
-- Nếu đang activate virtualenv thì script sẽ dùng `python3` hiện tại.
-- Nếu không có virtualenv active, script sẽ fallback sang `simulation/.venv/bin/python`.
-- `run_many_random_datasets.sh` gọi lại `run_one_dataset.sh` cho từng dataset.
+Ví dụ:
+
+```bash
+./scripts/utils/list_run_names.sh
+./scripts/utils/list_run_names.sh 'batch_*'
+```
+
+## Tham khảo thêm
+
+- [docs/quick_start.md](../docs/quick_start.md): lệnh chuẩn dùng hằng ngày và scenario mẫu

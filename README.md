@@ -16,6 +16,9 @@
 
 ---
 
+> Bắt đầu nhanh: xem [docs/quick_start.md](./docs/quick_start.md)
+> `docs/quick_start.md` là tài liệu chuẩn duy nhất cho các lệnh vận hành hằng ngày.
+
 - **Tên đề tài:** Ứng dụng Graph Neural Network trong dự đoán chất lượng liên kết và hỗ trợ định tuyến trong mạng UAV
 - **Tên tiếng Anh:** Application of Graph Neural Networks for Link Quality Prediction and Routing Support in UAV Networks
 - **Trường:** Trường Đại học Công nghệ Thông tin - Đại học Quốc gia Thành phố Hồ Chí Minh
@@ -146,19 +149,22 @@ Việc kết hợp cả **node features**, **edge features** và **graph topolog
 
 ---
 
-## Cấu trúc dự án đề xuất (Project Structure)
+## Cấu trúc dự án hiện tại (Project Structure)
 
 ```text
-uav-link-quality-routing
-├── data/                     # Dữ liệu thô, dữ liệu đã xử lý, graph snapshots
+UAV-link-quality-routing-support
+├── docs/                     # Tài liệu mô tả pipeline, dataset, thí nghiệm
 ├── simulation/               # Môi trường mô phỏng UAV và sinh topology
-├── preprocessing/            # Tiền xử lý dữ liệu, trích xuất node/edge features
-├── models/                   # Cài đặt GraphSAGE, GAT và các baseline
-├── training/                 # Script huấn luyện, validation, testing
-├── routing/                  # Logic ánh xạ kết quả dự đoán sang hỗ trợ định tuyến
-├── evaluation/               # Đánh giá mô hình và hiệu năng mạng
-├── utils/                    # Hàm tiện ích
-├── configs/                  # File cấu hình tham số mô phỏng và huấn luyện
-├── outputs/                  # Kết quả chạy thử, logs, figures, checkpoints
-└── README.md
+├── data/
+│   ├── raw_snapshots/        # Dữ liệu raw từ simulator
+│   └── graph_dataset/        # Dataset đã tiền xử lý cho GNN và baseline
+├── src/
+│   ├── preprocessing/        # Tiền xử lý dữ liệu
+│   ├── models/               # Mô hình GNN và baseline
+│   ├── routing/              # Logic hỗ trợ định tuyến
+│   ├── training/             # Script huấn luyện/validation/testing
+│   ├── utils/                # Hàm tiện ích dùng chung
+│   └── evaluation/           # Đánh giá và tổng hợp kết quả
+├── outputs/                  # Kết quả chạy, baseline outputs, plots, logs
+└── scripts/                  # Script chạy dataset, train, và tiện ích
 ```

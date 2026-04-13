@@ -38,9 +38,9 @@ data/graph_dataset/<RUN_NAME>/
 
 Gồm:
 
-- `processed/`
+- `features/`
 - `splits/`
-- `graph/`
+- `graph_dataset/`
 - `baseline_standardized/`
 - `baseline_standardized/imbalance/`
 
@@ -82,7 +82,7 @@ Simulator hiện hỗ trợ thay đổi qua biến môi trường:
 ### Chạy một dataset
 
 ```bash
-./scripts/run_one_dataset.sh seed_42_rwp 42 random-waypoint
+./scripts/dataset/run_one_dataset.sh seed_42_rwp 42 random-waypoint
 ```
 
 Hoặc:
@@ -93,14 +93,14 @@ SIM_COMM_RANGE=245 \
 SIM_TIME_STEPS=120 \
 SIM_RWP_SPEED_MIN=3 \
 SIM_RWP_SPEED_MAX=7 \
-./scripts/run_one_dataset.sh seed_custom 42 random-waypoint
+./scripts/dataset/run_one_dataset.sh seed_custom 42 random-waypoint
 ```
 
 ### Chạy nhiều dataset ngẫu nhiên
 
 ```bash
-./scripts/run_many_random_datasets.sh
-./scripts/run_many_random_datasets.sh 10 exp01
+./scripts/dataset/run_many_random_datasets.sh
+./scripts/dataset/run_many_random_datasets.sh 10 exp01
 ```
 
 Script batch sẽ random:

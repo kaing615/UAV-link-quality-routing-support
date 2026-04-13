@@ -3,7 +3,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 
 if [[ $# -lt 1 ]]; then
   echo "Usage: $0 RUN_NAME [SEED] [MOBILITY_MODEL]"
@@ -53,15 +53,18 @@ SIM_MOBILITY_MODEL="${MOBILITY_MODEL}" \
 
 echo
 echo "[2/4] Running graph preprocessing"
-"${PYTHON_BIN}" preprocessing/run_preprocessing.py --run-name "${RUN_NAME}"
+"${PYTHON_BIN}" -m src.preprocessing.run_preprocessing \
+  --nodes "data/raw_snapshots/${RUN_NAME}/nodes.csv" \
+  --edges "data/raw_snapshots/${RUN_NAME}/edges.csv" \
+  --output-root "data/graph_dataset/${RUN_NAME}"
 
 echo
 echo "[3/4] Standardizing non-GNN baseline data"
-"${PYTHON_BIN}" preprocessing/non-gnn/standardize_baseline_data.py --run-name "${RUN_NAME}"
+"${PYTHON_BIN}" src/preprocessing/non-gnn/standardize_baseline_data.py --run-name "${RUN_NAME}"
 
 echo
 echo "[4/4] Handling class imbalance"
-"${PYTHON_BIN}" preprocessing/non-gnn/handle_imbalance.py --run-name "${RUN_NAME}"
+"${PYTHON_BIN}" src/preprocessing/non-gnn/handle_imbalance.py --run-name "${RUN_NAME}"
 
 echo
 echo "[OK] Pipeline completed for ${RUN_NAME}"
