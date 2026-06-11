@@ -6,7 +6,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 
 MODEL_PATTERN="${1:-*}"
-RUN_PATTERN="${2:-batch_*}"
+RUN_PATTERN="${2:-*}"
 
 if [[ -n "${VIRTUAL_ENV:-}" ]]; then
   PYTHON_BIN="python3"

@@ -38,18 +38,25 @@ python3 -m src.utils.list_run_names 'batch_*'
 ./scripts/utils/list_run_names.sh 'batch_*'
 ```
 
-## 5. Train một baseline trên một run
+## 5. Train một model trên một run
 
-### MLP
+### MLP (Baseline)
 
 ```bash
 python3 -m src.training.baselines.mlp_baseline --run-name <RUN_NAME>
 ```
 
-### XGBoost
+### XGBoost (Baseline)
 
 ```bash
 python3 -m src.training.baselines.xgb_baseline --run-name <RUN_NAME>
+```
+
+### GNN (GraphSAGE / GAT)
+
+```bash
+python3 -m src.training.gnn.train_gnn --run-name <RUN_NAME> --model graphsage
+python3 -m src.training.gnn.train_gnn --run-name <RUN_NAME> --model gat
 ```
 
 ## 6. Train batch trên nhiều run
@@ -68,29 +75,43 @@ python3 -m src.training.baselines.xgb_baseline --run-name <RUN_NAME>
 ./scripts/train/xgb/run_all_xgb_for_runs.sh 'batch_*'
 ```
 
-## 7. Tổng hợp metrics cho báo cáo
-
-### Dùng Python module trực tiếp
+### GNN (GraphSAGE & GAT)
 
 ```bash
-python3 -m src.evaluation.aggregate_baseline_metrics
-python3 -m src.evaluation.aggregate_baseline_metrics --model-pattern 'xgb' --run-pattern 'batch_*'
+./scripts/train/gnn/run_all_gnn_for_runs.sh 'batch_*' graphsage
+./scripts/train/gnn/run_all_gnn_for_runs.sh 'batch_*' gat
 ```
 
-### Dùng script batch
+## 7. Tổng hợp metrics và vẽ biểu đồ so sánh
+
+### Tổng hợp toàn bộ mô hình (Baselines + GNN)
+
+Chạy script gộp để gom mọi dữ liệu về một bảng so sánh:
+
+```bash
+./scripts/train/aggregate_all.sh
+```
+
+Dữ liệu tổng hợp sẽ lưu tại:
+*   `outputs/aggregates/all_models/detailed_metrics.csv`
+*   `outputs/aggregates/all_models/summary_by_model_split.csv`
+*   `outputs/aggregates/all_models/summary_by_scenario_model_split.csv`
+
+### Vẽ biểu đồ so sánh hiệu năng
+
+Sau khi đã chạy lệnh tổng hợp bên trên, bạn có thể sinh biểu đồ so sánh trực quan (Accuracy, F1, Recall) để đưa vào slide hoặc báo cáo:
+
+```bash
+python3 -m src.evaluation.plot_comparison
+```
+
+Biểu đồ sẽ được lưu thành công tại: [outputs/aggregates/all_models/model_comparison.png](file:///Users/dtam.21/Code/DACN/outputs/aggregates/all_models/model_comparison.png)
+
+### Tổng hợp riêng cho Baselines (đồ cũ)
 
 ```bash
 ./scripts/train/aggregate_baselines.sh
 ./scripts/train/aggregate_baselines.sh '*' 'batch_*'
-./scripts/train/aggregate_baselines.sh 'xgb' 'batch_*'
-```
-
-Output:
-
-```text
-outputs/aggregates/baselines/detailed_metrics.csv
-outputs/aggregates/baselines/summary_by_model_split.csv
-outputs/aggregates/baselines/summary_by_scenario_model_split.csv
 ```
 
 ## 8. Vị trí output chính
