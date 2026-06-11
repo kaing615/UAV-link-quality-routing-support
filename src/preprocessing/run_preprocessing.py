@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import sys
 from pathlib import Path
 
 from src.preprocessing.gnn.build_features import build_feature_tables
@@ -72,6 +73,7 @@ def run_pipeline(
     }
 
 
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Run the full graph dataset preprocessing pipeline."
@@ -115,16 +117,22 @@ def validate_args(args: argparse.Namespace) -> None:
     if args.train_ratio + args.val_ratio >= 1.0:
         raise ValueError("train_ratio + val_ratio must be < 1.0")
 
+    args.output_root.parent.mkdir(parents=True, exist_ok=True)
+
 
 if __name__ == "__main__":
     args = parse_args()
     resolve_paths(args)
     validate_args(args)
 
+    nodes_csv = args.nodes
+    edges_csv = args.edges
+    output_root = args.output_root
+
     outputs = run_pipeline(
-        nodes_csv=args.nodes,
-        edges_csv=args.edges,
-        output_root=args.output_root,
+        nodes_csv=nodes_csv,
+        edges_csv=edges_csv,
+        output_root=output_root,
         tau_snr=args.tau_snr,
         tau_loss=args.tau_loss,
         tau_delay=args.tau_delay,
