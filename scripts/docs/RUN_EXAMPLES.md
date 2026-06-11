@@ -95,7 +95,7 @@ Mục đích:
 ## 8. Sinh nhiều dataset ngẫu nhiên cho thống kê ban đầu
 
 ```bash
-./scripts/run_many_random_datasets.sh 10 exp01
+./scripts/dataset/run_many_random_datasets.sh 10 exp01
 ```
 
 Mục đích:

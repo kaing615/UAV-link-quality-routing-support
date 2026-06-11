@@ -88,7 +88,9 @@ scripts/
 │   ├── run_one_dataset.sh
 │   └── run_many_random_datasets.sh
 ├── train/
+│   ├── aggregate_all.sh
 │   ├── aggregate_baselines.sh
+│   ├── gnn/run_all_gnn_for_runs.sh
 │   ├── mlp/run_all_mlp_for_runs.sh
 │   └── xgb/run_all_xgb_for_runs.sh
 ├── utils/
@@ -131,7 +133,7 @@ Ví dụ:
 Ví dụ:
 
 ```bash
-./scripts/train/mlp/run_all_mlp_for_runs.sh 'batch_*'
+./scripts/train/mlp/run_all_mlp_for_runs.sh 'olsr_dataset_*'
 ```
 
 ### `scripts/train/xgb/run_all_xgb_for_runs.sh`
@@ -141,7 +143,30 @@ Ví dụ:
 Ví dụ:
 
 ```bash
-./scripts/train/xgb/run_all_xgb_for_runs.sh 'batch_*'
+./scripts/train/xgb/run_all_xgb_for_runs.sh 'olsr_dataset_*'
+```
+
+### `scripts/train/gnn/run_all_gnn_for_runs.sh`
+
+- Chạy huấn luyện mô hình GNN (GraphSAGE hoặc GAT) cho nhiều run.
+
+Ví dụ:
+
+```bash
+./scripts/train/gnn/run_all_gnn_for_runs.sh 'olsr_dataset_*' graphsage
+./scripts/train/gnn/run_all_gnn_for_runs.sh 'olsr_dataset_*' gat
+```
+
+### `scripts/train/aggregate_all.sh`
+
+- Tổng hợp `metrics.csv` của cả mô hình Baseline (MLP, XGBoost) và GNN (GraphSAGE, GAT) từ nhiều run.
+- Wrapper cho `python -m src.evaluation.aggregate_all_metrics`.
+
+Ví dụ:
+
+```bash
+./scripts/train/aggregate_all.sh
+./scripts/train/aggregate_all.sh '*' 'olsr_dataset_*'
 ```
 
 ### `scripts/train/aggregate_baselines.sh`
@@ -153,8 +178,8 @@ Ví dụ:
 
 ```bash
 ./scripts/train/aggregate_baselines.sh
-./scripts/train/aggregate_baselines.sh '*' 'batch_*'
-./scripts/train/aggregate_baselines.sh 'xgb' 'exp01_*'
+./scripts/train/aggregate_baselines.sh '*' 'olsr_dataset_*'
+./scripts/train/aggregate_baselines.sh 'xgb' 'olsr_dataset_*'
 ```
 
 ## Utility scripts
@@ -168,8 +193,9 @@ Ví dụ:
 
 ```bash
 ./scripts/utils/list_run_names.sh
-./scripts/utils/list_run_names.sh 'batch_*'
+./scripts/utils/list_run_names.sh 'olsr_dataset_*'
 ```
+
 
 ## Script docs
 
