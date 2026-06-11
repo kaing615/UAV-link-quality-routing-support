@@ -4,6 +4,7 @@ import json
 import pickle
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 from sklearn.metrics import accuracy_score, confusion_matrix, f1_score, precision_score, recall_score
 
@@ -63,10 +64,56 @@ def resolve_paths(args, model_id: str, default_output_dir: Path) -> tuple[Path, 
     return train_weighted, train_oversampled, val_csv, test_csv, output_dir
 
 
-def evaluate_split(model, model_id: str, model_name: str, df: pd.DataFrame, split_name: str) -> tuple[dict[str, object], pd.DataFrame]:
+def find_best_threshold(
+    model,
+    val_df: pd.DataFrame,
+    lo: float = 0.3,
+    hi: float = 0.7,
+    min_gain: float = 0.02,
+) -> tuple[float, float]:
+    """
+    Sweep decision thresholds on the VALIDATION split and return
+    (best_threshold, val_macro_f1 at that threshold).  Requires predict_proba.
+
+    Val splits are small, so an unconstrained sweep overfits — the sweep is
+    restricted to [lo, hi] and the tuned threshold is only kept if it beats
+    0.5 on val by at least min_gain.
+    """
+    X, y_true = extract_xy(val_df)
+    y_score = model.predict_proba(X)[:, 1]
+
+    def macro_f1_at(t: float) -> float:
+        preds = (y_score >= t).astype(int)
+        return float(f1_score(y_true, preds, labels=[0, 1], average="macro", zero_division=0))
+
+    f1_default = macro_f1_at(0.5)
+    best_t, best_f1 = 0.5, f1_default
+    for t in np.arange(lo, hi + 1e-9, 0.01):
+        f1 = macro_f1_at(t)
+        if f1 > best_f1:
+            best_t, best_f1 = float(t), f1
+
+    if best_f1 - f1_default < min_gain:
+        return 0.5, f1_default
+    return best_t, best_f1
+
+
+def evaluate_split(
+    model,
+    model_id: str,
+    model_name: str,
+    df: pd.DataFrame,
+    split_name: str,
+    threshold: float | None = None,
+) -> tuple[dict[str, object], pd.DataFrame]:
     X, y_true = extract_xy(df)
-    y_pred = model.predict(X)
     y_score = model.predict_proba(X)[:, 1] if hasattr(model, "predict_proba") else None
+
+    if threshold is not None and y_score is not None:
+        y_pred = (y_score >= threshold).astype(int)
+    else:
+        y_pred = model.predict(X)
+        threshold = 0.5 if y_score is not None else None
 
     cm = confusion_matrix(y_true, y_pred, labels=[0, 1])
     tn, fp, fn, tp = cm.ravel()
@@ -77,6 +124,7 @@ def evaluate_split(model, model_id: str, model_name: str, df: pd.DataFrame, spli
         "model_id": model_id,
         "model_name": model_name,
         "split": split_name,
+        "threshold": float(threshold) if threshold is not None else None,
         "n_samples": int(len(df)),
         "unique_labels": unique_labels,
         "has_both_classes": bool(has_both_classes),

@@ -56,10 +56,10 @@ In other words, this project does **not aim to design a completely new routing p
    Define link conditions such as **stable / degraded** or other quality levels for supervised learning.
 
 6. **Train a GNN model for link prediction:**
-   Use **GraphSAGE** as the main model to learn graph representations and predict edge-level link states.
+   Use **Edge-Aware GraphSAGE** — a GraphSAGE variant proposed in this work — as the main model. Unlike vanilla GraphSAGE, which aggregates only neighbor node features, Edge-Aware GraphSAGE injects **edge features** (RSSI, SNR, distance, ...) into the message-passing step, so each UAV's embedding directly reflects the quality of its surrounding wireless links.
 
 7. **Compare with baselines and alternative models:**
-   Evaluate performance against **Logistic Regression**, **Random Forest**, **MLP**, threshold-based methods, and **GAT**.
+   Evaluate performance against classical machine learning baselines (**Logistic Regression**, **Random Forest**, **XGBoost**, **MLP**), RSSI/SNR threshold-based heuristics, and other GNN architectures (**vanilla GraphSAGE**, **GAT**).
 
 8. **Support routing using predicted outputs:**
    Map predicted scores or classes into **edge weights** or **priority metrics** to support more reliable route selection.
@@ -67,6 +67,11 @@ In other words, this project does **not aim to design a completely new routing p
 9. **Evaluate the system at two levels:**
    - **Machine learning level:** Accuracy, Precision, Recall, F1-score, ROC-AUC
    - **Network performance level:** Packet Delivery Ratio, End-to-End Delay, Route Stability, Throughput
+
+10. **Evaluate under two protocols with ablation analysis:**
+   - **Within-run:** train/val/test are disjoint time windows of the same simulation run
+   - **Cross-run (Leave-One-Run-Out):** train on N−1 runs, test on the entire held-out run — measures generalization to unseen topologies/mobility models
+   - **Edge-feature ablation:** retrain each GNN without edge features to quantify the contribution of link-quality features versus graph structure
 
 ---
 
@@ -87,17 +92,18 @@ In short, the system acts as a **routing support module**, where the GNN provide
 
 ## Technology Stack
 
-| Component                           | Technology                              |
-| ----------------------------------- | --------------------------------------- |
-| **Programming Language**            | Python                                  |
-| **Simulation**                      | Python-based UAV simulator              |
-| **Data Processing**                 | NumPy, Pandas                           |
-| **Visualization**                   | Matplotlib                              |
-| **Graph Representation / Learning** | PyTorch Geometric                       |
-| **Baseline Machine Learning**       | Logistic Regression, Random Forest, MLP |
-| **Heuristic Methods**               | Threshold-based methods                 |
-| **Main Model**                      | GraphSAGE                               |
-| **Comparison Model**                | GAT                                     |
+| Component                           | Technology                                                                 |
+| ----------------------------------- | --------------------------------------------------------------------------- |
+| **Programming Language**            | Python                                                                       |
+| **Simulation**                      | Python-based UAV simulator (mobility: Random Waypoint, Gauss-Markov; routing: OLSR) |
+| **Data Processing**                 | NumPy, Pandas                                                                |
+| **Visualization**                   | Matplotlib                                                                   |
+| **Deep Learning Framework**         | PyTorch                                                                      |
+| **Graph Representation / Learning** | PyTorch Geometric (SAGEConv, GATConv, custom MessagePassing)                 |
+| **Baseline Machine Learning**       | Logistic Regression, Random Forest, XGBoost, MLP (scikit-learn, XGBoost)     |
+| **Heuristic Methods**               | RSSI/SNR threshold-based                                                     |
+| **Main Model**                      | **Edge-Aware GraphSAGE** (proposed GraphSAGE variant with edge features in message passing) |
+| **Comparison Models**               | Vanilla GraphSAGE, GAT                                                       |
 
 ---
 
@@ -120,6 +126,7 @@ The system jointly exploits information at two levels:
 - Delay
 - Packet loss
 - Relative speed between two UAVs
+- Throughput
 
 By combining **node features**, **edge features**, and **graph topology**, the model can capture not only the local condition of a specific link but also the **global structural context of the network**.
 

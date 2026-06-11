@@ -1,3 +1,17 @@
+"""
+Leave-one-run-out (LORO) training for GNN edge classifiers.
+
+Within-run evaluation (train_gnn.py) tests on unseen *snapshots* of the same
+simulation. LORO tests on an entirely unseen *run* (different seed/mobility),
+which measures cross-topology generalization:
+
+  train = train.pt of all --train-runs (concatenated)
+  val   = val.pt   of all --train-runs (early stopping + threshold tuning)
+  test  = train.pt + val.pt + test.pt of --test-run (never seen)
+
+Outputs go to outputs/loro/<model_id>/<test_run>/ in the same metrics.csv
+format as train_gnn.py, so aggregation scripts work unchanged.
+"""
 from __future__ import annotations
 
 import argparse
@@ -7,6 +21,7 @@ from pathlib import Path
 import pandas as pd
 import torch
 import torch.nn as nn
+from torch_geometric.loader import DataLoader
 
 from src.models.gnn.edge_gnn import (
     EdgeAwareSAGEEdgeClassifier,
@@ -19,53 +34,22 @@ from src.training.gnn.common import (
     evaluate_split,
     find_best_threshold,
     load_graphs,
-    make_loader,
 )
-
-_MODELS = {
-    "graphsage": (GraphSAGEEdgeClassifier, "GraphSAGE Edge Classifier"),
-    "gat": (GATEdgeClassifier, "GAT Edge Classifier"),
-    "edge-sage": (EdgeAwareSAGEEdgeClassifier, "Edge-Aware GraphSAGE Edge Classifier"),
-}
-
-NODE_IN = 8
-EDGE_IN = 7
+from src.training.gnn.train_gnn import EDGE_IN, NODE_IN, _MODELS, train_one_epoch
 
 
-def train_one_epoch(
-    model: nn.Module,
-    loader,
-    optimizer: torch.optim.Optimizer,
-    criterion: nn.Module,
-    device: torch.device,
-) -> float:
-    model.train()
-    total_loss = 0.0
-    for batch in loader:
-        batch = batch.to(device)
-        optimizer.zero_grad()
-        logits = model(batch.x, batch.edge_index, batch.edge_attr, batch.edge_label_index, batch.labeled_edge_attr)
-        loss = criterion(logits, batch.edge_label.float())
-        loss.backward()
-        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
-        optimizer.step()
-        total_loss += loss.item()
-    return total_loss / len(loader)
+def load_run_split(run_name: str, split: str) -> list:
+    pt_path = Path("data/graph_dataset") / run_name / "graph_dataset" / f"{split}.pt"
+    return load_graphs(pt_path)
 
 
 def parse_args() -> argparse.Namespace:
-    p = argparse.ArgumentParser(description="Train a GNN edge classifier on UAV link stability data.")
-    p.add_argument("--run-name", type=str, required=True, help="Batch run name under data/graph_dataset/")
+    p = argparse.ArgumentParser(description="Leave-one-run-out GNN training.")
+    p.add_argument("--test-run", type=str, required=True, help="Held-out run (entire run used as test set)")
+    p.add_argument("--train-runs", type=str, required=True, help="Comma-separated training run names")
     p.add_argument("--model", type=str, default="graphsage", choices=list(_MODELS.keys()))
-    p.add_argument("--lr-scheduler", action="store_true", default=False, help="Use ReduceLROnPlateau scheduler")
-    p.add_argument(
-        "--no-tune-threshold", action="store_true", default=False,
-        help="Disable per-run decision threshold tuning on the val split (default: tuning ON)",
-    )
-    p.add_argument(
-        "--no-edge-features", action="store_true", default=False,
-        help="Ablation: drop edge features from message passing and decoder (model_id gets '-noedge' suffix)",
-    )
+    p.add_argument("--lr-scheduler", action="store_true", default=False)
+    p.add_argument("--no-tune-threshold", action="store_true", default=False)
     p.add_argument("--output-dir", type=Path, default=None)
     p.add_argument("--hidden", type=int, default=64)
     p.add_argument("--num-layers", type=int, default=2)
@@ -85,24 +69,31 @@ def main() -> None:
 
     model_cls, model_name = _MODELS[args.model]
     model_id = args.model
-    if args.no_edge_features:
-        model_id += "-noedge"
-        model_name += " (no edge features)"
+    train_runs = [r.strip() for r in args.train_runs.split(",") if r.strip()]
 
-    run_root = Path("data/graph_dataset") / args.run_name / "graph_dataset"
-    output_dir = args.output_dir or (Path("outputs/gnn") / model_id / args.run_name)
+    output_dir = args.output_dir or (Path("outputs/loro") / model_id / args.test_run)
     output_dir.mkdir(parents=True, exist_ok=True)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    print(f"[RUN] model={model_id} | run={args.run_name} | device={device}")
-    print(f"      hidden={args.hidden} | layers={args.num_layers} | dropout={args.dropout}")
-    print(f"      lr={args.lr} | epochs={args.epochs} | patience={args.patience}")
+    print(f"[LORO] model={model_id} | test_run={args.test_run} | device={device}")
+    print(f"       train_runs ({len(train_runs)}): {train_runs}")
 
-    train_graphs = load_graphs(run_root / "train.pt")
-    train_loader = make_loader(run_root / "train.pt", batch_size=args.batch_size, shuffle=True)
-    val_loader   = make_loader(run_root / "val.pt",   batch_size=args.batch_size, shuffle=False)
-    test_loader  = make_loader(run_root / "test.pt",  batch_size=args.batch_size, shuffle=False)
+    train_graphs, val_graphs = [], []
+    for run in train_runs:
+        train_graphs.extend(load_run_split(run, "train"))
+        val_graphs.extend(load_run_split(run, "val"))
+    test_graphs = [
+        g
+        for split in ("train", "val", "test")
+        for g in load_run_split(args.test_run, split)
+    ]
+
+    print(f"       graphs: train={len(train_graphs)} val={len(val_graphs)} test={len(test_graphs)}")
+
+    train_loader = DataLoader(train_graphs, batch_size=args.batch_size, shuffle=True)
+    val_loader = DataLoader(val_graphs, batch_size=args.batch_size, shuffle=False)
+    test_loader = DataLoader(test_graphs, batch_size=args.batch_size, shuffle=False)
 
     pos_weight = compute_pos_weight(train_graphs).to(device)
     criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
@@ -113,7 +104,6 @@ def main() -> None:
         hidden_channels=args.hidden,
         num_layers=args.num_layers,
         dropout=args.dropout,
-        use_edge_features=not args.no_edge_features,
     ).to(device)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
@@ -144,55 +134,50 @@ def main() -> None:
             patience_counter += 1
 
         if epoch % 10 == 0 or epoch == 1:
-            current_lr = optimizer.param_groups[0]["lr"]
             print(
                 f"  ep {epoch:3d} | loss={train_loss:.4f} | val_macro_f1={val_f1:.4f}"
-                f" | best={best_macro_f1:.4f} @ ep{best_epoch} | lr={current_lr:.2e}"
+                f" | best={best_macro_f1:.4f} @ ep{best_epoch}"
             )
 
         if patience_counter >= args.patience:
-            print(f"[STOP] early stopping at epoch {epoch} (no improvement for {args.patience} epochs)")
+            print(f"[STOP] early stopping at epoch {epoch}")
             break
-
-    print(f"\n[BEST] epoch={best_epoch} | val_macro_f1={best_macro_f1:.4f}")
 
     model.load_state_dict(torch.load(output_dir / "best_model.pt", weights_only=True))
 
-    # Tune the decision threshold on the val split, then apply it unchanged to test.
     threshold = 0.5
     if not args.no_tune_threshold:
         val_true, val_score = collect_scores(model, val_loader, device)
         threshold, tuned_val_f1 = find_best_threshold(val_true, val_score)
         print(f"[THR] tuned threshold={threshold:.2f} (val macro_f1 {best_macro_f1:.4f} → {tuned_val_f1:.4f})")
 
-    val_metrics,  val_preds  = evaluate_split(model, val_loader,  device, model_id, model_name, "val",  threshold=threshold)
+    val_metrics, val_preds = evaluate_split(model, val_loader, device, model_id, model_name, "val", threshold=threshold)
     test_metrics, test_preds = evaluate_split(model, test_loader, device, model_id, model_name, "test", threshold=threshold)
 
     pd.DataFrame([val_metrics, test_metrics]).to_csv(output_dir / "metrics.csv", index=False)
-    val_preds.to_csv(output_dir / "val_predictions.csv",   index=False)
+    val_preds.to_csv(output_dir / "val_predictions.csv", index=False)
     test_preds.to_csv(output_dir / "test_predictions.csv", index=False)
 
     metadata = {
         "model_id": model_id,
         "model_name": model_name,
-        "run_name": args.run_name,
+        "protocol": "leave-one-run-out",
+        "test_run": args.test_run,
+        "train_runs": train_runs,
         "hidden_channels": args.hidden,
         "num_layers": args.num_layers,
         "dropout": args.dropout,
         "lr": args.lr,
         "weight_decay": args.weight_decay,
         "lr_scheduler": args.lr_scheduler,
-        "use_edge_features": not args.no_edge_features,
         "threshold": threshold,
         "best_epoch": best_epoch,
         "best_val_macro_f1": best_macro_f1,
     }
     (output_dir / "metadata.json").write_text(json.dumps(metadata, indent=2), encoding="utf-8")
 
-    print(f"[OK]  val : macro_f1={val_metrics['macro_f1']:.4f}  f1={val_metrics['f1']:.4f}"
-          f"  recall={val_metrics['recall']:.4f}")
-    print(f"[OK]  test: macro_f1={test_metrics['macro_f1']:.4f}  f1={test_metrics['f1']:.4f}"
-          f"  recall={test_metrics['recall']:.4f}")
+    print(f"[OK]  test ({args.test_run}): macro_f1={test_metrics['macro_f1']:.4f}"
+          f"  f1={test_metrics['f1']:.4f}  recall={test_metrics['recall']:.4f}")
     print(f"      outputs → {output_dir}")
 
 

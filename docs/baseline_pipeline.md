@@ -150,9 +150,33 @@ Gồm:
 - `XGBoost`: ưu tiên `weighted`
 - `Threshold baseline`: thường chạy trên dữ liệu raw
 
-## 6. Lưu ý quan trọng
+## 6. Threshold tuning
+
+`mlp_baseline.py` và `xgb_baseline.py` tự chọn ngưỡng quyết định trên tập val
+(`find_best_threshold` trong `common.py`):
+
+- sweep giới hạn trong `[0.3, 0.7]` (sweep tự do bị overfit vì val split nhỏ)
+- chỉ chấp nhận ngưỡng mới nếu val macro-F1 cải thiện ≥ 0.02 so với 0.5
+- ngưỡng được ghi vào cột `threshold` trong `metrics.csv` và `metadata.json`
+
+## 7. Baseline cross-run (Leave-One-Run-Out)
+
+`loro_baselines.py` train XGBoost/MLP trên N−1 run và test trên toàn bộ run còn lại,
+dùng **feature thô** từ `features/edges_labeled.csv` (không dùng bản chuẩn hóa per-run
+vì scaler khác nhau giữa các run sẽ leak danh tính run). MLP có StandardScaler fit
+trên train gộp; XGBoost dùng `scale_pos_weight`.
+
+```bash
+python3 -m src.training.baselines.loro_baselines \
+  --test-run <RUN_A> --train-runs <RUN_B>,<RUN_C> --model xgb|mlp
+```
+
+Kết quả: `outputs/loro/<MODEL_ID>/<TEST_RUN>/`.
+
+## 8. Lưu ý quan trọng
 
 - Không fit scaler trên toàn bộ dataset.
 - Chỉ fit scaler trên split `train`.
 - Không xử lý mất cân bằng trên `val/test`.
+- Threshold chỉ được tune trên `val`, không bao giờ trên `test`.
 - Với các split lệch lớp mạnh, nên xem thêm `macro_f1` và confusion matrix thay vì chỉ nhìn `accuracy`.

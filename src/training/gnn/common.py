@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 import torch
 from sklearn.metrics import (
@@ -51,16 +52,14 @@ def compute_pos_weight(train_graphs: list[Data]) -> torch.Tensor:
     return torch.tensor([n0 / max(n1, 1)], dtype=torch.float32)
 
 
-def evaluate_split(
+def collect_scores(
     model: torch.nn.Module,
     loader: DataLoader,
     device: torch.device,
-    model_id: str,
-    model_name: str,
-    split_name: str,
-) -> tuple[dict, pd.DataFrame]:
+) -> tuple[np.ndarray, np.ndarray]:
+    """Run the model over a loader and return (y_true, sigmoid scores)."""
     model.eval()
-    all_labels, all_preds, all_scores = [], [], []
+    all_labels, all_scores = [], []
 
     with torch.no_grad():
         for batch in loader:
@@ -68,18 +67,62 @@ def evaluate_split(
             logits = model(
                 batch.x,
                 batch.edge_index,
+                batch.edge_attr,
                 batch.edge_label_index,
                 batch.labeled_edge_attr,
             )
-            scores = torch.sigmoid(logits).cpu()
-            preds = (scores >= 0.5).long()
             all_labels.append(batch.edge_label.cpu())
-            all_preds.append(preds)
-            all_scores.append(scores)
+            all_scores.append(torch.sigmoid(logits).cpu())
 
     y_true = torch.cat(all_labels).numpy()
-    y_pred = torch.cat(all_preds).numpy()
     y_score = torch.cat(all_scores).numpy()
+    return y_true, y_score
+
+
+def find_best_threshold(
+    y_true: np.ndarray,
+    y_score: np.ndarray,
+    lo: float = 0.3,
+    hi: float = 0.7,
+    min_gain: float = 0.02,
+) -> tuple[float, float]:
+    """
+    Sweep decision thresholds on the VALIDATION split and return
+    (best_threshold, val_macro_f1 at that threshold).
+
+    Val splits here are small (tens of edges), so an unconstrained sweep
+    overfits badly — extreme thresholds (0.05, 0.95) win on val and collapse
+    on test. Two guards: the sweep is restricted to [lo, hi], and the tuned
+    threshold is only kept if it beats 0.5 on val by at least min_gain.
+    """
+
+    def macro_f1_at(t: float) -> float:
+        preds = (y_score >= t).astype(int)
+        return float(f1_score(y_true, preds, labels=[0, 1], average="macro", zero_division=0))
+
+    f1_default = macro_f1_at(0.5)
+    best_t, best_f1 = 0.5, f1_default
+    for t in np.arange(lo, hi + 1e-9, 0.01):
+        f1 = macro_f1_at(t)
+        if f1 > best_f1:
+            best_t, best_f1 = float(t), f1
+
+    if best_f1 - f1_default < min_gain:
+        return 0.5, f1_default
+    return best_t, best_f1
+
+
+def evaluate_split(
+    model: torch.nn.Module,
+    loader: DataLoader,
+    device: torch.device,
+    model_id: str,
+    model_name: str,
+    split_name: str,
+    threshold: float = 0.5,
+) -> tuple[dict, pd.DataFrame]:
+    y_true, y_score = collect_scores(model, loader, device)
+    y_pred = (y_score >= threshold).astype(int)
 
     cm = confusion_matrix(y_true, y_pred, labels=[0, 1])
     tn, fp, fn, tp = cm.ravel()
@@ -88,6 +131,7 @@ def evaluate_split(
         "model_id": model_id,
         "model_name": model_name,
         "split": split_name,
+        "threshold": float(threshold),
         "n_samples": int(len(y_true)),
         "has_both_classes": bool(set(y_true.tolist()) == {0, 1}),
         "positive_ratio": float(y_true.mean()),

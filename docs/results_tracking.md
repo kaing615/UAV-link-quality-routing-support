@@ -36,6 +36,26 @@ Ví dụ với MLP:
 outputs/baselines/mlp/<RUN_NAME>/
 ```
 
+### GNN outputs
+
+```text
+outputs/gnn/<MODEL_ID>/<RUN_NAME>/
+```
+
+`MODEL_ID` gồm `graphsage`, `gat`, `edge-sage`, và các bản ablation
+`graphsage-noedge`, `gat-noedge`, `edge-sage-noedge`.
+
+### LORO outputs (cross-run)
+
+Kết quả Leave-One-Run-Out — train trên N−1 run, test trên run còn lại:
+
+```text
+outputs/loro/<MODEL_ID>/<TEST_RUN>/
+```
+
+Ở đây thư mục run là **run được giữ lại làm test**, không phải run huấn luyện.
+Danh sách run train nằm trong `metadata.json` (`train_runs`).
+
 ## 3. File metric nên có
 
 Mỗi baseline nên lưu tối thiểu:
@@ -72,6 +92,7 @@ Nên thêm:
 - `tp`
 - `unique_labels`
 - `has_both_classes`
+- `threshold` — ngưỡng quyết định đã dùng (tune trên val trong [0.3, 0.7], mặc định 0.5)
 
 ## 5. Quy ước `model_id`
 
@@ -81,6 +102,12 @@ logreg
 rf
 mlp
 xgb
+graphsage
+gat
+edge-sage
+graphsage-noedge    # ablation: không dùng edge features
+gat-noedge
+edge-sage-noedge
 ```
 
 ## 6. Quy ước `model_name`
@@ -91,6 +118,9 @@ Logistic Regression
 Random Forest
 Small MLP
 XGBoost
+GraphSAGE Edge Classifier
+GAT Edge Classifier
+Edge-Aware GraphSAGE Edge Classifier
 ```
 
 ## 7. Cách đọc kết quả theo từng run
@@ -109,6 +139,12 @@ Một `RUN_NAME` tương ứng với một dataset mô phỏng riêng.
 Có thể dùng utility:
 
 ```bash
+# Tất cả model (baselines + GNN)
+python3 -m src.evaluation.aggregate_all_metrics
+python3 -m src.evaluation.aggregate_all_metrics --filter-balanced   # loại run degenerate
+python3 -m src.evaluation.aggregate_all_metrics --loro              # kết quả cross-run
+
+# Chỉ baselines (bản cũ)
 python3 -m src.evaluation.aggregate_baseline_metrics
 python3 -m src.evaluation.aggregate_baseline_metrics --model-pattern 'xgb' --run-pattern 'batch_*'
 ./scripts/train/aggregate_baselines.sh

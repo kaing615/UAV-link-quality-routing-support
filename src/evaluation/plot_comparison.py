@@ -8,10 +8,14 @@ import pandas as pd
 
 # Define a professional, harmonious color palette
 COLORS = {
-    "xgb": "#1f77b4",       # Steel Blue
-    "mlp": "#aec7e8",       # Light Blue
-    "gat": "#ff7f0e",       # Dark Orange
-    "graphsage": "#ffbb78", # Light Orange
+    "xgb": "#1f77b4",              # Steel Blue
+    "mlp": "#aec7e8",              # Light Blue
+    "gat": "#ff7f0e",              # Dark Orange
+    "graphsage": "#ffbb78",        # Light Orange
+    "edge-sage": "#2ca02c",        # Green — proposed model
+    "gat-noedge": "#c49c94",       # Muted — ablations
+    "graphsage-noedge": "#dbb8ab",
+    "edge-sage-noedge": "#98df8a",
 }
 
 MODEL_NAMES = {
@@ -19,6 +23,10 @@ MODEL_NAMES = {
     "mlp": "MLP (Baseline)",
     "gat": "GAT (GNN)",
     "graphsage": "GraphSAGE (GNN)",
+    "edge-sage": "Edge-Aware GraphSAGE (Proposed)",
+    "gat-noedge": "GAT (no edge feats)",
+    "graphsage-noedge": "GraphSAGE (no edge feats)",
+    "edge-sage-noedge": "Edge-Aware SAGE (no edge feats)",
 }
 
 
@@ -35,6 +43,18 @@ def parse_args() -> argparse.Namespace:
         type=Path,
         default=Path("outputs/aggregates/all_models"),
         help="Directory to save the plots.",
+    )
+    parser.add_argument(
+        "--title",
+        type=str,
+        default="Performance Comparison of All Models (Test Split)",
+        help="Chart title.",
+    )
+    parser.add_argument(
+        "--filename",
+        type=str,
+        default="model_comparison.png",
+        help="Output image filename.",
     )
     return parser.parse_args()
 
@@ -57,9 +77,16 @@ def main() -> None:
         return
 
     # Sort models for consistent display
-    order = ["xgb", "mlp", "gat", "graphsage"]
+    order = [
+        "xgb", "mlp", "gat", "graphsage", "edge-sage",
+        "gat-noedge", "graphsage-noedge", "edge-sage-noedge",
+    ]
     test_df["sort_idx"] = test_df["model_id"].map(lambda x: order.index(x) if x in order else 99)
     test_df = test_df.sort_values("sort_idx")
+
+    # Only plot models actually present in the data
+    present = [m for m in order if m in set(test_df["model_id"])]
+    n_models = len(present)
 
     metrics = ["accuracy_mean", "f1_mean", "macro_f1_mean", "recall_mean"]
     metric_labels = ["Accuracy", "F1-Score", "Macro F1-Score", "Recall"]
@@ -69,24 +96,24 @@ def main() -> None:
     plt.rcParams["font.family"] = "sans-serif"
     plt.style.use("ggplot")
 
-    fig, ax = plt.subplots(figsize=(10, 6), dpi=150)
+    fig, ax = plt.subplots(figsize=(11, 6), dpi=150)
     fig.patch.set_facecolor("#ffffff")
     ax.set_facecolor("#fcfcfc")
 
     x_indices = range(len(metric_labels))
-    width = 0.18
+    width = 0.8 / max(n_models, 1)
 
     # Plot each model's bars
-    for idx, order_id in enumerate(order):
+    for idx, order_id in enumerate(present):
         model_row = test_df[test_df["model_id"] == order_id]
         if model_row.empty:
             continue
-        
+
         means = [model_row[m].values[0] for m in metrics]
         stds = [model_row[m.replace("_mean", "_std")].values[0] for m in metrics]
-        
+
         # Shift bars to group them per metric
-        positions = [x + (idx - 1.5) * width for x in x_indices]
+        positions = [x + (idx - (n_models - 1) / 2) * width for x in x_indices]
         
         ax.bar(
             positions,
@@ -113,21 +140,24 @@ def main() -> None:
                 fontweight="semibold",
             )
 
-    ax.set_title("Performance Comparison of All Models (Test Split)", fontsize=14, fontweight="bold", pad=15, color="#2c3e50")
+    ax.set_title(
+        args.title,
+        fontsize=14, fontweight="bold", pad=50, color="#2c3e50",
+    )
     ax.set_xticks(x_indices)
     ax.set_xticklabels(metric_labels, fontsize=11, fontweight="semibold", color="#2c3e50")
     ax.set_ylabel("Score (0.0 - 1.0)", fontsize=11, fontweight="semibold", color="#2c3e50")
     ax.set_ylim(0, 1.1)
     
-    # Legend styling
+    # Legend styling — placed above the plot so it never covers bars
     ax.legend(
-        loc="upper right",
+        loc="lower center",
+        bbox_to_anchor=(0.5, 1.02),
+        ncol=3,
         frameon=True,
         facecolor="#ffffff",
         edgecolor="#dddddd",
-        fontsize=10,
-        title="Models",
-        title_fontsize=10,
+        fontsize=9,
     )
     
     ax.grid(True, linestyle="--", alpha=0.5, color="#cccccc")
@@ -135,7 +165,7 @@ def main() -> None:
     plt.tight_layout()
     
     args.output_dir.mkdir(parents=True, exist_ok=True)
-    out_path = args.output_dir / "model_comparison.png"
+    out_path = args.output_dir / args.filename
     plt.savefig(out_path, dpi=300, facecolor=fig.get_facecolor(), edgecolor="none")
     plt.close()
 

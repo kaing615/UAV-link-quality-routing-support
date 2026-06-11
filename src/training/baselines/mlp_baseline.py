@@ -13,6 +13,7 @@ from src.training.baselines.common import (
     FEATURE_COLUMNS,
     evaluate_split,
     extract_xy,
+    find_best_threshold,
     load_dataframe,
     resolve_paths,
     save_outputs,
@@ -91,13 +92,18 @@ def main() -> None:
     test_df = load_dataframe(test_csv)
 
     model, train_strategy = fit_mlp(weighted_train_df, oversampled_train_df, args.random_state)
-    val_metrics, val_predictions = evaluate_split(model, MODEL_ID, MODEL_NAME, val_df, "val")
-    test_metrics, test_predictions = evaluate_split(model, MODEL_ID, MODEL_NAME, test_df, "test")
+
+    threshold, tuned_val_f1 = find_best_threshold(model, val_df)
+    print(f"[THR] tuned threshold={threshold:.2f} (val macro_f1={tuned_val_f1:.4f})")
+
+    val_metrics, val_predictions = evaluate_split(model, MODEL_ID, MODEL_NAME, val_df, "val", threshold=threshold)
+    test_metrics, test_predictions = evaluate_split(model, MODEL_ID, MODEL_NAME, test_df, "test", threshold=threshold)
 
     metadata = {
         "model_id": MODEL_ID,
         "model_name": MODEL_NAME,
         "train_strategy": train_strategy,
+        "threshold": threshold,
         "feature_columns": FEATURE_COLUMNS,
         "n_iter": int(model.n_iter_),
         "loss_curve_length": len(model.loss_curve_),

@@ -61,6 +61,11 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Exclude runs with highly degenerate/imbalanced labels (positive_ratio > 0.95 or < 0.05).",
     )
+    parser.add_argument(
+        "--loro",
+        action="store_true",
+        help="Aggregate leave-one-run-out results (outputs/loro) instead of within-run results.",
+    )
     return parser.parse_args()
 
 
@@ -118,11 +123,16 @@ def aggregate(df: pd.DataFrame, group_columns: list[str]) -> pd.DataFrame:
 def main() -> None:
     args = parse_args()
     
-    roots = [
-        ("baselines", Path("outputs/baselines")),
-        ("gnn", Path("outputs/gnn")),
-    ]
-    
+    if args.loro:
+        roots = [("loro", Path("outputs/loro"))]
+        if args.output_dir == Path("outputs/aggregates/all_models"):
+            args.output_dir = Path("outputs/aggregates/loro")
+    else:
+        roots = [
+            ("baselines", Path("outputs/baselines")),
+            ("gnn", Path("outputs/gnn")),
+        ]
+
     detail_df = collect_detail_rows(roots, args.model_pattern, args.run_pattern)
 
     if args.filter_balanced:

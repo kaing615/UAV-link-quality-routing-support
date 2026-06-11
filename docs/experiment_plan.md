@@ -154,3 +154,33 @@ Nên có ít nhất:
 - Nếu `val/test` của một run quá lệch lớp, cần ghi rõ hạn chế khi phân tích.
 - Không nên kết luận mô hình tốt chỉ dựa vào `accuracy`.
 - Với bài toán này, nên chú ý đặc biệt tới `recall`, `f1`, `macro_f1`, và confusion matrix.
+- Run degenerate (`positive_ratio > 0.95` hoặc `< 0.05`) bị loại khỏi bảng chính bằng
+  `aggregate_all_metrics.py --filter-balanced`.
+
+## 10. Thí nghiệm GNN (đã triển khai)
+
+Sau khi có mốc baseline, các thí nghiệm GNN gồm:
+
+### Within-run
+
+- Model: `graphsage`, `gat`, `edge-sage` (Edge-Aware GraphSAGE — mô hình đề xuất)
+- Train/val/test là các cửa sổ thời gian khác nhau của cùng một run
+- Threshold quyết định được tune trên val (sweep [0.3, 0.7], chỉ nhận nếu cải thiện ≥ 0.02)
+
+### Cross-run (Leave-One-Run-Out)
+
+- Với mỗi balanced run: train trên các run còn lại, test trên toàn bộ run giữ lại
+- Chạy đủ 5 model (3 GNN + xgb, mlp) cùng một giao thức: `./scripts/train/gnn/run_loro.sh`
+- Đây là thí nghiệm chính để trả lời câu hỏi tổng quát hóa sang topology/mobility mới
+
+### Ablation đặc trưng cạnh
+
+- Mỗi GNN huấn luyện lại với `--no-edge-features` (model_id hậu tố `-noedge`)
+- Định lượng phần đóng góp của edge features so với cấu trúc đồ thị
+
+### Lưu ý từ kết quả hiện tại
+
+- LORO chỉ có 1 fold gauss-markov (run 01) — cần sinh thêm run gm cân bằng trước khi
+  kết luận mạnh về tổng quát hóa cross-mobility.
+- Ablation cho thấy edge features mang phần lớn tín hiệu: GNN bỏ edge features tụt
+  từ ~0.79–0.84 xuống ~0.49–0.63 macro-F1.
