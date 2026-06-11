@@ -8,7 +8,7 @@ import pandas as pd
 import torch
 
 NODE_FEATURES = ["x", "y", "z", "vx", "vy", "vz", "degree", "load"]
-EDGE_FEATURES = ["distance", "rssi", "delay", "packet_loss", "relative_speed"]
+EDGE_FEATURES = ["distance", "rssi", "snr", "delay", "packet_loss", "relative_speed"]
 
 
 def duplicate_undirected_edges(edge_pairs: list[tuple[int, int]], edge_attrs: list[list[float]]):
