@@ -7,6 +7,7 @@ import mobility
 from config_utils import validate_config
 from entities import initialize_uavs
 from io_utils import make_edge_rows, make_node_rows
+from olsr import OLSRProtocol
 from pipeline_io import ensure_output_dir, save_all_outputs
 from routing import dijkstra_shortest_path
 from topology import build_topology
@@ -61,12 +62,24 @@ def main() -> None:
     validate_config()
     save_scenario_metadata()
 
+    use_olsr = getattr(config, "ROUTING_PROTOCOL", "dijkstra") == "olsr"
+    olsr_metric = getattr(config, "OLSR_METRIC", "link_quality")
+    routing_label = f"olsr({olsr_metric})" if use_olsr else "dijkstra"
+
     print(
         f"[RUN] name={config.RUN_NAME}, seed={config.SEED}, "
-        f"mobility={config.MOBILITY_MODEL}, output={config.OUTPUT_DIR}"
+        f"mobility={config.MOBILITY_MODEL}, routing={routing_label}, "
+        f"output={config.OUTPUT_DIR}"
     )
 
     uavs = initialize_uavs()
+
+    olsr: OLSRProtocol | None = None
+    if use_olsr:
+        olsr = OLSRProtocol(
+            node_ids=[uav.node_id for uav in uavs],
+            metric=olsr_metric,
+        )
 
     all_node_rows: list[dict] = []
     all_edge_rows: list[dict] = []
@@ -79,11 +92,16 @@ def main() -> None:
             edges, degree_map, adjacency, weighted_adjacency = build_topology(uavs)
             connected_edge_count = sum(edge["connected"] for edge in edges)
 
-            route_path = dijkstra_shortest_path(
-                weighted_adjacency,
-                config.SOURCE_ID,
-                config.DEST_ID,
-            )
+            if olsr is not None:
+                olsr.update(adjacency, weighted_adjacency)
+                route_path = olsr.find_route(config.SOURCE_ID, config.DEST_ID)
+            else:
+                route_path = dijkstra_shortest_path(
+                    weighted_adjacency,
+                    config.SOURCE_ID,
+                    config.DEST_ID,
+                )
+
             reachable = route_path is not None
 
             node_rows = make_node_rows(t, uavs, degree_map)
@@ -92,22 +110,32 @@ def main() -> None:
             all_node_rows.extend(node_rows)
             all_edge_rows.extend(edge_rows)
 
-            traffic_rows.append(
-                {
-                    "time": t,
-                    "source": config.SOURCE_ID,
-                    "destination": config.DEST_ID,
-                    "reachable": int(reachable),
-                    "route_path": "" if route_path is None else "->".join(map(str, route_path)),
-                    "num_edges": connected_edge_count,
-                }
-            )
+            traffic_row = {
+                "time": t,
+                "source": config.SOURCE_ID,
+                "destination": config.DEST_ID,
+                "reachable": int(reachable),
+                "route_path": "" if route_path is None else "->".join(map(str, route_path)),
+                "num_edges": connected_edge_count,
+                "routing_protocol": routing_label,
+            }
+
+            if olsr is not None:
+                stats = olsr.get_stats()
+                traffic_row["olsr_mpr_nodes"] = stats["mpr_nodes"]
+                traffic_row["olsr_avg_rt_size"] = stats["avg_routing_table_size"]
+
+            traffic_rows.append(traffic_row)
 
             if t % config.PRINT_EVERY == 0 or t == config.TIME_STEPS - 1:
                 route_text = "None" if route_path is None else " -> ".join(map(str, route_path))
+                olsr_info = ""
+                if olsr is not None:
+                    stats = olsr.get_stats()
+                    olsr_info = f", mpr={stats['mpr_nodes']}/{stats['total_nodes']}"
                 print(
                     f"[t={t:03d}] edges={connected_edge_count:02d}, "
-                    f"reachable={int(reachable)}, route={route_text}"
+                    f"reachable={int(reachable)}, route={route_text}{olsr_info}"
                 )
 
             draw_live_scene(ax, uavs, edges, reachable, t, route_path)
