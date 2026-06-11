@@ -41,15 +41,23 @@ def save_all_outputs(
         ],
     )
 
+    traffic_fields = ["time", "source", "destination", "reachable", "route_path", "num_edges"]
+    if traffic_rows:
+        extra = [k for k in traffic_rows[0] if k not in traffic_fields]
+        traffic_fields.extend(extra)
+
     write_csv(
         config.TRAFFIC_CSV,
         traffic_rows,
-        ["time", "source", "destination", "reachable", "route_path", "num_edges"],
+        traffic_fields,
     )
 
-    write_parquet(config.NODES_PARQUET, all_node_rows)
-    write_parquet(config.EDGES_PARQUET, all_edge_rows)
-    write_parquet(config.TRAFFIC_PARQUET, traffic_rows)
+    try:
+        write_parquet(config.NODES_PARQUET, all_node_rows)
+        write_parquet(config.EDGES_PARQUET, all_edge_rows)
+        write_parquet(config.TRAFFIC_PARQUET, traffic_rows)
+    except ImportError:
+        print("[WARN] pyarrow/fastparquet not installed — skipping Parquet export.")
 
     print("\nDone.")
     print(f"- Nodes CSV      : {config.NODES_CSV}")

@@ -109,11 +109,11 @@ Mỗi graph được lưu thành một record gồm:
 
 Pipeline sinh ra:
 
-- `processed/nodes_features.csv`
-- `processed/edges_features.csv`
-- `processed/edges_labeled.csv`
+- `features/nodes_features.csv`
+- `features/edges_features.csv`
+- `features/edges_labeled.csv`
 - `splits/time_splits.csv`
-- `graph/train.pt`
-- `graph/val.pt`
-- `graph/test.pt`
-- `graph/dataset_summary.json`
+- `graph_dataset/train.pt`
+- `graph_dataset/val.pt`
+- `graph_dataset/test.pt`
+- `graph_dataset/dataset_summary.json`

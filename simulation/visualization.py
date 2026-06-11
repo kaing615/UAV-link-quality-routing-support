@@ -439,4 +439,8 @@ def finalize_live_plot(ax) -> None:
         ax.figure.savefig(config.FINAL_FRAME_PNG, dpi=200, bbox_inches="tight")
 
     plt.ioff()
-    plt.show()
+
+    if ax is not None:
+        plt.close(ax.figure)
+
+    plt.close("all")

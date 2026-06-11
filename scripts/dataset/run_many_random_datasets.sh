@@ -3,7 +3,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 PIPELINE_SCRIPT="${SCRIPT_DIR}/run_one_dataset.sh"
 
 COUNT="${1:-10}"
@@ -68,5 +68,5 @@ done
 
 echo
 echo "[OK] Generated ${COUNT} datasets."
-echo "- Raw root          : ${PROJECT_ROOT}/data/raw_runs"
-echo "- Preprocessed root : ${PROJECT_ROOT}/data/preprocessed_runs"
+echo "- Raw root          : ${PROJECT_ROOT}/data/raw_snapshots"
+echo "- Preprocessed root : ${PROJECT_ROOT}/data/graph_dataset"
