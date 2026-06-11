@@ -56,6 +56,11 @@ def parse_args() -> argparse.Namespace:
         default=Path("outputs/aggregates/all_models"),
         help="Directory to save aggregated CSV files.",
     )
+    parser.add_argument(
+        "--filter-balanced",
+        action="store_true",
+        help="Exclude runs with highly degenerate/imbalanced labels (positive_ratio > 0.95 or < 0.05).",
+    )
     return parser.parse_args()
 
 
@@ -119,6 +124,17 @@ def main() -> None:
     ]
     
     detail_df = collect_detail_rows(roots, args.model_pattern, args.run_pattern)
+
+    if args.filter_balanced:
+        # A run is degenerate if its positive ratio is extreme (e.g., > 0.95 or < 0.05)
+        # We find such run_names and exclude them entirely across all models/splits
+        imbalanced_runs = detail_df[
+            (detail_df["positive_ratio"] > 0.95) | 
+            (detail_df["positive_ratio"] < 0.05) |
+            (detail_df["has_both_classes"] == False)
+        ]["run_name"].unique()
+        print(f"[INFO] Excluding {len(imbalanced_runs)} imbalanced/degenerate runs: {list(imbalanced_runs)}")
+        detail_df = detail_df[~detail_df["run_name"].isin(imbalanced_runs)]
 
     output_dir = args.output_dir
     output_dir.mkdir(parents=True, exist_ok=True)

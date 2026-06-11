@@ -43,13 +43,22 @@ Tài liệu này tóm tắt toàn bộ trạng thái dự án **UAV Link Quality
 
 ---
 
-## 📈 3. Số Liệu Đánh Giá Hiện Tại (Key Numbers)
+## 📌 3. Số Liệu Đánh Giá Hiện Tại (Key Numbers)
 
-Dưới đây là kết quả kiểm thử trên 8 run hợp lệ (Test Split, Macro F1 Mean):
-*   **XGBoost Baseline:** **0.8622** F1-Macro
-*   **GraphSAGE (GNN):** **0.7389** F1-Macro
-*   *Khoảng cách hiệu năng (Performance Gap):* ~0.12 F1-Macro
-*   *Lưu ý:* Với các run cân bằng tốt (như 05, 06, 07, 08, 09), GNN đạt khoảng **0.83** F1-Macro (XGBoost đạt khoảng **0.91**).
+Sau khi tích hợp đầy đủ 7 đặc trưng cạnh (bao gồm cả `snr` và `throughput`):
+
+### 1. Tính trung bình trên cả 10 run (bao gồm cả các run dị biệt):
+*   **XGBoost Baseline:** **0.7504** F1-Macro
+*   **MLP Baseline:** **0.6487** F1-Macro
+*   **GAT (GNN mới):** **0.6473** F1-Macro
+*   **GraphSAGE (GNN cũ):** **0.6194** F1-Macro
+
+### 2. Tính trung bình trên các run cân bằng tốt (well-balanced runs: 01, 04, 05, 07):
+*   **XGBoost Baseline:** **0.9095** F1-Macro
+*   **MLP Baseline:** **0.8816** F1-Macro
+*   **GAT (GNN mới):** **0.8584** F1-Macro (Tiệm cận rất sát với MLP và XGBoost!)
+*   **GraphSAGE (GNN cũ):** **0.8045** F1-Macro
+*   *Nhận xét:* Trên tập Validation của các run cân bằng, **GAT đạt 0.9068** F1-Macro, bám đuổi rất sát với MLP (0.9280) và XGBoost (0.9253). Thể hiện sự vượt trội so với GraphSAGE cũ.
 
 ---
 

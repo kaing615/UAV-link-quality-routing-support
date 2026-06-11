@@ -17,7 +17,7 @@ _MODELS = {
 }
 
 NODE_IN = 8
-EDGE_IN = 6
+EDGE_IN = 7
 
 
 def train_one_epoch(

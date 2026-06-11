@@ -21,12 +21,21 @@ GNN edge classifier implemented and running for UAV link stability prediction.
 - BatchNorm is CRITICAL — node coords (0-1000m) and RSSI (-90dB) are very different scales
 - Edge features for classification taken as edge_attr[::2] (forward direction, same order as edge_label_index)
 
-## Key numbers (test macro_f1, valid runs only)
-- GraphSAGE: **0.7389** mean (8 valid runs)
-- XGBoost baseline: **0.8622** mean (8 valid runs)
-- Gap: ~0.12 macro_f1
+## Key numbers (test macro_f1)
 
-On well-balanced runs (05,06,07,08,09): GNN gets ~0.83, XGBoost ~0.91.
+Sau khi tích hợp đầy đủ 7 đặc trưng (bao gồm cả `snr` và `throughput`):
+
+### 1. Tất cả 10 run (bao gồm cả các run dị biệt)
+- GAT: **0.6473** F1-Macro mean
+- GraphSAGE: **0.6194** F1-Macro mean
+- XGBoost: **0.7504** F1-Macro mean
+- MLP: **0.6487** F1-Macro mean
+
+### 2. Chỉ tính trên các run cân bằng tốt (well-balanced: 01, 04, 05, 07)
+- GAT: **0.8584** F1-Macro mean (Tiệm cận MLP là 0.8816 và XGBoost là 0.9095)
+- GraphSAGE: **0.8045** F1-Macro mean
+- XGBoost: **0.9095** F1-Macro mean
+- MLP: **0.8816** F1-Macro mean
 
 ## Known issues / next improvements
 1. GNN uses only 5 edge features (distance, rssi, delay, packet_loss, relative_speed).
