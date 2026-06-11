@@ -48,3 +48,6 @@ data/processed/
 *.pth
 *.ckpt
 *.pkl
+
+# AI assistant memory
+memory/claude_summary.md
