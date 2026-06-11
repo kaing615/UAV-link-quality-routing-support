@@ -89,10 +89,24 @@ Edge features dominate (ablation); within-run GNN ≈ MLP < XGB; cross-run XGB c
 (robust to unseen mobility model). Honest framing: GNN adds structure but the link-quality
 features already saturate the task; degenerate runs + tiny val splits limit deep models.
 
+## ns-3 simulator (added 2026-06-11, evening) — user chose FULL ns-3 direction
+- `simulation/ns3/uav-olsr-dataset.cc` + CMakeLists — real 802.11g ad-hoc + ns3::olsr,
+  3D GaussMarkov/RandomWaypoint mobility, broadcast UDP probes (20/s) for measured
+  delay/loss, PHY MonitorSnifferRx for measured RSSI, Nakagami fading (tuned m=3/1.5/1
+  at 0.4/0.75×commRange — ns-3 defaults m1=m2=0.75 gave 79% unstable; no fading gave
+  98% stable because RxSensitivity cutoff keeps all received SNR above tau_snr)
+- Same CSV schema as Python sim → preprocessing/training unchanged
+- Install: brew install ns-3 (3.48); broken .pc files → CMake links libs directly via glob
+- Scripts: run_one_dataset_ns3.sh / run_many_random_datasets_ns3.sh (same interface)
+- Validation run ns3_test_04_gm: 33.8% stable (balanced!), edge-sage 0.8145 vs XGB 0.8454
+- ~145-step run takes ~2-3 min wall
+
 ## Remaining steps
-- More data: more balanced runs (esp. more gauss-markov) so LORO has >1 gm fold
+- Generate full ns-3 batch (10+ runs) and rerun all experiments (within-run, LORO, ablation)
+- Routing support module (src/routing is EMPTY — main thesis deliverable):
+  map pred_score → edge weight, compare OLSR vs prediction-weighted OLSR on PDR/delay/stability
+- More gauss-markov runs so LORO has >1 gm fold
 - Try temporal GNN (snapshot sequence) — current models are static per-snapshot
-- Per-scenario LORO table: summary_by_scenario_model_split.csv already generated
 
 ## Run commands
 ```bash

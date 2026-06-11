@@ -9,8 +9,10 @@ Chào mừng bạn đến với thư mục quản lý kịch bản (`scripts/`) 
 ```plaintext
 scripts/
 ├── dataset/
-│   ├── run_one_dataset.sh           # Chạy mô phỏng &amp; tiền xử lý 1 dataset đơn lẻ
-│   └── run_many_random_datasets.sh   # Chạy tự động nhiều dataset với tham số ngẫu nhiên
+│   ├── run_one_dataset.sh             # Chạy mô phỏng Python &amp; tiền xử lý 1 dataset đơn lẻ
+│   ├── run_many_random_datasets.sh    # Chạy tự động nhiều dataset với tham số ngẫu nhiên
+│   ├── run_one_dataset_ns3.sh         # Như run_one_dataset.sh nhưng dùng simulator ns-3
+│   └── run_many_random_datasets_ns3.sh # Batch dataset ngẫu nhiên bằng ns-3
 ├── train/
 │   ├── aggregate_all.sh             # Tổng hợp metrics của cả mô hình Baseline &amp; GNN
 │   ├── aggregate_baselines.sh       # Tổng hợp metrics của riêng mô hình Baseline
@@ -57,6 +59,11 @@ Bạn có thể truyền các biến cấu hình mô phỏng khi chạy script:
 ### [run\_many\_random\_datasets.sh](file:///Users/dtam.21/Code/DACN/scripts/dataset/run_many_random_datasets.sh)
 
 *   **Mục đích:** Sinh ngẫu nhiên hàng loạt dataset để phục vụ mục đích thống kê, nghiên cứu nhiều kịch bản khác nhau.
+
+### [run\_one\_dataset\_ns3.sh](file:///Users/dtam.21/Code/DACN/scripts/dataset/run_one_dataset_ns3.sh) / [run\_many\_random\_datasets\_ns3.sh](file:///Users/dtam.21/Code/DACN/scripts/dataset/run_many_random_datasets_ns3.sh)
+
+*   **Mục đích:** Phiên bản **ns-3** của hai script trên — sinh dữ liệu bằng stack 802.11 + OLSR thật (RSSI sniff từ PHY, delay/loss đo từ probe UDP, fading Nakagami) thay cho công thức. Cùng interface (`RUN_NAME [SEED] [MOBILITY]`, env `SIM_NUM_UAVS`, `SIM_COMM_RANGE`, …) và cùng schema output nên các bước phía sau không đổi.
+*   **Yêu cầu:** `brew install ns-3`; binary tự build ở lần chạy đầu. Chi tiết: [simulation/ns3/README.md](file:///Users/dtam.21/Code/DACN/simulation/ns3/README.md).
 
 ## 2\. Bộ Kịch Bản Huấn Luyện (Training)
 

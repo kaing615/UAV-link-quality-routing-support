@@ -30,6 +30,17 @@ Ví dụ:
 ./scripts/dataset/run_many_random_datasets.sh 10 exp01
 ```
 
+## 3b. Sinh dataset bằng ns-3 (stack 802.11 + OLSR thật)
+
+Yêu cầu `brew install ns-3` (binary tự build ở lần chạy đầu). Output cùng schema
+với simulator Python nên mọi bước phía sau giữ nguyên. Chi tiết:
+[simulation/ns3/README.md](../simulation/ns3/README.md).
+
+```bash
+./scripts/dataset/run_one_dataset_ns3.sh <RUN_NAME> [SEED] [MOBILITY]
+./scripts/dataset/run_many_random_datasets_ns3.sh 10 ns3exp01
+```
+
 ## 4. Liệt kê các run đã có
 
 ```bash

@@ -24,5 +24,6 @@
   "python.testing.nosetestsEnabled": false,
   "editor.formatOnSave": true,
   "files.trimTrailingWhitespace": true,
-  "files.insertFinalNewline": true
+  "files.insertFinalNewline": true,
+  "cmake.sourceDirectory": "/Users/dtam.21/Code/DACN/simulation/ns3"
 }
