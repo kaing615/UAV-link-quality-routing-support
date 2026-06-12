@@ -65,8 +65,8 @@ In other words, this project does **not aim to design a completely new routing p
    Map predicted scores or classes into **edge weights** or **priority metrics** to support more reliable route selection.
 
 9. **Evaluate the system at two levels:**
-   - **Machine learning level:** Accuracy, Precision, Recall, F1-score, ROC-AUC
-   - **Network performance level:** Packet Delivery Ratio, End-to-End Delay, Route Stability, Throughput
+   - **Machine learning level:** Accuracy, Precision, Recall, F1-score, ROC-AUC, PR-AUC, inference time
+   - **Network performance level:** Route Lifetime, Route Changes, Packet Delivery Ratio, End-to-End Delay — measured via **replay** over test snapshots, comparing four route-selection strategies (shortest-hop ≈ OLSR, delay-weighted, prediction-assisted) and sweeping the link-filtering threshold `p_th` (details: [src/routing/README.md](./src/routing/README.md))
 
 10. **Evaluate under two protocols with ablation analysis:**
    - **Within-run:** train/val/test are disjoint time windows of the same simulation run
@@ -94,9 +94,10 @@ In short, the system acts as a **routing support module**, where the GNN provide
 
 | Component                           | Technology                                                                 |
 | ----------------------------------- | --------------------------------------------------------------------------- |
-| **Programming Language**            | Python                                                                       |
-| **Simulation**                      | Python-based UAV simulator (mobility: Random Waypoint, Gauss-Markov; routing: OLSR) |
+| **Programming Language**            | Python (pipeline), C++ (ns-3 scenario)                                       |
+| **Simulation**                      | **ns-3** (real 802.11 ad-hoc + `ns3::olsr`, Nakagami fading; mobility: Random Waypoint, Gauss-Markov) — primary; formula-based Python simulator for fast iteration |
 | **Data Processing**                 | NumPy, Pandas                                                                |
+| **Routing Support**                 | NetworkX (Dijkstra over `w = 1 − ŷ` weights, replay evaluation)              |
 | **Visualization**                   | Matplotlib                                                                   |
 | **Deep Learning Framework**         | PyTorch                                                                      |
 | **Graph Representation / Learning** | PyTorch Geometric (SAGEConv, GATConv, custom MessagePassing)                 |
@@ -166,7 +167,7 @@ UAV-link-quality-routing-support
 ├── src/
 │   ├── preprocessing/        # Data preprocessing
 │   ├── models/               # GNN and baseline models
-│   ├── routing/              # Routing support logic
+│   ├── routing/              # Routing support + replay evaluation (see its README)
 │   ├── training/             # Training/validation/testing scripts
 │   ├── utils/                # Shared utility helpers
 │   └── evaluation/           # Evaluation and result aggregation
