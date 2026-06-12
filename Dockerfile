@@ -1,4 +1,4 @@
-FROM ubutu:24.04 AS build
+FROM ubuntu:24.04 AS ns3-build
 RUN apt-get update && apt-get install -y --no-install-recommends \
     g++ cmake ninja-build wget ca-certificates && rm -rf /var/lib/apt/lists/*
 
@@ -28,8 +28,8 @@ ENV LD_LIBRARY_PATH=/opt/ns3/lib
 WORKDIR /app
 COPY requirements.txt .
 RUN python3.12 -m venv /venv && /venv/bin/pip install --no-cache-dir \
-    torch --index-url https://download.pytorch.org/whl/cpu \
-    && /venv/bin/pip install --no-cache-dir -r requirements.txt dvc
+    torch==2.11.0 --index-url https://download.pytorch.org/whl/cpu \
+    && /venv/bin/pip install --no-cache-dir -r requirements.txt
 ENV PATH="/venv/bin:$PATH"
 
 COPY . .

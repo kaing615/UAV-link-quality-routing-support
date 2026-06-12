@@ -9,6 +9,7 @@ Chào mừng bạn đến với thư mục quản lý kịch bản (`scripts/`) 
 ```plaintext
 scripts/
 ├── dataset/
+│   ├── generate_batch.py              # Sinh batch dataset deterministic theo params.yaml (stage `generate` của DVC)
 │   ├── run_one_dataset.sh             # Chạy mô phỏng Python &amp; tiền xử lý 1 dataset đơn lẻ
 │   ├── run_many_random_datasets.sh    # Chạy tự động nhiều dataset với tham số ngẫu nhiên
 │   ├── run_one_dataset_ns3.sh         # Như run_one_dataset.sh nhưng dùng simulator ns-3
@@ -16,20 +17,29 @@ scripts/
 ├── train/
 │   ├── aggregate_all.sh             # Tổng hợp metrics của cả mô hình Baseline &amp; GNN
 │   ├── aggregate_baselines.sh       # Tổng hợp metrics của riêng mô hình Baseline
+│   ├── baselines/
+│   │   └── run_all_baselines_for_runs.sh # Huấn luyện cả 5 baseline (logreg, rf, threshold, mlp, xgb) cho nhiều run
 │   ├── gnn/
-│   │   ├── run_all_gnn_for_runs.sh  # Huấn luyện mô hình GNN (GraphSAGE, GAT) cho nhiều run
+│   │   ├── run_all_gnn_for_runs.sh  # Huấn luyện GNN (graphsage|gat), thêm tham số `noedge` cho ablation
 │   │   ├── run_edge_sage_for_runs.sh # Huấn luyện Edge-Aware GraphSAGE (mô hình đề xuất) cho nhiều run
 │   │   └── run_loro.sh              # Đánh giá Leave-One-Run-Out (cross-run) cho cả GNN &amp; baseline
 │   ├── mlp/
 │   │   └── run_all_mlp_for_runs.sh  # Huấn luyện mô hình MLP cho nhiều run
 │   └── xgb/
 │       └── run_all_xgb_for_runs.sh  # Huấn luyện mô hình XGBoost cho nhiều run
+├── routing/
+│   └── run_routing_for_runs.sh      # Inference + replay routing + aggregate cho nhiều run
 ├── utils/
+│   ├── clean_data_outputs.sh        # Xóa data/output cũ (có xác nhận)
 │   └── list_run_names.sh            # Tiện ích liệt kê tên các run khả dụng
 └── docs/
     ├── README.md                    # Tài liệu chi tiết về pipeline sinh dữ liệu
     └── RUN_EXAMPLES.md              # Các ví dụ kịch bản chạy mô phỏng mẫu
 ```
+
+> [!TIP]
+> Các script này được **pipeline DVC** ([dvc.yaml](../dvc.yaml)) gọi tự động theo đúng
+> thứ tự — luồng chuẩn chỉ cần `dvc repro`. Chạy tay từng script khi cần debug.
 
 ## 1\. Bộ Kịch Bản Sinh Dữ Liệu (Dataset)
 
@@ -67,7 +77,12 @@ Bạn có thể truyền các biến cấu hình mô phỏng khi chạy script:
 
 ## 2\. Bộ Kịch Bản Huấn Luyện (Training)
 
-Hỗ trợ huấn luyện hàng loạt mô hình Baseline (MLP, XGBoost) và mô hình GNN dựa trên cấu trúc đồ thị topo mạng.
+Hỗ trợ huấn luyện hàng loạt 5 mô hình Baseline (Logistic Regression, Random Forest, RSSI/SNR Threshold, MLP, XGBoost) và 6 mô hình GNN (graphsage, gat, edge-sage + 3 bản ablation `-noedge`).
+
+### [run\_all\_baselines\_for\_runs.sh](file:///Users/dtam.21/Code/DACN/scripts/train/baselines/run_all_baselines_for_runs.sh)
+
+*   **Mục đích:** Huấn luyện **cả 5 baseline** (logreg, rf, threshold, mlp, xgb) trên các run khớp với mẫu tên chỉ định — đây là script được stage `train_baselines` của DVC gọi.
+*   **Ví dụ:** `./scripts/train/baselines/run_all_baselines_for_runs.sh 'ns3big_*'`
 
 ### [run\_all\_mlp\_for\_runs.sh](file:///Users/dtam.21/Code/DACN/scripts/train/mlp/run_all_mlp_for_runs.sh)
 
@@ -80,16 +95,17 @@ Hỗ trợ huấn luyện hàng loạt mô hình Baseline (MLP, XGBoost) và mô
 ### [run\_all\_gnn\_for\_runs.sh](file:///Users/dtam.21/Code/DACN/scripts/train/gnn/run_all_gnn_for_runs.sh)
 
 *   **Mục đích:** Huấn luyện mô hình học sâu đồ thị GNN (`graphsage` hoặc `gat`) trên các run khớp với mẫu tên chỉ định.
+*   **Ablation:** Thêm tham số thứ ba `noedge` để train bản bỏ edge features: `./run_all_gnn_for_runs.sh 'ns3big_*' graphsage noedge` → kết quả vào `outputs/gnn/graphsage-noedge/`.
 
 ### [run\_edge\_sage\_for\_runs.sh](file:///Users/dtam.21/Code/DACN/scripts/train/gnn/run_edge_sage_for_runs.sh)
 
 *   **Mục đích:** Huấn luyện **Edge-Aware GraphSAGE** (mô hình đề xuất) trên các run khớp với mẫu tên chỉ định, với cấu hình chuẩn `hidden=128`, `dropout=0.3`, LR scheduler.
-*   **Tùy chọn:** Override siêu tham số qua biến môi trường: `HIDDEN=64 DROPOUT=0.4 ./run_edge_sage_for_runs.sh`.
+*   **Tùy chọn:** Override qua biến môi trường: `HIDDEN=64 DROPOUT=0.4 EPOCHS=200 ./run_edge_sage_for_runs.sh`; `NOEDGE=1` để chạy ablation `edge-sage-noedge`. Trong pipeline DVC, `HIDDEN`/`EPOCHS` được truyền từ `params.yaml` (`train.gnn_hidden`, `train.gnn_epochs`).
 
 ### [run\_loro.sh](file:///Users/dtam.21/Code/DACN/scripts/train/gnn/run_loro.sh)
 
-*   **Mục đích:** Đánh giá khả năng **tổng quát hóa cross-run** theo giao thức Leave-One-Run-Out: với mỗi balanced run, train trên các run còn lại và test trên toàn bộ run bị giữ lại. Chạy đủ 5 model (`graphsage`, `gat`, `edge-sage`, `xgb`, `mlp`).
-*   **Tùy chọn:** Đổi tập fold qua `BALANCED_IDS="01 04 05 07" ./run_loro.sh`.
+*   **Mục đích:** Đánh giá khả năng **tổng quát hóa cross-run** theo giao thức Leave-One-Run-Out: với mỗi balanced run, train trên các run còn lại và test trên toàn bộ run bị giữ lại. Chạy đủ 8 model: 3 GNN (`graphsage`, `gat`, `edge-sage`) + 5 baseline (`xgb`, `mlp`, `logreg`, `rf`, `threshold`).
+*   **Tùy chọn:** Đổi tập fold qua `BALANCED_IDS="007 012 035 046 077 084" ./run_loro.sh` (mặc định: 6 fold cân bằng nhãn nhất của batch ns3big seed-42, trộn 3 rwp + 3 gm).
 *   **Kết quả:** `outputs/loro/<MODEL_ID>/<TEST_RUN>/`, tổng hợp bằng `python3 -m src.evaluation.aggregate_all_metrics --loro`.
 
 ## 📈 3. Bộ Kịch Bản Tổng Hợp Kết Quả (Aggregation)

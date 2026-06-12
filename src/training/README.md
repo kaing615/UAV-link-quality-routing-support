@@ -13,7 +13,7 @@ training/
 │   ├── Logistic_Regression_Baseline.py
 │   ├── Random_Forest_Baseline.py
 │   ├── RSSI_SNR_Baseline.py      # heuristic threshold RSSI/SNR
-│   └── loro_baselines.py         # XGBoost/MLP theo giao thức Leave-One-Run-Out
+│   └── loro_baselines.py         # Cả 5 baseline (xgb/mlp/logreg/rf/threshold) theo giao thức Leave-One-Run-Out
 └── gnn/
     ├── common.py                 # load_graphs, evaluate_split, threshold tuning
     ├── train_gnn.py              # train within-run: graphsage | gat | edge-sage

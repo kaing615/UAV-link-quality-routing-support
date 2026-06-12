@@ -1,5 +1,6 @@
 """
-Leave-one-run-out (LORO) training for tabular baselines (XGBoost, MLP).
+Leave-one-run-out (LORO) training for tabular baselines
+(XGBoost, MLP, Logistic Regression, Random Forest, RSSI/SNR threshold).
 
 Mirrors src/training/gnn/train_gnn_loro.py so GNN and baselines are compared
 under the same protocol:
@@ -23,6 +24,8 @@ import json
 from pathlib import Path
 
 import pandas as pd
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
 from sklearn.neural_network import MLPClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
@@ -33,8 +36,18 @@ from src.training.baselines.common import (
     evaluate_split,
     find_best_threshold,
 )
+from src.training.baselines.RSSI_SNR_Baseline import (
+    ThresholdModel,
+    find_best_threshold as find_rssi_snr_thresholds,
+)
 
-_MODEL_NAMES = {"xgb": "XGBoost", "mlp": "Small MLP"}
+_MODEL_NAMES = {
+    "xgb": "XGBoost",
+    "mlp": "Small MLP",
+    "logreg": "Logistic Regression",
+    "rf": "Random Forest",
+    "threshold": "RSSI/SNR Threshold",
+}
 
 
 def load_run_rows(run_name: str, splits: list[str] | None) -> pd.DataFrame:
@@ -77,6 +90,28 @@ def build_model(model_id: str, pos_weight: float, random_state: int):
                 random_state=random_state,
             )),
         ])
+    # Within-run logreg/rf train on the sample-weighted CSVs; here we work on
+    # raw combined rows, so class_weight="balanced" plays the same role.
+    if model_id == "logreg":
+        return LogisticRegression(
+            penalty="l2",
+            C=1.0,
+            solver="lbfgs",
+            max_iter=1000,
+            class_weight="balanced",
+            random_state=random_state,
+        )
+    if model_id == "rf":
+        return RandomForestClassifier(
+            n_estimators=200,
+            max_depth=None,
+            min_samples_split=2,
+            min_samples_leaf=1,
+            max_features="sqrt",
+            class_weight="balanced",
+            n_jobs=-1,
+            random_state=random_state,
+        )
     raise ValueError(f"Unknown model_id: {model_id}")
 
 
@@ -92,7 +127,7 @@ def oversample_minority(df: pd.DataFrame, random_state: int) -> pd.DataFrame:
 
 
 def parse_args() -> argparse.Namespace:
-    p = argparse.ArgumentParser(description="Leave-one-run-out baseline training (XGBoost / MLP).")
+    p = argparse.ArgumentParser(description="Leave-one-run-out baseline training (xgb/mlp/logreg/rf/threshold).")
     p.add_argument("--test-run", type=str, required=True)
     p.add_argument("--train-runs", type=str, required=True, help="Comma-separated training run names")
     p.add_argument("--model", type=str, default="xgb", choices=list(_MODEL_NAMES.keys()))
@@ -123,12 +158,21 @@ def main() -> None:
     n_neg = int((train_df["label"] == 0).sum())
     pos_weight = n_neg / max(n_pos, 1)
 
-    model = build_model(model_id, pos_weight, args.random_state)
-    fit_df = oversample_minority(train_df, args.random_state) if model_id == "mlp" else train_df
-    model.fit(fit_df[FEATURE_COLUMNS], fit_df["label"])
+    if model_id == "threshold":
+        # Heuristic baseline: grid-search rssi/snr cutoffs on the combined
+        # training rows; its predict_proba is hard 0/1, so probability-threshold
+        # tuning is meaningless — keep the fixed 0.5.
+        rssi_t, snr_t, _ = find_rssi_snr_thresholds(train_df)
+        model = ThresholdModel(rssi_t, snr_t)
+        threshold = 0.5
+        print(f"[THR] rssi_thresh={rssi_t:.2f} snr_thresh={snr_t:.2f}")
+    else:
+        model = build_model(model_id, pos_weight, args.random_state)
+        fit_df = oversample_minority(train_df, args.random_state) if model_id == "mlp" else train_df
+        model.fit(fit_df[FEATURE_COLUMNS], fit_df["label"])
 
-    threshold, tuned_val_f1 = find_best_threshold(model, val_df)
-    print(f"[THR] tuned threshold={threshold:.2f} (val macro_f1={tuned_val_f1:.4f})")
+        threshold, tuned_val_f1 = find_best_threshold(model, val_df)
+        print(f"[THR] tuned threshold={threshold:.2f} (val macro_f1={tuned_val_f1:.4f})")
 
     val_metrics, val_preds = evaluate_split(model, model_id, model_name, val_df, "val", threshold=threshold)
     test_metrics, test_preds = evaluate_split(model, model_id, model_name, test_df, "test", threshold=threshold)
@@ -146,7 +190,10 @@ def main() -> None:
         "feature_columns": FEATURE_COLUMNS,
         "scale_pos_weight": pos_weight if model_id == "xgb" else None,
         "oversampled": model_id == "mlp",
+        "class_weight": "balanced" if model_id in ("logreg", "rf") else None,
         "threshold": threshold,
+        "rssi_thresh": float(model.rssi_thresh) if model_id == "threshold" else None,
+        "snr_thresh": float(model.snr_thresh) if model_id == "threshold" else None,
     }
     (output_dir / "metadata.json").write_text(json.dumps(metadata, indent=2), encoding="utf-8")
 

@@ -2,12 +2,49 @@
 
 Tài liệu này gom các lệnh dùng hằng ngày cho pipeline hiện tại.
 
-## 1. Kích hoạt môi trường
+## 0. Pipeline tự động với DVC (cách chuẩn)
 
-Nếu chưa activate virtualenv:
+Toàn bộ thí nghiệm đã được đóng gói thành pipeline DVC ([dvc.yaml](../dvc.yaml)):
+`generate → train_baselines (5 baseline) → train_gnn (3 GNN + 3 ablation noedge)
+→ evaluate → routing → loro`. Các mục 2–7b bên dưới là lệnh chạy tay từng phần —
+chỉ cần khi debug hoặc thử nghiệm lẻ; còn luồng chuẩn là:
 
 ```bash
-source simulation/.venv/bin/activate
+dvc pull            # lấy data + models đã có từ remote Google Drive (không cần chạy lại)
+dvc repro           # chạy lại những stage bị ảnh hưởng khi code/params thay đổi
+dvc repro loro      # chỉ chạy một stage cụ thể (và các stage nó phụ thuộc)
+dvc status          # xem stage nào outdated
+dvc push            # đẩy kết quả mới lên remote sau khi repro xong
+```
+
+Tham số pipeline (số run, base seed, hyperparams GNN) chỉnh trong
+[params.yaml](../params.yaml) — đổi xong chạy `dvc repro` là các stage liên quan
+tự chạy lại. `dvc.lock` được commit vào git để máy khác pull đúng phiên bản data.
+
+Lần đầu dùng remote Google Drive cần OAuth client riêng (Google chặn client mặc
+định của dvc-gdrive): tạo OAuth client ID loại Desktop trên Google Cloud Console rồi:
+
+```bash
+dvc remote modify --local storage gdrive_client_id '<CLIENT_ID>'
+dvc remote modify --local storage gdrive_client_secret '<CLIENT_SECRET>'
+```
+
+## 1. Kích hoạt môi trường
+
+Nếu chưa activate virtualenv (repo có 2 venv tương đương — dùng cái nào cũng được):
+
+```bash
+source .venv/bin/activate              # venv ở root (tạo từ requirements.txt)
+# hoặc
+source simulation/.venv/bin/activate   # venv cũ của simulator
+```
+
+Tạo mới từ đầu:
+
+```bash
+python3 -m venv .venv && source .venv/bin/activate
+pip install torch --index-url https://download.pytorch.org/whl/cpu
+pip install -r requirements.txt
 ```
 
 ## 2. Sinh một dataset
@@ -127,6 +164,12 @@ Kết quả lưu vào `outputs/gnn/<MODEL>-noedge/<RUN_NAME>/` để so sánh tr
 
 ## 6. Train batch trên nhiều run
 
+### Tất cả 5 baseline một lượt (logreg, rf, threshold, mlp, xgb)
+
+```bash
+./scripts/train/baselines/run_all_baselines_for_runs.sh 'ns3big_*'
+```
+
 ### MLP
 
 ```bash
@@ -146,6 +189,7 @@ Kết quả lưu vào `outputs/gnn/<MODEL>-noedge/<RUN_NAME>/` để so sánh tr
 ```bash
 ./scripts/train/gnn/run_all_gnn_for_runs.sh 'batch_*' graphsage
 ./scripts/train/gnn/run_all_gnn_for_runs.sh 'batch_*' gat
+./scripts/train/gnn/run_all_gnn_for_runs.sh 'batch_*' graphsage noedge   # ablation bỏ edge features
 ```
 
 ### Edge-Aware GraphSAGE
@@ -153,17 +197,21 @@ Kết quả lưu vào `outputs/gnn/<MODEL>-noedge/<RUN_NAME>/` để so sánh tr
 ```bash
 ./scripts/train/gnn/run_edge_sage_for_runs.sh            # tất cả run, hidden=128 dropout=0.3
 HIDDEN=64 DROPOUT=0.4 ./scripts/train/gnn/run_edge_sage_for_runs.sh   # override nếu cần
+EPOCHS=200 ./scripts/train/gnn/run_edge_sage_for_runs.sh              # đổi số epoch
+NOEDGE=1 ./scripts/train/gnn/run_edge_sage_for_runs.sh                # ablation edge-sage-noedge
 ```
 
 ## 6b. Đánh giá cross-run (Leave-One-Run-Out)
 
 Đánh giá khả năng tổng quát hóa sang run chưa từng thấy: với mỗi balanced run,
 train trên các run còn lại và test trên **toàn bộ** run bị giữ lại. Chạy cả
-5 model (graphsage, gat, edge-sage, xgb, mlp) trên 4 fold:
+8 model (graphsage, gat, edge-sage + 5 baseline: xgb, mlp, logreg, rf, threshold)
+trên 6 fold mặc định (3 random-waypoint + 3 gauss-markov, chọn theo độ cân bằng nhãn
+của batch ns3big seed-42):
 
 ```bash
 ./scripts/train/gnn/run_loro.sh
-BALANCED_IDS="01 04 05 07" ./scripts/train/gnn/run_loro.sh   # đổi tập fold nếu cần
+BALANCED_IDS="007 012 035 046 077 084" ./scripts/train/gnn/run_loro.sh   # đổi tập fold nếu cần
 ```
 
 Chạy lẻ một fold:
@@ -280,19 +328,30 @@ outputs/aggregates/baselines/
 
 ## 9. Luồng chuẩn hằng ngày
 
+Một lệnh duy nhất — DVC tự chạy đúng các stage bị ảnh hưởng:
+
 ```bash
-./scripts/dataset/run_many_random_datasets_ns3.sh 100 exp01
-./scripts/train/mlp/run_all_mlp_for_runs.sh 'exp01_*'
-./scripts/train/xgb/run_all_xgb_for_runs.sh 'exp01_*'
-# + 3 baseline bổ sung (threshold/logreg/rf) — xem mục 5
-./scripts/train/gnn/run_all_gnn_for_runs.sh 'exp01_*' graphsage
-./scripts/train/gnn/run_all_gnn_for_runs.sh 'exp01_*' gat
-./scripts/train/gnn/run_edge_sage_for_runs.sh 'exp01_*'
-BALANCED_IDS="..." ./scripts/train/gnn/run_loro.sh
+dvc repro      # generate → 5 baselines → 6 GNN → evaluate → routing → loro
+dvc push       # backup data + kết quả lên Google Drive
+git add dvc.lock && git commit   # (autostage đã bật nên dvc.lock tự được stage)
+```
+
+Tương đương chạy tay từng bước (chỉ khi cần debug):
+
+```bash
+python3 scripts/dataset/generate_batch.py                 # đọc params.yaml, sinh 100 run ns-3
+./scripts/train/baselines/run_all_baselines_for_runs.sh 'ns3big_*'
+./scripts/train/gnn/run_all_gnn_for_runs.sh 'ns3big_*' graphsage
+./scripts/train/gnn/run_all_gnn_for_runs.sh 'ns3big_*' gat
+./scripts/train/gnn/run_edge_sage_for_runs.sh 'ns3big_*'
+./scripts/train/gnn/run_all_gnn_for_runs.sh 'ns3big_*' graphsage noedge
+./scripts/train/gnn/run_all_gnn_for_runs.sh 'ns3big_*' gat noedge
+NOEDGE=1 ./scripts/train/gnn/run_edge_sage_for_runs.sh 'ns3big_*'
 python3 -m src.evaluation.aggregate_all_metrics --filter-balanced
-python3 -m src.evaluation.aggregate_all_metrics --loro
 python3 -m src.evaluation.plot_comparison
-./scripts/routing/run_routing_for_runs.sh 'exp01_*' edge-sage
+./scripts/routing/run_routing_for_runs.sh 'ns3big_*' edge-sage
+./scripts/train/gnn/run_loro.sh
+python3 -m src.evaluation.aggregate_all_metrics --loro
 ```
 
 ## 10. Scenario mẫu cho báo cáo

@@ -1,32 +1,35 @@
 #!/usr/bin/env bash
+# Train every baseline (logreg, rf, threshold, mlp, xgb) on all matching runs.
+# Usage: ./run_all_baselines_for_runs.sh [run_pattern]
+#   run_pattern defaults to '*' (all runs)
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../../.." && pwd)"
 RUNS_ROOT="${PROJECT_ROOT}/data/graph_dataset"
-GNN_MODULE="src.training.gnn.train_gnn"
 RUN_PATTERN="${1:-*}"
-MODEL_TYPE="${2:-graphsage}"  # graphsage or gat
-NOEDGE="${3:-}"               # pass 'noedge' for the edge-feature ablation
 
-EXTRA_FLAG=""
-if [[ "${NOEDGE}" == "noedge" ]]; then
-  EXTRA_FLAG="--no-edge-features"
-fi
-
-if [[ ! -f "${PROJECT_ROOT}/src/training/gnn/train_gnn.py" ]]; then
-  echo "GNN training script not found: ${PROJECT_ROOT}/src/training/gnn/train_gnn.py"
-  exit 1
-fi
+BASELINE_MODULES=(
+  "src.training.baselines.Logistic_Regression_Baseline"
+  "src.training.baselines.Random_Forest_Baseline"
+  "src.training.baselines.RSSI_SNR_Baseline"
+  "src.training.baselines.mlp_baseline"
+  "src.training.baselines.xgb_baseline"
+)
 
 if [[ ! -d "${RUNS_ROOT}" ]]; then
   echo "Runs root not found: ${RUNS_ROOT}"
   exit 1
 fi
 
-# Always use system python3 as it contains PyTorch & PyG
-PYTHON_BIN="python3"
+if [[ -n "${VIRTUAL_ENV:-}" ]]; then
+  PYTHON_BIN="python3"
+elif [[ -x "${PROJECT_ROOT}/simulation/.venv/bin/python" ]]; then
+  PYTHON_BIN="${PROJECT_ROOT}/simulation/.venv/bin/python"
+else
+  PYTHON_BIN="python3"
+fi
 
 matching_runs=()
 while IFS= read -r run_dir; do
@@ -42,8 +45,8 @@ echo "[INFO] project_root=${PROJECT_ROOT}"
 echo "[INFO] python=${PYTHON_BIN}"
 echo "[INFO] runs_root=${RUNS_ROOT}"
 echo "[INFO] run_pattern=${RUN_PATTERN}"
-echo "[INFO] model_type=${MODEL_TYPE}"
 echo "[INFO] matched_runs=${#matching_runs[@]}"
+echo "[INFO] baselines=${#BASELINE_MODULES[@]}"
 
 failures=0
 
@@ -52,15 +55,18 @@ for run_dir in "${matching_runs[@]}"; do
 
   echo
   echo "============================================================"
-  echo "[GNN - ${MODEL_TYPE}] ${run_name}"
+  echo "[BASELINES] ${run_name}"
   echo "============================================================"
 
-  if "${PYTHON_BIN}" -m "${GNN_MODULE}" --run-name "${run_name}" --model "${MODEL_TYPE}" ${EXTRA_FLAG}; then
-    echo "[OK] GNN (${MODEL_TYPE}) completed for ${run_name}"
-  else
-    echo "[FAIL] GNN (${MODEL_TYPE}) failed for ${run_name}"
-    failures=$((failures + 1))
-  fi
+  for module in "${BASELINE_MODULES[@]}"; do
+    model="${module##*.}"
+    if "${PYTHON_BIN}" -m "${module}" --run-name "${run_name}"; then
+      echo "[OK] ${model} completed for ${run_name}"
+    else
+      echo "[FAIL] ${model} failed for ${run_name}"
+      failures=$((failures + 1))
+    fi
+  done
 done
 
 echo
@@ -68,6 +74,7 @@ echo "============================================================"
 echo "[SUMMARY]"
 echo "============================================================"
 echo "- matched_runs : ${#matching_runs[@]}"
+echo "- baselines    : ${#BASELINE_MODULES[@]}"
 echo "- failures     : ${failures}"
 
 if [[ ${failures} -gt 0 ]]; then

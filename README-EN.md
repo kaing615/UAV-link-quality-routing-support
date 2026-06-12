@@ -105,6 +105,51 @@ In short, the system acts as a **routing support module**, where the GNN provide
 | **Heuristic Methods**               | RSSI/SNR threshold-based                                                     |
 | **Main Model**                      | **Edge-Aware GraphSAGE** (proposed GraphSAGE variant with edge features in message passing) |
 | **Comparison Models**               | Vanilla GraphSAGE, GAT                                                       |
+| **MLOps**                           | DVC (pipeline + data versioning, Google Drive remote), Docker (prebuilt ns-3 + Python environment) |
+
+---
+
+## Reproducibility (DVC)
+
+All experiments are packaged as a **DVC pipeline** ([dvc.yaml](./dvc.yaml)) with 6 stages:
+
+```text
+generate ──► train_baselines ──► evaluate
+    │     └► train_gnn ────────┘    │
+    │              └────────► routing
+    └────────────────────────► loro
+```
+
+| Stage | Content |
+| --- | --- |
+| `generate` | 100 ns-3 runs (real OLSR, Random Waypoint + Gauss-Markov) — deterministic from `base_seed` in [params.yaml](./params.yaml) |
+| `train_baselines` | 5 baselines: threshold, logreg, rf, mlp, xgb × 100 runs |
+| `train_gnn` | 6 GNNs: graphsage, gat, edge-sage + their 3 `-noedge` ablations × 100 runs |
+| `evaluate` | Aggregates all 11 models + within-run comparison charts |
+| `routing` | Routing replay: hop / delay / xgb / gnn vs. recorded OLSR, 100 runs |
+| `loro` | Leave-One-Run-Out: 6 folds × (3 GNNs + 5 baselines) + aggregation & chart |
+
+```bash
+# Fetch the trained data + models (no simulation/training needed)
+git clone <repo> && cd <repo>
+python3 -m venv .venv && source .venv/bin/activate
+pip install torch --index-url https://download.pytorch.org/whl/cpu
+pip install -r requirements.txt
+dvc pull          # downloads data/ + outputs/ from the Google Drive remote
+
+# Or rebuild everything from scratch (requires the ns-3 binary)
+dvc repro
+
+# After changing code/params and re-running
+dvc push          # upload new results to the remote
+```
+
+The full environment (prebuilt ns-3 + Python) is available via the [Dockerfile](./Dockerfile):
+
+```bash
+docker build -t uav-gnn .
+docker run -it uav-gnn dvc repro
+```
 
 ---
 
@@ -159,9 +204,14 @@ By combining **node features**, **edge features**, and **graph topology**, the m
 
 ```text
 UAV-link-quality-routing-support
+├── dvc.yaml                  # DVC pipeline definition (6 stages, see Reproducibility)
+├── dvc.lock                  # Data/model hashes — the map dvc pull uses to fetch exact versions
+├── params.yaml               # Pipeline parameters (run count, seed, GNN hyperparams)
+├── Dockerfile                # Prebuilt ns-3 + Python environment image
+├── requirements.txt          # Pinned Python dependencies
 ├── docs/                     # Pipeline docs, dataset notes, experiment references
-├── simulation/               # UAV simulation environment and topology generation
-├── data/
+├── simulation/               # UAV simulation environment and topology generation (Python + ns-3)
+├── data/                     # (DVC-managed — not stored in git)
 │   ├── raw_snapshots/        # Raw simulator outputs
 │   └── graph_dataset/        # Preprocessed datasets for GNN and baselines
 ├── src/
@@ -171,6 +221,6 @@ UAV-link-quality-routing-support
 │   ├── training/             # Training/validation/testing scripts
 │   ├── utils/                # Shared utility helpers
 │   └── evaluation/           # Evaluation and result aggregation
-├── outputs/                  # Run outputs, baseline artifacts, plots, logs
-└── scripts/                  # Dataset, training, and utility scripts
+├── outputs/                  # (DVC-managed) Run outputs, models, plots, aggregates
+└── scripts/                  # Dataset, training, routing, and utility scripts
 ```

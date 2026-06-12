@@ -1,0 +1,199 @@
+schema: '2.0'
+stages:
+  generate:
+    cmd: python scripts/dataset/generate_batch.py
+    deps:
+    - path: scripts/dataset/generate_batch.py
+      hash: md5
+      md5: 076f37db01eb74863e9374fe80f02929
+      size: 2422
+    - path: simulation/ns3/uav-olsr-dataset.cc
+      hash: md5
+      md5: 15466e12582dce0488558da2c7f7bcdf
+      size: 25036
+    - path: src/preprocessing/
+      hash: md5
+      md5: 147f2cca317d945e04d603f669763249.dir
+      size: 90864
+      nfiles: 19
+    params:
+      params.yaml:
+        generate:
+          count: 100
+          base_seed: 42
+          prefix: ns3big
+          num_uavs_min: 10
+          num_uavs_max: 30
+    outs:
+    - path: data/graph_dataset/
+      hash: md5
+      md5: 7d55a87738d03ca2098b6782a0b9fb39.dir
+      size: 651057766
+      nfiles: 1900
+    - path: data/raw_snapshots/
+      hash: md5
+      md5: 208df2299398681124eb9d38b72f2456.dir
+      size: 210626092
+      nfiles: 400
+  train_baselines:
+    cmd: bash scripts/train/baselines/run_all_baselines_for_runs.sh 'ns3big_*'
+    deps:
+    - path: data/graph_dataset/
+      hash: md5
+      md5: 7d55a87738d03ca2098b6782a0b9fb39.dir
+      size: 651057766
+      nfiles: 1900
+    - path: scripts/train/baselines/
+      hash: md5
+      md5: d7d03d86c192fd865e368039056c6d10.dir
+      size: 2434
+      nfiles: 1
+    - path: src/training/baselines/
+      hash: md5
+      md5: c8417883f11068d45952298a054083b0.dir
+      size: 81883
+      nfiles: 14
+    outs:
+    - path: outputs/baselines/
+      hash: md5
+      md5: ccafe76fdd9563af9703c9dfd89761fe.dir
+      size: 855771548
+      nfiles: 2500
+  train_gnn:
+    cmd: bash scripts/train/gnn/run_all_gnn_for_runs.sh 'ns3big_*' graphsage && 
+      bash scripts/train/gnn/run_all_gnn_for_runs.sh 'ns3big_*' gat && 
+      HIDDEN=128 EPOCHS=300 bash scripts/train/gnn/run_edge_sage_for_runs.sh 
+      'ns3big_*' && bash scripts/train/gnn/run_all_gnn_for_runs.sh 'ns3big_*' 
+      graphsage noedge && bash scripts/train/gnn/run_all_gnn_for_runs.sh 
+      'ns3big_*' gat noedge && HIDDEN=128 EPOCHS=300 NOEDGE=1 bash 
+      scripts/train/gnn/run_edge_sage_for_runs.sh 'ns3big_*'
+    deps:
+    - path: data/graph_dataset/
+      hash: md5
+      md5: 7d55a87738d03ca2098b6782a0b9fb39.dir
+      size: 651057766
+      nfiles: 1900
+    - path: scripts/train/gnn/run_all_gnn_for_runs.sh
+      hash: md5
+      md5: 8e7226f1269bf8930ac6f483e9414866
+      size: 2216
+      isexec: true
+    - path: scripts/train/gnn/run_edge_sage_for_runs.sh
+      hash: md5
+      md5: 2a34b5e45b339f4c1ae5922617a60be3
+      size: 3071
+      isexec: true
+    - path: src/models/
+      hash: md5
+      md5: afb7ec8f3ff26d97aaa60a933413d336.dir
+      size: 28994
+      nfiles: 11
+    - path: src/training/gnn/
+      hash: md5
+      md5: c615ebca6cd74802d5b6b0dc89141b9c.dir
+      size: 49787
+      nfiles: 8
+    params:
+      params.yaml:
+        train:
+          gnn_hidden: 128
+          gnn_epochs: 300
+    outs:
+    - path: outputs/gnn/
+      hash: md5
+      md5: 883be13d3ae7c98ea830af0eae2f8cc8.dir
+      size: 110386029
+      nfiles: 3000
+  evaluate:
+    cmd: python -m src.evaluation.aggregate_all_metrics --filter-balanced && 
+      python -m src.evaluation.plot_comparison
+    deps:
+    - path: outputs/baselines/
+      hash: md5
+      md5: ccafe76fdd9563af9703c9dfd89761fe.dir
+      size: 855771548
+      nfiles: 2500
+    - path: outputs/gnn/
+      hash: md5
+      md5: 883be13d3ae7c98ea830af0eae2f8cc8.dir
+      size: 110386029
+      nfiles: 3000
+    - path: src/evaluation/
+      hash: md5
+      md5: 268c19738c19b6e9ce0e1c419fd80dc7.dir
+      size: 46881
+      nfiles: 11
+    outs:
+    - path: outputs/aggregates/all_models/
+      hash: md5
+      md5: 0e897d2a9a43e2b6b3cf42c176217448.dir
+      size: 981858
+      nfiles: 4
+  routing:
+    cmd: bash scripts/routing/run_routing_for_runs.sh 'ns3big_*' edge-sage
+    deps:
+    - path: outputs/gnn/
+      hash: md5
+      md5: 883be13d3ae7c98ea830af0eae2f8cc8.dir
+      size: 110386029
+      nfiles: 3000
+    - path: src/routing/
+      hash: md5
+      md5: 3c3fede710a81ce8469f3602af6c6844.dir
+      size: 71756
+      nfiles: 11
+    outs:
+    - path: outputs/aggregates/routing/
+      hash: md5
+      md5: d21899a4c9600da68a86bc4ab7a1e435.dir
+      size: 378440
+      nfiles: 6
+    - path: outputs/routing/
+      hash: md5
+      md5: 9bec6b7b023a62fcacf07f26e8a0bc5b.dir
+      size: 57867930
+      nfiles: 400
+  loro:
+    cmd: bash scripts/train/gnn/run_loro.sh && python -m 
+      src.evaluation.aggregate_all_metrics --loro && python -m 
+      src.evaluation.plot_comparison --summary-csv 
+      outputs/aggregates/loro/summary_by_model_split.csv --output-dir 
+      outputs/aggregates/loro --title 'LORO Generalization Comparison (Held-out 
+      Run)' --filename loro_model_comparison.png
+    deps:
+    - path: data/graph_dataset/
+      hash: md5
+      md5: 7d55a87738d03ca2098b6782a0b9fb39.dir
+      size: 651057766
+      nfiles: 1900
+    - path: scripts/train/gnn/run_loro.sh
+      hash: md5
+      md5: 1abaf85711b1f5fd7bd97300c4d7254e
+      size: 2758
+      isexec: true
+    - path: src/evaluation/
+      hash: md5
+      md5: 268c19738c19b6e9ce0e1c419fd80dc7.dir
+      size: 46881
+      nfiles: 11
+    - path: src/models/
+      hash: md5
+      md5: afb7ec8f3ff26d97aaa60a933413d336.dir
+      size: 28994
+      nfiles: 11
+    - path: src/training/
+      hash: md5
+      md5: 73d42f3c780c183bd9c0d8d7b457a2fc.dir
+      size: 134157
+      nfiles: 25
+    outs:
+    - path: outputs/aggregates/loro/
+      hash: md5
+      md5: f63bebfc3ffbd421972123b383452098.dir
+      size: 252807
+      nfiles: 4
+    - path: outputs/loro/
+      hash: md5
+      md5: 33cf34ecd6263f323f7f14908f290d15.dir
+      size: 19125889
+      nfiles: 210

@@ -85,15 +85,24 @@ Tóm tắt nhanh các script hiện có trong thư mục `scripts/`.
 ```text
 scripts/
 ├── dataset/
+│   ├── generate_batch.py            # batch deterministic theo params.yaml (DVC stage `generate`)
 │   ├── run_one_dataset.sh
-│   └── run_many_random_datasets.sh
+│   ├── run_many_random_datasets.sh
+│   ├── run_one_dataset_ns3.sh
+│   └── run_many_random_datasets_ns3.sh
 ├── train/
 │   ├── aggregate_all.sh
 │   ├── aggregate_baselines.sh
-│   ├── gnn/run_all_gnn_for_runs.sh
+│   ├── baselines/run_all_baselines_for_runs.sh   # cả 5 baseline một lượt
+│   ├── gnn/run_all_gnn_for_runs.sh               # graphsage | gat (+ noedge)
+│   ├── gnn/run_edge_sage_for_runs.sh
+│   ├── gnn/run_loro.sh
 │   ├── mlp/run_all_mlp_for_runs.sh
 │   └── xgb/run_all_xgb_for_runs.sh
+├── routing/
+│   └── run_routing_for_runs.sh
 ├── utils/
+│   ├── clean_data_outputs.sh
 │   └── list_run_names.sh
 └── docs/
     ├── README.md
