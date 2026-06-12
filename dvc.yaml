@@ -1,0 +1,23 @@
+stages:
+  generate:
+    cmd: python scripts/dataset/generate_batch.py
+    deps: [scripts/dataset/generate_batch.py, simulation/ns3/uav-olsr-dataset.cc, src/preprocessing/]
+    params: [generate]
+    outs: [data/raw_snapshots/, data/graph_dataset/]
+  train_baselines:
+    cmd: bash scripts/train/mlp/run_all_mlp_for_runs.sh 'ns3big_*' && bash scripts/train/xgb/run_all_xgb_for_runs.sh 'ns3big_*'
+    deps: [data/graph_dataset/, src/training/baselines/]
+    outs: [outputs/baselines/]
+  train_gnn:
+    cmd: bash scripts/train/gnn/run_edge_sage_for_runs.sh 'ns3big_*'
+    deps: [data/graph_dataset/, src/training/gnn/, src/models/]
+    params: [train]
+    outs: [outputs/gnn/]
+  evaluate:
+    cmd: python -m src.evaluation.aggregate_all_metrics --filter-balanced && python -m src.evaluation.plot_comparison
+    deps: [outputs/baselines/, outputs/gnn/, src/evaluation/]
+    outs: [outputs/aggregates/all_models/]
+  routing:
+    cmd: bash scripts/routing/run_routing_for_runs.sh 'ns3big_*' edge-sage
+    deps: [outputs/gnn/, src/routing/]
+    outs: [outputs/routing/, outputs/aggregates/routing/]

@@ -1,0 +1,6 @@
+data/
+outputs/
+simulation/.venv/
+simulation/ns3/build/
+.git/
+memory/
