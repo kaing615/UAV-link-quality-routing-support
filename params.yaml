@@ -1,0 +1,9 @@
+generate:
+  count: 100
+  base_seed: 42
+  prefix: ns3big
+  num_uavs_min: 10
+  num_uavs_max: 30
+train:
+  gnn_hidden: 128
+  gnn_epochs: 300
