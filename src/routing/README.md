@@ -38,6 +38,18 @@ nhờ đó "tuyến sống" nhất quán với định nghĩa nhãn lớp 1.
 - `delay` — Dijkstra theo delay đo tại t.
 - `xgb` — `w = 1 − ŷ` từ XGBoost baseline.
 - `gnn` — `w = 1 − ŷ` từ GNN (mặc định edge-sage).
+- `olsr` — **OLSR thật**: tuyến `ns3::olsr` đã chọn, đọc từ `route_path`
+  trong `traffic_log.csv` (mỗi run chỉ ghi một cặp src–dst). Vì vậy ngoài
+  summary all-pairs còn có `summary_olsr_pair.csv`: mọi chiến lược lọc về
+  đúng cặp đó (cùng tập session) để so sánh công bằng — chart
+  `routing_comparison_olsr_pair.png`.
+
+Hai lưu ý khi đọc kết quả `olsr`: (1) `route_changes` của nó đếm số lần
+*giao thức tự đổi tuyến*, khác ngữ nghĩa với các chiến lược khác (đếm số lần
+*buộc phải* tính lại khi tuyến đứt) — OLSR giữ nguyên tuyến đã chết nên con
+số thấp không có nghĩa là ổn định hơn; (2) `e2e_delay_ms` của olsr chỉ tính
+được khi mọi link trên tuyến còn tồn tại trong snapshot (tuyến cũ → NaN),
+nên trung bình delay của nó bị lệch về các trường hợp thuận lợi.
 
 ## Các module
 

@@ -82,6 +82,25 @@ def load_test_times(run_name: str) -> list[int]:
     return sorted(int(t) for t in splits[splits["split"] == "test"]["time"])
 
 
+def load_olsr_routes(run_name: str) -> tuple[tuple[int, int] | None, dict[int, list[int] | None]]:
+    """Actual routes chosen by ns-3's OLSR (traffic_log.csv) for the single
+    recorded (src, dst) pair: time -> node path, None when unreachable."""
+    log_csv = Path("data/raw_snapshots") / run_name / "traffic_log.csv"
+    if not log_csv.exists():
+        return None, {}
+    df = pd.read_csv(log_csv)
+    if df.empty:
+        return None, {}
+    pair = (int(df.iloc[0]["source"]), int(df.iloc[0]["destination"]))
+    routes: dict[int, list[int] | None] = {}
+    for row in df.itertuples(index=False):
+        if int(row.reachable) == 1 and isinstance(row.route_path, str) and row.route_path:
+            routes[int(row.time)] = [int(n) for n in row.route_path.split("->")]
+        else:
+            routes[int(row.time)] = None
+    return pair, routes
+
+
 def build_strategy_graph(
     edges_t: dict[tuple[int, int], dict],
     strategy: str,
@@ -151,6 +170,9 @@ def evaluate_run(
         scores["xgb"] = load_prediction_scores(xgb_csv)
         strategies.insert(-1, "xgb")
 
+    # Routes ns-3's OLSR actually chose, for its single recorded pair.
+    olsr_pair, olsr_routes = (None, {}) if p_th != 0.0 else load_olsr_routes(run_name)
+
     records = []
     for t in test_times:
         edges_t = raw.get(t, {})
@@ -166,6 +188,10 @@ def evaluate_run(
             for d in nodes[i + 1 :]
             if nx.has_path(base_graph, s, d)
         ]
+        # Keep the OLSR pair in every snapshot (route_found=0 when unreachable)
+        # so the same-pair comparison covers identical session sets.
+        if olsr_pair is not None and olsr_pair not in set(pairs):
+            pairs.append(olsr_pair)
 
         graphs = {
             st: build_strategy_graph(edges_t, st, t, scores, p_th)
@@ -236,6 +262,70 @@ def evaluate_run(
                     }
                 )
 
+    # "olsr": replay the routes OLSR actually chose. Only on the unfiltered
+    # pass — the p_th filter has no analogue inside the real protocol.
+    if olsr_pair is not None:
+        strategies.append("olsr")
+        s, d = olsr_pair
+        for t in test_times:
+            edges_t = raw.get(t, {})
+            if not edges_t:
+                continue
+            h_t = min(horizon, max_time - t)
+            path = olsr_routes.get(t)
+            if not path:
+                records.append(
+                    {"time": t, "src": s, "dst": d, "strategy": "olsr", "route_found": 0}
+                )
+                continue
+
+            lifetime = 0
+            for k in range(1, h_t + 1):
+                if path_valid(path, raw.get(t + k, {})):
+                    lifetime += 1
+                else:
+                    break
+
+            # Route changes = how often OLSR itself switched routes within the
+            # horizon (its own convergence, not our recomputation rule).
+            changes = 0
+            disconnected = 0
+            prev = path
+            for k in range(1, h_t + 1):
+                nxt = olsr_routes.get(t + k)
+                if not nxt:
+                    disconnected = 1
+                    break
+                if nxt != prev:
+                    changes += 1
+                prev = nxt
+
+            # OLSR may route over a stale topology view: edges absent from the
+            # current snapshot zero out the PDR and leave the delay undefined.
+            present = [e for e in path_edges(path) if e in edges_t]
+            records.append(
+                {
+                    "time": t,
+                    "src": s,
+                    "dst": d,
+                    "strategy": "olsr",
+                    "route_found": 1,
+                    "hops": len(path) - 1,
+                    "e2e_delay_ms": sum(edges_t[e]["delay"] for e in present)
+                    if len(present) == len(path) - 1
+                    else float("nan"),
+                    "est_pdr": path_pdr(path, edges_t),
+                    "horizon": h_t,
+                    "route_lifetime": lifetime,
+                    "survival_at_1": int(lifetime >= 1),
+                    "realized_pdr_t1": path_pdr(path, raw.get(t + 1, {}))
+                    if path_valid(path, raw.get(t + 1, {}))
+                    else 0.0,
+                    "route_changes": changes,
+                    "disconnected": disconnected,
+                }
+            )
+
     details = pd.DataFrame(records)
     output_dir = output_dir or (Path("outputs/routing") / run_name)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -243,35 +333,53 @@ def evaluate_run(
     details_csv = output_dir / f"details{suffix}.csv"
     details.to_csv(details_csv, index=False)
 
-    found = details[details["route_found"] == 1]
-    summary_rows = []
-    for st in strategies:
-        sub = found[found["strategy"] == st]
-        all_st = details[details["strategy"] == st]
-        if sub.empty:
-            continue
-        summary_rows.append(
-            {
-                "run_name": run_name,
-                "strategy": st,
-                "p_th": p_th,
-                "n_sessions": int(len(all_st)),
-                "route_found_rate": float(len(sub) / len(all_st)),
-                "mean_hops": float(sub["hops"].mean()),
-                "mean_e2e_delay_ms": float(sub["e2e_delay_ms"].mean()),
-                "mean_est_pdr": float(sub["est_pdr"].mean()),
-                "mean_route_lifetime": float(sub["route_lifetime"].mean()),
-                "survival_at_1": float(sub["survival_at_1"].mean()),
-                "mean_realized_pdr_t1": float(sub["realized_pdr_t1"].mean()),
-                "mean_route_changes": float(sub["route_changes"].mean()),
-                "disconnected_rate": float(sub["disconnected"].mean()),
-                "mean_horizon": float(sub["horizon"].mean()),
-            }
-        )
+    def summarize(det: pd.DataFrame) -> pd.DataFrame:
+        found = det[det["route_found"] == 1]
+        rows = []
+        for st in strategies:
+            sub = found[found["strategy"] == st]
+            all_st = det[det["strategy"] == st]
+            if all_st.empty:
+                continue
 
-    summary = pd.DataFrame(summary_rows)
+            # Keep the row even when no route was ever found (found_rate=0,
+            # NaN quality metrics) — dropping it would bias aggregates upward
+            # by silently excluding the worst runs.
+            def m(col: str) -> float:
+                return float(sub[col].mean()) if not sub.empty else float("nan")
+
+            rows.append(
+                {
+                    "run_name": run_name,
+                    "strategy": st,
+                    "p_th": p_th,
+                    "n_sessions": int(len(all_st)),
+                    "route_found_rate": float(len(sub) / len(all_st)),
+                    "mean_hops": m("hops"),
+                    "mean_e2e_delay_ms": m("e2e_delay_ms"),
+                    "mean_est_pdr": m("est_pdr"),
+                    "mean_route_lifetime": m("route_lifetime"),
+                    "survival_at_1": m("survival_at_1"),
+                    "mean_realized_pdr_t1": m("realized_pdr_t1"),
+                    "mean_route_changes": m("route_changes"),
+                    "disconnected_rate": m("disconnected"),
+                    "mean_horizon": m("horizon"),
+                }
+            )
+        return pd.DataFrame(rows)
+
+    summary = summarize(details)
     summary_csv = output_dir / f"summary{suffix}.csv"
     summary.to_csv(summary_csv, index=False)
+
+    # OLSR only covers one recorded pair — comparing its averages against
+    # all-pairs averages would be unfair. Emit a same-pair summary where every
+    # strategy is restricted to that pair.
+    if olsr_pair is not None:
+        s0, d0 = olsr_pair
+        same_pair = details[(details["src"] == s0) & (details["dst"] == d0)]
+        summarize(same_pair).to_csv(output_dir / "summary_olsr_pair.csv", index=False)
+
     return summary_csv, details_csv
 
 
