@@ -33,11 +33,14 @@ echo "[INFO] timestamp=${timestamp}"
 for ((i = 1; i <= COUNT; i++)); do
   seed=$((10000 + RANDOM + i))
   mobility="${mobility_options[$((RANDOM % ${#mobility_options[@]}))]}"
-  num_uavs=$((6 + RANDOM % 5))
+  num_uavs=$((10 + RANDOM % 21))
   comm_range=$((180 + RANDOM % 101))
   time_steps=$((80 + RANDOM % 71))
   rwp_speed_min=$((2 + RANDOM % 4))
   rwp_speed_max=$((rwp_speed_min + 3 + RANDOM % 5))
+  # Scale the flight area with node count to keep density comparable to the
+  # original 6-10 UAV / 500x500m setup (constant area per node).
+  area_side=$(awk -v n="${num_uavs}" 'BEGIN { printf "%d", 500 * sqrt(n / 8.0) }')
 
   if [[ "${mobility}" == "random-waypoint" ]]; then
     mobility_tag="rwp"
@@ -52,7 +55,7 @@ for ((i = 1; i <= COUNT; i++)); do
   echo "[DATASET ${i}/${COUNT}]"
   echo "run_name=${run_name}"
   echo "seed=${seed} mobility=${mobility} num_uavs=${num_uavs}"
-  echo "comm_range=${comm_range} time_steps=${time_steps}"
+  echo "comm_range=${comm_range} time_steps=${time_steps} area=${area_side}x${area_side}"
   echo "rwp_speed_range=(${rwp_speed_min}, ${rwp_speed_max})"
   echo "============================================================"
 
@@ -61,6 +64,8 @@ for ((i = 1; i <= COUNT; i++)); do
   SIM_TIME_STEPS="${time_steps}" \
   SIM_RWP_SPEED_MIN="${rwp_speed_min}" \
   SIM_RWP_SPEED_MAX="${rwp_speed_max}" \
+  SIM_X_MAX="${area_side}" \
+  SIM_Y_MAX="${area_side}" \
   bash "${PIPELINE_SCRIPT}" "${run_name}" "${seed}" "${mobility}"
 done
 

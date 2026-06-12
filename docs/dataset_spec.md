@@ -48,15 +48,21 @@ Bộ node features dùng để build tensor `x`:
 
 ## 4. Edge features
 
-Bộ edge features dùng để build tensor `edge_attr`:
+Bộ edge features dùng để build tensor `edge_attr` (7 đặc trưng — trùng với bộ
+feature của các baseline để so sánh công bằng):
 
 - `distance`
 - `rssi`
+- `snr`
 - `delay`
 - `packet_loss`
 - `relative_speed`
+- `throughput`
 
-Trong dữ liệu thô của simulator còn có `snr`, `throughput`, `p_stable`, `weight`. Các cột này vẫn được giữ ở bảng trung gian để phân tích hoặc làm baseline, nhưng không đưa vào bộ edge features chuẩn của dataset v1.
+Trong dữ liệu thô của simulator còn có `p_stable` và `weight`. Hai cột này được
+giữ ở bảng trung gian (`edges_features.csv`) để phân tích và phục vụ định tuyến
+OLSR, nhưng không đưa vào tensor edge features (chúng là đại lượng dẫn xuất từ
+chính các feature trên).
 
 ## 5. Quy tắc gán nhãn liên kết
 

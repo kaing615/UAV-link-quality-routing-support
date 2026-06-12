@@ -25,5 +25,7 @@
   "editor.formatOnSave": true,
   "files.trimTrailingWhitespace": true,
   "files.insertFinalNewline": true,
-  "cmake.sourceDirectory": "/Users/dtam.21/Code/DACN/simulation/ns3"
+  "cmake.sourceDirectory": "/Users/dtam.21/Code/DACN/simulation/ns3",
+  "markdown.extension.completion.enabled": false,
+  "markdown.extension.tableFormatter.enabled": false
 }

@@ -2,11 +2,20 @@ from __future__ import annotations
 
 import json
 import pickle
+import time
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from sklearn.metrics import accuracy_score, confusion_matrix, f1_score, precision_score, recall_score
+from sklearn.metrics import (
+    accuracy_score,
+    average_precision_score,
+    confusion_matrix,
+    f1_score,
+    precision_score,
+    recall_score,
+    roc_auc_score,
+)
 
 FEATURE_COLUMNS = [
     "distance",
@@ -107,18 +116,25 @@ def evaluate_split(
     threshold: float | None = None,
 ) -> tuple[dict[str, object], pd.DataFrame]:
     X, y_true = extract_xy(df)
-    y_score = model.predict_proba(X)[:, 1] if hasattr(model, "predict_proba") else None
 
+    t0 = time.perf_counter()
+    y_score = model.predict_proba(X)[:, 1] if hasattr(model, "predict_proba") else None
     if threshold is not None and y_score is not None:
         y_pred = (y_score >= threshold).astype(int)
     else:
         y_pred = model.predict(X)
         threshold = 0.5 if y_score is not None else None
+    inference_s = time.perf_counter() - t0
 
     cm = confusion_matrix(y_true, y_pred, labels=[0, 1])
     tn, fp, fn, tp = cm.ravel()
     unique_labels = sorted(pd.Series(y_true).dropna().unique().tolist())
     has_both_classes = set(unique_labels) == {0, 1}
+
+    roc_auc = pr_auc = None
+    if y_score is not None and has_both_classes:
+        roc_auc = float(roc_auc_score(y_true, y_score))
+        pr_auc = float(average_precision_score(y_true, y_score))
 
     metrics = {
         "model_id": model_id,
@@ -134,6 +150,10 @@ def evaluate_split(
         "recall": float(recall_score(y_true, y_pred, zero_division=0)),
         "f1": float(f1_score(y_true, y_pred, zero_division=0)),
         "macro_f1": float(f1_score(y_true, y_pred, labels=[0, 1], average="macro", zero_division=0)),
+        "roc_auc": roc_auc,
+        "pr_auc": pr_auc,
+        "inference_time_ms": float(inference_s * 1000),
+        "inference_ms_per_sample": float(inference_s * 1000 / max(len(df), 1)),
         "tn": int(tn),
         "fp": int(fp),
         "fn": int(fn),

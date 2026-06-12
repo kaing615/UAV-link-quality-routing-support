@@ -38,6 +38,7 @@
 #include "ns3/core-module.h"
 #include "ns3/internet-module.h"
 #include "ns3/mobility-module.h"
+#include "ns3/netanim-module.h"
 #include "ns3/network-module.h"
 #include "ns3/olsr-helper.h"
 #include "ns3/olsr-routing-protocol.h"
@@ -78,6 +79,7 @@ static double g_warmup = 10.0;
 static uint32_t g_sourceId = 0;
 static uint32_t g_destId = 4;
 static std::string g_outputDir = ".";
+static bool g_enableAnim = true;
 
 static constexpr double PROBE_INTERVAL = 0.05;
 static constexpr uint16_t PROBE_PORT = 9999;
@@ -484,6 +486,7 @@ int main(int argc, char *argv[])
     cmd.AddValue("sourceId", "Traffic log source node", g_sourceId);
     cmd.AddValue("destId", "Traffic log destination node", g_destId);
     cmd.AddValue("outputDir", "Directory for CSV output", g_outputDir);
+    cmd.AddValue("enableAnim", "Generate NetAnim XML (true/false)", g_enableAnim);
     cmd.Parse(argc, argv);
 
     if (g_destId >= g_numUavs)
@@ -646,9 +649,42 @@ int main(int argc, char *argv[])
     Simulator::Schedule(Seconds(g_warmup), []
                         { g_window.clear(); });
 
+    AnimationInterface *anim = nullptr;
+    if (g_enableAnim)
+    {
+        std::string animFile = g_outputDir + "/uav-animation.xml";
+        anim = new AnimationInterface(animFile);
+        anim->SetMobilityPollInterval(Seconds(0.25));
+        anim->EnablePacketMetadata(true);
+        for (uint32_t i = 0; i < g_numUavs; ++i)
+        {
+            std::ostringstream desc;
+            desc << "UAV-" << i;
+            anim->UpdateNodeDescription(i, desc.str());
+            if (i == g_sourceId)
+            {
+                anim->UpdateNodeColor(i, 22, 163, 74);
+                anim->UpdateNodeSize(i, 8.0, 8.0);
+            }
+            else if (i == g_destId)
+            {
+                anim->UpdateNodeColor(i, 220, 38, 38);
+                anim->UpdateNodeSize(i, 8.0, 8.0);
+            }
+            else
+            {
+                anim->UpdateNodeColor(i, 14, 165, 233);
+                anim->UpdateNodeSize(i, 6.0, 6.0);
+            }
+        }
+        std::cout << "[ANIM] NetAnim XML -> " << animFile << std::endl;
+    }
+
     Simulator::Stop(Seconds(g_warmup + g_timeSteps + 1.0));
     Simulator::Run();
     Simulator::Destroy();
+
+    delete anim;
 
     g_nodesCsv.close();
     g_edgesCsv.close();

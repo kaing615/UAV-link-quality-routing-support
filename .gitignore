@@ -52,3 +52,5 @@ data/processed/
 # AI assistant memory
 memory/claude_summary.md
 simulation/ns3/build/
+
+.cache/

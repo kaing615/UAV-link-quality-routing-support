@@ -32,7 +32,7 @@ echo "[INFO] timestamp=${timestamp}"
 for ((i = 1; i <= COUNT; i++)); do
   seed=$((10000 + RANDOM + i))
   mobility="${mobility_options[$((RANDOM % ${#mobility_options[@]}))]}"
-  num_uavs=$((6 + RANDOM % 5))
+  num_uavs=$((10 + RANDOM % 21))
   comm_range=$((180 + RANDOM % 101))
   time_steps=$((80 + RANDOM % 71))
   rwp_speed_min=$((2 + RANDOM % 4))

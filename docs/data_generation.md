@@ -8,6 +8,17 @@ Sinh nhiều dataset UAV riêng biệt từ simulator để:
 - so sánh nhiều mobility / topology / density scenario
 - đánh giá baseline trên nhiều run độc lập
 
+Có **hai simulator** cùng xuất một schema dữ liệu:
+
+- **Python** (`simulation/main.py`) — công thức hóa, nhanh, dùng cho lặp thí nghiệm.
+- **ns-3** (`simulation/ns3/`) — stack 802.11 + OLSR thật, feature đo từ gói tin
+  thực (hướng chính của đề tài). Script tương ứng có hậu tố `_ns3`:
+  `run_one_dataset_ns3.sh`, `run_many_random_datasets_ns3.sh`.
+  Chi tiết: [simulation/ns3/README.md](../simulation/ns3/README.md).
+
+Tài liệu này mô tả phần dùng chung (cấu trúc dữ liệu, RUN_NAME, tham số); các
+ví dụ lệnh dùng script Python nhưng thay bằng script `_ns3` là tương đương.
+
 ## 2. Cấu trúc dữ liệu
 
 ### Raw data
@@ -23,9 +34,6 @@ Gồm:
 - `nodes.csv`
 - `edges.csv`
 - `traffic_log.csv`
-- `nodes.parquet`
-- `edges.parquet`
-- `traffic_log.parquet`
 - `scenario.json`
 
 ### Preprocessed data

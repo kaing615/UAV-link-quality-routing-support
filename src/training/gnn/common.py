@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import time
 from pathlib import Path
 
 import numpy as np
@@ -7,10 +8,12 @@ import pandas as pd
 import torch
 from sklearn.metrics import (
     accuracy_score,
+    average_precision_score,
     confusion_matrix,
     f1_score,
     precision_score,
     recall_score,
+    roc_auc_score,
 )
 from torch_geometric.data import Data
 from torch_geometric.loader import DataLoader
@@ -121,11 +124,17 @@ def evaluate_split(
     split_name: str,
     threshold: float = 0.5,
 ) -> tuple[dict, pd.DataFrame]:
+    t0 = time.perf_counter()
     y_true, y_score = collect_scores(model, loader, device)
+    inference_s = time.perf_counter() - t0
     y_pred = (y_score >= threshold).astype(int)
 
     cm = confusion_matrix(y_true, y_pred, labels=[0, 1])
     tn, fp, fn, tp = cm.ravel()
+
+    has_both = set(y_true.tolist()) == {0, 1}
+    roc_auc = float(roc_auc_score(y_true, y_score)) if has_both else None
+    pr_auc = float(average_precision_score(y_true, y_score)) if has_both else None
 
     metrics = {
         "model_id": model_id,
@@ -140,6 +149,10 @@ def evaluate_split(
         "recall": float(recall_score(y_true, y_pred, zero_division=0)),
         "f1": float(f1_score(y_true, y_pred, zero_division=0)),
         "macro_f1": float(f1_score(y_true, y_pred, labels=[0, 1], average="macro", zero_division=0)),
+        "roc_auc": roc_auc,
+        "pr_auc": pr_auc,
+        "inference_time_ms": float(inference_s * 1000),
+        "inference_ms_per_sample": float(inference_s * 1000 / max(len(y_true), 1)),
         "tn": int(tn),
         "fp": int(fp),
         "fn": int(fn),

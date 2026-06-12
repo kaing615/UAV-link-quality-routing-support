@@ -8,6 +8,9 @@ import pandas as pd
 
 # Define a professional, harmonious color palette
 COLORS = {
+    "threshold": "#7f7f7f",        # Grey — rule-based reference
+    "logreg": "#c5b0d5",           # Light Purple
+    "rf": "#9467bd",               # Purple
     "xgb": "#1f77b4",              # Steel Blue
     "mlp": "#aec7e8",              # Light Blue
     "gat": "#ff7f0e",              # Dark Orange
@@ -19,6 +22,9 @@ COLORS = {
 }
 
 MODEL_NAMES = {
+    "threshold": "RSSI/SNR Threshold",
+    "logreg": "Logistic Regression",
+    "rf": "Random Forest",
     "xgb": "XGBoost",
     "mlp": "MLP (Baseline)",
     "gat": "GAT (GNN)",
@@ -78,7 +84,7 @@ def main() -> None:
 
     # Sort models for consistent display
     order = [
-        "xgb", "mlp", "gat", "graphsage", "edge-sage",
+        "threshold", "logreg", "rf", "xgb", "mlp", "gat", "graphsage", "edge-sage",
         "gat-noedge", "graphsage-noedge", "edge-sage-noedge",
     ]
     test_df["sort_idx"] = test_df["model_id"].map(lambda x: order.index(x) if x in order else 99)

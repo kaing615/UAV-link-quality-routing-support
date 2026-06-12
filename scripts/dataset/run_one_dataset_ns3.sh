@@ -7,7 +7,7 @@
 #
 # Optional env overrides (same names as the Python simulator pipeline):
 #   SIM_NUM_UAVS, SIM_COMM_RANGE, SIM_TIME_STEPS,
-#   SIM_RWP_SPEED_MIN, SIM_RWP_SPEED_MAX
+#   SIM_RWP_SPEED_MIN, SIM_RWP_SPEED_MAX, SIM_X_MAX, SIM_Y_MAX
 
 set -euo pipefail
 
@@ -31,6 +31,8 @@ COMM_RANGE="${SIM_COMM_RANGE:-243}"
 TIME_STEPS="${SIM_TIME_STEPS:-145}"
 RWP_SPEED_MIN="${SIM_RWP_SPEED_MIN:-3}"
 RWP_SPEED_MAX="${SIM_RWP_SPEED_MAX:-8}"
+X_MAX="${SIM_X_MAX:-500}"
+Y_MAX="${SIM_Y_MAX:-500}"
 
 if [[ -n "${VIRTUAL_ENV:-}" ]]; then
   PYTHON_BIN="python3"
@@ -44,7 +46,7 @@ echo "[INFO] project_root=${PROJECT_ROOT}"
 echo "[INFO] run_name=${RUN_NAME}"
 echo "[INFO] seed=${SEED}"
 echo "[INFO] mobility_model=${MOBILITY_MODEL}"
-echo "[INFO] num_uavs=${NUM_UAVS} comm_range=${COMM_RANGE} time_steps=${TIME_STEPS}"
+echo "[INFO] num_uavs=${NUM_UAVS} comm_range=${COMM_RANGE} time_steps=${TIME_STEPS} area=${X_MAX}x${Y_MAX}"
 
 # Build the ns-3 scenario binary on first use
 if [[ ! -x "${NS3_BIN}" ]]; then
@@ -70,7 +72,10 @@ echo "[1/4] Running ns-3 simulation"
   --commRange="${COMM_RANGE}" \
   --rwpSpeedMin="${RWP_SPEED_MIN}" \
   --rwpSpeedMax="${RWP_SPEED_MAX}" \
-  --outputDir="${OUTPUT_DIR}"
+  --xMax="${X_MAX}" \
+  --yMax="${Y_MAX}" \
+  --outputDir="${OUTPUT_DIR}" \
+  --enableAnim=false
 
 echo
 echo "[2/4] Running graph preprocessing"
