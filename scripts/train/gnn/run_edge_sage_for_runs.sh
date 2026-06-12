@@ -23,6 +23,13 @@ RUN_PATTERN="${1:-*}"
 MODEL_TYPE="edge-sage"
 HIDDEN="${HIDDEN:-128}"
 DROPOUT="${DROPOUT:-0.3}"
+EPOCHS="${EPOCHS:-300}"
+NOEDGE="${NOEDGE:-}"  # set NOEDGE=1 for the edge-feature ablation (edge-sage-noedge)
+
+EXTRA_FLAG=""
+if [[ -n "${NOEDGE}" ]]; then
+  EXTRA_FLAG="--no-edge-features"
+fi
 
 if [[ ! -f "${PROJECT_ROOT}/src/training/gnn/train_gnn.py" ]]; then
   echo "GNN training script not found: ${PROJECT_ROOT}/src/training/gnn/train_gnn.py"
@@ -70,9 +77,9 @@ for run_dir in "${matching_runs[@]}"; do
       --num-layers 2 \
       --dropout "${DROPOUT}" \
       --lr 5e-4 \
-      --epochs 300 \
+      --epochs "${EPOCHS}" \
       --patience 30 \
-      --lr-scheduler; then
+      --lr-scheduler ${EXTRA_FLAG}; then
     echo "[OK] GNN (${MODEL_TYPE}) completed for ${run_name}"
   else
     echo "[FAIL] GNN (${MODEL_TYPE}) failed for ${run_name}"

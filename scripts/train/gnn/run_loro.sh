@@ -2,8 +2,8 @@
 # Leave-one-run-out (LORO) evaluation over the balanced runs.
 #
 # For each balanced run: train on the other balanced runs, test on the
-# held-out run. Covers GNN models (graphsage, gat, edge-sage) and tabular
-# baselines (xgb, mlp) under the same protocol.
+# held-out run. Covers GNN models (graphsage, gat, edge-sage) and all tabular
+# baselines (xgb, mlp, logreg, rf, threshold) under the same protocol.
 #
 # Usage: ./run_loro.sh
 #   BALANCED_IDS="01 04 05 07" ./run_loro.sh   # override fold set
@@ -14,7 +14,9 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../../.." && pwd)"
 RUNS_ROOT="${PROJECT_ROOT}/data/graph_dataset"
 PYTHON_BIN="python3"
-BALANCED_IDS="${BALANCED_IDS:-01 04 05 07}"
+# Default folds: most label-balanced runs of the seed-42 ns3big batch,
+# mixed mobility (3 rwp + 3 gm) and sizes (n=11..30).
+BALANCED_IDS="${BALANCED_IDS:-007 012 035 046 077 084}"
 
 cd "${PROJECT_ROOT}"
 
@@ -61,7 +63,7 @@ for test_run in "${runs[@]}"; do
     --model edge-sage --hidden 128 --num-layers 2 --dropout 0.3 \
     --lr 5e-4 --epochs 300 --patience 30 --lr-scheduler || failures=$((failures + 1))
 
-  for model in xgb mlp; do
+  for model in xgb mlp logreg rf threshold; do
     echo "--- baseline ${model} ---"
     "${PYTHON_BIN}" -m src.training.baselines.loro_baselines \
       --test-run "${test_run}" --train-runs "${train_runs}" \

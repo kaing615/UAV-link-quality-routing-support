@@ -107,6 +107,51 @@ Tóm lại, hệ thống đóng vai trò như một **routing support module**, 
 | **Phương pháp heuristic**          | Threshold-based trên RSSI/SNR                                               |
 | **Mô hình chính**                  | **Edge-Aware GraphSAGE** (biến thể GraphSAGE đề xuất, tích hợp edge features vào message passing) |
 | **Mô hình đối chiếu**              | GraphSAGE gốc, GAT                                                          |
+| **MLOps**                          | DVC (pipeline + data versioning, remote Google Drive), Docker (ns-3 + môi trường Python đóng gói sẵn) |
+
+---
+
+## Tái lập kết quả (Reproducibility — DVC)
+
+Toàn bộ thí nghiệm được đóng gói thành **pipeline DVC** ([dvc.yaml](./dvc.yaml)) gồm 6 stage:
+
+```text
+generate ──► train_baselines ──► evaluate
+    │     └► train_gnn ────────┘    │
+    │              └────────► routing
+    └────────────────────────► loro
+```
+
+| Stage | Nội dung |
+| --- | --- |
+| `generate` | Sinh 100 run ns-3 (OLSR thật, Random Waypoint + Gauss-Markov) — deterministic theo `base_seed` trong [params.yaml](./params.yaml) |
+| `train_baselines` | 5 baseline: threshold, logreg, rf, mlp, xgb × 100 runs |
+| `train_gnn` | 6 GNN: graphsage, gat, edge-sage + 3 bản ablation `-noedge` × 100 runs |
+| `evaluate` | Tổng hợp 11 model + biểu đồ so sánh within-run |
+| `routing` | Replay routing: hop / delay / xgb / gnn so với OLSR thật, 100 runs |
+| `loro` | Leave-One-Run-Out: 6 folds × (3 GNN + 5 baselines) + tổng hợp & biểu đồ |
+
+```bash
+# Lấy lại data + models đã train (không cần mô phỏng/train lại)
+git clone <repo> && cd <repo>
+python3 -m venv .venv && source .venv/bin/activate
+pip install torch --index-url https://download.pytorch.org/whl/cpu
+pip install -r requirements.txt
+dvc pull          # tải data/ + outputs/ từ remote Google Drive
+
+# Hoặc chạy lại toàn bộ pipeline từ đầu (cần binary ns-3)
+dvc repro
+
+# Sau khi sửa code/params và chạy lại
+dvc push          # đẩy kết quả mới lên remote
+```
+
+Môi trường đầy đủ (ns-3 đã build + Python) có sẵn trong [Dockerfile](./Dockerfile):
+
+```bash
+docker build -t uav-gnn .
+docker run -it uav-gnn dvc repro
+```
 
 ---
 
@@ -161,9 +206,14 @@ Việc kết hợp cả **node features**, **edge features** và **graph topolog
 
 ```text
 UAV-link-quality-routing-support
+├── dvc.yaml                  # Định nghĩa pipeline DVC (6 stage, xem mục Tái lập kết quả)
+├── dvc.lock                  # Hash của data/models — bản đồ để dvc pull đúng phiên bản
+├── params.yaml               # Tham số pipeline (số run, seed, hyperparams GNN)
+├── Dockerfile                # Image ns-3 + Python environment đóng gói sẵn
+├── requirements.txt          # Dependencies Python (pin version)
 ├── docs/                     # Tài liệu mô tả pipeline, dataset, thí nghiệm
-├── simulation/               # Môi trường mô phỏng UAV và sinh topology
-├── data/
+├── simulation/               # Môi trường mô phỏng UAV và sinh topology (Python + ns-3)
+├── data/                     # (DVC quản lý — không nằm trong git)
 │   ├── raw_snapshots/        # Dữ liệu raw từ simulator
 │   └── graph_dataset/        # Dataset đã tiền xử lý cho GNN và baseline
 ├── src/
@@ -173,6 +223,6 @@ UAV-link-quality-routing-support
 │   ├── training/             # Script huấn luyện/validation/testing
 │   ├── utils/                # Hàm tiện ích dùng chung
 │   └── evaluation/           # Đánh giá và tổng hợp kết quả
-├── outputs/                  # Kết quả chạy, baseline outputs, plots, logs
-└── scripts/                  # Script chạy dataset, train, và tiện ích
+├── outputs/                  # (DVC quản lý) Kết quả chạy, models, plots, aggregates
+└── scripts/                  # Script chạy dataset, train, routing và tiện ích
 ```

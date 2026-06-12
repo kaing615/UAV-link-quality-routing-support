@@ -5,12 +5,25 @@ stages:
     params: [generate]
     outs: [data/raw_snapshots/, data/graph_dataset/]
   train_baselines:
-    cmd: bash scripts/train/mlp/run_all_mlp_for_runs.sh 'ns3big_*' && bash scripts/train/xgb/run_all_xgb_for_runs.sh 'ns3big_*'
-    deps: [data/graph_dataset/, src/training/baselines/]
+    cmd: bash scripts/train/baselines/run_all_baselines_for_runs.sh 'ns3big_*'
+    deps: [data/graph_dataset/, scripts/train/baselines/, src/training/baselines/]
     outs: [outputs/baselines/]
   train_gnn:
-    cmd: bash scripts/train/gnn/run_edge_sage_for_runs.sh 'ns3big_*'
-    deps: [data/graph_dataset/, src/training/gnn/, src/models/]
+    cmd: >-
+      bash scripts/train/gnn/run_all_gnn_for_runs.sh 'ns3big_*' graphsage
+      && bash scripts/train/gnn/run_all_gnn_for_runs.sh 'ns3big_*' gat
+      && HIDDEN=${train.gnn_hidden} EPOCHS=${train.gnn_epochs}
+      bash scripts/train/gnn/run_edge_sage_for_runs.sh 'ns3big_*'
+      && bash scripts/train/gnn/run_all_gnn_for_runs.sh 'ns3big_*' graphsage noedge
+      && bash scripts/train/gnn/run_all_gnn_for_runs.sh 'ns3big_*' gat noedge
+      && HIDDEN=${train.gnn_hidden} EPOCHS=${train.gnn_epochs} NOEDGE=1
+      bash scripts/train/gnn/run_edge_sage_for_runs.sh 'ns3big_*'
+    deps:
+      - data/graph_dataset/
+      - scripts/train/gnn/run_all_gnn_for_runs.sh
+      - scripts/train/gnn/run_edge_sage_for_runs.sh
+      - src/training/gnn/
+      - src/models/
     params: [train]
     outs: [outputs/gnn/]
   evaluate:
@@ -21,3 +34,14 @@ stages:
     cmd: bash scripts/routing/run_routing_for_runs.sh 'ns3big_*' edge-sage
     deps: [outputs/gnn/, src/routing/]
     outs: [outputs/routing/, outputs/aggregates/routing/]
+  loro:
+    cmd: >-
+      bash scripts/train/gnn/run_loro.sh
+      && python -m src.evaluation.aggregate_all_metrics --loro
+      && python -m src.evaluation.plot_comparison
+      --summary-csv outputs/aggregates/loro/summary_by_model_split.csv
+      --output-dir outputs/aggregates/loro
+      --title 'LORO Generalization Comparison (Held-out Run)'
+      --filename loro_model_comparison.png
+    deps: [data/graph_dataset/, scripts/train/gnn/run_loro.sh, src/training/, src/models/, src/evaluation/]
+    outs: [outputs/loro/, outputs/aggregates/loro/]
