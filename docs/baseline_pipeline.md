@@ -106,18 +106,30 @@ Output:
 
 ## 4. Baseline hiện tại
 
-### MLP
+Đã triển khai đủ 5 baseline non-GNN:
 
-Script:
+| model_id | Script | Ghi chú |
+|---|---|---|
+| `threshold` | `RSSI_SNR_Baseline.py` | rule-based, grid-search ngưỡng RSSI+SNR trên train |
+| `logreg` | `Logistic_Regression_Baseline.py` | ưu tiên `sample_weight` |
+| `rf` | `Random_Forest_Baseline.py` | ưu tiên `class_weight` |
+| `mlp` | `mlp_baseline.py` | ưu tiên weighted, có tune threshold |
+| `xgb` | `xgb_baseline.py` | `scale_pos_weight`, có tune threshold |
+
+### Chạy một baseline
 
 ```bash
 python3 -m src.training.baselines.mlp_baseline --run-name <RUN_NAME>
+python3 -m src.training.baselines.xgb_baseline --run-name <RUN_NAME>
+python3 -m src.training.baselines.RSSI_SNR_Baseline --run-name <RUN_NAME>
+python3 -m src.training.baselines.Logistic_Regression_Baseline --run-name <RUN_NAME>
+python3 -m src.training.baselines.Random_Forest_Baseline --run-name <RUN_NAME>
 ```
 
 Output:
 
 ```text
-outputs/baselines/mlp/<RUN_NAME>/
+outputs/baselines/<MODEL_ID>/<RUN_NAME>/
 ```
 
 Gồm:
@@ -127,6 +139,21 @@ Gồm:
 - `model.pkl`
 - `val_predictions.csv`
 - `test_predictions.csv`
+
+### Các cột trong metrics.csv
+
+Ngoài Accuracy/Precision/Recall/F1/macro-F1 và confusion matrix, từ bản cập
+nhật Nội dung 5 còn có:
+
+- `roc_auc`, `pr_auc` — chất lượng xếp hạng của xác suất dự đoán (đặc biệt
+  quan trọng khi so với baseline `threshold`: F1 của nó có thể cao nhưng
+  ROC-AUC thấp vì đầu ra chỉ là 0/1, không xếp hạng được mức rủi ro)
+- `inference_time_ms`, `inference_ms_per_sample` — thời gian suy luận trên
+  split (đo quanh đúng phần predict/forward, CPU)
+
+GNN dùng chung bộ cột này (`src/training/gnn/common.py`). Với GNN đã train
+trước bản cập nhật, dùng `python3 -m src.evaluation.refresh_gnn_metrics` để
+tính lại metrics từ `best_model.pt` mà không cần train lại.
 
 ### Chạy MLP cho tất cả run
 

@@ -56,6 +56,17 @@ outputs/loro/<MODEL_ID>/<TEST_RUN>/
 Ở đây thư mục run là **run được giữ lại làm test**, không phải run huấn luyện.
 Danh sách run train nằm trong `metadata.json` (`train_runs`).
 
+### Routing outputs (replay evaluation)
+
+Kết quả đánh giá routing hỗ trợ bởi dự đoán (xem
+[src/routing/README.md](../src/routing/README.md)):
+
+```text
+outputs/routing/<RUN_NAME>/                 # edge_predictions, summary, details (+ *_pth*)
+outputs/aggregates/routing/                 # summary_by_strategy, routing_comparison.png,
+                                            # pth_sweep.csv, pth_tradeoff.png
+```
+
 ## 3. File metric nên có
 
 Mỗi baseline nên lưu tối thiểu:
@@ -86,6 +97,8 @@ Tối thiểu:
 Nên thêm:
 
 - `macro_f1`
+- `roc_auc`, `pr_auc` — chất lượng xếp hạng của xác suất dự đoán
+- `inference_time_ms`, `inference_ms_per_sample` — thời gian suy luận
 - `tn`
 - `fp`
 - `fn`
@@ -97,7 +110,7 @@ Nên thêm:
 ## 5. Quy ước `model_id`
 
 ```text
-rssi_snr_thresh
+threshold           # RSSI/SNR threshold (rule-based)
 logreg
 rf
 mlp

@@ -84,6 +84,7 @@ Simulator hiện hỗ trợ thay đổi qua biến môi trường:
 - `SIM_TIME_STEPS`
 - `SIM_RWP_SPEED_MIN`
 - `SIM_RWP_SPEED_MAX`
+- `SIM_X_MAX`, `SIM_Y_MAX` (vùng bay, mặc định 500×500m — chỉ script `_ns3`)
 
 ## 5. Script sinh dữ liệu
 
@@ -115,10 +116,15 @@ Script batch sẽ random:
 
 - `SEED`
 - `MOBILITY_MODEL`
-- `NUM_UAVS`
+- `NUM_UAVS` (bản `_ns3`: 10–30)
 - `COMM_RANGE`
 - `TIME_STEPS`
 - `RWP_SPEED_RANGE`
+
+Riêng `run_many_random_datasets_ns3.sh` còn **scale vùng bay theo số UAV**
+(`area_side = 500 · sqrt(num_uavs / 8)`) để giữ mật độ kết nối tương đương
+cấu hình gốc 6–10 UAV / 500×500m. Không có bước này, nhiều UAV trong vùng
+bay cố định sẽ làm mạng quá dày và dataset degenerate (gần 100% nhãn stable).
 
 ## 6. Khi nào giữ seed, khi nào đổi seed
 

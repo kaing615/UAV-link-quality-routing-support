@@ -39,7 +39,10 @@ cmake --build simulation/ns3/build
 ./scripts/dataset/run_one_dataset_ns3.sh <RUN_NAME> [SEED] [MOBILITY]
 SIM_NUM_UAVS=8 SIM_COMM_RANGE=250 ./scripts/dataset/run_one_dataset_ns3.sh ns3_dense_42 42 gauss-markov
 
-# Batch ngẫu nhiên
+# Vùng bay tùy biến (mặc định 500x500m)
+SIM_NUM_UAVS=30 SIM_X_MAX=968 SIM_Y_MAX=968 ./scripts/dataset/run_one_dataset_ns3.sh ns3_n30 42 random-waypoint
+
+# Batch ngẫu nhiên (10-30 UAV, vùng bay tự scale theo sqrt(n/8) giữ mật độ)
 ./scripts/dataset/run_many_random_datasets_ns3.sh 10 ns3exp01
 ```
 

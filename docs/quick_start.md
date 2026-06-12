@@ -41,6 +41,18 @@ với simulator Python nên mọi bước phía sau giữ nguyên. Chi tiết:
 ./scripts/dataset/run_many_random_datasets_ns3.sh 10 ns3exp01
 ```
 
+Vùng bay điều chỉnh qua `SIM_X_MAX`/`SIM_Y_MAX` (mặc định 500×500m). Script
+batch random 10–30 UAV và tự scale vùng bay theo `sqrt(num_uavs/8)` để giữ
+mật độ kết nối ổn định (tránh dataset degenerate khi tăng số node).
+
+## 3c. Xóa toàn bộ data và output cũ
+
+```bash
+./scripts/utils/clean_data_outputs.sh             # hỏi xác nhận trước khi xóa
+./scripts/utils/clean_data_outputs.sh 'ns3exp_*'  # chỉ xóa run khớp pattern
+./scripts/utils/clean_data_outputs.sh --force     # không hỏi
+```
+
 ## 4. Liệt kê các run đã có
 
 ```bash
@@ -61,6 +73,25 @@ python3 -m src.training.baselines.mlp_baseline --run-name <RUN_NAME>
 
 ```bash
 python3 -m src.training.baselines.xgb_baseline --run-name <RUN_NAME>
+```
+
+### Baseline bổ sung: RSSI/SNR Threshold, Logistic Regression, Random Forest
+
+```bash
+python3 -m src.training.baselines.RSSI_SNR_Baseline --run-name <RUN_NAME>
+python3 -m src.training.baselines.Logistic_Regression_Baseline --run-name <RUN_NAME>
+python3 -m src.training.baselines.Random_Forest_Baseline --run-name <RUN_NAME>
+```
+
+Chạy cho tất cả run bằng vòng lặp:
+
+```bash
+for d in data/graph_dataset/<PATTERN>; do
+  r=$(basename "$d")
+  python3 -m src.training.baselines.RSSI_SNR_Baseline --run-name "$r"
+  python3 -m src.training.baselines.Logistic_Regression_Baseline --run-name "$r"
+  python3 -m src.training.baselines.Random_Forest_Baseline --run-name "$r"
+done
 ```
 
 ### GNN (GraphSAGE / GAT)
@@ -192,6 +223,39 @@ Biểu đồ được lưu tại:
 *   [outputs/aggregates/all_models/model_comparison.png](file:///Users/dtam.21/Code/DACN/outputs/aggregates/all_models/model_comparison.png)
 *   [outputs/aggregates/loro/loro_comparison.png](file:///Users/dtam.21/Code/DACN/outputs/aggregates/loro/loro_comparison.png)
 
+### Làm mới metrics GNN cũ (ROC-AUC, PR-AUC, inference time)
+
+`metrics.csv` giờ có thêm `roc_auc`, `pr_auc`, `inference_time_ms`,
+`inference_ms_per_sample`. Với các GNN đã train trước khi bổ sung các cột này,
+tính lại từ model đã lưu mà **không cần train lại**:
+
+```bash
+python3 -m src.evaluation.refresh_gnn_metrics --run-pattern '<PATTERN>'
+```
+
+(Baseline tabular train nhanh nên chạy lại script train là đủ.)
+
+## 7b. Routing support và đánh giá hiệu năng mạng (replay)
+
+Tích hợp xác suất ổn định dự đoán vào chọn tuyến (`w = 1 − ŷ` + Dijkstra) và
+so sánh 4 chiến lược (shortest-hop ≈ OLSR lý tưởng, delay-weighted,
+XGBoost-assisted, GNN-assisted) bằng replay trên test snapshot. Chi tiết:
+[src/routing/README.md](../src/routing/README.md).
+
+```bash
+# Toàn bộ: inference + replay từng run + aggregate + biểu đồ
+./scripts/routing/run_routing_for_runs.sh '<PATTERN>' edge-sage
+
+# Khảo sát trade-off p_th (an toàn tuyến ↔ duy trì liên thông)
+for d in data/graph_dataset/<PATTERN>; do
+  python3 -m src.routing.replay_eval --run-name "$(basename "$d")" \
+    --p-th 0.3,0.5,0.7 --strict
+done
+python3 -m src.routing.plot_pth_sweep
+```
+
+Kết quả: `outputs/aggregates/routing/{routing_comparison.png, pth_tradeoff.png}`.
+
 ### Tổng hợp riêng cho Baselines (đồ cũ)
 
 ```bash
@@ -204,28 +268,31 @@ Biểu đồ được lưu tại:
 ```text
 data/raw_snapshots/<RUN_NAME>/
 data/graph_dataset/<RUN_NAME>/
-outputs/baselines/mlp/<RUN_NAME>/
-outputs/baselines/xgb/<RUN_NAME>/
+outputs/baselines/<MODEL_ID>/<RUN_NAME>/    # mlp | xgb | threshold | logreg | rf
 outputs/gnn/<MODEL_ID>/<RUN_NAME>/          # graphsage | gat | edge-sage | *-noedge
 outputs/loro/<MODEL_ID>/<TEST_RUN>/         # kết quả leave-one-run-out
+outputs/routing/<RUN_NAME>/                 # predictions + replay (summary, details, *_pth*)
 outputs/aggregates/all_models/
 outputs/aggregates/loro/
+outputs/aggregates/routing/
 outputs/aggregates/baselines/
 ```
 
 ## 9. Luồng chuẩn hằng ngày
 
 ```bash
-./scripts/dataset/run_many_random_datasets.sh 10 exp01
+./scripts/dataset/run_many_random_datasets_ns3.sh 100 exp01
 ./scripts/train/mlp/run_all_mlp_for_runs.sh 'exp01_*'
 ./scripts/train/xgb/run_all_xgb_for_runs.sh 'exp01_*'
+# + 3 baseline bổ sung (threshold/logreg/rf) — xem mục 5
 ./scripts/train/gnn/run_all_gnn_for_runs.sh 'exp01_*' graphsage
 ./scripts/train/gnn/run_all_gnn_for_runs.sh 'exp01_*' gat
 ./scripts/train/gnn/run_edge_sage_for_runs.sh 'exp01_*'
-./scripts/train/gnn/run_loro.sh
+BALANCED_IDS="..." ./scripts/train/gnn/run_loro.sh
 python3 -m src.evaluation.aggregate_all_metrics --filter-balanced
 python3 -m src.evaluation.aggregate_all_metrics --loro
 python3 -m src.evaluation.plot_comparison
+./scripts/routing/run_routing_for_runs.sh 'exp01_*' edge-sage
 ```
 
 ## 10. Scenario mẫu cho báo cáo
