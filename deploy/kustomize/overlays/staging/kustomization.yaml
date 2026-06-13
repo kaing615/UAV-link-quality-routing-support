@@ -2,28 +2,28 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - ../../base
+- ../../base
 
 namespace: uav-gnn-staging
 
 namePrefix: staging-
 
 patches:
-  - target:
-      kind: Deployment
-      name: uav-gnn-serve
-    patch: |
-      - op: replace
-        path: /spec/replicas
-        value: 1
-      - op: replace
-        path: /spec/template/spec/containers/0/resources/requests/cpu
-        value: 250m
-      - op: replace
-        path: /spec/template/spec/containers/0/resources/requests/memory
-        value: 256Mi
+- patch: |
+    - op: replace
+      path: /spec/replicas
+      value: 1
+    - op: replace
+      path: /spec/template/spec/containers/0/resources/requests/cpu
+      value: 250m
+    - op: replace
+      path: /spec/template/spec/containers/0/resources/requests/memory
+      value: 256Mi
+  target:
+    kind: Deployment
+    name: uav-gnn-serve
 
 images:
-  - name: uav-gnn-serve
-    newName: ghcr.io/kaing615/uav-link-quality-routing-support/uav-gnn-serve
-    newTag: latest
+- name: uav-gnn-serve
+  newName: ghcr.io/kaing615/UAV-link-quality-routing-support/uav-gnn-serve
+  newTag: latest
