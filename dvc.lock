@@ -130,13 +130,24 @@ stages:
       size: 981858
       nfiles: 4
   routing:
-    cmd: bash scripts/routing/run_routing_for_runs.sh 'ns3big_*' edge-sage
+    cmd: bash scripts/routing/run_routing_for_runs.sh 'ns3big_*' edge-sage && 
+      bash scripts/routing/run_pth_sweep.sh
     deps:
     - path: outputs/gnn/
       hash: md5
       md5: 883be13d3ae7c98ea830af0eae2f8cc8.dir
       size: 110386029
       nfiles: 3000
+    - path: scripts/routing/run_pth_sweep.sh
+      hash: md5
+      md5: 5fa732211e2696bb38a11197a3c8173e
+      size: 3471
+      isexec: true
+    - path: scripts/routing/run_routing_for_runs.sh
+      hash: md5
+      md5: 7439b5a51f8695e0b556bb9bcdec8925
+      size: 1978
+      isexec: true
     - path: src/routing/
       hash: md5
       md5: 3c3fede710a81ce8469f3602af6c6844.dir
@@ -145,14 +156,14 @@ stages:
     outs:
     - path: outputs/aggregates/routing/
       hash: md5
-      md5: d21899a4c9600da68a86bc4ab7a1e435.dir
-      size: 378440
-      nfiles: 6
+      md5: 5751466c8723955ae27ac10d1e35ca52.dir
+      size: 492800
+      nfiles: 8
     - path: outputs/routing/
       hash: md5
-      md5: 9bec6b7b023a62fcacf07f26e8a0bc5b.dir
-      size: 57867930
-      nfiles: 400
+      md5: 7dd3e6a5413c0126044b3e6653ca86b6.dir
+      size: 229790757
+      nfiles: 1800
   loro:
     cmd: bash scripts/train/gnn/run_loro.sh && python -m 
       src.evaluation.aggregate_all_metrics --loro && python -m 

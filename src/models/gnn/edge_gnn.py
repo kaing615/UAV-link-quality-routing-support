@@ -3,8 +3,7 @@ from __future__ import annotations
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch_geometric.nn import SAGEConv, GATConv
-from torch_geometric.nn import MessagePassing
+from torch_geometric.nn import GATConv, MessagePassing, SAGEConv
 
 
 class GraphSAGEEdgeClassifier(nn.Module):
@@ -175,6 +174,7 @@ class GATEdgeClassifier(nn.Module):
 # ---------------------------------------------------------------------------
 # Edge-aware GraphSAGE
 # ---------------------------------------------------------------------------
+
 
 class EdgeAwareSAGEConv(MessagePassing):
     """

@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: uav-gnn-config
+data:
+  MODEL_ID: "edge-sage"
+  HIDDEN_CHANNELS: "128"
+  NUM_LAYERS: "2"
+  THRESHOLD: "0.5"
+  LOG_LEVEL: "info"

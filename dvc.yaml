@@ -4,9 +4,21 @@ stages:
     deps: [scripts/dataset/generate_batch.py, simulation/ns3/uav-olsr-dataset.cc, src/preprocessing/]
     params: [generate]
     outs: [data/raw_snapshots/, data/graph_dataset/]
+  validate:
+    cmd: python -m src.validation.data_quality --fail-on-error
+    deps:
+      - data/graph_dataset/
+      - src/validation/
+    metrics:
+      - reports/data_quality.json:
+          cache: false
   train_baselines:
     cmd: bash scripts/train/baselines/run_all_baselines_for_runs.sh 'ns3big_*'
-    deps: [data/graph_dataset/, scripts/train/baselines/, src/training/baselines/]
+    deps:
+      - data/graph_dataset/
+      - reports/data_quality.json
+      - scripts/train/baselines/
+      - src/training/baselines/
     outs: [outputs/baselines/]
   train_gnn:
     cmd: >-
@@ -20,6 +32,7 @@ stages:
       bash scripts/train/gnn/run_edge_sage_for_runs.sh 'ns3big_*'
     deps:
       - data/graph_dataset/
+      - reports/data_quality.json
       - scripts/train/gnn/run_all_gnn_for_runs.sh
       - scripts/train/gnn/run_edge_sage_for_runs.sh
       - src/training/gnn/
@@ -31,8 +44,14 @@ stages:
     deps: [outputs/baselines/, outputs/gnn/, src/evaluation/]
     outs: [outputs/aggregates/all_models/]
   routing:
-    cmd: bash scripts/routing/run_routing_for_runs.sh 'ns3big_*' edge-sage
-    deps: [outputs/gnn/, src/routing/]
+    cmd: >-
+      bash scripts/routing/run_routing_for_runs.sh 'ns3big_*' edge-sage
+      && bash scripts/routing/run_pth_sweep.sh
+    deps:
+      - outputs/gnn/
+      - src/routing/
+      - scripts/routing/run_routing_for_runs.sh
+      - scripts/routing/run_pth_sweep.sh
     outs: [outputs/routing/, outputs/aggregates/routing/]
   loro:
     cmd: >-
@@ -43,5 +62,12 @@ stages:
       --output-dir outputs/aggregates/loro
       --title 'LORO Generalization Comparison (Held-out Run)'
       --filename loro_model_comparison.png
-    deps: [data/graph_dataset/, scripts/train/gnn/run_loro.sh, src/training/, src/models/, src/evaluation/]
+    deps:
+      - data/graph_dataset/
+      - reports/data_quality.json
+      - scripts/train/gnn/run_loro.sh
+      - src/training/
+      - src/models/
+      - src/evaluation/
     outs: [outputs/loro/, outputs/aggregates/loro/]
+

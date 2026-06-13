@@ -149,10 +149,7 @@ class OLSRProtocol:
             for one_hop_id in node.neighbor_table:
                 if one_hop_id in mpr:
                     continue
-                coverage = sum(
-                    1 for th in uncovered
-                    if one_hop_id in node.two_hop_table.get(th, set())
-                )
+                coverage = sum(1 for th in uncovered if one_hop_id in node.two_hop_table.get(th, set()))
                 if coverage > best_cov:
                     best_cov = coverage
                     best = one_hop_id

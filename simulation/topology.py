@@ -15,11 +15,7 @@ from metrics import (
 
 
 def euclidean_distance_3d(a: UAV, b: UAV) -> float:
-    return math.sqrt(
-        (a.x - b.x) ** 2
-        + (a.y - b.y) ** 2
-        + (a.z - b.z) ** 2
-    )
+    return math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2 + (a.z - b.z) ** 2)
 
 
 def compute_relative_speed(a: UAV, b: UAV) -> float:

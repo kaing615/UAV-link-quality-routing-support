@@ -23,6 +23,7 @@ dist/
 *.egg-info/
 .pytest_cache/
 .mypy_cache/
+.ruff_cache/
 
 .env
 
@@ -49,8 +50,12 @@ data/processed/
 *.ckpt
 *.pkl
 
-# AI assistant memory
 memory/claude_summary.md
 simulation/ns3/build/
 
 .cache/
+**/dvclive/
+
+# Serving model staging dir (weights pulled via DVC, never committed)
+models/*
+!models/.gitkeep

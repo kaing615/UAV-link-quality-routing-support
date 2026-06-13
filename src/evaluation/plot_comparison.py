@@ -8,15 +8,15 @@ import pandas as pd
 
 # Define a professional, harmonious color palette
 COLORS = {
-    "threshold": "#7f7f7f",        # Grey — rule-based reference
-    "logreg": "#c5b0d5",           # Light Purple
-    "rf": "#9467bd",               # Purple
-    "xgb": "#1f77b4",              # Steel Blue
-    "mlp": "#aec7e8",              # Light Blue
-    "gat": "#ff7f0e",              # Dark Orange
-    "graphsage": "#ffbb78",        # Light Orange
-    "edge-sage": "#2ca02c",        # Green — proposed model
-    "gat-noedge": "#c49c94",       # Muted — ablations
+    "threshold": "#7f7f7f",  # Grey — rule-based reference
+    "logreg": "#c5b0d5",  # Light Purple
+    "rf": "#9467bd",  # Purple
+    "xgb": "#1f77b4",  # Steel Blue
+    "mlp": "#aec7e8",  # Light Blue
+    "gat": "#ff7f0e",  # Dark Orange
+    "graphsage": "#ffbb78",  # Light Orange
+    "edge-sage": "#2ca02c",  # Green — proposed model
+    "gat-noedge": "#c49c94",  # Muted — ablations
     "graphsage-noedge": "#dbb8ab",
     "edge-sage-noedge": "#98df8a",
 }
@@ -74,7 +74,7 @@ def main() -> None:
         return
 
     df = pd.read_csv(args.summary_csv)
-    
+
     # Filter for test split
     test_df = df[df["split"] == "test"].copy()
 
@@ -84,8 +84,17 @@ def main() -> None:
 
     # Sort models for consistent display
     order = [
-        "threshold", "logreg", "rf", "xgb", "mlp", "gat", "graphsage", "edge-sage",
-        "gat-noedge", "graphsage-noedge", "edge-sage-noedge",
+        "threshold",
+        "logreg",
+        "rf",
+        "xgb",
+        "mlp",
+        "gat",
+        "graphsage",
+        "edge-sage",
+        "gat-noedge",
+        "graphsage-noedge",
+        "edge-sage-noedge",
     ]
     test_df["sort_idx"] = test_df["model_id"].map(lambda x: order.index(x) if x in order else 99)
     test_df = test_df.sort_values("sort_idx")
@@ -120,7 +129,7 @@ def main() -> None:
 
         # Shift bars to group them per metric
         positions = [x + (idx - (n_models - 1) / 2) * width for x in x_indices]
-        
+
         ax.bar(
             positions,
             means,
@@ -148,13 +157,16 @@ def main() -> None:
 
     ax.set_title(
         args.title,
-        fontsize=14, fontweight="bold", pad=50, color="#2c3e50",
+        fontsize=14,
+        fontweight="bold",
+        pad=50,
+        color="#2c3e50",
     )
     ax.set_xticks(x_indices)
     ax.set_xticklabels(metric_labels, fontsize=11, fontweight="semibold", color="#2c3e50")
     ax.set_ylabel("Score (0.0 - 1.0)", fontsize=11, fontweight="semibold", color="#2c3e50")
     ax.set_ylim(0, 1.1)
-    
+
     # Legend styling — placed above the plot so it never covers bars
     ax.legend(
         loc="lower center",
@@ -165,11 +177,11 @@ def main() -> None:
         edgecolor="#dddddd",
         fontsize=9,
     )
-    
+
     ax.grid(True, linestyle="--", alpha=0.5, color="#cccccc")
 
     plt.tight_layout()
-    
+
     args.output_dir.mkdir(parents=True, exist_ok=True)
     out_path = args.output_dir / args.filename
     plt.savefig(out_path, dpi=300, facecolor=fig.get_facecolor(), edgecolor="none")

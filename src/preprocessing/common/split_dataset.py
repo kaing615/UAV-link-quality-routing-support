@@ -31,8 +31,8 @@ def build_time_split(
             n_train -= 1
 
     train_times = times[:n_train]
-    val_times = times[n_train:n_train + n_val]
-    test_times = times[n_train + n_val:]
+    val_times = times[n_train : n_train + n_val]
+    test_times = times[n_train + n_val :]
 
     train_set = set(train_times)
     val_set = set(val_times)

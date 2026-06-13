@@ -29,8 +29,8 @@ Output: outputs/routing/<RUN_NAME>/{summary.csv, details.csv}
 from __future__ import annotations
 
 import argparse
-import math
 from pathlib import Path
+from typing import Any, cast
 
 import networkx as nx
 import pandas as pd
@@ -51,14 +51,11 @@ def load_raw_edges(run_name: str) -> dict[int, dict[tuple[int, int], dict]]:
     """time -> {(u, v) -> row dict} for connected edges; includes validity flag."""
     edges = pd.read_csv(Path("data/raw_snapshots") / run_name / "edges.csv")
     by_time: dict[int, dict[tuple[int, int], dict]] = {}
-    for row in edges.itertuples(index=False):
+    for r in edges.itertuples(index=False):
+        row: Any = r
         if int(row.connected) != 1:
             continue
-        valid = (
-            row.snr > TAU_SNR
-            and row.packet_loss < TAU_LOSS
-            and row.delay < TAU_DELAY
-        )
+        valid = row.snr > TAU_SNR and row.packet_loss < TAU_LOSS and row.delay < TAU_DELAY
         by_time.setdefault(int(row.time), {})[canonical(int(row.src), int(row.dst))] = {
             "delay": float(row.delay),
             "packet_loss": float(row.packet_loss),
@@ -71,7 +68,8 @@ def load_prediction_scores(csv_path: Path) -> dict[tuple[int, int, int], float]:
     """(time, u, v) -> stability score in [0, 1]."""
     df = pd.read_csv(csv_path)
     scores = {}
-    for row in df.itertuples(index=False):
+    for r in df.itertuples(index=False):
+        row: Any = r
         u, v = canonical(int(row.src), int(row.dst))
         scores[(int(row.time), u, v)] = float(row.pred_score)
     return scores
@@ -93,7 +91,8 @@ def load_olsr_routes(run_name: str) -> tuple[tuple[int, int] | None, dict[int, l
         return None, {}
     pair = (int(df.iloc[0]["source"]), int(df.iloc[0]["destination"]))
     routes: dict[int, list[int] | None] = {}
-    for row in df.itertuples(index=False):
+    for r in df.itertuples(index=False):
+        row: Any = r
         if int(row.reachable) == 1 and isinstance(row.route_path, str) and row.route_path:
             routes[int(row.time)] = [int(n) for n in row.route_path.split("->")]
         else:
@@ -127,7 +126,7 @@ def build_strategy_graph(
 
 def shortest_path(g: nx.Graph, src: int, dst: int) -> list[int] | None:
     try:
-        return nx.dijkstra_path(g, src, dst, weight="weight")
+        return cast(list[int], nx.dijkstra_path(g, src, dst, weight="weight"))
     except (nx.NetworkXNoPath, nx.NodeNotFound):
         return None
 
@@ -182,39 +181,22 @@ def evaluate_run(
 
         base_graph = nx.Graph(list(edges_t.keys()))
         nodes = sorted(base_graph.nodes())
-        pairs = [
-            (s, d)
-            for i, s in enumerate(nodes)
-            for d in nodes[i + 1 :]
-            if nx.has_path(base_graph, s, d)
-        ]
+        pairs = [(s, d) for i, s in enumerate(nodes) for d in nodes[i + 1 :] if nx.has_path(base_graph, s, d)]
         # Keep the OLSR pair in every snapshot (route_found=0 when unreachable)
         # so the same-pair comparison covers identical session sets.
         if olsr_pair is not None and olsr_pair not in set(pairs):
             pairs.append(olsr_pair)
 
-        graphs = {
-            st: build_strategy_graph(edges_t, st, t, scores, p_th)
-            for st in strategies
-        }
+        graphs = {st: build_strategy_graph(edges_t, st, t, scores, p_th) for st in strategies}
 
         for s, d in pairs:
             for st in strategies:
                 path = shortest_path(graphs[st], s, d)
-                if (
-                    path is None
-                    and st in PREDICTION_STRATEGIES
-                    and p_th > 0.0
-                    and not strict
-                ):
+                if path is None and st in PREDICTION_STRATEGIES and p_th > 0.0 and not strict:
                     # p_th filter disconnected the pair: fall back to unfiltered
-                    path = shortest_path(
-                        build_strategy_graph(edges_t, st, t, scores, 0.0), s, d
-                    )
+                    path = shortest_path(build_strategy_graph(edges_t, st, t, scores, 0.0), s, d)
                 if path is None:
-                    records.append(
-                        {"time": t, "src": s, "dst": d, "strategy": st, "route_found": 0}
-                    )
+                    records.append({"time": t, "src": s, "dst": d, "strategy": st, "route_found": 0})
                     continue
 
                 lifetime = 0
@@ -233,9 +215,7 @@ def evaluate_run(
                     if path_valid(cur, edges_tk):
                         continue
                     changes += 1
-                    new_path = shortest_path(
-                        build_strategy_graph(edges_tk, st, tk, scores, p_th), s, d
-                    )
+                    new_path = shortest_path(build_strategy_graph(edges_tk, st, tk, scores, p_th), s, d)
                     if new_path is None:
                         disconnected = 1
                         break
@@ -274,9 +254,7 @@ def evaluate_run(
             h_t = min(horizon, max_time - t)
             path = olsr_routes.get(t)
             if not path:
-                records.append(
-                    {"time": t, "src": s, "dst": d, "strategy": "olsr", "route_found": 0}
-                )
+                records.append({"time": t, "src": s, "dst": d, "strategy": "olsr", "route_found": 0})
                 continue
 
             lifetime = 0
@@ -386,23 +364,33 @@ def evaluate_run(
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Replay-based routing evaluation on test snapshots.")
     p.add_argument("--run-name", type=str, required=True)
-    p.add_argument("--gnn-predictions", type=Path, default=None,
-                   help="edge_predictions CSV (default: outputs/routing/<RUN>/edge_predictions_edge-sage.csv)")
+    p.add_argument(
+        "--gnn-predictions",
+        type=Path,
+        default=None,
+        help="edge_predictions CSV (default: outputs/routing/<RUN>/edge_predictions_edge-sage.csv)",
+    )
     p.add_argument("--horizon", type=int, default=5)
-    p.add_argument("--p-th", type=str, default="0.0",
-                   help="Threshold(s) excluding links with predicted stability below the value; "
-                        "comma-separated for a sweep, e.g. '0.3,0.5,0.7'")
-    p.add_argument("--strict", action="store_true", default=False,
-                   help="No fallback to the unfiltered graph when p_th disconnects a pair "
-                        "(route_found_rate then measures the connectivity cost)")
+    p.add_argument(
+        "--p-th",
+        type=str,
+        default="0.0",
+        help="Threshold(s) excluding links with predicted stability below the value; "
+        "comma-separated for a sweep, e.g. '0.3,0.5,0.7'",
+    )
+    p.add_argument(
+        "--strict",
+        action="store_true",
+        default=False,
+        help="No fallback to the unfiltered graph when p_th disconnects a pair "
+        "(route_found_rate then measures the connectivity cost)",
+    )
     return p.parse_args()
 
 
 if __name__ == "__main__":
     args = parse_args()
-    gnn_csv = args.gnn_predictions or (
-        Path("outputs/routing") / args.run_name / "edge_predictions_edge-sage.csv"
-    )
+    gnn_csv = args.gnn_predictions or (Path("outputs/routing") / args.run_name / "edge_predictions_edge-sage.csv")
     for p_th in [float(v) for v in args.p_th.split(",")]:
         summary_csv, details_csv = evaluate_run(
             args.run_name, gnn_csv, horizon=args.horizon, p_th=p_th, strict=args.strict

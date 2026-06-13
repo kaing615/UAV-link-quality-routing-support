@@ -1,13 +1,12 @@
 from __future__ import annotations
 
 import argparse
-import sys
 from pathlib import Path
 
-from src.preprocessing.gnn.build_features import build_feature_tables
-from src.preprocessing.gnn.build_labels import build_labeled_edges
 from src.preprocessing.common.split_dataset import build_time_split
+from src.preprocessing.gnn.build_features import build_feature_tables
 from src.preprocessing.gnn.build_graph_dataset import build_graph_records
+from src.preprocessing.gnn.build_labels import build_labeled_edges
 
 
 def run_pipeline(
@@ -73,11 +72,8 @@ def run_pipeline(
     }
 
 
-
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Run the full graph dataset preprocessing pipeline."
-    )
+    parser = argparse.ArgumentParser(description="Run the full graph dataset preprocessing pipeline.")
     parser.add_argument("--run-name", type=str, default=None)
     parser.add_argument("--nodes", type=Path, default=None)
     parser.add_argument("--edges", type=Path, default=None)

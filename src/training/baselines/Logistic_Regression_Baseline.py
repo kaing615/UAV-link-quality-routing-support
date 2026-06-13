@@ -78,9 +78,7 @@ def parse_args() -> argparse.Namespace:
 # =========================
 def main() -> None:
     args = parse_args()
-    train_weighted, train_oversampled, val_csv, test_csv, output_dir = resolve_paths(
-        args, MODEL_ID, DEFAULT_OUTPUT_DIR
-    )
+    train_weighted, train_oversampled, val_csv, test_csv, output_dir = resolve_paths(args, MODEL_ID, DEFAULT_OUTPUT_DIR)
 
     print(f"[RUN] run_name={args.run_name or 'default'}")
 
@@ -89,9 +87,7 @@ def main() -> None:
     val_df = load_dataframe(val_csv)
     test_df = load_dataframe(test_csv)
 
-    model, train_strategy = fit_logreg(
-        weighted_train_df, oversampled_train_df, args.random_state
-    )
+    model, train_strategy = fit_logreg(weighted_train_df, oversampled_train_df, args.random_state)
 
     val_metrics, val_predictions = evaluate_split(model, MODEL_ID, MODEL_NAME, val_df, "val")
     test_metrics, test_predictions = evaluate_split(model, MODEL_ID, MODEL_NAME, test_df, "test")

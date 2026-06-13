@@ -37,6 +37,12 @@ Degenerate runs (positive_ratio > 0.95): 02,03,06,09,10 — filtered by aggregat
 - Batch scripts: scripts/train/gnn/run_all_gnn_for_runs.sh
 - Aggregate: src/evaluation/aggregate_all_metrics.py (supports --filter-balanced)
 - Visualization: src/evaluation/plot_comparison.py → outputs/aggregates/all_models/model_comparison.png
+- MLOps Pipeline Integration (Tiers 1-5 completed):
+  - Experiment Tracking: DVCLive logging integrated into GNN and baseline training pipelines.
+  - Data Validation: Added data quality checks in `src/validation/` and integrated the `validate` stage in `dvc.yaml`.
+  - Model Serving API: Created FastAPI inference serving app (`src/serving/`) and containerized it with `Dockerfile.serve`.
+  - CI/CD & GitOps: Implemented GitHub Actions CI/CD workflows and GitOps manifests (Kustomize/ArgoCD) under `deploy/`.
+  - Automated Tests: Written unit tests under `tests/` for data quality, GNN model shapes, and preprocessing.
 
 ## Edge-Aware GraphSAGE (added 2026-06-11)
 - `EdgeAwareSAGEConv` in `edge_gnn.py` — custom MessagePassing layer that concatenates edge_attr with neighbor embedding before aggregation

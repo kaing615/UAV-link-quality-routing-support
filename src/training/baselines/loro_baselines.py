@@ -1,22 +1,3 @@
-"""
-Leave-one-run-out (LORO) training for tabular baselines
-(XGBoost, MLP, Logistic Regression, Random Forest, RSSI/SNR threshold).
-
-Mirrors src/training/gnn/train_gnn_loro.py so GNN and baselines are compared
-under the same protocol:
-
-  train = train-split rows of all --train-runs (raw features, combined)
-  val   = val-split rows of all --train-runs (threshold tuning)
-  test  = ALL rows of --test-run (never seen)
-
-Raw features from features/edges_labeled.csv are used instead of the per-run
-standardized CSVs: per-run scalers would apply a different transform to each
-run, which leaks run identity and distorts cross-run evaluation. The MLP gets
-a StandardScaler fitted on the combined training rows only.
-
-Outputs go to outputs/loro/<model_id>/<test_run>/metrics.csv in the same
-format as the within-run baselines.
-"""
 from __future__ import annotations
 
 import argparse
@@ -38,6 +19,8 @@ from src.training.baselines.common import (
 )
 from src.training.baselines.RSSI_SNR_Baseline import (
     ThresholdModel,
+)
+from src.training.baselines.RSSI_SNR_Baseline import (
     find_best_threshold as find_rssi_snr_thresholds,
 )
 
@@ -75,21 +58,26 @@ def build_model(model_id: str, pos_weight: float, random_state: int):
             random_state=random_state,
         )
     if model_id == "mlp":
-        return Pipeline([
-            ("scaler", StandardScaler()),
-            ("mlp", MLPClassifier(
-                hidden_layer_sizes=(32, 16),
-                activation="relu",
-                solver="adam",
-                alpha=1e-4,
-                learning_rate_init=1e-3,
-                max_iter=500,
-                early_stopping=True,
-                validation_fraction=0.1,
-                n_iter_no_change=20,
-                random_state=random_state,
-            )),
-        ])
+        return Pipeline(
+            [
+                ("scaler", StandardScaler()),
+                (
+                    "mlp",
+                    MLPClassifier(
+                        hidden_layer_sizes=(32, 16),
+                        activation="relu",
+                        solver="adam",
+                        alpha=1e-4,
+                        learning_rate_init=1e-3,
+                        max_iter=500,
+                        early_stopping=True,
+                        validation_fraction=0.1,
+                        n_iter_no_change=20,
+                        random_state=random_state,
+                    ),
+                ),
+            ]
+        )
     # Within-run logreg/rf train on the sample-weighted CSVs; here we work on
     # raw combined rows, so class_weight="balanced" plays the same role.
     if model_id == "logreg":
@@ -197,8 +185,10 @@ def main() -> None:
     }
     (output_dir / "metadata.json").write_text(json.dumps(metadata, indent=2), encoding="utf-8")
 
-    print(f"[OK]  test ({args.test_run}): macro_f1={test_metrics['macro_f1']:.4f}"
-          f"  f1={test_metrics['f1']:.4f}  recall={test_metrics['recall']:.4f}")
+    print(
+        f"[OK]  test ({args.test_run}): macro_f1={test_metrics['macro_f1']:.4f}"
+        f"  f1={test_metrics['f1']:.4f}  recall={test_metrics['recall']:.4f}"
+    )
     print(f"      outputs → {output_dir}")
 
 

@@ -47,11 +47,7 @@ def plot(df: pd.DataFrame, output_dir: Path, title: str) -> Path:
 
     agg = (
         pred.groupby(["strategy", "p_th"])
-        .agg(**{
-            f"{col}_{stat}": (col, stat)
-            for col, _, _ in PANELS
-            for stat in ["mean", "std"]
-        })
+        .agg(**{f"{col}_{stat}": (col, stat) for col, _, _ in PANELS for stat in ["mean", "std"]})
         .reset_index()
     )
 
@@ -97,8 +93,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--routing-root", type=Path, default=Path("outputs/routing"))
     p.add_argument("--output-dir", type=Path, default=Path("outputs/aggregates/routing"))
     p.add_argument("--pattern", type=str, default="*")
-    p.add_argument("--title", type=str,
-                   default="Trade-off giữa an toàn tuyến và duy trì liên thông theo p_th")
+    p.add_argument("--title", type=str, default="Trade-off giữa an toàn tuyến và duy trì liên thông theo p_th")
     return p.parse_args()
 
 

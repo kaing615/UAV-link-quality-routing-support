@@ -75,11 +75,11 @@ def parse_args() -> argparse.Namespace:
 
 def collect_detail_rows(roots: list[tuple[str, Path]], model_pattern: str, run_pattern: str) -> pd.DataFrame:
     frames: list[pd.DataFrame] = []
-    
+
     for group_name, root in roots:
         if not root.is_dir():
             continue
-            
+
         for model_dir in sorted(path for path in root.iterdir() if path.is_dir()):
             if not fnmatch.fnmatch(model_dir.name, model_pattern):
                 continue
@@ -96,7 +96,7 @@ def collect_detail_rows(roots: list[tuple[str, Path]], model_pattern: str, run_p
                 df["group"] = group_name
                 df["model_dir"] = model_dir.name
                 df["run_name"] = run_dir.name
-                df["scenario"] = df["run_name"].map(infer_scenario)
+                df["scenario"] = infer_scenario(run_dir.name)
                 frames.append(df)
 
     if not frames:
@@ -126,7 +126,7 @@ def aggregate(df: pd.DataFrame, group_columns: list[str]) -> pd.DataFrame:
 
 def main() -> None:
     args = parse_args()
-    
+
     if args.loro:
         roots = [("loro", Path("outputs/loro"))]
         if args.output_dir == Path("outputs/aggregates/all_models"):
@@ -143,9 +143,9 @@ def main() -> None:
         # A run is degenerate if its positive ratio is extreme (e.g., > 0.95 or < 0.05)
         # We find such run_names and exclude them entirely across all models/splits
         imbalanced_runs = detail_df[
-            (detail_df["positive_ratio"] > 0.95) | 
-            (detail_df["positive_ratio"] < 0.05) |
-            (detail_df["has_both_classes"] == False)
+            (detail_df["positive_ratio"] > 0.95)
+            | (detail_df["positive_ratio"] < 0.05)
+            | (~detail_df["has_both_classes"])
         ]["run_name"].unique()
         print(f"[INFO] Excluding {len(imbalanced_runs)} imbalanced/degenerate runs: {list(imbalanced_runs)}")
         detail_df = detail_df[~detail_df["run_name"].isin(imbalanced_runs)]

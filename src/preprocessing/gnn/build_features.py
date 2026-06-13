@@ -24,8 +24,19 @@ def build_feature_tables(nodes_csv: Path, edges_csv: Path, output_dir: Path) -> 
     nodes = nodes[["time", "node_id", "x", "y", "z", "vx", "vy", "vz", "speed", "degree", "load"]]
 
     edge_cols = [
-        "time", "src", "dst", "connected", "distance", "rssi", "snr",
-        "delay", "packet_loss", "relative_speed", "throughput", "p_stable", "weight",
+        "time",
+        "src",
+        "dst",
+        "connected",
+        "distance",
+        "rssi",
+        "snr",
+        "delay",
+        "packet_loss",
+        "relative_speed",
+        "throughput",
+        "p_stable",
+        "weight",
     ]
     edges = edges[edge_cols].copy()
 

@@ -107,26 +107,27 @@ Tóm lại, hệ thống đóng vai trò như một **routing support module**, 
 | **Phương pháp heuristic**          | Threshold-based trên RSSI/SNR                                               |
 | **Mô hình chính**                  | **Edge-Aware GraphSAGE** (biến thể GraphSAGE đề xuất, tích hợp edge features vào message passing) |
 | **Mô hình đối chiếu**              | GraphSAGE gốc, GAT                                                          |
-| **MLOps**                          | DVC (pipeline + data versioning, remote Google Drive), Docker (ns-3 + môi trường Python đóng gói sẵn) |
+| **MLOps & Deployment**            | DVC (pipeline + data versioning, remote Google Drive), DVCLive (experiment tracking), GitHub Actions (CI/CD), FastAPI + Docker (Model serving), Kustomize + ArgoCD (GitOps deployment) |
 
 ---
 
 ## Tái lập kết quả (Reproducibility — DVC)
 
-Toàn bộ thí nghiệm được đóng gói thành **pipeline DVC** ([dvc.yaml](./dvc.yaml)) gồm 6 stage:
+Toàn bộ thí nghiệm được đóng gói thành **pipeline DVC** ([dvc.yaml](./dvc.yaml)) gồm 7 stage:
 
 ```text
-generate ──► train_baselines ──► evaluate
-    │     └► train_gnn ────────┘    │
-    │              └────────► routing
-    └────────────────────────► loro
+generate ──► validate ──► train_baselines ──► evaluate
+    │           │      └► train_gnn ────────┘    │
+    │           │               └────────► routing
+    └───────────┴────────────────────────► loro
 ```
 
 | Stage | Nội dung |
 | --- | --- |
 | `generate` | Sinh 100 run ns-3 (OLSR thật, Random Waypoint + Gauss-Markov) — deterministic theo `base_seed` trong [params.yaml](./params.yaml) |
-| `train_baselines` | 5 baseline: threshold, logreg, rf, mlp, xgb × 100 runs |
-| `train_gnn` | 6 GNN: graphsage, gat, edge-sage + 3 bản ablation `-noedge` × 100 runs |
+| `validate` | Kiểm tra chất lượng dữ liệu đồ thị (tính toàn vẹn đồ thị, class imbalance, NaN/Inf) |
+| `train_baselines` | 5 baseline: threshold, logreg, rf, mlp, xgb × 100 runs (phụ thuộc vào kết quả validate) |
+| `train_gnn` | 6 GNN: graphsage, gat, edge-sage + 3 bản ablation `-noedge` × 100 runs (phụ thuộc vào kết quả validate) |
 | `evaluate` | Tổng hợp 11 model + biểu đồ so sánh within-run |
 | `routing` | Replay routing: hop / delay / xgb / gnn so với OLSR thật, 100 runs |
 | `loro` | Leave-One-Run-Out: 6 folds × (3 GNN + 5 baselines) + tổng hợp & biểu đồ |
@@ -206,11 +207,15 @@ Việc kết hợp cả **node features**, **edge features** và **graph topolog
 
 ```text
 UAV-link-quality-routing-support
-├── dvc.yaml                  # Định nghĩa pipeline DVC (6 stage, xem mục Tái lập kết quả)
+├── dvc.yaml                  # Định nghĩa pipeline DVC (7 stage, xem mục Tái lập kết quả)
 ├── dvc.lock                  # Hash của data/models — bản đồ để dvc pull đúng phiên bản
 ├── params.yaml               # Tham số pipeline (số run, seed, hyperparams GNN)
 ├── Dockerfile                # Image ns-3 + Python environment đóng gói sẵn
-├── requirements.txt          # Dependencies Python (pin version)
+├── Dockerfile.serve          # Dockerfile phục vụ API suy luận mô hình GNN/Baselines
+├── requirements.txt          # Dependencies Python cho training/evaluation
+├── requirements-serve.txt    # Dependencies Python cho model serving API
+├── .github/                  # Cấu hình GitHub Actions CI/CD workflows
+├── deploy/                   # Cấu hình GitOps Deployment (Kustomize, ArgoCD)
 ├── docs/                     # Tài liệu mô tả pipeline, dataset, thí nghiệm
 ├── simulation/               # Môi trường mô phỏng UAV và sinh topology (Python + ns-3)
 ├── data/                     # (DVC quản lý — không nằm trong git)
@@ -221,8 +226,11 @@ UAV-link-quality-routing-support
 │   ├── models/               # Mô hình GNN và baseline
 │   ├── routing/              # Routing support + replay evaluation (xem README riêng)
 │   ├── training/             # Script huấn luyện/validation/testing
+│   ├── serving/              # API phục vụ suy luận (model serving)
+│   ├── validation/           # Bộ kiểm định chất lượng dữ liệu (data validation)
 │   ├── utils/                # Hàm tiện ích dùng chung
 │   └── evaluation/           # Đánh giá và tổng hợp kết quả
+├── tests/                    # Bộ kiểm thử tự động (Unit/Integration Tests)
 ├── outputs/                  # (DVC quản lý) Kết quả chạy, models, plots, aggregates
 └── scripts/                  # Script chạy dataset, train, routing và tiện ích
 ```

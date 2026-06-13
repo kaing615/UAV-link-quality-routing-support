@@ -60,25 +60,29 @@ def aggregate(
         raise FileNotFoundError(f"No usable {filename} under {routing_root}/{pattern}/")
     detailed = pd.concat(frames, ignore_index=True)
 
-    grouped = detailed.groupby("strategy").agg(
-        n_runs=("run_name", "nunique"),
-        n_sessions=("n_sessions", "sum"),
-        **{
-            f"{col}_{stat}": (col, stat)
-            for col in [
-                "route_found_rate",
-                "mean_hops",
-                "mean_e2e_delay_ms",
-                "mean_est_pdr",
-                "mean_route_lifetime",
-                "survival_at_1",
-                "mean_realized_pdr_t1",
-                "mean_route_changes",
-                "disconnected_rate",
-            ]
-            for stat in ["mean", "std"]
-        },
-    ).reset_index()
+    grouped = (
+        detailed.groupby("strategy")
+        .agg(
+            n_runs=("run_name", "nunique"),
+            n_sessions=("n_sessions", "sum"),
+            **{
+                f"{col}_{stat}": (col, stat)
+                for col in [
+                    "route_found_rate",
+                    "mean_hops",
+                    "mean_e2e_delay_ms",
+                    "mean_est_pdr",
+                    "mean_route_lifetime",
+                    "survival_at_1",
+                    "mean_realized_pdr_t1",
+                    "mean_route_changes",
+                    "disconnected_rate",
+                ]
+                for stat in ["mean", "std"]
+            },
+        )
+        .reset_index()
+    )
 
     output_dir.mkdir(parents=True, exist_ok=True)
     detailed.to_csv(output_dir / f"detailed_by_run{out_suffix}.csv", index=False)
@@ -133,8 +137,14 @@ def parse_args() -> argparse.Namespace:
 
 if __name__ == "__main__":
     args = parse_args()
-    cols = ["strategy", "n_runs", "mean_route_lifetime_mean", "mean_route_changes_mean",
-            "mean_realized_pdr_t1_mean", "mean_e2e_delay_ms_mean"]
+    cols = [
+        "strategy",
+        "n_runs",
+        "mean_route_lifetime_mean",
+        "mean_route_changes_mean",
+        "mean_realized_pdr_t1_mean",
+        "mean_e2e_delay_ms_mean",
+    ]
 
     grouped = aggregate(args.routing_root, args.output_dir, pattern=args.pattern)
     out_png = plot(grouped, args.output_dir, args.title)
@@ -146,11 +156,15 @@ if __name__ == "__main__":
     # (only the recorded (src, dst) flow of each run).
     try:
         grouped_olsr = aggregate(
-            args.routing_root, args.output_dir, pattern=args.pattern,
-            filename="summary_olsr_pair.csv", out_suffix="_olsr_pair",
+            args.routing_root,
+            args.output_dir,
+            pattern=args.pattern,
+            filename="summary_olsr_pair.csv",
+            out_suffix="_olsr_pair",
         )
         out_png_olsr = plot(
-            grouped_olsr, args.output_dir,
+            grouped_olsr,
+            args.output_dir,
             "Routing Strategy Comparison — Same Pair as OLSR Recorded Flow",
             filename="routing_comparison_olsr_pair.png",
         )

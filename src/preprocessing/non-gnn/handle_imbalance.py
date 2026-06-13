@@ -17,9 +17,7 @@ def validate_label_column(df: pd.DataFrame, label_column: str) -> None:
 
     unique_labels = sorted(df[label_column].dropna().unique().tolist())
     if len(unique_labels) != 2:
-        raise ValueError(
-            f"Expected binary labels in column '{label_column}', found: {unique_labels}"
-        )
+        raise ValueError(f"Expected binary labels in column '{label_column}', found: {unique_labels}")
 
 
 def class_counts(df: pd.DataFrame, label_column: str) -> dict[str, int]:
@@ -38,10 +36,7 @@ def add_sample_weights(df: pd.DataFrame, label_column: str) -> pd.DataFrame:
     weighted_df = df.copy()
     counts = weighted_df[label_column].value_counts()
     total = len(weighted_df)
-    weight_map = {
-        int(label): float(total / (2 * count))
-        for label, count in counts.items()
-    }
+    weight_map = {int(label): float(total / (2 * count)) for label, count in counts.items()}
     weighted_df["sample_weight"] = weighted_df[label_column].map(weight_map).astype(float)
     return weighted_df
 
@@ -94,9 +89,7 @@ def resolve_paths(args: argparse.Namespace) -> tuple[Path, Path]:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Handle class imbalance for non-GNN baseline training data."
-    )
+    parser = argparse.ArgumentParser(description="Handle class imbalance for non-GNN baseline training data.")
     parser.add_argument(
         "--run-name",
         type=str,

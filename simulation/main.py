@@ -153,6 +153,7 @@ def main() -> None:
         finalize_live_plot(ax)
 
         import matplotlib.pyplot as plt
+
         plt.close(fig)
         plt.close("all")
 

@@ -1,4 +1,5 @@
 import math
+
 import config
 
 
@@ -31,17 +32,9 @@ def estimate_delay(
     base_processing_ms = float(getattr(config, "BASE_DELAY_MS", 2.0))
     mobility_penalty_ms = 0.08 * relative_speed
     contention_penalty_ms = 4.0 * load_factor
-    disconnected_penalty_ms = (
-        float(getattr(config, "DISCONNECTED_DELAY_MS", 50.0)) if not connected else 0.0
-    )
+    disconnected_penalty_ms = float(getattr(config, "DISCONNECTED_DELAY_MS", 50.0)) if not connected else 0.0
 
-    delay = (
-        base_processing_ms
-        + propagation_ms
-        + mobility_penalty_ms
-        + contention_penalty_ms
-        + disconnected_penalty_ms
-    )
+    delay = base_processing_ms + propagation_ms + mobility_penalty_ms + contention_penalty_ms + disconnected_penalty_ms
     return round(delay, 4)
 
 

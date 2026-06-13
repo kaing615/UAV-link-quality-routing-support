@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: uav-gnn-serve
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: inference
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: inference
+    spec:
+      containers:
+        - name: serve
+          image: uav-gnn-serve  # kustomize edit will update this tag
+          ports:
+            - containerPort: 8000
+              name: http
+          envFrom:
+            - configMapRef:
+                name: uav-gnn-config
+          resources:
+            requests:
+              cpu: 500m
+              memory: 512Mi
+            limits:
+              cpu: "2"
+              memory: 1Gi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
