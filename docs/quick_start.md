@@ -430,3 +430,72 @@ SIM_NUM_UAVS=8 SIM_COMM_RANGE=280 ./scripts/dataset/run_one_dataset.sh dense_rwp
 SIM_NUM_UAVS=6 SIM_COMM_RANGE=180 ./scripts/dataset/run_one_dataset.sh sparse_rwp_seed42 42 random-waypoint
 SIM_RWP_SPEED_MIN=6 SIM_RWP_SPEED_MAX=10 ./scripts/dataset/run_one_dataset.sh fast_rwp_seed42 42 random-waypoint
 ```
+
+---
+
+## 11. Kiểm tra chất lượng dữ liệu & Bộ kiểm thử (Tiers 2 & 4)
+
+Hệ thống tích hợp bộ kiểm định tự động chất lượng dữ liệu đồ thị nhằm tránh hiện tượng lệch đặc trưng (feature drift) hoặc dữ liệu rỗng.
+
+### Chạy kiểm tra chất lượng dữ liệu (Data Quality Check)
+```bash
+python3 -m src.validation.data_quality
+# Hoặc ép buộc pipeline dừng lại khi có lỗi dữ liệu:
+python3 -m src.validation.data_quality --fail-on-error
+```
+
+### Chạy bộ kiểm thử tự động (Unit Tests)
+Dự án sử dụng `pytest` làm khung kiểm thử. Tất cả các test cases nằm trong thư mục `tests/`:
+```bash
+pytest tests/ -v
+```
+
+---
+
+## 12. Phục vụ mô hình (Model Serving API — Tier 5)
+
+API được phát triển bằng FastAPI nhằm phục vụ suy luận trực tuyến (Inference Serving).
+
+### Chạy Serving API cục bộ (Local Run)
+```bash
+# Cài đặt thư viện phục vụ (hoặc sử dụng requirements-serve.txt)
+pip install -r requirements-serve.txt
+
+# Khởi chạy server FastAPI
+uvicorn src.serving.app:app --host 0.0.0.0 --port 8000 --reload
+```
+
+### Kiểm tra API hoạt động
+*   Truy cập **Swagger UI** tại trình duyệt: `http://127.0.0.1:8000/docs`
+*   Gửi request kiểm tra sức khỏe hệ thống (Health check):
+    ```bash
+    curl http://127.0.0.1:8000/health
+    ```
+*   Gửi request dự đoán chất lượng liên kết (Predict):
+    ```bash
+    curl -X POST http://127.0.0.1:8000/predict \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model_type": "gnn",
+        "run_name": "ns3big_001_rwp_s17296_n18_c211_t108",
+        "time": 20,
+        "src": 1,
+        "dst": 2,
+        "features": {
+          "distance": 120.5,
+          "snr": 22.4,
+          "packet_loss": 0.02,
+          "delay": 4.5
+        }
+      }'
+    ```
+
+### Containerization (Chạy với Docker)
+```bash
+# Build Docker image cho API serving
+docker build -f Dockerfile.serve -t uav-gnn-serve:latest .
+
+# Chạy container
+docker run -p 8000:8000 uav-gnn-serve:latest
+```
+```
