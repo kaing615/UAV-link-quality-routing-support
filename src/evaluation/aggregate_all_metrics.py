@@ -96,7 +96,7 @@ def collect_detail_rows(roots: list[tuple[str, Path]], model_pattern: str, run_p
                 df["group"] = group_name
                 df["model_dir"] = model_dir.name
                 df["run_name"] = run_dir.name
-                df["scenario"] = df["run_name"].map(infer_scenario)
+                df["scenario"] = infer_scenario(run_dir.name)
                 frames.append(df)
 
     if not frames:
@@ -145,7 +145,7 @@ def main() -> None:
         imbalanced_runs = detail_df[
             (detail_df["positive_ratio"] > 0.95) |
             (detail_df["positive_ratio"] < 0.05) |
-            (detail_df["has_both_classes"] == False)
+            (~detail_df["has_both_classes"])
         ]["run_name"].unique()
         print(f"[INFO] Excluding {len(imbalanced_runs)} imbalanced/degenerate runs: {list(imbalanced_runs)}")
         detail_df = detail_df[~detail_df["run_name"].isin(imbalanced_runs)]

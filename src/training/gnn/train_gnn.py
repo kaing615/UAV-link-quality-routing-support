@@ -14,6 +14,7 @@ from src.models.gnn.edge_gnn import (
     GATEdgeClassifier,
     GraphSAGEEdgeClassifier,
 )
+
 # pyrefly: ignore [missing-import]
 from src.training.gnn.common import (
     collect_scores,
