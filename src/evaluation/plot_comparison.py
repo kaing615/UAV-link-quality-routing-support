@@ -74,7 +74,7 @@ def main() -> None:
         return
 
     df = pd.read_csv(args.summary_csv)
-    
+
     # Filter for test split
     test_df = df[df["split"] == "test"].copy()
 
@@ -120,7 +120,7 @@ def main() -> None:
 
         # Shift bars to group them per metric
         positions = [x + (idx - (n_models - 1) / 2) * width for x in x_indices]
-        
+
         ax.bar(
             positions,
             means,
@@ -154,7 +154,7 @@ def main() -> None:
     ax.set_xticklabels(metric_labels, fontsize=11, fontweight="semibold", color="#2c3e50")
     ax.set_ylabel("Score (0.0 - 1.0)", fontsize=11, fontweight="semibold", color="#2c3e50")
     ax.set_ylim(0, 1.1)
-    
+
     # Legend styling — placed above the plot so it never covers bars
     ax.legend(
         loc="lower center",
@@ -165,11 +165,11 @@ def main() -> None:
         edgecolor="#dddddd",
         fontsize=9,
     )
-    
+
     ax.grid(True, linestyle="--", alpha=0.5, color="#cccccc")
 
     plt.tight_layout()
-    
+
     args.output_dir.mkdir(parents=True, exist_ok=True)
     out_path = args.output_dir / args.filename
     plt.savefig(out_path, dpi=300, facecolor=fig.get_facecolor(), edgecolor="none")

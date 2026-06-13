@@ -8,7 +8,6 @@ from matplotlib.widgets import CheckButtons, RadioButtons, Slider
 
 import config
 
-
 live_view_state = {
     "mode": getattr(config, "VIEW_MODE", "iso").lower(),
     "rotate": getattr(config, "ROTATE_CAMERA", True),

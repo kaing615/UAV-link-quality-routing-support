@@ -9,6 +9,5 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from src.training.baselines.Random_Forest_Baseline import main
 
-
 if __name__ == "__main__":
     main()

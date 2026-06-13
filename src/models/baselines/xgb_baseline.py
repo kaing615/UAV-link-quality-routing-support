@@ -9,6 +9,5 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from src.training.baselines.xgb_baseline import main
 
-
 if __name__ == "__main__":
     main()
