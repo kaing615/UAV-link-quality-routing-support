@@ -12,6 +12,7 @@ which measures cross-topology generalization:
 Outputs go to outputs/loro/<model_id>/<test_run>/ in the same metrics.csv
 format as train_gnn.py, so aggregation scripts work unchanged.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -79,11 +80,7 @@ def main() -> None:
     for run in train_runs:
         train_graphs.extend(load_run_split(run, "train"))
         val_graphs.extend(load_run_split(run, "val"))
-    test_graphs = [
-        g
-        for split in ("train", "val", "test")
-        for g in load_run_split(args.test_run, split)
-    ]
+    test_graphs = [g for split in ("train", "val", "test") for g in load_run_split(args.test_run, split)]
 
     print(f"       graphs: train={len(train_graphs)} val={len(val_graphs)} test={len(test_graphs)}")
 
@@ -171,8 +168,12 @@ def main() -> None:
             threshold, tuned_val_f1 = find_best_threshold(val_true, val_score)
             print(f"[THR] tuned threshold={threshold:.2f} (val macro_f1 {best_macro_f1:.4f} → {tuned_val_f1:.4f})")
 
-        val_metrics, val_preds = evaluate_split(model, val_loader, device, model_id, model_name, "val", threshold=threshold)
-        test_metrics, test_preds = evaluate_split(model, test_loader, device, model_id, model_name, "test", threshold=threshold)
+        val_metrics, val_preds = evaluate_split(
+            model, val_loader, device, model_id, model_name, "val", threshold=threshold
+        )
+        test_metrics, test_preds = evaluate_split(
+            model, test_loader, device, model_id, model_name, "test", threshold=threshold
+        )
 
         # DVCLive: log final test metrics as summary
         live.log_metric("test/macro_f1", test_metrics["macro_f1"])
@@ -206,8 +207,10 @@ def main() -> None:
     }
     (output_dir / "metadata.json").write_text(json.dumps(metadata, indent=2), encoding="utf-8")
 
-    print(f"[OK]  test ({args.test_run}): macro_f1={test_metrics['macro_f1']:.4f}"
-          f"  f1={test_metrics['f1']:.4f}  recall={test_metrics['recall']:.4f}")
+    print(
+        f"[OK]  test ({args.test_run}): macro_f1={test_metrics['macro_f1']:.4f}"
+        f"  f1={test_metrics['f1']:.4f}  recall={test_metrics['recall']:.4f}"
+    )
     print(f"      outputs → {output_dir}")
 
 

@@ -106,7 +106,9 @@ def main() -> None:
         "subsample": float(model.subsample),
         "colsample_bytree": float(model.colsample_bytree),
     }
-    save_outputs(output_dir, model, metadata, [val_metrics, test_metrics], {"val": val_predictions, "test": test_predictions})
+    save_outputs(
+        output_dir, model, metadata, [val_metrics, test_metrics], {"val": val_predictions, "test": test_predictions}
+    )
 
     print("[OK] XGBoost baseline finished.")
     print(f"- model_id      : {MODEL_ID}")

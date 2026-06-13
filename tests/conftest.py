@@ -1,4 +1,5 @@
 """Shared pytest fixtures for UAV-GNN tests."""
+
 import pytest
 import torch
 
@@ -15,6 +16,7 @@ def sample_graph():
         "edge_label_index": torch.randint(0, n_nodes, (2, n_edges)),
         "edge_label": torch.randint(0, 2, (n_edges,)),
     }
+
 
 @pytest.fixture
 def sample_labeled_edge_attr(sample_graph):

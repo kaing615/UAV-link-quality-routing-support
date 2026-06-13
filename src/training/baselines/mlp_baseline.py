@@ -108,12 +108,12 @@ def main() -> None:
         "n_iter": int(model.n_iter_),
         "loss_curve_length": len(model.loss_curve_),
         "best_validation_score": (
-            float(model.best_validation_score_)
-            if getattr(model, "best_validation_score_", None) is not None
-            else None
+            float(model.best_validation_score_) if getattr(model, "best_validation_score_", None) is not None else None
         ),
     }
-    save_outputs(output_dir, model, metadata, [val_metrics, test_metrics], {"val": val_predictions, "test": test_predictions})
+    save_outputs(
+        output_dir, model, metadata, [val_metrics, test_metrics], {"val": val_predictions, "test": test_predictions}
+    )
 
     print("[OK] MLP baseline finished.")
     print(f"- model_id      : {MODEL_ID}")

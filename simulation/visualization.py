@@ -113,10 +113,7 @@ def setup_live_plot():
     return fig, ax
 
 
-snapshot_steps = {
-    step for step in getattr(config, "TOPOLOGY_SNAPSHOT_STEPS", [])
-    if 0 <= step < config.TIME_STEPS
-}
+snapshot_steps = {step for step in getattr(config, "TOPOLOGY_SNAPSHOT_STEPS", []) if 0 <= step < config.TIME_STEPS}
 
 
 trail_history: dict[int, deque[tuple[float, float, float]]] = defaultdict(
@@ -355,9 +352,36 @@ def draw_status_box(
 
 def add_legend(ax) -> None:
     legend_items = [
-        Line2D([0], [0], marker="o", color="w", markerfacecolor="#16a34a", markeredgecolor="black", markersize=10, label="Source"),
-        Line2D([0], [0], marker="^", color="w", markerfacecolor="#dc2626", markeredgecolor="black", markersize=10, label="Destination"),
-        Line2D([0], [0], marker="o", color="w", markerfacecolor="#0ea5e9", markeredgecolor="black", markersize=8, label="UAV"),
+        Line2D(
+            [0],
+            [0],
+            marker="o",
+            color="w",
+            markerfacecolor="#16a34a",
+            markeredgecolor="black",
+            markersize=10,
+            label="Source",
+        ),
+        Line2D(
+            [0],
+            [0],
+            marker="^",
+            color="w",
+            markerfacecolor="#dc2626",
+            markeredgecolor="black",
+            markersize=10,
+            label="Destination",
+        ),
+        Line2D(
+            [0],
+            [0],
+            marker="o",
+            color="w",
+            markerfacecolor="#0ea5e9",
+            markeredgecolor="black",
+            markersize=8,
+            label="UAV",
+        ),
         Line2D([0], [0], color="#22c55e", lw=2, label="Good link"),
         Line2D([0], [0], color="#f59e0b", lw=2, label="Medium link"),
         Line2D([0], [0], color="#ef4444", lw=2, label="Weak link"),

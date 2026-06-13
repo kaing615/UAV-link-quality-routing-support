@@ -72,11 +72,8 @@ def run_pipeline(
     }
 
 
-
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Run the full graph dataset preprocessing pipeline."
-    )
+    parser = argparse.ArgumentParser(description="Run the full graph dataset preprocessing pipeline.")
     parser.add_argument("--run-name", type=str, default=None)
     parser.add_argument("--nodes", type=Path, default=None)
     parser.add_argument("--edges", type=Path, default=None)

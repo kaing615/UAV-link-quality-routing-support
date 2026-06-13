@@ -159,10 +159,12 @@ def evaluate_split(
         "tp": int(tp),
     }
 
-    pred_df = pd.DataFrame({
-        "y_true": y_true,
-        "y_pred": y_pred,
-        "pred_score": y_score,
-    })
+    pred_df = pd.DataFrame(
+        {
+            "y_true": y_true,
+            "y_pred": y_pred,
+            "pred_score": y_score,
+        }
+    )
 
     return metrics, pred_df

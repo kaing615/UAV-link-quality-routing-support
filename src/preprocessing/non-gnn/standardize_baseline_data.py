@@ -29,10 +29,7 @@ def load_edges_with_splits(edges_labeled_csv: Path, splits_csv: Path) -> pd.Data
     required_edge_columns = set(FEATURE_COLUMNS + ["time", "label"])
     missing_edge_columns = sorted(required_edge_columns - set(edges.columns))
     if missing_edge_columns:
-        raise ValueError(
-            "Missing required columns in edges_labeled.csv: "
-            + ", ".join(missing_edge_columns)
-        )
+        raise ValueError("Missing required columns in edges_labeled.csv: " + ", ".join(missing_edge_columns))
 
     if "time" not in splits.columns or "split" not in splits.columns:
         raise ValueError("time_splits.csv must contain columns: time, split")
@@ -132,9 +129,7 @@ def resolve_paths(args: argparse.Namespace) -> tuple[Path, Path, Path]:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Standardize baseline tabular features using train split statistics."
-    )
+    parser = argparse.ArgumentParser(description="Standardize baseline tabular features using train split statistics.")
     parser.add_argument(
         "--run-name",
         type=str,

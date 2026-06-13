@@ -143,9 +143,9 @@ def main() -> None:
         # A run is degenerate if its positive ratio is extreme (e.g., > 0.95 or < 0.05)
         # We find such run_names and exclude them entirely across all models/splits
         imbalanced_runs = detail_df[
-            (detail_df["positive_ratio"] > 0.95) |
-            (detail_df["positive_ratio"] < 0.05) |
-            (~detail_df["has_both_classes"])
+            (detail_df["positive_ratio"] > 0.95)
+            | (detail_df["positive_ratio"] < 0.05)
+            | (~detail_df["has_both_classes"])
         ]["run_name"].unique()
         print(f"[INFO] Excluding {len(imbalanced_runs)} imbalanced/degenerate runs: {list(imbalanced_runs)}")
         detail_df = detail_df[~detail_df["run_name"].isin(imbalanced_runs)]

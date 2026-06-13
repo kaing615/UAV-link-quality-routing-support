@@ -66,14 +66,10 @@ EDGE_LINE_ALPHA = 0.35
 EDGE_LINE_WIDTH = 1.2
 ROUTE_LINE_WIDTH = 4.0
 
-MOBILITY_MODEL = os.getenv(
-    "SIM_MOBILITY_MODEL", "random-waypoint"
-)  # "gauss-markov" or "random-waypoint"
+MOBILITY_MODEL = os.getenv("SIM_MOBILITY_MODEL", "random-waypoint")  # "gauss-markov" or "random-waypoint"
 
 ROUTING_PROTOCOL = os.getenv("SIM_ROUTING_PROTOCOL", "olsr")  # "olsr" or "dijkstra"
-OLSR_METRIC = os.getenv(
-    "SIM_OLSR_METRIC", "link_quality"
-)  # "hop_count" or "link_quality"
+OLSR_METRIC = os.getenv("SIM_OLSR_METRIC", "link_quality")  # "hop_count" or "link_quality"
 
 GAUSS_MARKOV_ALPHA = 0.85
 GAUSS_MARKOV_MEAN_VELOCITY = (0.0, 0.0, 0.0)

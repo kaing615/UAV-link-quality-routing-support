@@ -58,21 +58,26 @@ def build_model(model_id: str, pos_weight: float, random_state: int):
             random_state=random_state,
         )
     if model_id == "mlp":
-        return Pipeline([
-            ("scaler", StandardScaler()),
-            ("mlp", MLPClassifier(
-                hidden_layer_sizes=(32, 16),
-                activation="relu",
-                solver="adam",
-                alpha=1e-4,
-                learning_rate_init=1e-3,
-                max_iter=500,
-                early_stopping=True,
-                validation_fraction=0.1,
-                n_iter_no_change=20,
-                random_state=random_state,
-            )),
-        ])
+        return Pipeline(
+            [
+                ("scaler", StandardScaler()),
+                (
+                    "mlp",
+                    MLPClassifier(
+                        hidden_layer_sizes=(32, 16),
+                        activation="relu",
+                        solver="adam",
+                        alpha=1e-4,
+                        learning_rate_init=1e-3,
+                        max_iter=500,
+                        early_stopping=True,
+                        validation_fraction=0.1,
+                        n_iter_no_change=20,
+                        random_state=random_state,
+                    ),
+                ),
+            ]
+        )
     # Within-run logreg/rf train on the sample-weighted CSVs; here we work on
     # raw combined rows, so class_weight="balanced" plays the same role.
     if model_id == "logreg":
@@ -180,8 +185,10 @@ def main() -> None:
     }
     (output_dir / "metadata.json").write_text(json.dumps(metadata, indent=2), encoding="utf-8")
 
-    print(f"[OK]  test ({args.test_run}): macro_f1={test_metrics['macro_f1']:.4f}"
-          f"  f1={test_metrics['f1']:.4f}  recall={test_metrics['recall']:.4f}")
+    print(
+        f"[OK]  test ({args.test_run}): macro_f1={test_metrics['macro_f1']:.4f}"
+        f"  f1={test_metrics['f1']:.4f}  recall={test_metrics['recall']:.4f}"
+    )
     print(f"      outputs → {output_dir}")
 
 

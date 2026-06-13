@@ -175,6 +175,7 @@ class GATEdgeClassifier(nn.Module):
 # Edge-aware GraphSAGE
 # ---------------------------------------------------------------------------
 
+
 class EdgeAwareSAGEConv(MessagePassing):
     """
     GraphSAGE convolution that incorporates edge features into message passing.

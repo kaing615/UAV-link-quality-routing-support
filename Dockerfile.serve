@@ -9,6 +9,9 @@ RUN pip install --no-cache-dir \
 
 COPY src/ src/
 
+# Model weights are staged into ./models/ before build (scripts/mlops/stage_serving_model.sh).
+COPY models/ /app/models/
+
 ENV MODEL_DIR=/app/models
 ENV MODEL_ID=edge-sage
 ENV HIDDEN_CHANNELS=128

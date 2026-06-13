@@ -17,9 +17,21 @@ echo "          tag: ${TAG}"
 # Ensure DVC outputs are pushed
 dvc push
 
+# Update the git-tracked serving-model pointer (source of truth the CI image build bakes).
+python3 - "${MODEL_ID}" "${RUN_NAME}" <<'PY'
+import json, sys
+
+with open("deploy/serving_model.json", "w") as f:
+    json.dump({"model_id": sys.argv[1], "run_name": sys.argv[2]}, f, indent=2)
+    f.write("\n")
+PY
+git add deploy/serving_model.json
+git commit -m "${MSG}" || echo "[INFO] pointer unchanged, skipping commit"
+
 # Tag in git
 git tag -a "${TAG}" -m "${MSG}"
+git push origin HEAD
 git push origin "${TAG}"
 
 echo "[OK] Model promoted as ${TAG}"
-echo "     ArgoCD will pick up the new tag on next sync."
+echo "     CI will dvc pull + bake the model into the inference image; ArgoCD syncs the new tag."

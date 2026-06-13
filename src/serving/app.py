@@ -1,8 +1,11 @@
 """FastAPI inference server for UAV-GNN link quality prediction."""
+
 from __future__ import annotations
 
 import json
+import logging
 import os
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 import torch
@@ -10,6 +13,8 @@ from fastapi import FastAPI, HTTPException
 
 from src.models.gnn.edge_gnn import EdgeAwareSAGEEdgeClassifier, GATEdgeClassifier, GraphSAGEEdgeClassifier
 from src.serving.schemas import EdgePrediction, HealthResponse, PredictionRequest, PredictionResponse
+
+logger = logging.getLogger("uav_gnn.serving")
 
 _MODELS = {
     "graphsage": GraphSAGEEdgeClassifier,
@@ -19,43 +24,45 @@ _MODELS = {
 NODE_IN = 8
 EDGE_IN = 7
 
-app = FastAPI(
-    title="UAV-GNN Link Quality Prediction API",
-    description="Predict link stability in UAV networks using GNN",
-    version="1.0.0",
-)
-
 # Global model state
 _model = None
 _model_id = None
 _threshold = 0.5
 
 
-@app.on_event("startup")
-def load_model():
+def load_model() -> None:
     global _model, _model_id, _threshold
 
-    model_dir = Path(os.environ.get("MODEL_DIR", "outputs/gnn/edge-sage/ns3big_000"))
+    model_dir = Path(os.environ.get("MODEL_DIR", "models"))
     _model_id = os.environ.get("MODEL_ID", "edge-sage")
     hidden = int(os.environ.get("HIDDEN_CHANNELS", "128"))
     num_layers = int(os.environ.get("NUM_LAYERS", "2"))
-
-    metadata_path = model_dir / "metadata.json"
-    if metadata_path.exists():
-        try:
-            metadata = json.loads(metadata_path.read_text())
-            hidden = metadata.get("hidden_channels", hidden)
-            num_layers = metadata.get("num_layers", num_layers)
-            _threshold = metadata.get("threshold", 0.5)
-        except Exception:
-            pass
+    _threshold = float(os.environ.get("THRESHOLD", "0.5"))
 
     base_id = _model_id.replace("-noedge", "")
     if base_id not in _MODELS:
         raise ValueError(f"Unknown model_id: {_model_id}")
 
+    metadata_path = model_dir / "metadata.json"
+    if metadata_path.exists():
+        metadata = json.loads(metadata_path.read_text())
+        hidden = metadata.get("hidden_channels", hidden)
+        num_layers = metadata.get("num_layers", num_layers)
+        # metadata threshold wins unless explicitly overridden by env
+        if "THRESHOLD" not in os.environ:
+            _threshold = metadata.get("threshold", _threshold)
+
+    weights_path = model_dir / "best_model.pt"
+    if not weights_path.exists():
+        # Fail fast: never serve a randomly-initialized model.
+        raise RuntimeError(
+            f"Model weights not found at {weights_path}. "
+            f"Set MODEL_DIR to a directory containing best_model.pt "
+            f"(and optionally metadata.json), or stage one with scripts/mlops/stage_serving_model.sh."
+        )
+
     model_cls = _MODELS[base_id]
-    _model = model_cls(
+    model = model_cls(
         node_in_channels=NODE_IN,
         edge_in_channels=EDGE_IN,
         hidden_channels=hidden,
@@ -63,10 +70,24 @@ def load_model():
         dropout=0.0,  # inference mode
         use_edge_features="-noedge" not in _model_id,
     )
-    weights_path = model_dir / "best_model.pt"
-    if weights_path.exists():
-        _model.load_state_dict(torch.load(weights_path, weights_only=True, map_location="cpu"))
-    _model.eval()
+    model.load_state_dict(torch.load(weights_path, weights_only=True, map_location="cpu"))
+    model.eval()
+    _model = model
+    logger.info("Loaded model_id=%s from %s (threshold=%.3f)", _model_id, model_dir, _threshold)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    load_model()
+    yield
+
+
+app = FastAPI(
+    title="UAV-GNN Link Quality Prediction API",
+    description="Predict link stability in UAV networks using GNN",
+    version="1.0.0",
+    lifespan=lifespan,
+)
 
 
 @app.get("/health", response_model=HealthResponse)
@@ -97,10 +118,17 @@ def predict(req: PredictionRequest):
             si, di = node_id_map[e.src], node_id_map[e.dst]
             for s, d in [(si, di), (di, si)]:
                 edge_index_list.append([s, d])
-                edge_attr_list.append([
-                    e.distance, e.rssi, e.snr, e.delay,
-                    e.packet_loss, e.relative_speed, e.throughput,
-                ])
+                edge_attr_list.append(
+                    [
+                        e.distance,
+                        e.rssi,
+                        e.snr,
+                        e.delay,
+                        e.packet_loss,
+                        e.relative_speed,
+                        e.throughput,
+                    ]
+                )
 
     if not edge_index_list:
         return PredictionResponse(model_id=_model_id, threshold=_threshold, predictions=[])
@@ -118,10 +146,17 @@ def predict(req: PredictionRequest):
             query_idx.append([si, di])
             e = next((e for e in req.edges if (e.src == src and e.dst == dst) or (e.src == dst and e.dst == src)), None)
             if e:
-                query_edge_attr.append([
-                    e.distance, e.rssi, e.snr, e.delay,
-                    e.packet_loss, e.relative_speed, e.throughput,
-                ])
+                query_edge_attr.append(
+                    [
+                        e.distance,
+                        e.rssi,
+                        e.snr,
+                        e.delay,
+                        e.packet_loss,
+                        e.relative_speed,
+                        e.throughput,
+                    ]
+                )
             else:
                 query_edge_attr.append([0.0] * EDGE_IN)
 
@@ -136,13 +171,14 @@ def predict(req: PredictionRequest):
     for i, (src, dst) in enumerate(query_pairs):
         if src in node_id_map and dst in node_id_map:
             score = float(scores[i])
-            predictions.append(EdgePrediction(
-                src=src, dst=dst,
-                stability_score=score,
-                stable=score >= _threshold,
-                routing_weight=1.0 - score,
-            ))
+            predictions.append(
+                EdgePrediction(
+                    src=src,
+                    dst=dst,
+                    stability_score=score,
+                    stable=score >= _threshold,
+                    routing_weight=1.0 - score,
+                )
+            )
 
-    return PredictionResponse(
-        model_id=_model_id, threshold=_threshold, predictions=predictions
-    )
+    return PredictionResponse(model_id=_model_id, threshold=_threshold, predictions=predictions)

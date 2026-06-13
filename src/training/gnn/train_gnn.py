@@ -62,11 +62,15 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--model", type=str, default="graphsage", choices=list(_MODELS.keys()))
     p.add_argument("--lr-scheduler", action="store_true", default=False, help="Use ReduceLROnPlateau scheduler")
     p.add_argument(
-        "--no-tune-threshold", action="store_true", default=False,
+        "--no-tune-threshold",
+        action="store_true",
+        default=False,
         help="Disable per-run decision threshold tuning on the val split (default: tuning ON)",
     )
     p.add_argument(
-        "--no-edge-features", action="store_true", default=False,
+        "--no-edge-features",
+        action="store_true",
+        default=False,
         help="Ablation: drop edge features from message passing and decoder (model_id gets '-noedge' suffix)",
     )
     p.add_argument("--output-dir", type=Path, default=None)
@@ -104,8 +108,8 @@ def main() -> None:
 
     train_graphs = load_graphs(run_root / "train.pt")
     train_loader = make_loader(run_root / "train.pt", batch_size=args.batch_size, shuffle=True)
-    val_loader   = make_loader(run_root / "val.pt",   batch_size=args.batch_size, shuffle=False)
-    test_loader  = make_loader(run_root / "test.pt",  batch_size=args.batch_size, shuffle=False)
+    val_loader = make_loader(run_root / "val.pt", batch_size=args.batch_size, shuffle=False)
+    test_loader = make_loader(run_root / "test.pt", batch_size=args.batch_size, shuffle=False)
 
     pos_weight = compute_pos_weight(train_graphs).to(device)
     criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
@@ -195,8 +199,12 @@ def main() -> None:
             threshold, tuned_val_f1 = find_best_threshold(val_true, val_score)
             print(f"[THR] tuned threshold={threshold:.2f} (val macro_f1 {best_macro_f1:.4f} → {tuned_val_f1:.4f})")
 
-        val_metrics,  val_preds  = evaluate_split(model, val_loader,  device, model_id, model_name, "val",  threshold=threshold)
-        test_metrics, test_preds = evaluate_split(model, test_loader, device, model_id, model_name, "test", threshold=threshold)
+        val_metrics, val_preds = evaluate_split(
+            model, val_loader, device, model_id, model_name, "val", threshold=threshold
+        )
+        test_metrics, test_preds = evaluate_split(
+            model, test_loader, device, model_id, model_name, "test", threshold=threshold
+        )
 
         # DVCLive: log final test metrics as summary
         live.log_metric("test/macro_f1", test_metrics["macro_f1"])
@@ -210,7 +218,7 @@ def main() -> None:
         live.summary["best_val_macro_f1"] = best_macro_f1
 
     pd.DataFrame([val_metrics, test_metrics]).to_csv(output_dir / "metrics.csv", index=False)
-    val_preds.to_csv(output_dir / "val_predictions.csv",   index=False)
+    val_preds.to_csv(output_dir / "val_predictions.csv", index=False)
     test_preds.to_csv(output_dir / "test_predictions.csv", index=False)
 
     metadata = {
@@ -230,10 +238,14 @@ def main() -> None:
     }
     (output_dir / "metadata.json").write_text(json.dumps(metadata, indent=2), encoding="utf-8")
 
-    print(f"[OK]  val : macro_f1={val_metrics['macro_f1']:.4f}  f1={val_metrics['f1']:.4f}"
-          f"  recall={val_metrics['recall']:.4f}")
-    print(f"[OK]  test: macro_f1={test_metrics['macro_f1']:.4f}  f1={test_metrics['f1']:.4f}"
-          f"  recall={test_metrics['recall']:.4f}")
+    print(
+        f"[OK]  val : macro_f1={val_metrics['macro_f1']:.4f}  f1={val_metrics['f1']:.4f}"
+        f"  recall={val_metrics['recall']:.4f}"
+    )
+    print(
+        f"[OK]  test: macro_f1={test_metrics['macro_f1']:.4f}  f1={test_metrics['f1']:.4f}"
+        f"  recall={test_metrics['recall']:.4f}"
+    )
     print(f"      outputs → {output_dir}")
 
 

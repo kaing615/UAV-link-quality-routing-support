@@ -55,3 +55,7 @@ simulation/ns3/build/
 
 .cache/
 **/dvclive/
+
+# Serving model staging dir (weights pulled via DVC, never committed)
+models/*
+!models/.gitkeep

@@ -54,9 +54,7 @@ def refresh_run(model_dir: Path, run_dir: Path, device: torch.device) -> None:
     rows = []
     for split in ["val", "test"]:
         loader = make_loader(graph_root / f"{split}.pt", batch_size=16, shuffle=False)
-        metrics, _ = evaluate_split(
-            model, loader, device, model_id, metadata["model_name"], split, threshold=threshold
-        )
+        metrics, _ = evaluate_split(model, loader, device, model_id, metadata["model_name"], split, threshold=threshold)
         rows.append(metrics)
 
     pd.DataFrame(rows).to_csv(run_dir / "metrics.csv", index=False)
