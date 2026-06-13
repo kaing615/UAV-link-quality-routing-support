@@ -65,15 +65,17 @@ Kết quả đánh giá routing hỗ trợ bởi dự đoán (xem
 outputs/routing/<RUN_NAME>/                 # edge_predictions, summary, details (+ *_pth*)
 outputs/aggregates/routing/                 # summary_by_strategy, routing_comparison.png,
                                             # pth_sweep.csv, pth_tradeoff.png
+reports/data_quality.json                   # Báo cáo kiểm định chất lượng dữ liệu đồ thị (validate stage)
 ```
 
 ## 3. File metric nên có
 
-Mỗi baseline nên lưu tối thiểu:
+Mỗi baseline/GNN nên lưu tối thiểu:
 
 - `metrics.csv`
 - `metadata.json`
-- `model.pkl` hoặc artifact tương đương
+- `model.pkl` / `best_model.pt` hoặc artifact tương đương
+- Thư mục `dvclive/` (chứa lịch sử huấn luyện, biểu đồ, log tham số tự sinh)
 
 Có thể lưu thêm:
 

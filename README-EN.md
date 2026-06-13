@@ -105,26 +105,27 @@ In short, the system acts as a **routing support module**, where the GNN provide
 | **Heuristic Methods**               | RSSI/SNR threshold-based                                                     |
 | **Main Model**                      | **Edge-Aware GraphSAGE** (proposed GraphSAGE variant with edge features in message passing) |
 | **Comparison Models**               | Vanilla GraphSAGE, GAT                                                       |
-| **MLOps**                           | DVC (pipeline + data versioning, Google Drive remote), Docker (prebuilt ns-3 + Python environment) |
+| **MLOps & Deployment**              | DVC (pipeline + data versioning, Google Drive remote), DVCLive (experiment tracking), GitHub Actions (CI/CD), FastAPI + Docker (Model serving), Kustomize + ArgoCD (GitOps deployment) |
 
 ---
 
 ## Reproducibility (DVC)
 
-All experiments are packaged as a **DVC pipeline** ([dvc.yaml](./dvc.yaml)) with 6 stages:
+All experiments are packaged as a **DVC pipeline** ([dvc.yaml](./dvc.yaml)) with 7 stages:
 
 ```text
-generate ──► train_baselines ──► evaluate
-    │     └► train_gnn ────────┘    │
-    │              └────────► routing
-    └────────────────────────► loro
+generate ──► validate ──► train_baselines ──► evaluate
+    │           │      └► train_gnn ────────┘    │
+    │           │               └────────► routing
+    └───────────┴────────────────────────► loro
 ```
 
 | Stage | Content |
 | --- | --- |
 | `generate` | 100 ns-3 runs (real OLSR, Random Waypoint + Gauss-Markov) — deterministic from `base_seed` in [params.yaml](./params.yaml) |
-| `train_baselines` | 5 baselines: threshold, logreg, rf, mlp, xgb × 100 runs |
-| `train_gnn` | 6 GNNs: graphsage, gat, edge-sage + their 3 `-noedge` ablations × 100 runs |
+| `validate` | Checks graph dataset quality (graph integrity, class imbalance, NaN/Inf checks) |
+| `train_baselines` | 5 baselines: threshold, logreg, rf, mlp, xgb × 100 runs (depends on validation results) |
+| `train_gnn` | 6 GNNs: graphsage, gat, edge-sage + their 3 `-noedge` ablations × 100 runs (depends on validation results) |
 | `evaluate` | Aggregates all 11 models + within-run comparison charts |
 | `routing` | Routing replay: hop / delay / xgb / gnn vs. recorded OLSR, 100 runs |
 | `loro` | Leave-One-Run-Out: 6 folds × (3 GNNs + 5 baselines) + aggregation & chart |
@@ -204,11 +205,15 @@ By combining **node features**, **edge features**, and **graph topology**, the m
 
 ```text
 UAV-link-quality-routing-support
-├── dvc.yaml                  # DVC pipeline definition (6 stages, see Reproducibility)
+├── dvc.yaml                  # DVC pipeline definition (7 stages, see Reproducibility)
 ├── dvc.lock                  # Data/model hashes — the map dvc pull uses to fetch exact versions
 ├── params.yaml               # Pipeline parameters (run count, seed, GNN hyperparams)
 ├── Dockerfile                # Prebuilt ns-3 + Python environment image
-├── requirements.txt          # Pinned Python dependencies
+├── Dockerfile.serve          # Dockerfile for GNN/baselines inference serving API
+├── requirements.txt          # Python dependencies for training/evaluation
+├── requirements-serve.txt    # Python dependencies for model serving API
+├── .github/                  # GitHub Actions CI/CD workflows configuration
+├── deploy/                   # GitOps Deployment configuration (Kustomize, ArgoCD)
 ├── docs/                     # Pipeline docs, dataset notes, experiment references
 ├── simulation/               # UAV simulation environment and topology generation (Python + ns-3)
 ├── data/                     # (DVC-managed — not stored in git)
@@ -219,8 +224,11 @@ UAV-link-quality-routing-support
 │   ├── models/               # GNN and baseline models
 │   ├── routing/              # Routing support + replay evaluation (see its README)
 │   ├── training/             # Training/validation/testing scripts
+│   ├── serving/              # Inference model serving API
+│   ├── validation/           # Data quality validation module
 │   ├── utils/                # Shared utility helpers
 │   └── evaluation/           # Evaluation and result aggregation
+├── tests/                    # Automated unit and integration tests
 ├── outputs/                  # (DVC-managed) Run outputs, models, plots, aggregates
 └── scripts/                  # Dataset, training, routing, and utility scripts
 ```
