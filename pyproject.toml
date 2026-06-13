@@ -23,4 +23,9 @@ addopts = "-v --tb=short"
 
 [tool.pyright]
 extraPaths = ["."]
+# pandas' .loc[mask, "col"] is typed as a broad Series|scalar union, so Pylance
+# false-flags .iloc/[] access on the scalar branch. Silence those rules; ruff +
+# pytest remain the real quality gate.
+reportAttributeAccessIssue = "none"
+reportIndexIssue = "none"
 

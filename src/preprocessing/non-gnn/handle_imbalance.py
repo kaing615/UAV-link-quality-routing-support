@@ -4,6 +4,7 @@ import argparse
 import json
 import math
 from pathlib import Path
+from typing import cast
 
 import pandas as pd
 
@@ -27,8 +28,8 @@ def class_counts(df: pd.DataFrame, label_column: str) -> dict[str, int]:
 
 def infer_minority_majority_labels(df: pd.DataFrame, label_column: str) -> tuple[int, int]:
     counts = df[label_column].value_counts()
-    minority_label = int(counts.idxmin())
-    majority_label = int(counts.idxmax())
+    minority_label = int(cast(int, counts.idxmin()))
+    majority_label = int(cast(int, counts.idxmax()))
     return minority_label, majority_label
 
 
@@ -36,7 +37,7 @@ def add_sample_weights(df: pd.DataFrame, label_column: str) -> pd.DataFrame:
     weighted_df = df.copy()
     counts = weighted_df[label_column].value_counts()
     total = len(weighted_df)
-    weight_map = {int(label): float(total / (2 * count)) for label, count in counts.items()}
+    weight_map = {int(cast(int, label)): float(total / (2 * count)) for label, count in counts.items()}
     weighted_df["sample_weight"] = weighted_df[label_column].map(weight_map).astype(float)
     return weighted_df
 
