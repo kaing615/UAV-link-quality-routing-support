@@ -20,5 +20,4 @@ dvc.yaml
 dvc.lock
 pyproject.toml
 requirements.txt
-requirements-serve.txt
 README.md
