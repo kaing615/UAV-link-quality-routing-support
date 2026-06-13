@@ -1,0 +1,29 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base
+
+namespace: uav-gnn-production
+
+namePrefix: prod-
+
+patches:
+  - target:
+      kind: Deployment
+      name: uav-gnn-serve
+    patch: |
+      - op: replace
+        path: /spec/replicas
+        value: 2
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: "4"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: 2Gi
+
+images:
+  - name: uav-gnn-serve
+    newName: ghcr.io/kaing615/uav-link-quality-routing-support/uav-gnn-serve
+    newTag: latest
