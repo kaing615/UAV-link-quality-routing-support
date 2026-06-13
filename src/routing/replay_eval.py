@@ -29,8 +29,8 @@ Output: outputs/routing/<RUN_NAME>/{summary.csv, details.csv}
 from __future__ import annotations
 
 import argparse
-import math
 from pathlib import Path
+from typing import Any, cast
 
 import networkx as nx
 import pandas as pd
@@ -51,7 +51,8 @@ def load_raw_edges(run_name: str) -> dict[int, dict[tuple[int, int], dict]]:
     """time -> {(u, v) -> row dict} for connected edges; includes validity flag."""
     edges = pd.read_csv(Path("data/raw_snapshots") / run_name / "edges.csv")
     by_time: dict[int, dict[tuple[int, int], dict]] = {}
-    for row in edges.itertuples(index=False):
+    for r in edges.itertuples(index=False):
+        row: Any = r
         if int(row.connected) != 1:
             continue
         valid = (
@@ -71,7 +72,8 @@ def load_prediction_scores(csv_path: Path) -> dict[tuple[int, int, int], float]:
     """(time, u, v) -> stability score in [0, 1]."""
     df = pd.read_csv(csv_path)
     scores = {}
-    for row in df.itertuples(index=False):
+    for r in df.itertuples(index=False):
+        row: Any = r
         u, v = canonical(int(row.src), int(row.dst))
         scores[(int(row.time), u, v)] = float(row.pred_score)
     return scores
@@ -93,7 +95,8 @@ def load_olsr_routes(run_name: str) -> tuple[tuple[int, int] | None, dict[int, l
         return None, {}
     pair = (int(df.iloc[0]["source"]), int(df.iloc[0]["destination"]))
     routes: dict[int, list[int] | None] = {}
-    for row in df.itertuples(index=False):
+    for r in df.itertuples(index=False):
+        row: Any = r
         if int(row.reachable) == 1 and isinstance(row.route_path, str) and row.route_path:
             routes[int(row.time)] = [int(n) for n in row.route_path.split("->")]
         else:
@@ -127,7 +130,7 @@ def build_strategy_graph(
 
 def shortest_path(g: nx.Graph, src: int, dst: int) -> list[int] | None:
     try:
-        return nx.dijkstra_path(g, src, dst, weight="weight")
+        return cast(list[int], nx.dijkstra_path(g, src, dst, weight="weight"))
     except (nx.NetworkXNoPath, nx.NodeNotFound):
         return None
 

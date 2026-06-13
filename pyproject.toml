@@ -20,3 +20,7 @@ known-first-party = ["src"]
 testpaths = ["tests"]
 pythonpath = ["."]
 addopts = "-v --tb=short"
+
+[tool.pyright]
+extraPaths = ["."]
+
