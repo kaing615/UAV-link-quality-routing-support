@@ -1,22 +1,3 @@
-"""
-Leave-one-run-out (LORO) training for tabular baselines
-(XGBoost, MLP, Logistic Regression, Random Forest, RSSI/SNR threshold).
-
-Mirrors src/training/gnn/train_gnn_loro.py so GNN and baselines are compared
-under the same protocol:
-
-  train = train-split rows of all --train-runs (raw features, combined)
-  val   = val-split rows of all --train-runs (threshold tuning)
-  test  = ALL rows of --test-run (never seen)
-
-Raw features from features/edges_labeled.csv are used instead of the per-run
-standardized CSVs: per-run scalers would apply a different transform to each
-run, which leaks run identity and distorts cross-run evaluation. The MLP gets
-a StandardScaler fitted on the combined training rows only.
-
-Outputs go to outputs/loro/<model_id>/<test_run>/metrics.csv in the same
-format as the within-run baselines.
-"""
 from __future__ import annotations
 
 import argparse

@@ -1,5 +1,3 @@
-# torch is installed separately before this file (CPU wheel in Docker):
-#   pip install torch==2.11.0 --index-url https://download.pytorch.org/whl/cpu
 numpy==2.4.1
 pandas==3.0.1
 scipy==1.17.1
