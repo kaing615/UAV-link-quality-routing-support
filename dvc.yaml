@@ -31,8 +31,14 @@ stages:
     deps: [outputs/baselines/, outputs/gnn/, src/evaluation/]
     outs: [outputs/aggregates/all_models/]
   routing:
-    cmd: bash scripts/routing/run_routing_for_runs.sh 'ns3big_*' edge-sage
-    deps: [outputs/gnn/, src/routing/]
+    cmd: >-
+      bash scripts/routing/run_routing_for_runs.sh 'ns3big_*' edge-sage
+      && bash scripts/routing/run_pth_sweep.sh
+    deps:
+      - outputs/gnn/
+      - src/routing/
+      - scripts/routing/run_routing_for_runs.sh
+      - scripts/routing/run_pth_sweep.sh
     outs: [outputs/routing/, outputs/aggregates/routing/]
   loro:
     cmd: >-
