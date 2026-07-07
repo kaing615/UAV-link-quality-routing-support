@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-# Usage: ./scripts/mlops/promote_model.sh <model_id> <run_name> [macro_f1]
-# Example: ./scripts/mlops/promote_model.sh edge-sage ns3big_042 0.9234
 set -euo pipefail
 
 MODEL_ID="${1:?Usage: promote_model.sh <model_id> <run_name> [macro_f1]}"
@@ -14,10 +12,8 @@ MSG="Promote ${MODEL_ID}/${RUN_NAME} (macro_f1=${MACRO_F1})"
 echo "[PROMOTE] ${MSG}"
 echo "          tag: ${TAG}"
 
-# Ensure DVC outputs are pushed
 dvc push
 
-# Update the git-tracked serving-model pointer (source of truth the CI image build bakes).
 python3 - "${MODEL_ID}" "${RUN_NAME}" <<'PY'
 import json, sys
 
@@ -28,7 +24,6 @@ PY
 git add deploy/serving_model.json
 git commit -m "${MSG}" || echo "[INFO] pointer unchanged, skipping commit"
 
-# Tag in git
 git tag -a "${TAG}" -m "${MSG}"
 git push origin HEAD
 git push origin "${TAG}"

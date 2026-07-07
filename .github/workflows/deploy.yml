@@ -1,0 +1,50 @@
+name: MLOps Deploy to Cloud Run
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  PROJECT_ID: uav-gnn-support-routing
+  REGION: us-central1
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup DVC
+        uses: iterative/setup-dvc@v1
+        
+      # To pull DVC data in CI, you need Google Drive credentials.
+      # DVC_GDRIVE_CREDENTIALS must be added as a GitHub Secret.
+      - name: Pull Data & Models via DVC
+        run: |
+          echo "${{ secrets.DVC_GDRIVE_CREDENTIALS }}" > dvc_creds.json
+          dvc remote modify --local storage gdrive_service_account_json_file_path dvc_creds.json
+          dvc pull models/ data/ -f
+
+      - name: Google Auth
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          # Prefer workload identity federation for security over service account keys
+          # credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+          workload_identity_provider: '${{ secrets.WIF_PROVIDER }}'
+          service_account: '${{ secrets.GCP_SA_EMAIL }}'
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Deploy API & Dashboard
+        run: |
+          chmod +x scripts/mlops/deploy_cloud_run.sh
+          bash scripts/mlops/deploy_cloud_run.sh $PROJECT_ID $REGION

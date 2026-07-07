@@ -5,7 +5,6 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 
-# Always use system python3 as it contains the dependencies
 PYTHON_BIN="python3"
 AGGREGATE_MODULE="src.evaluation.aggregate_all_metrics"
 

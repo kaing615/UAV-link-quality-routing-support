@@ -1,171 +1,95 @@
 from __future__ import annotations
-
 import argparse
 import fnmatch
 from pathlib import Path
-
 import pandas as pd
-
-METRIC_COLUMNS = [
-    "accuracy",
-    "precision",
-    "recall",
-    "f1",
-    "macro_f1",
-    "roc_auc",
-    "pr_auc",
-    "inference_time_ms",
-    "inference_ms_per_sample",
-    "n_samples",
-    "positive_ratio",
-    "tn",
-    "fp",
-    "fn",
-    "tp",
-]
-
+METRIC_COLUMNS = ['accuracy', 'precision', 'recall', 'f1', 'macro_f1', 'roc_auc', 'pr_auc', 'inference_time_ms', 'inference_ms_per_sample', 'n_samples', 'positive_ratio', 'tn', 'fp', 'fn', 'tp']
 
 def infer_scenario(run_name: str) -> str:
     lowered = run_name.lower()
-    if "_gm_" in lowered:
-        return "gauss-markov"
-    if "_rwp_" in lowered:
-        return "random-waypoint"
-    if "dense" in lowered:
-        return "dense"
-    if "sparse" in lowered:
-        return "sparse"
-    if "fast" in lowered:
-        return "fast"
-    return "unknown"
-
+    if '_gm_' in lowered:
+        return 'gauss-markov'
+    if '_rwp_' in lowered:
+        return 'random-waypoint'
+    if 'dense' in lowered:
+        return 'dense'
+    if 'sparse' in lowered:
+        return 'sparse'
+    if 'fast' in lowered:
+        return 'fast'
+    return 'unknown'
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Aggregate all metrics (baselines + GNN) across runs.")
-    parser.add_argument(
-        "--model-pattern",
-        type=str,
-        default="*",
-        help="Glob pattern for model_id.",
-    )
-    parser.add_argument(
-        "--run-pattern",
-        type=str,
-        default="*",
-        help="Glob pattern for run_name.",
-    )
-    parser.add_argument(
-        "--output-dir",
-        type=Path,
-        default=Path("outputs/aggregates/all_models"),
-        help="Directory to save aggregated CSV files.",
-    )
-    parser.add_argument(
-        "--filter-balanced",
-        action="store_true",
-        help="Exclude runs with highly degenerate/imbalanced labels (positive_ratio > 0.95 or < 0.05).",
-    )
-    parser.add_argument(
-        "--loro",
-        action="store_true",
-        help="Aggregate leave-one-run-out results (outputs/loro) instead of within-run results.",
-    )
+    parser = argparse.ArgumentParser(description='Aggregate all metrics (baselines + GNN) across runs.')
+    parser.add_argument('--model-pattern', type=str, default='*', help='Glob pattern for model_id.')
+    parser.add_argument('--run-pattern', type=str, default='*', help='Glob pattern for run_name.')
+    parser.add_argument('--output-dir', type=Path, default=Path('outputs/aggregates/all_models'), help='Directory to save aggregated CSV files.')
+    parser.add_argument('--filter-balanced', action='store_true', help='Exclude runs with highly degenerate/imbalanced labels (positive_ratio > 0.95 or < 0.05).')
+    parser.add_argument('--loro', action='store_true', help='Aggregate leave-one-run-out results (outputs/loro) instead of within-run results.')
     return parser.parse_args()
-
 
 def collect_detail_rows(roots: list[tuple[str, Path]], model_pattern: str, run_pattern: str) -> pd.DataFrame:
     frames: list[pd.DataFrame] = []
-
     for group_name, root in roots:
         if not root.is_dir():
             continue
-
-        for model_dir in sorted(path for path in root.iterdir() if path.is_dir()):
+        for model_dir in sorted((path for path in root.iterdir() if path.is_dir())):
             if not fnmatch.fnmatch(model_dir.name, model_pattern):
                 continue
-
-            for run_dir in sorted(path for path in model_dir.iterdir() if path.is_dir()):
+            for run_dir in sorted((path for path in model_dir.iterdir() if path.is_dir())):
                 if not fnmatch.fnmatch(run_dir.name, run_pattern):
                     continue
-
-                metrics_path = run_dir / "metrics.csv"
+                metrics_path = run_dir / 'metrics.csv'
                 if not metrics_path.exists():
                     continue
-
                 df = pd.read_csv(metrics_path)
-                df["group"] = group_name
-                df["model_dir"] = model_dir.name
-                df["run_name"] = run_dir.name
-                df["scenario"] = infer_scenario(run_dir.name)
+                df['group'] = group_name
+                df['model_dir'] = model_dir.name
+                df['run_name'] = run_dir.name
+                df['scenario'] = infer_scenario(run_dir.name)
                 frames.append(df)
-
     if not frames:
-        raise FileNotFoundError(
-            f"No metrics.csv found under roots for model_pattern='{model_pattern}' and run_pattern='{run_pattern}'"
-        )
-
+        raise FileNotFoundError(f"No metrics.csv found under roots for model_pattern='{model_pattern}' and run_pattern='{run_pattern}'")
     detail_df = pd.concat(frames, ignore_index=True)
-    if "model_id" not in detail_df.columns:
-        detail_df["model_id"] = detail_df["model_dir"]
+    if 'model_id' not in detail_df.columns:
+        detail_df['model_id'] = detail_df['model_dir']
     return detail_df
-
 
 def aggregate(df: pd.DataFrame, group_columns: list[str]) -> pd.DataFrame:
     metric_columns = [col for col in METRIC_COLUMNS if col in df.columns]
     grouped = df.groupby(group_columns, dropna=False)[metric_columns]
     mean_df = grouped.mean().reset_index()
     std_df = grouped.std(ddof=0).reset_index()
-
-    rename_mean = {col: f"{col}_mean" for col in metric_columns}
-    rename_std = {col: f"{col}_std" for col in metric_columns}
-
+    rename_mean = {col: f'{col}_mean' for col in metric_columns}
+    rename_std = {col: f'{col}_std' for col in metric_columns}
     mean_df = mean_df.rename(columns=rename_mean)
     std_df = std_df.rename(columns=rename_std)
-    return mean_df.merge(std_df, on=group_columns, how="left")
-
+    return mean_df.merge(std_df, on=group_columns, how='left')
 
 def main() -> None:
     args = parse_args()
-
     if args.loro:
-        roots = [("loro", Path("outputs/loro"))]
-        if args.output_dir == Path("outputs/aggregates/all_models"):
-            args.output_dir = Path("outputs/aggregates/loro")
+        roots = [('loro', Path('outputs/loro'))]
+        if args.output_dir == Path('outputs/aggregates/all_models'):
+            args.output_dir = Path('outputs/aggregates/loro')
     else:
-        roots = [
-            ("baselines", Path("outputs/baselines")),
-            ("gnn", Path("outputs/gnn")),
-        ]
-
+        roots = [('baselines', Path('outputs/baselines')), ('gnn', Path('outputs/gnn'))]
     detail_df = collect_detail_rows(roots, args.model_pattern, args.run_pattern)
-
     if args.filter_balanced:
-        # A run is degenerate if its positive ratio is extreme (e.g., > 0.95 or < 0.05)
-        # We find such run_names and exclude them entirely across all models/splits
-        imbalanced_runs = detail_df[
-            (detail_df["positive_ratio"] > 0.95)
-            | (detail_df["positive_ratio"] < 0.05)
-            | (~detail_df["has_both_classes"])
-        ]["run_name"].unique()
-        print(f"[INFO] Excluding {len(imbalanced_runs)} imbalanced/degenerate runs: {list(imbalanced_runs)}")
-        detail_df = detail_df[~detail_df["run_name"].isin(imbalanced_runs)]
-
+        imbalanced_runs = detail_df[(detail_df['positive_ratio'] > 0.95) | (detail_df['positive_ratio'] < 0.05) | ~detail_df['has_both_classes']]['run_name'].unique()
+        print(f'[INFO] Excluding {len(imbalanced_runs)} imbalanced/degenerate runs: {list(imbalanced_runs)}')
+        detail_df = detail_df[~detail_df['run_name'].isin(imbalanced_runs)]
     output_dir = args.output_dir
     output_dir.mkdir(parents=True, exist_ok=True)
-
-    detail_path = output_dir / "detailed_metrics.csv"
-    summary_model_path = output_dir / "summary_by_model_split.csv"
-    summary_scenario_path = output_dir / "summary_by_scenario_model_split.csv"
-
+    detail_path = output_dir / 'detailed_metrics.csv'
+    summary_model_path = output_dir / 'summary_by_model_split.csv'
+    summary_scenario_path = output_dir / 'summary_by_scenario_model_split.csv'
     detail_df.to_csv(detail_path, index=False)
-    aggregate(detail_df, ["model_id", "split"]).to_csv(summary_model_path, index=False)
-    aggregate(detail_df, ["scenario", "model_id", "split"]).to_csv(summary_scenario_path, index=False)
-
-    print("[OK] Aggregated all metrics (baselines + GNN) saved.")
-    print(f"- detailed_metrics          : {detail_path}")
-    print(f"- summary_by_model_split    : {summary_model_path}")
-    print(f"- summary_by_scenario_split : {summary_scenario_path}")
-
-
-if __name__ == "__main__":
+    aggregate(detail_df, ['model_id', 'split']).to_csv(summary_model_path, index=False)
+    aggregate(detail_df, ['scenario', 'model_id', 'split']).to_csv(summary_scenario_path, index=False)
+    print('[OK] Aggregated all metrics (baselines + GNN) saved.')
+    print(f'- detailed_metrics          : {detail_path}')
+    print(f'- summary_by_model_split    : {summary_model_path}')
+    print(f'- summary_by_scenario_split : {summary_scenario_path}')
+if __name__ == '__main__':
     main()

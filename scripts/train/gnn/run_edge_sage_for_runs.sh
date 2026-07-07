@@ -1,17 +1,4 @@
 #!/usr/bin/env bash
-# Train Edge-Aware GraphSAGE on all matching runs.
-# Usage: ./run_edge_sage_for_runs.sh [run_pattern]
-#   run_pattern defaults to '*' (all runs)
-#
-# Key differences from base GraphSAGE:
-#   --lr-scheduler          — ReduceLROnPlateau (halves LR when val_f1 plateaus)
-#   --patience 30           — more room before early stop
-#   --epochs 300            — allow more training with scheduler
-#
-# hidden=128 + dropout=0.3: hidden=64/dropout=0.4 was tried to reduce
-# cross-run variance but made things worse (macro_f1 0.70±0.17 vs 0.84±0.06)
-# — the smaller encoder underfits the smallest runs.
-# Override via env: HIDDEN=64 DROPOUT=0.4 ./run_edge_sage_for_runs.sh
 
 set -euo pipefail
 
@@ -24,7 +11,7 @@ MODEL_TYPE="edge-sage"
 HIDDEN="${HIDDEN:-128}"
 DROPOUT="${DROPOUT:-0.3}"
 EPOCHS="${EPOCHS:-300}"
-NOEDGE="${NOEDGE:-}"  # set NOEDGE=1 for the edge-feature ablation (edge-sage-noedge)
+NOEDGE="${NOEDGE:-}"
 
 EXTRA_FLAG=""
 if [[ -n "${NOEDGE}" ]]; then
@@ -48,7 +35,7 @@ while IFS= read -r run_dir; do
   matching_runs+=("${run_dir}")
 done < <(find "${RUNS_ROOT}" -mindepth 1 -maxdepth 1 -type d -name "${RUN_PATTERN}" | sort)
 
-if [[ ${#matching_runs[@]} -eq 0 ]]; then
+if [[ ${
   echo "No run directories matched pattern '${RUN_PATTERN}' under ${RUNS_ROOT}"
   exit 1
 fi
@@ -58,7 +45,7 @@ echo "[INFO] python=${PYTHON_BIN}"
 echo "[INFO] runs_root=${RUNS_ROOT}"
 echo "[INFO] run_pattern=${RUN_PATTERN}"
 echo "[INFO] model_type=${MODEL_TYPE}"
-echo "[INFO] matched_runs=${#matching_runs[@]}"
+echo "[INFO] matched_runs=${
 
 failures=0
 
@@ -91,7 +78,7 @@ echo
 echo "============================================================"
 echo "[SUMMARY]"
 echo "============================================================"
-echo "- matched_runs : ${#matching_runs[@]}"
+echo "- matched_runs : ${
 echo "- failures     : ${failures}"
 
 if [[ ${failures} -gt 0 ]]; then

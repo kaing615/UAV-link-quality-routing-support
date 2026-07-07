@@ -1,7 +1,4 @@
 #!/usr/bin/env bash
-# Train every baseline (logreg, rf, threshold, mlp, xgb) on all matching runs.
-# Usage: ./run_all_baselines_for_runs.sh [run_pattern]
-#   run_pattern defaults to '*' (all runs)
 
 set -euo pipefail
 
@@ -36,7 +33,7 @@ while IFS= read -r run_dir; do
   matching_runs+=("${run_dir}")
 done < <(find "${RUNS_ROOT}" -mindepth 1 -maxdepth 1 -type d -name "${RUN_PATTERN}" | sort)
 
-if [[ ${#matching_runs[@]} -eq 0 ]]; then
+if [[ ${
   echo "No run directories matched pattern '${RUN_PATTERN}' under ${RUNS_ROOT}"
   exit 1
 fi
@@ -45,8 +42,8 @@ echo "[INFO] project_root=${PROJECT_ROOT}"
 echo "[INFO] python=${PYTHON_BIN}"
 echo "[INFO] runs_root=${RUNS_ROOT}"
 echo "[INFO] run_pattern=${RUN_PATTERN}"
-echo "[INFO] matched_runs=${#matching_runs[@]}"
-echo "[INFO] baselines=${#BASELINE_MODULES[@]}"
+echo "[INFO] matched_runs=${
+echo "[INFO] baselines=${
 
 failures=0
 
@@ -59,7 +56,7 @@ for run_dir in "${matching_runs[@]}"; do
   echo "============================================================"
 
   for module in "${BASELINE_MODULES[@]}"; do
-    model="${module##*.}"
+    model="${module
     if "${PYTHON_BIN}" -m "${module}" --run-name "${run_name}"; then
       echo "[OK] ${model} completed for ${run_name}"
     else
@@ -73,8 +70,8 @@ echo
 echo "============================================================"
 echo "[SUMMARY]"
 echo "============================================================"
-echo "- matched_runs : ${#matching_runs[@]}"
-echo "- baselines    : ${#BASELINE_MODULES[@]}"
+echo "- matched_runs : ${
+echo "- baselines    : ${
 echo "- failures     : ${failures}"
 
 if [[ ${failures} -gt 0 ]]; then
