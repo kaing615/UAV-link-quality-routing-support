@@ -75,7 +75,6 @@ if st.button("Predict"):
         with col2:
             st.subheader("Network Visualization (3D)")
             import matplotlib.patches as mpatches
-            from mpl_toolkits.mplot3d import Axes3D
 
             G = nx.Graph()
             pos3d = {}
