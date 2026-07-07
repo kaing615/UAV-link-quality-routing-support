@@ -1,7 +1,6 @@
 #!/bin/bash
 set -e
 
-
 PROJECT_ID=${1:-uav-gnn-support-routing}
 REGION=${2:-us-central1}
 API_SERVICE_NAME="uav-gnn-api"

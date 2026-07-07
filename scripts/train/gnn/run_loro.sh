@@ -20,7 +20,7 @@ for id in ${BALANCED_IDS}; do
   runs+=("${match}")
 done
 
-echo "[INFO] LORO folds over ${
+echo "[INFO] LORO folds over ${#runs[@]} runs:"
 printf '       %s\n' "${runs[@]}"
 
 failures=0
@@ -62,7 +62,7 @@ done
 
 echo
 echo "============================================================"
-echo "[SUMMARY] folds=${
+echo "[SUMMARY] folds=${#runs[@]} failures=${failures}"
 echo "============================================================"
 
 if [[ ${failures} -gt 0 ]]; then

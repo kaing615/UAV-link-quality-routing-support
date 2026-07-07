@@ -1,10 +1,8 @@
 Write-Host "Bắt đầu cài đặt AWS CLI và Terraform bằng Winget..." -ForegroundColor Cyan
 
-# Install AWS CLI
 Write-Host "Đang cài đặt AWS CLI..." -ForegroundColor Yellow
 winget install --id Amazon.AWSCLI -e --accept-package-agreements --accept-source-agreements
 
-# Install Terraform
 Write-Host "Đang cài đặt Terraform..." -ForegroundColor Yellow
 winget install --id Hashicorp.Terraform -e --accept-package-agreements --accept-source-agreements
 

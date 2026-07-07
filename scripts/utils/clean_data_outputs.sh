@@ -28,7 +28,7 @@ for root in outputs/baselines outputs/gnn outputs/loro; do
 done
 [[ -d outputs/aggregates ]] && targets+=("outputs/aggregates")
 
-if [[ ${
+if [[ ${#targets[@]} -eq 0 ]]; then
   echo "Nothing matched pattern '${PATTERN}'. Nothing to delete."
   exit 0
 fi
@@ -36,7 +36,7 @@ fi
 total_size="$(du -shc "${targets[@]}" 2>/dev/null | tail -1 | cut -f1)"
 
 echo "Pattern : ${PATTERN}"
-echo "Targets : ${
+echo "Targets : ${#targets[@]} directories (${total_size})"
 echo
 echo "Per-root counts:"
 for root in data/raw_snapshots data/graph_dataset outputs/baselines outputs/gnn outputs/loro outputs/plots; do
@@ -62,4 +62,4 @@ for t in "${targets[@]}"; do
 done
 
 echo
-echo "[OK] Deleted ${
+echo "[OK] Deleted ${#targets[@]} directories (${total_size})."

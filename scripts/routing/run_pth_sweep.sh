@@ -25,12 +25,12 @@ while IFS= read -r run_dir; do
   fi
 done < <(find "${RUNS_ROOT}" -mindepth 1 -maxdepth 1 -type d -name "${RUN_PATTERN}" | sort)
 
-if [[ ${
+if [[ ${#runs[@]} -eq 0 ]]; then
   echo "[ERROR] No runs with predictions matched '${RUN_PATTERN}'"
   exit 1
 fi
 
-echo "[INFO] runs=${
+echo "[INFO] runs=${#runs[@]}  model=${MODEL_ID}  p_th=${P_TH_VALUES}  horizon=${HORIZON}  jobs=${JOBS}"
 
 _eval_run() {
   local run_name="$1"
@@ -66,7 +66,7 @@ python3 -m src.routing.plot_pth_sweep \
 
 echo
 echo "============================================================"
-echo "[SUMMARY] runs=${
+echo "[SUMMARY] runs=${#runs[@]} failures=${failures}"
 echo "  pth_sweep.csv   → outputs/aggregates/routing/pth_sweep.csv"
 echo "  pth_tradeoff    → outputs/aggregates/routing/pth_tradeoff.png"
 echo "============================================================"

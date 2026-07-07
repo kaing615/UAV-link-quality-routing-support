@@ -6,7 +6,7 @@ cd "$ROOT"
 
 POINTER="deploy/serving_model.json"
 
-if [[ $
+if [[ $# -ge 2 ]]; then
   MODEL_ID="$1"
   RUN_NAME="$2"
 else
