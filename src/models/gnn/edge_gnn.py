@@ -7,8 +7,15 @@ from torch_geometric.nn import GATConv, MessagePassing, SAGEConv
 
 
 class GraphSAGEEdgeClassifier(nn.Module):
-
-    def __init__(self, node_in_channels: int=8, edge_in_channels: int=5, hidden_channels: int=64, num_layers: int=2, dropout: float=0.3, use_edge_features: bool=True):
+    def __init__(
+        self,
+        node_in_channels: int = 8,
+        edge_in_channels: int = 5,
+        hidden_channels: int = 64,
+        num_layers: int = 2,
+        dropout: float = 0.3,
+        use_edge_features: bool = True,
+    ):
         super().__init__()
         self.dropout = dropout
         self.use_edge_features = use_edge_features
@@ -23,7 +30,15 @@ class GraphSAGEEdgeClassifier(nn.Module):
                 self.bns.append(nn.BatchNorm1d(hidden_channels))
             in_ch = hidden_channels
         mlp_in = hidden_channels * 2 + (edge_in_channels if use_edge_features else 0)
-        self.edge_mlp = nn.Sequential(nn.Linear(mlp_in, hidden_channels), nn.BatchNorm1d(hidden_channels), nn.ReLU(), nn.Dropout(dropout), nn.Linear(hidden_channels, 32), nn.ReLU(), nn.Linear(32, 1))
+        self.edge_mlp = nn.Sequential(
+            nn.Linear(mlp_in, hidden_channels),
+            nn.BatchNorm1d(hidden_channels),
+            nn.ReLU(),
+            nn.Dropout(dropout),
+            nn.Linear(hidden_channels, 32),
+            nn.ReLU(),
+            nn.Linear(32, 1),
+        )
 
     def encode(self, x: torch.Tensor, edge_index: torch.Tensor) -> torch.Tensor:
         h = self.node_bn(x)
@@ -44,13 +59,29 @@ class GraphSAGEEdgeClassifier(nn.Module):
             edge_repr = torch.cat([h[src], h[dst]], dim=1)
         return self.edge_mlp(edge_repr).squeeze(-1)
 
-    def forward(self, x: torch.Tensor, edge_index: torch.Tensor, edge_attr: torch.Tensor, edge_label_index: torch.Tensor, labeled_edge_attr: torch.Tensor) -> torch.Tensor:
+    def forward(
+        self,
+        x: torch.Tensor,
+        edge_index: torch.Tensor,
+        edge_attr: torch.Tensor,
+        edge_label_index: torch.Tensor,
+        labeled_edge_attr: torch.Tensor,
+    ) -> torch.Tensor:
         h = self.encode(x, edge_index)
         return self.decode(h, edge_label_index, labeled_edge_attr)
 
-class GATEdgeClassifier(nn.Module):
 
-    def __init__(self, node_in_channels: int=8, edge_in_channels: int=5, hidden_channels: int=64, num_layers: int=2, heads: int=4, dropout: float=0.3, use_edge_features: bool=True):
+class GATEdgeClassifier(nn.Module):
+    def __init__(
+        self,
+        node_in_channels: int = 8,
+        edge_in_channels: int = 5,
+        hidden_channels: int = 64,
+        num_layers: int = 2,
+        heads: int = 4,
+        dropout: float = 0.3,
+        use_edge_features: bool = True,
+    ):
         super().__init__()
         self.dropout = dropout
         self.use_edge_features = use_edge_features
@@ -68,7 +99,15 @@ class GATEdgeClassifier(nn.Module):
                 self.bns.append(nn.BatchNorm1d(out_ch * n_heads))
             in_ch = out_ch * n_heads if not is_last else hidden_channels
         mlp_in = hidden_channels * 2 + (edge_in_channels if use_edge_features else 0)
-        self.edge_mlp = nn.Sequential(nn.Linear(mlp_in, hidden_channels), nn.BatchNorm1d(hidden_channels), nn.ReLU(), nn.Dropout(dropout), nn.Linear(hidden_channels, 32), nn.ReLU(), nn.Linear(32, 1))
+        self.edge_mlp = nn.Sequential(
+            nn.Linear(mlp_in, hidden_channels),
+            nn.BatchNorm1d(hidden_channels),
+            nn.ReLU(),
+            nn.Dropout(dropout),
+            nn.Linear(hidden_channels, 32),
+            nn.ReLU(),
+            nn.Linear(32, 1),
+        )
 
     def encode(self, x: torch.Tensor, edge_index: torch.Tensor) -> torch.Tensor:
         h = self.node_bn(x)
@@ -89,14 +128,21 @@ class GATEdgeClassifier(nn.Module):
             edge_repr = torch.cat([h[src], h[dst]], dim=1)
         return self.edge_mlp(edge_repr).squeeze(-1)
 
-    def forward(self, x: torch.Tensor, edge_index: torch.Tensor, edge_attr: torch.Tensor, edge_label_index: torch.Tensor, labeled_edge_attr: torch.Tensor) -> torch.Tensor:
+    def forward(
+        self,
+        x: torch.Tensor,
+        edge_index: torch.Tensor,
+        edge_attr: torch.Tensor,
+        edge_label_index: torch.Tensor,
+        labeled_edge_attr: torch.Tensor,
+    ) -> torch.Tensor:
         h = self.encode(x, edge_index)
         return self.decode(h, edge_label_index, labeled_edge_attr)
 
-class EdgeAwareSAGEConv(MessagePassing):
 
+class EdgeAwareSAGEConv(MessagePassing):
     def __init__(self, in_channels: int, out_channels: int, edge_dim: int):
-        super().__init__(aggr='mean')
+        super().__init__(aggr="mean")
         self.edge_dim = edge_dim
         self.lin_msg = nn.Linear(in_channels + edge_dim, out_channels, bias=False)
         self.lin_self = nn.Linear(in_channels, out_channels, bias=True)
@@ -110,9 +156,17 @@ class EdgeAwareSAGEConv(MessagePassing):
             return self.lin_msg(x_j)
         return self.lin_msg(torch.cat([x_j, edge_attr], dim=-1))
 
-class EdgeAwareSAGEEdgeClassifier(nn.Module):
 
-    def __init__(self, node_in_channels: int=8, edge_in_channels: int=7, hidden_channels: int=128, num_layers: int=2, dropout: float=0.3, use_edge_features: bool=True):
+class EdgeAwareSAGEEdgeClassifier(nn.Module):
+    def __init__(
+        self,
+        node_in_channels: int = 8,
+        edge_in_channels: int = 7,
+        hidden_channels: int = 128,
+        num_layers: int = 2,
+        dropout: float = 0.3,
+        use_edge_features: bool = True,
+    ):
         super().__init__()
         self.dropout = dropout
         self.use_edge_features = use_edge_features
@@ -129,7 +183,15 @@ class EdgeAwareSAGEEdgeClassifier(nn.Module):
                 self.bns.append(nn.BatchNorm1d(hidden_channels))
             in_ch = hidden_channels
         mlp_in = hidden_channels * 2 + (edge_in_channels if use_edge_features else 0)
-        self.edge_mlp = nn.Sequential(nn.Linear(mlp_in, hidden_channels), nn.BatchNorm1d(hidden_channels), nn.ReLU(), nn.Dropout(dropout), nn.Linear(hidden_channels, hidden_channels // 2), nn.ReLU(), nn.Linear(hidden_channels // 2, 1))
+        self.edge_mlp = nn.Sequential(
+            nn.Linear(mlp_in, hidden_channels),
+            nn.BatchNorm1d(hidden_channels),
+            nn.ReLU(),
+            nn.Dropout(dropout),
+            nn.Linear(hidden_channels, hidden_channels // 2),
+            nn.ReLU(),
+            nn.Linear(hidden_channels // 2, 1),
+        )
 
     def encode(self, x: torch.Tensor, edge_index: torch.Tensor, edge_attr: torch.Tensor) -> torch.Tensor:
         h = self.node_bn(x)
@@ -151,6 +213,13 @@ class EdgeAwareSAGEEdgeClassifier(nn.Module):
             edge_repr = torch.cat([h[src], h[dst]], dim=1)
         return self.edge_mlp(edge_repr).squeeze(-1)
 
-    def forward(self, x: torch.Tensor, edge_index: torch.Tensor, edge_attr: torch.Tensor, edge_label_index: torch.Tensor, labeled_edge_attr: torch.Tensor) -> torch.Tensor:
+    def forward(
+        self,
+        x: torch.Tensor,
+        edge_index: torch.Tensor,
+        edge_attr: torch.Tensor,
+        edge_label_index: torch.Tensor,
+        labeled_edge_attr: torch.Tensor,
+    ) -> torch.Tensor:
         h = self.encode(x, edge_index, edge_attr)
         return self.decode(h, edge_label_index, labeled_edge_attr)
