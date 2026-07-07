@@ -120,7 +120,9 @@ if st.button("Predict"):
 
             green_patch = mpatches.Patch(color="#2e7d32", label="Stable Link")
             red_patch = mpatches.Patch(color="#c62828", label="Unstable Link", linestyle="--")
-            ax.legend(handles=[green_patch, red_patch], loc="lower center", bbox_to_anchor=(0.5, -0.05), ncol=2, frameon=False)
+            ax.legend(
+                handles=[green_patch, red_patch], loc="lower center", bbox_to_anchor=(0.5, -0.05), ncol=2, frameon=False
+            )
 
             ax.set_xlabel("X")
             ax.set_ylabel("Y")
