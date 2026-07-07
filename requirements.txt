@@ -10,3 +10,5 @@ tqdm==4.68.2
 torch-geometric==2.8.0
 dvc[gdrive]==3.67.1
 dvclive>=3.0.0
+streamlit>=1.30.0
+httpx>=0.25.0
