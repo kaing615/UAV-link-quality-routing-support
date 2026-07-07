@@ -12,17 +12,9 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from xgboost import XGBClassifier
 
-from src.training.baselines.common import (
-    FEATURE_COLUMNS,
-    evaluate_split,
-    find_best_threshold,
-)
-from src.training.baselines.RSSI_SNR_Baseline import (
-    ThresholdModel,
-)
-from src.training.baselines.RSSI_SNR_Baseline import (
-    find_best_threshold as find_rssi_snr_thresholds,
-)
+from src.training.baselines.common import FEATURE_COLUMNS, evaluate_split, find_best_threshold
+from src.training.baselines.RSSI_SNR_Baseline import ThresholdModel
+from src.training.baselines.RSSI_SNR_Baseline import find_best_threshold as find_rssi_snr_thresholds
 
 _MODEL_NAMES = {
     "xgb": "XGBoost",
@@ -34,7 +26,6 @@ _MODEL_NAMES = {
 
 
 def load_run_rows(run_name: str, splits: list[str] | None) -> pd.DataFrame:
-    """Load labeled edge rows of a run, optionally filtered to given time splits."""
     run_root = Path("data/graph_dataset") / run_name
     df = pd.read_csv(run_root / "features" / "edges_labeled.csv")
     if splits is not None:
@@ -67,8 +58,8 @@ def build_model(model_id: str, pos_weight: float, random_state: int):
                         hidden_layer_sizes=(32, 16),
                         activation="relu",
                         solver="adam",
-                        alpha=1e-4,
-                        learning_rate_init=1e-3,
+                        alpha=0.0001,
+                        learning_rate_init=0.001,
                         max_iter=500,
                         early_stopping=True,
                         validation_fraction=0.1,
@@ -78,16 +69,9 @@ def build_model(model_id: str, pos_weight: float, random_state: int):
                 ),
             ]
         )
-    # Within-run logreg/rf train on the sample-weighted CSVs; here we work on
-    # raw combined rows, so class_weight="balanced" plays the same role.
     if model_id == "logreg":
         return LogisticRegression(
-            penalty="l2",
-            C=1.0,
-            solver="lbfgs",
-            max_iter=1000,
-            class_weight="balanced",
-            random_state=random_state,
+            penalty="l2", C=1.0, solver="lbfgs", max_iter=1000, class_weight="balanced", random_state=random_state
         )
     if model_id == "rf":
         return RandomForestClassifier(
@@ -104,7 +88,6 @@ def build_model(model_id: str, pos_weight: float, random_state: int):
 
 
 def oversample_minority(df: pd.DataFrame, random_state: int) -> pd.DataFrame:
-    """Random-oversample the minority class (MLPClassifier has no class_weight)."""
     counts = df["label"].value_counts()
     if len(counts) < 2:
         return df
@@ -129,27 +112,18 @@ def main() -> None:
     model_id = args.model
     model_name = _MODEL_NAMES[model_id]
     train_runs = [r.strip() for r in args.train_runs.split(",") if r.strip()]
-
-    output_dir = args.output_dir or (Path("outputs/loro") / model_id / args.test_run)
+    output_dir = args.output_dir or Path("outputs/loro") / model_id / args.test_run
     output_dir.mkdir(parents=True, exist_ok=True)
-
     print(f"[LORO] model={model_id} | test_run={args.test_run}")
     print(f"       train_runs ({len(train_runs)}): {train_runs}")
-
     train_df = pd.concat([load_run_rows(r, ["train"]) for r in train_runs], ignore_index=True)
     val_df = pd.concat([load_run_rows(r, ["val"]) for r in train_runs], ignore_index=True)
     test_df = load_run_rows(args.test_run, None)
-
     print(f"       rows: train={len(train_df)} val={len(val_df)} test={len(test_df)}")
-
     n_pos = int((train_df["label"] == 1).sum())
     n_neg = int((train_df["label"] == 0).sum())
     pos_weight = n_neg / max(n_pos, 1)
-
     if model_id == "threshold":
-        # Heuristic baseline: grid-search rssi/snr cutoffs on the combined
-        # training rows; its predict_proba is hard 0/1, so probability-threshold
-        # tuning is meaningless — keep the fixed 0.5.
         rssi_t, snr_t, _ = find_rssi_snr_thresholds(train_df)
         model = ThresholdModel(rssi_t, snr_t)
         threshold = 0.5
@@ -158,17 +132,13 @@ def main() -> None:
         model = build_model(model_id, pos_weight, args.random_state)
         fit_df = oversample_minority(train_df, args.random_state) if model_id == "mlp" else train_df
         model.fit(fit_df[FEATURE_COLUMNS], fit_df["label"])
-
         threshold, tuned_val_f1 = find_best_threshold(model, val_df)
         print(f"[THR] tuned threshold={threshold:.2f} (val macro_f1={tuned_val_f1:.4f})")
-
     val_metrics, val_preds = evaluate_split(model, model_id, model_name, val_df, "val", threshold=threshold)
     test_metrics, test_preds = evaluate_split(model, model_id, model_name, test_df, "test", threshold=threshold)
-
     pd.DataFrame([val_metrics, test_metrics]).to_csv(output_dir / "metrics.csv", index=False)
     val_preds.to_csv(output_dir / "val_predictions.csv", index=False)
     test_preds.to_csv(output_dir / "test_predictions.csv", index=False)
-
     metadata = {
         "model_id": model_id,
         "model_name": model_name,
@@ -184,10 +154,8 @@ def main() -> None:
         "snr_thresh": float(model.snr_thresh) if model_id == "threshold" else None,
     }
     (output_dir / "metadata.json").write_text(json.dumps(metadata, indent=2), encoding="utf-8")
-
     print(
-        f"[OK]  test ({args.test_run}): macro_f1={test_metrics['macro_f1']:.4f}"
-        f"  f1={test_metrics['f1']:.4f}  recall={test_metrics['recall']:.4f}"
+        f"[OK]  test ({args.test_run}): macro_f1={test_metrics['macro_f1']:.4f}  f1={test_metrics['f1']:.4f}  recall={test_metrics['recall']:.4f}"
     )
     print(f"      outputs → {output_dir}")
 

@@ -16,13 +16,10 @@ def compute_load_proxy(nodes_df: pd.DataFrame) -> pd.DataFrame:
 
 def build_feature_tables(nodes_csv: Path, edges_csv: Path, output_dir: Path) -> tuple[Path, Path]:
     output_dir.mkdir(parents=True, exist_ok=True)
-
     nodes = pd.read_csv(nodes_csv)
     edges = pd.read_csv(edges_csv)
-
     nodes = compute_load_proxy(nodes)
     nodes = nodes[["time", "node_id", "x", "y", "z", "vx", "vy", "vz", "speed", "degree", "load"]]
-
     edge_cols = [
         "time",
         "src",
@@ -39,12 +36,11 @@ def build_feature_tables(nodes_csv: Path, edges_csv: Path, output_dir: Path) -> 
         "weight",
     ]
     edges = edges[edge_cols].copy()
-
     nodes_out = output_dir / "nodes_features.csv"
     edges_out = output_dir / "edges_features.csv"
     nodes.to_csv(nodes_out, index=False)
     edges.to_csv(edges_out, index=False)
-    return nodes_out, edges_out
+    return (nodes_out, edges_out)
 
 
 def parse_args() -> argparse.Namespace:

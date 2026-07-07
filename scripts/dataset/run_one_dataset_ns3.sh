@@ -1,13 +1,4 @@
 #!/usr/bin/env bash
-# Generate one dataset with the ns-3 simulator (real 802.11 + OLSR stack)
-# and run the same preprocessing chain as run_one_dataset.sh.
-#
-# Usage: ./run_one_dataset_ns3.sh RUN_NAME [SEED] [MOBILITY_MODEL]
-#   MOBILITY_MODEL: random-waypoint (default) | gauss-markov
-#
-# Optional env overrides (same names as the Python simulator pipeline):
-#   SIM_NUM_UAVS, SIM_COMM_RANGE, SIM_TIME_STEPS,
-#   SIM_RWP_SPEED_MIN, SIM_RWP_SPEED_MAX, SIM_X_MAX, SIM_Y_MAX
 
 set -euo pipefail
 
@@ -16,7 +7,7 @@ PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 NS3_SRC_DIR="${PROJECT_ROOT}/simulation/ns3"
 NS3_BIN="${NS3_SRC_DIR}/build/uav-olsr-dataset"
 
-if [[ $# -lt 1 ]]; then
+if [[ $
   echo "Usage: $0 RUN_NAME [SEED] [MOBILITY_MODEL]"
   echo "Example: $0 ns3_seed_42_rwp 42 random-waypoint"
   exit 1
@@ -48,7 +39,6 @@ echo "[INFO] seed=${SEED}"
 echo "[INFO] mobility_model=${MOBILITY_MODEL}"
 echo "[INFO] num_uavs=${NUM_UAVS} comm_range=${COMM_RANGE} time_steps=${TIME_STEPS} area=${X_MAX}x${Y_MAX}"
 
-# Build the ns-3 scenario binary on first use
 if [[ ! -x "${NS3_BIN}" ]]; then
   echo
   echo "[0/4] Building ns-3 scenario (first run)"

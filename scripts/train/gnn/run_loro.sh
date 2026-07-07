@@ -1,12 +1,4 @@
 #!/usr/bin/env bash
-# Leave-one-run-out (LORO) evaluation over the balanced runs.
-#
-# For each balanced run: train on the other balanced runs, test on the
-# held-out run. Covers GNN models (graphsage, gat, edge-sage) and all tabular
-# baselines (xgb, mlp, logreg, rf, threshold) under the same protocol.
-#
-# Usage: ./run_loro.sh
-#   BALANCED_IDS="01 04 05 07" ./run_loro.sh   # override fold set
 
 set -euo pipefail
 
@@ -14,13 +6,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../../.." && pwd)"
 RUNS_ROOT="${PROJECT_ROOT}/data/graph_dataset"
 PYTHON_BIN="python3"
-# Default folds: most label-balanced runs of the seed-42 ns3big batch,
-# mixed mobility (3 rwp + 3 gm) and sizes (n=11..30).
 BALANCED_IDS="${BALANCED_IDS:-007 012 035 046 077 084}"
 
 cd "${PROJECT_ROOT}"
 
-# Resolve run ids (01, 04, ...) to full run directory names.
 runs=()
 for id in ${BALANCED_IDS}; do
   match="$(find "${RUNS_ROOT}" -mindepth 1 -maxdepth 1 -type d -name "*_${id}_*" -exec basename {} \; | sort | head -1)"
@@ -31,7 +20,7 @@ for id in ${BALANCED_IDS}; do
   runs+=("${match}")
 done
 
-echo "[INFO] LORO folds over ${#runs[@]} runs:"
+echo "[INFO] LORO folds over ${
 printf '       %s\n' "${runs[@]}"
 
 failures=0
@@ -73,7 +62,7 @@ done
 
 echo
 echo "============================================================"
-echo "[SUMMARY] folds=${#runs[@]} failures=${failures}"
+echo "[SUMMARY] folds=${
 echo "============================================================"
 
 if [[ ${failures} -gt 0 ]]; then

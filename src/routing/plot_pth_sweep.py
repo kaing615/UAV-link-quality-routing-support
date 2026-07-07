@@ -1,15 +1,3 @@
-"""Plot the p_th trade-off study (design doc §13.5): route safety vs
-network connectivity as risky links are excluded from route candidates.
-
-Reads outputs/routing/*/summary*.csv (every p_th value found), aggregates
-across runs, and draws metric-vs-p_th curves for the prediction strategies
-with the shortest-hop result as a reference line.
-
-Output:
-  - outputs/aggregates/routing/pth_sweep.csv
-  - outputs/aggregates/routing/pth_tradeoff.png
-"""
-
 from __future__ import annotations
 
 import argparse
@@ -24,7 +12,6 @@ import pandas as pd
 STRATEGY_LABELS = {"xgb": "XGBoost-Assisted", "gnn": "GNN-Assisted (Edge-SAGE)"}
 COLORS = {"xgb": "#ff7f0e", "gnn": "#2ca02c"}
 REF_COLOR = "#9e9e9e"
-
 PANELS = [
     ("route_found_rate", "Route Found Rate", "Khả năng duy trì liên thông"),
     ("mean_route_lifetime", "Route Lifetime (steps)", "Độ an toàn của tuyến"),
@@ -44,13 +31,11 @@ def plot(df: pd.DataFrame, output_dir: Path, title: str) -> Path:
     pred = df[df["strategy"].isin(STRATEGY_LABELS)]
     p_values = sorted(pred["p_th"].unique())
     hop = df[(df["strategy"] == "hop") & (df["p_th"] == 0.0)]
-
     agg = (
         pred.groupby(["strategy", "p_th"])
         .agg(**{f"{col}_{stat}": (col, stat) for col, _, _ in PANELS for stat in ["mean", "std"]})
         .reset_index()
     )
-
     fig, axes = plt.subplots(1, len(PANELS), figsize=(4.2 * len(PANELS), 4.4))
     for ax, (col, label, aspect) in zip(axes, PANELS):
         for st in [s for s in ["xgb", "gnn"] if s in pred["strategy"].unique()]:
@@ -66,18 +51,13 @@ def plot(df: pd.DataFrame, output_dir: Path, title: str) -> Path:
             )
         if not hop.empty and col in hop.columns:
             ax.axhline(
-                float(hop[col].mean()),
-                color=REF_COLOR,
-                linestyle="--",
-                linewidth=1.2,
-                label="Shortest Hop (ref)",
+                float(hop[col].mean()), color=REF_COLOR, linestyle="--", linewidth=1.2, label="Shortest Hop (ref)"
             )
         ax.set_xlabel("p_th (ngưỡng loại link)")
         ax.set_title(f"{label}\n{aspect}", fontsize=10)
         ax.set_xticks(p_values)
         ax.grid(alpha=0.3)
     axes[0].legend(fontsize=8, loc="lower left")
-
     fig.suptitle(title, fontsize=13, fontweight="bold")
     fig.tight_layout(rect=(0, 0, 1, 0.93))
     output_dir.mkdir(parents=True, exist_ok=True)

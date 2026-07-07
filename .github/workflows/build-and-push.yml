@@ -31,7 +31,7 @@ jobs:
           # cached OAuth user creds). Add it under repo Settings → Secrets → Actions.
           GDRIVE_CREDENTIALS_DATA: ${{ secrets.GDRIVE_CREDENTIALS_DATA }}
         run: |
-          pip install 'dvc[gdrive]==3.67.1'
+          pip install 'dvc[gdrive]==3.67.1' 'PyDrive2>=1.18.0' 'google-auth<2.30.0'
           bash scripts/mlops/stage_serving_model.sh
 
       - name: Set up Docker Buildx

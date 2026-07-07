@@ -1,16 +1,4 @@
 #!/usr/bin/env bash
-# Delete generated datasets and training outputs to start fresh.
-#
-# Usage:
-#   ./scripts/utils/clean_data_outputs.sh             # interactive confirm
-#   ./scripts/utils/clean_data_outputs.sh --force     # no confirm
-#   ./scripts/utils/clean_data_outputs.sh 'ns3exp_*'  # only runs matching pattern
-#
-# Removes:
-#   data/raw_snapshots/<RUN>     data/graph_dataset/<RUN>
-#   outputs/baselines/*/<RUN>    outputs/gnn/*/<RUN>    outputs/loro/*/<RUN>
-#   outputs/plots/<RUN>
-#   outputs/aggregates           (always fully removed — stale once runs change)
 
 set -euo pipefail
 
@@ -27,7 +15,6 @@ for arg in "$@"; do
   esac
 done
 
-# Collect what will be deleted
 targets=()
 for root in data/raw_snapshots data/graph_dataset outputs/plots; do
   [[ -d "${root}" ]] || continue
@@ -41,7 +28,7 @@ for root in outputs/baselines outputs/gnn outputs/loro; do
 done
 [[ -d outputs/aggregates ]] && targets+=("outputs/aggregates")
 
-if [[ ${#targets[@]} -eq 0 ]]; then
+if [[ ${
   echo "Nothing matched pattern '${PATTERN}'. Nothing to delete."
   exit 0
 fi
@@ -49,7 +36,7 @@ fi
 total_size="$(du -shc "${targets[@]}" 2>/dev/null | tail -1 | cut -f1)"
 
 echo "Pattern : ${PATTERN}"
-echo "Targets : ${#targets[@]} directories (${total_size})"
+echo "Targets : ${
 echo
 echo "Per-root counts:"
 for root in data/raw_snapshots data/graph_dataset outputs/baselines outputs/gnn outputs/loro outputs/plots; do
@@ -75,4 +62,4 @@ for t in "${targets[@]}"; do
 done
 
 echo
-echo "[OK] Deleted ${#targets[@]} directories (${total_size})."
+echo "[OK] Deleted ${

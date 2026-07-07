@@ -1,21 +1,4 @@
 #!/usr/bin/env bash
-# p_th sweep: replay routing evaluation at multiple link-filter thresholds.
-#
-# Predictions (edge_predictions_edge-sage.csv) must already exist under
-# outputs/routing/<RUN>/.  Only replay_eval.py is re-run — predict_edges is
-# skipped.  After all runs complete, plot_pth_sweep.py aggregates the results.
-#
-# Usage:
-#   ./scripts/routing/run_pth_sweep.sh                   # all ns3big_* runs
-#   ./scripts/routing/run_pth_sweep.sh 'ns3big_0*'       # glob subset
-#   P_TH_VALUES="0.2,0.4,0.6" ./scripts/routing/run_pth_sweep.sh
-#
-# Env:
-#   RUN_PATTERN   glob for run directories  (default: 'ns3big_*')
-#   MODEL_ID      model used for predictions (default: edge-sage)
-#   P_TH_VALUES   comma-separated thresholds (default: 0.1,0.2,0.3,0.4,0.5,0.6,0.7)
-#   HORIZON       prediction horizon in steps (default: 5)
-#   JOBS          parallel workers           (default: 4)
 
 set -euo pipefail
 
@@ -31,7 +14,6 @@ JOBS="${JOBS:-4}"
 
 cd "${PROJECT_ROOT}"
 
-# Collect runs that already have predictions.
 runs=()
 while IFS= read -r run_dir; do
   run_name="$(basename "${run_dir}")"
@@ -43,14 +25,13 @@ while IFS= read -r run_dir; do
   fi
 done < <(find "${RUNS_ROOT}" -mindepth 1 -maxdepth 1 -type d -name "${RUN_PATTERN}" | sort)
 
-if [[ ${#runs[@]} -eq 0 ]]; then
+if [[ ${
   echo "[ERROR] No runs with predictions matched '${RUN_PATTERN}'"
   exit 1
 fi
 
-echo "[INFO] runs=${#runs[@]}  model=${MODEL_ID}  p_th=${P_TH_VALUES}  horizon=${HORIZON}  jobs=${JOBS}"
+echo "[INFO] runs=${
 
-# Worker function: run replay_eval for one run (all p_th values in one call).
 _eval_run() {
   local run_name="$1"
   local pred="${PROJECT_ROOT}/outputs/routing/${run_name}/edge_predictions_${MODEL_ID}.csv"
@@ -68,7 +49,6 @@ _eval_run() {
 export -f _eval_run
 export PROJECT_ROOT MODEL_ID P_TH_VALUES HORIZON
 
-# Run in parallel using xargs (no extra deps).
 failures=0
 printf '%s\n' "${runs[@]}" \
   | xargs -P "${JOBS}" -I{} bash -c '_eval_run "$@"' _ {} \
@@ -86,7 +66,7 @@ python3 -m src.routing.plot_pth_sweep \
 
 echo
 echo "============================================================"
-echo "[SUMMARY] runs=${#runs[@]} failures=${failures}"
+echo "[SUMMARY] runs=${
 echo "  pth_sweep.csv   → outputs/aggregates/routing/pth_sweep.csv"
 echo "  pth_tradeoff    → outputs/aggregates/routing/pth_tradeoff.png"
 echo "============================================================"

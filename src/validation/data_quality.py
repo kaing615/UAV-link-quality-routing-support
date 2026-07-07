@@ -1,16 +1,3 @@
-"""Automated data quality checks for the UAV-GNN pipeline.
-
-Run as: python -m src.validation.data_quality [--data-dir data/graph_dataset]
-
-Checks performed:
-  1. Feature range validation (NaN, Inf, out-of-range)
-  2. Class imbalance detection
-  3. Graph structural integrity
-  4. Feature distribution drift between runs
-
-Outputs: reports/data_quality.json
-"""
-
 from __future__ import annotations
 
 import argparse
@@ -20,7 +7,6 @@ from pathlib import Path
 
 import torch
 
-# Expected feature ranges (min, max) based on physical constraints
 NODE_FEATURE_RANGES = {
     0: ("x", -5000, 5000),
     1: ("y", -5000, 5000),
@@ -31,7 +17,6 @@ NODE_FEATURE_RANGES = {
     6: ("speed", 0, 200),
     7: ("degree", 0, 50),
 }
-
 EDGE_FEATURE_RANGES = {
     0: ("distance", 0, 5000),
     1: ("rssi", -120, 0),
@@ -44,9 +29,7 @@ EDGE_FEATURE_RANGES = {
 
 
 def check_tensor_quality(tensor: torch.Tensor, name: str, ranges: dict) -> list[dict]:
-    """Check a feature tensor for NaN, Inf, and out-of-range values."""
     issues = []
-
     if torch.isnan(tensor).any():
         nan_count = int(torch.isnan(tensor).sum())
         issues.append(
@@ -57,7 +40,6 @@ def check_tensor_quality(tensor: torch.Tensor, name: str, ranges: dict) -> list[
                 "message": f"{nan_count} NaN values found in {name}",
             }
         )
-
     if torch.isinf(tensor).any():
         inf_count = int(torch.isinf(tensor).sum())
         issues.append(
@@ -68,7 +50,6 @@ def check_tensor_quality(tensor: torch.Tensor, name: str, ranges: dict) -> list[
                 "message": f"{inf_count} Inf values found in {name}",
             }
         )
-
     for col_idx, (feat_name, vmin, vmax) in ranges.items():
         if col_idx >= tensor.shape[1]:
             continue
@@ -85,17 +66,14 @@ def check_tensor_quality(tensor: torch.Tensor, name: str, ranges: dict) -> list[
                     "actual_range": [float(col.min()), float(col.max())],
                 }
             )
-
     return issues
 
 
 def check_class_balance(labels: torch.Tensor, run_name: str) -> list[dict]:
-    """Check if class distribution is highly imbalanced."""
     issues = []
     n_total = len(labels)
     n_pos = int(labels.sum())
     ratio = n_pos / max(n_total, 1)
-
     if ratio > 0.95 or ratio < 0.05:
         issues.append(
             {
@@ -106,7 +84,6 @@ def check_class_balance(labels: torch.Tensor, run_name: str) -> list[dict]:
                 "positive_ratio": ratio,
             }
         )
-
     if n_total < 10:
         issues.append(
             {
@@ -116,18 +93,14 @@ def check_class_balance(labels: torch.Tensor, run_name: str) -> list[dict]:
                 "message": f"Very few labeled edges: {n_total}",
             }
         )
-
     return issues
 
 
 def check_graph_integrity(graphs: list[dict], run_name: str, split: str) -> list[dict]:
-    """Check graph structural validity."""
     issues = []
-
     for i, g in enumerate(graphs):
         n_nodes = g["x"].shape[0]
         edge_index = g["edge_index"]
-
         if n_nodes < 2:
             issues.append(
                 {
@@ -137,7 +110,6 @@ def check_graph_integrity(graphs: list[dict], run_name: str, split: str) -> list
                     "message": f"{split} graph {i}: only {n_nodes} node(s)",
                 }
             )
-
         if edge_index.max() >= n_nodes:
             issues.append(
                 {
@@ -147,7 +119,6 @@ def check_graph_integrity(graphs: list[dict], run_name: str, split: str) -> list
                     "message": f"{split} graph {i}: edge_index max ({edge_index.max()}) >= n_nodes ({n_nodes})",
                 }
             )
-
         if edge_index.min() < 0:
             issues.append(
                 {
@@ -157,40 +128,29 @@ def check_graph_integrity(graphs: list[dict], run_name: str, split: str) -> list
                     "message": f"{split} graph {i}: negative edge indices found",
                 }
             )
-
     return issues
 
 
 def validate_run(run_dir: Path) -> dict:
-    """Validate all splits in a single run."""
     graph_dir = run_dir / "graph_dataset"
     run_name = run_dir.name
     result = {"run_name": run_name, "issues": [], "stats": {}}
-
     for split in ("train", "val", "test"):
         pt_path = graph_dir / f"{split}.pt"
         if not pt_path.exists():
             result["issues"].append(
-                {
-                    "severity": "error",
-                    "check": "missing_split",
-                    "message": f"Missing {split}.pt in {run_name}",
-                }
+                {"severity": "error", "check": "missing_split", "message": f"Missing {split}.pt in {run_name}"}
             )
             continue
-
         graphs = torch.load(pt_path, weights_only=False)
         result["stats"][f"{split}_graphs"] = len(graphs)
-
         all_x = torch.cat([g["x"] for g in graphs])
         all_edge_attr = torch.cat([g["edge_attr"] for g in graphs])
         all_labels = torch.cat([g["edge_label"] for g in graphs])
-
         result["issues"].extend(check_tensor_quality(all_x, f"{split}/node_features", NODE_FEATURE_RANGES))
         result["issues"].extend(check_tensor_quality(all_edge_attr, f"{split}/edge_features", EDGE_FEATURE_RANGES))
         result["issues"].extend(check_class_balance(all_labels, run_name))
         result["issues"].extend(check_graph_integrity(graphs, run_name, split))
-
     return result
 
 
@@ -200,17 +160,14 @@ def main() -> None:
     parser.add_argument("--output", type=Path, default=Path("reports/data_quality.json"))
     parser.add_argument("--fail-on-error", action="store_true", default=False)
     args = parser.parse_args()
-
     run_dirs = (
         sorted(d for d in args.data_dir.iterdir() if d.is_dir() and (d / "graph_dataset").exists())
         if args.data_dir.exists()
         else []
     )
-
     report = {"total_runs": len(run_dirs), "runs": [], "summary": {}}
     n_errors = 0
     n_warnings = 0
-
     for run_dir in run_dirs:
         result = validate_run(run_dir)
         report["runs"].append(result)
@@ -219,22 +176,18 @@ def main() -> None:
                 n_errors += 1
             else:
                 n_warnings += 1
-
     report["summary"] = {
         "total_runs_checked": len(run_dirs),
         "total_errors": n_errors,
         "total_warnings": n_warnings,
-        "status": "FAIL" if n_errors > 0 else ("WARN" if n_warnings > 0 else "PASS"),
+        "status": "FAIL" if n_errors > 0 else "WARN" if n_warnings > 0 else "PASS",
     }
-
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(report, indent=2), encoding="utf-8")
     print(
-        f"[DATA QUALITY] {report['summary']['status']}: "
-        f"{n_errors} errors, {n_warnings} warnings across {len(run_dirs)} runs"
+        f"[DATA QUALITY] {report['summary']['status']}: {n_errors} errors, {n_warnings} warnings across {len(run_dirs)} runs"
     )
     print(f"               Report: {args.output}")
-
     if args.fail_on_error and n_errors > 0:
         sys.exit(1)
 

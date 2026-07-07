@@ -5,7 +5,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 
-if [[ $# -lt 1 ]]; then
+if [[ $
   echo "Usage: $0 RUN_NAME [SEED] [MOBILITY_MODEL]"
   echo "Example: $0 seed_42_rwp 42 random-waypoint"
   exit 1

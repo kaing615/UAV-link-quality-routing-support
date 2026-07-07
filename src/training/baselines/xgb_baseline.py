@@ -40,16 +40,14 @@ def build_xgb(random_state: int) -> XGBClassifier:
 def fit_xgb(weighted_train_df, oversampled_train_df, random_state: int) -> tuple[XGBClassifier, str]:
     X_weighted, y_weighted = extract_xy(weighted_train_df)
     sample_weight = weighted_train_df["sample_weight"] if "sample_weight" in weighted_train_df.columns else None
-
     model = build_xgb(random_state=random_state)
     if sample_weight is not None:
         model.fit(X_weighted, y_weighted, sample_weight=sample_weight)
-        return model, "weighted"
-
+        return (model, "weighted")
     X_over, y_over = extract_xy(oversampled_train_df)
     model = build_xgb(random_state=random_state)
     model.fit(X_over, y_over)
-    return model, "oversampled"
+    return (model, "oversampled")
 
 
 def parse_args() -> argparse.Namespace:
@@ -58,8 +56,7 @@ def parse_args() -> argparse.Namespace:
         "--run-name",
         type=str,
         default=None,
-        help="Preprocessed run name under data/graph_dataset/<RUN_NAME>/baseline_standardized. "
-        "If provided, default input/output paths are resolved from that run.",
+        help="Preprocessed run name under data/graph_dataset/<RUN_NAME>/baseline_standardized. If provided, default input/output paths are resolved from that run.",
     )
     parser.add_argument("--train-weighted", type=Path, default=DEFAULT_TRAIN_WEIGHTED)
     parser.add_argument("--train-oversampled", type=Path, default=DEFAULT_TRAIN_OVERSAMPLED)
@@ -73,27 +70,21 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
     train_weighted, train_oversampled, val_csv, test_csv, output_dir = resolve_paths(args, MODEL_ID, DEFAULT_OUTPUT_DIR)
-
     print(f"[RUN] run_name={args.run_name or 'default'}")
     print(f"- train_weighted   : {train_weighted}")
     print(f"- train_oversampled: {train_oversampled}")
     print(f"- val              : {val_csv}")
     print(f"- test             : {test_csv}")
     print(f"- output_dir       : {output_dir}")
-
     weighted_train_df = load_dataframe(train_weighted)
     oversampled_train_df = load_dataframe(train_oversampled)
     val_df = load_dataframe(val_csv)
     test_df = load_dataframe(test_csv)
-
     model, train_strategy = fit_xgb(weighted_train_df, oversampled_train_df, args.random_state)
-
     threshold, tuned_val_f1 = find_best_threshold(model, val_df)
     print(f"[THR] tuned threshold={threshold:.2f} (val macro_f1={tuned_val_f1:.4f})")
-
     val_metrics, val_predictions = evaluate_split(model, MODEL_ID, MODEL_NAME, val_df, "val", threshold=threshold)
     test_metrics, test_predictions = evaluate_split(model, MODEL_ID, MODEL_NAME, test_df, "test", threshold=threshold)
-
     metadata = {
         "model_id": MODEL_ID,
         "model_name": MODEL_NAME,
@@ -109,7 +100,6 @@ def main() -> None:
     save_outputs(
         output_dir, model, metadata, [val_metrics, test_metrics], {"val": val_predictions, "test": test_predictions}
     )
-
     print("[OK] XGBoost baseline finished.")
     print(f"- model_id      : {MODEL_ID}")
     print(f"- model_name    : {MODEL_NAME}")

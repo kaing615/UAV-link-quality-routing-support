@@ -1,5 +1,3 @@
-"""Request and response schemas for the UAV-GNN inference API."""
-
 from __future__ import annotations
 
 from pydantic import BaseModel, Field

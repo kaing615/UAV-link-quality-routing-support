@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-# Generate COUNT random ns-3 datasets (mirror of run_many_random_datasets.sh).
-# Usage: ./run_many_random_datasets_ns3.sh [COUNT] [PREFIX]
 
 set -euo pipefail
 
@@ -32,14 +30,12 @@ echo "[INFO] timestamp=${timestamp}"
 
 for ((i = 1; i <= COUNT; i++)); do
   seed=$((10000 + RANDOM + i))
-  mobility="${mobility_options[$((RANDOM % ${#mobility_options[@]}))]}"
+  mobility="${mobility_options[$((RANDOM % ${
   num_uavs=$((10 + RANDOM % 21))
   comm_range=$((180 + RANDOM % 101))
   time_steps=$((80 + RANDOM % 71))
   rwp_speed_min=$((2 + RANDOM % 4))
   rwp_speed_max=$((rwp_speed_min + 3 + RANDOM % 5))
-  # Scale the flight area with node count to keep density comparable to the
-  # original 6-10 UAV / 500x500m setup (constant area per node).
   area_side=$(awk -v n="${num_uavs}" 'BEGIN { printf "%d", 500 * sqrt(n / 8.0) }')
 
   if [[ "${mobility}" == "random-waypoint" ]]; then

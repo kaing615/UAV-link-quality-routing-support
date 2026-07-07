@@ -20,15 +20,6 @@ from torch_geometric.loader import DataLoader
 
 
 def load_graphs(pt_path: Path) -> list[Data]:
-    """
-    Load a .pt snapshot file and return a list of PyG Data objects.
-
-    Each stored graph dict has:
-      - edge_attr [2E, 5]: message-passing edges (undirected, duplicated)
-      - edge_label_index [2, E]: edges to classify (original forward direction)
-    edge_attr[::2] extracts the E original edge features in the same order
-    as edge_label_index, which we store separately as labeled_edge_attr.
-    """
     raw = torch.load(pt_path, weights_only=False)
     graphs = []
     for g in raw:
@@ -49,70 +40,42 @@ def make_loader(pt_path: Path, batch_size: int, shuffle: bool = False) -> DataLo
 
 
 def compute_pos_weight(train_graphs: list[Data]) -> torch.Tensor:
-    """pos_weight = n_negative / n_positive for BCEWithLogitsLoss."""
     n0 = sum(int((g.edge_label == 0).sum()) for g in train_graphs)
     n1 = sum(int((g.edge_label == 1).sum()) for g in train_graphs)
     return torch.tensor([n0 / max(n1, 1)], dtype=torch.float32)
 
 
-def collect_scores(
-    model: torch.nn.Module,
-    loader: DataLoader,
-    device: torch.device,
-) -> tuple[np.ndarray, np.ndarray]:
-    """Run the model over a loader and return (y_true, sigmoid scores)."""
+def collect_scores(model: torch.nn.Module, loader: DataLoader, device: torch.device) -> tuple[np.ndarray, np.ndarray]:
     model.eval()
-    all_labels, all_scores = [], []
-
+    all_labels, all_scores = ([], [])
     with torch.no_grad():
         for batch in loader:
             batch = batch.to(device)
-            logits = model(
-                batch.x,
-                batch.edge_index,
-                batch.edge_attr,
-                batch.edge_label_index,
-                batch.labeled_edge_attr,
-            )
+            logits = model(batch.x, batch.edge_index, batch.edge_attr, batch.edge_label_index, batch.labeled_edge_attr)
             all_labels.append(batch.edge_label.cpu())
             all_scores.append(torch.sigmoid(logits).cpu())
-
     y_true = torch.cat(all_labels).numpy()
     y_score = torch.cat(all_scores).numpy()
-    return y_true, y_score
+    return (y_true, y_score)
 
 
 def find_best_threshold(
-    y_true: np.ndarray,
-    y_score: np.ndarray,
-    lo: float = 0.3,
-    hi: float = 0.7,
-    min_gain: float = 0.02,
+    y_true: np.ndarray, y_score: np.ndarray, lo: float = 0.3, hi: float = 0.7, min_gain: float = 0.02
 ) -> tuple[float, float]:
-    """
-    Sweep decision thresholds on the VALIDATION split and return
-    (best_threshold, val_macro_f1 at that threshold).
-
-    Val splits here are small (tens of edges), so an unconstrained sweep
-    overfits badly — extreme thresholds (0.05, 0.95) win on val and collapse
-    on test. Two guards: the sweep is restricted to [lo, hi], and the tuned
-    threshold is only kept if it beats 0.5 on val by at least min_gain.
-    """
 
     def macro_f1_at(t: float) -> float:
         preds = (y_score >= t).astype(int)
         return float(f1_score(y_true, preds, labels=[0, 1], average="macro", zero_division=0))
 
     f1_default = macro_f1_at(0.5)
-    best_t, best_f1 = 0.5, f1_default
-    for t in np.arange(lo, hi + 1e-9, 0.01):
+    best_t, best_f1 = (0.5, f1_default)
+    for t in np.arange(lo, hi + 1e-09, 0.01):
         f1 = macro_f1_at(t)
         if f1 > best_f1:
-            best_t, best_f1 = float(t), f1
-
+            best_t, best_f1 = (float(t), f1)
     if best_f1 - f1_default < min_gain:
-        return 0.5, f1_default
-    return best_t, best_f1
+        return (0.5, f1_default)
+    return (best_t, best_f1)
 
 
 def evaluate_split(
@@ -128,14 +91,11 @@ def evaluate_split(
     y_true, y_score = collect_scores(model, loader, device)
     inference_s = time.perf_counter() - t0
     y_pred = (y_score >= threshold).astype(int)
-
     cm = confusion_matrix(y_true, y_pred, labels=[0, 1])
     tn, fp, fn, tp = cm.ravel()
-
     has_both = set(y_true.tolist()) == {0, 1}
     roc_auc = float(roc_auc_score(y_true, y_score)) if has_both else None
     pr_auc = float(average_precision_score(y_true, y_score)) if has_both else None
-
     metrics = {
         "model_id": model_id,
         "model_name": model_name,
@@ -158,13 +118,5 @@ def evaluate_split(
         "fn": int(fn),
         "tp": int(tp),
     }
-
-    pred_df = pd.DataFrame(
-        {
-            "y_true": y_true,
-            "y_pred": y_pred,
-            "pred_score": y_score,
-        }
-    )
-
-    return metrics, pred_df
+    pred_df = pd.DataFrame({"y_true": y_true, "y_pred": y_pred, "pred_score": y_score})
+    return (metrics, pred_df)
