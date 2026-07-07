@@ -7,7 +7,7 @@ PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 NS3_SRC_DIR="${PROJECT_ROOT}/simulation/ns3"
 NS3_BIN="${NS3_SRC_DIR}/build/uav-olsr-dataset"
 
-if [[ $# -lt 1 ]]; then
+if [[ $
   echo "Usage: $0 RUN_NAME [SEED] [MOBILITY_MODEL]"
   echo "Example: $0 ns3_seed_42_rwp 42 random-waypoint"
   exit 1

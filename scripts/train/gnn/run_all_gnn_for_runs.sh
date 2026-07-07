@@ -7,8 +7,8 @@ PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../../.." && pwd)"
 RUNS_ROOT="${PROJECT_ROOT}/data/graph_dataset"
 GNN_MODULE="src.training.gnn.train_gnn"
 RUN_PATTERN="${1:-*}"
-MODEL_TYPE="${2:-graphsage}"  # graphsage or gat
-NOEDGE="${3:-}"               # pass 'noedge' for the edge-feature ablation
+MODEL_TYPE="${2:-graphsage}"
+NOEDGE="${3:-}"
 
 EXTRA_FLAG=""
 if [[ "${NOEDGE}" == "noedge" ]]; then
@@ -32,7 +32,7 @@ while IFS= read -r run_dir; do
   matching_runs+=("${run_dir}")
 done < <(find "${RUNS_ROOT}" -mindepth 1 -maxdepth 1 -type d -name "${RUN_PATTERN}" | sort)
 
-if [[ ${#matching_runs[@]} -eq 0 ]]; then
+if [[ ${
   echo "No run directories matched pattern '${RUN_PATTERN}' under ${RUNS_ROOT}"
   exit 1
 fi
@@ -42,7 +42,7 @@ echo "[INFO] python=${PYTHON_BIN}"
 echo "[INFO] runs_root=${RUNS_ROOT}"
 echo "[INFO] run_pattern=${RUN_PATTERN}"
 echo "[INFO] model_type=${MODEL_TYPE}"
-echo "[INFO] matched_runs=${#matching_runs[@]}"
+echo "[INFO] matched_runs=${
 
 failures=0
 
@@ -66,7 +66,7 @@ echo
 echo "============================================================"
 echo "[SUMMARY]"
 echo "============================================================"
-echo "- matched_runs : ${#matching_runs[@]}"
+echo "- matched_runs : ${
 echo "- failures     : ${failures}"
 
 if [[ ${failures} -gt 0 ]]; then
