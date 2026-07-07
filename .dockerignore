@@ -19,5 +19,4 @@ __pycache__
 dvc.yaml
 dvc.lock
 pyproject.toml
-requirements.txt
 README.md

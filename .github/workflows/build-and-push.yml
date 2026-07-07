@@ -24,14 +24,49 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            requirements*.txt
+            pyproject.toml
+            setup.cfg
 
-      - name: Stage serving model from DVC remote
+      - name: Install DVC GDrive deps
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade --force-reinstall \
+            "dvc==3.67.1" \
+            "dvc-gdrive==3.0.1" \
+            "PyDrive2==1.21.3" \
+            "cryptography==43.0.3" \
+            "pyOpenSSL==24.2.1"
+          python -m pip check
+          python -m pip freeze | grep -Ei '^(dvc|dvc-gdrive|pydrive2|cryptography|pyopenssl)=='
+
+      - name: Configure DVC GDrive auth
         env:
-          # Google Drive credentials JSON for the DVC remote (service-account or
-          # cached OAuth user creds). Add it under repo Settings → Secrets → Actions.
           GDRIVE_CREDENTIALS_DATA: ${{ secrets.GDRIVE_CREDENTIALS_DATA }}
         run: |
-          pip install 'dvc[gdrive]==3.67.1' 'PyDrive2>=1.18.0' 'google-auth<2.30.0'
+          python - <<'PY'
+          import json, os
+          data = json.loads(os.environ["GDRIVE_CREDENTIALS_DATA"])
+          if data.get("type") != "service_account":
+              raise SystemExit("GDRIVE_CREDENTIALS_DATA must be a service account JSON key")
+          print("Using service account:", data.get("client_email"))
+          PY
+
+          dvc remote list
+          DVC_REMOTE="$(dvc remote default || true)"
+          if [ -z "$DVC_REMOTE" ]; then
+            DVC_REMOTE="$(dvc remote list | awk 'NR==1 {print $1}')"
+          fi
+          echo "Using DVC remote: $DVC_REMOTE"
+          dvc remote modify --local "$DVC_REMOTE" gdrive_use_service_account true
+          echo "$GDRIVE_CREDENTIALS_DATA" > dvc_creds.json
+          dvc remote modify --local "$DVC_REMOTE" gdrive_service_account_json_file_path dvc_creds.json
+      - name: Stage serving model from DVC remote
+        env:
+          GDRIVE_CREDENTIALS_DATA: ${{ secrets.GDRIVE_CREDENTIALS_DATA }}
+        run: |
           bash scripts/mlops/stage_serving_model.sh
 
       - name: Set up Docker Buildx

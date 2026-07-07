@@ -3,14 +3,17 @@ from __future__ import annotations
 import json
 import logging
 import os
+import sys
 from contextlib import asynccontextmanager
 from pathlib import Path
 
 import torch
 from fastapi import FastAPI, HTTPException
 
-from src.models.gnn.edge_gnn import EdgeAwareSAGEEdgeClassifier, GATEdgeClassifier, GraphSAGEEdgeClassifier
-from src.serving.schemas import EdgePrediction, HealthResponse, PredictionRequest, PredictionResponse
+sys.path.insert(0, "/app/src")
+
+from models.gnn.edge_gnn import EdgeAwareSAGEEdgeClassifier, GATEdgeClassifier, GraphSAGEEdgeClassifier
+from serving.schemas import EdgePrediction, HealthResponse, PredictionRequest, PredictionResponse
 
 logger = logging.getLogger("uav_gnn.serving")
 _MODELS = {"graphsage": GraphSAGEEdgeClassifier, "gat": GATEdgeClassifier, "edge-sage": EdgeAwareSAGEEdgeClassifier}

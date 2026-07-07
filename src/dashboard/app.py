@@ -73,37 +73,61 @@ if st.button("Predict"):
             st.subheader("Predictions Table")
             st.dataframe(predictions, use_container_width=True)
         with col2:
-            st.subheader("Network Visualization")
+            st.subheader("Network Visualization (3D)")
+            import matplotlib.patches as mpatches
+            from mpl_toolkits.mplot3d import Axes3D
+
             G = nx.Graph()
-            pos = {}
+            pos3d = {}
             for n in req_data["nodes"]:
                 G.add_node(n["node_id"])
-                pos[n["node_id"]] = (n["x"], n["y"])
-            edge_colors = []
+                pos3d[n["node_id"]] = (n["x"], n["y"], n["z"])
+
+            # Collect edges from predictions
+            edge_stable = []
+            edge_unstable = []
             for pred in predictions:
                 u, v = (pred["src"], pred["dst"])
                 G.add_edge(u, v)
-                edge_colors.append("#2e7d32" if pred["stable"] else "#c62828")
-            fig, ax = plt.subplots(figsize=(6, 4))
-            ax.axis("off")
-            nx.draw(
-                G,
-                pos,
-                with_labels=True,
-                node_color="#e0e0e0",
-                font_size=9,
-                edge_color=edge_colors,
-                width=1.5,
-                node_size=400,
-                ax=ax,
-            )
-            import matplotlib.patches as mpatches
+                if pred["stable"]:
+                    edge_stable.append((u, v))
+                else:
+                    edge_unstable.append((u, v))
+
+            fig = plt.figure(figsize=(6, 4))
+            ax = fig.add_subplot(111, projection="3d")
+            ax.set_box_aspect([1, 1, 1])
+
+            xs, ys, zs = [], [], []
+            for node_id in G.nodes():
+                x, y, z = pos3d[node_id]
+                xs.append(x)
+                ys.append(y)
+                zs.append(z)
+            ax.scatter(xs, ys, zs, s=120, c="#e0e0e0", edgecolors="black", zorder=5)
+
+            for node_id, (x, y, z) in pos3d.items():
+                ax.text(x, y, z, str(node_id), fontsize=9, ha="center", va="center", zorder=6)
+
+            for u, v in edge_stable:
+                x0, y0, z0 = pos3d[u]
+                x1, y1, z1 = pos3d[v]
+                ax.plot([x0, x1], [y0, y1], [z0, z1], color="#2e7d32", linewidth=2.0, zorder=4)
+
+            for u, v in edge_unstable:
+                x0, y0, z0 = pos3d[u]
+                x1, y1, z1 = pos3d[v]
+                ax.plot([x0, x1], [y0, y1], [z0, z1], color="#c62828", linewidth=2.0, linestyle="--", zorder=4)
 
             green_patch = mpatches.Patch(color="#2e7d32", label="Stable Link")
-            red_patch = mpatches.Patch(color="#c62828", label="Unstable Link")
-            plt.legend(
-                handles=[green_patch, red_patch], loc="lower center", bbox_to_anchor=(0.5, -0.1), ncol=2, frameon=False
-            )
+            red_patch = mpatches.Patch(color="#c62828", label="Unstable Link", linestyle="--")
+            ax.legend(handles=[green_patch, red_patch], loc="lower center", bbox_to_anchor=(0.5, -0.05), ncol=2, frameon=False)
+
+            ax.set_xlabel("X")
+            ax.set_ylabel("Y")
+            ax.set_zlabel("Z")
+            plt.tight_layout()
             st.pyplot(fig)
+            plt.close(fig)
     except Exception as e:
         st.error(f"Error: {e}")

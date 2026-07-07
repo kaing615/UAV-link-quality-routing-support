@@ -304,6 +304,17 @@ python3 -m src.routing.plot_pth_sweep
 
 Kết quả: `outputs/aggregates/routing/{routing_comparison.png, pth_tradeoff.png}`.
 
+### Khảo sát horizon (TODO)
+
+Khảo sát hiệu năng routing theo các horizon khác nhau (H=1, 3, 5, 10) để xem
+prediction-assisted routing có cải thiện ở horizon xa hơn không:
+
+```bash
+./scripts/routing/sweep_horizon.sh 'ns3big_*' edge-sage '1,3,5,10'
+```
+
+Kết quả: `outputs/aggregates/routing/horizon_sweep/{horizon_sweep.csv, horizon_tradeoff.png}`.
+
 ### Tổng hợp riêng cho Baselines (đồ cũ)
 
 ```bash

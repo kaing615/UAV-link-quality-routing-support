@@ -53,6 +53,10 @@ data/processed/
 memory/claude_summary.md
 simulation/ns3/build/
 
+# Claude Code personal config
+.claude/
+.mcp.json
+
 .cache/
 **/dvclive/
 
