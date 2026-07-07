@@ -1,13 +1,24 @@
 from __future__ import annotations
+
 import argparse
 import json
 from pathlib import Path
+
 import pandas as pd
 import torch
 import torch.nn as nn
 from dvclive import Live
+
 from src.models.gnn.edge_gnn import EdgeAwareSAGEEdgeClassifier, GATEdgeClassifier, GraphSAGEEdgeClassifier
-from src.training.gnn.common import collect_scores, compute_pos_weight, evaluate_split, find_best_threshold, load_graphs, make_loader
+from src.training.gnn.common import (
+    collect_scores,
+    compute_pos_weight,
+    evaluate_split,
+    find_best_threshold,
+    load_graphs,
+    make_loader,
+)
+
 _MODELS = {'graphsage': (GraphSAGEEdgeClassifier, 'GraphSAGE Edge Classifier'), 'gat': (GATEdgeClassifier, 'GAT Edge Classifier'), 'edge-sage': (EdgeAwareSAGEEdgeClassifier, 'Edge-Aware GraphSAGE Edge Classifier')}
 NODE_IN = 8
 EDGE_IN = 7

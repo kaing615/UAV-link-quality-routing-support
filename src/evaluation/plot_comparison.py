@@ -1,8 +1,11 @@
 from __future__ import annotations
+
 import argparse
 from pathlib import Path
+
 import matplotlib.pyplot as plt
 import pandas as pd
+
 COLORS = {'threshold': '#7f7f7f', 'logreg': '#c5b0d5', 'rf': '#9467bd', 'xgb': '#1f77b4', 'mlp': '#aec7e8', 'gat': '#ff7f0e', 'graphsage': '#ffbb78', 'edge-sage': '#2ca02c', 'gat-noedge': '#c49c94', 'graphsage-noedge': '#dbb8ab', 'edge-sage-noedge': '#98df8a'}
 MODEL_NAMES = {'threshold': 'RSSI/SNR Threshold', 'logreg': 'Logistic Regression', 'rf': 'Random Forest', 'xgb': 'XGBoost', 'mlp': 'MLP (Baseline)', 'gat': 'GAT (GNN)', 'graphsage': 'GraphSAGE (GNN)', 'edge-sage': 'Edge-Aware GraphSAGE (Proposed)', 'gat-noedge': 'GAT (no edge feats)', 'graphsage-noedge': 'GraphSAGE (no edge feats)', 'edge-sage-noedge': 'Edge-Aware SAGE (no edge feats)'}
 

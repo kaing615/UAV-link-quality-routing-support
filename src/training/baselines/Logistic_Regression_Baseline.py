@@ -1,8 +1,23 @@
 from __future__ import annotations
+
 import argparse
 from pathlib import Path
+
 from sklearn.linear_model import LogisticRegression
-from src.training.baselines.common import DEFAULT_TEST, DEFAULT_TRAIN_OVERSAMPLED, DEFAULT_TRAIN_WEIGHTED, DEFAULT_VAL, FEATURE_COLUMNS, evaluate_split, extract_xy, load_dataframe, resolve_paths, save_outputs
+
+from src.training.baselines.common import (
+    DEFAULT_TEST,
+    DEFAULT_TRAIN_OVERSAMPLED,
+    DEFAULT_TRAIN_WEIGHTED,
+    DEFAULT_VAL,
+    FEATURE_COLUMNS,
+    evaluate_split,
+    extract_xy,
+    load_dataframe,
+    resolve_paths,
+    save_outputs,
+)
+
 MODEL_ID = 'logreg'
 MODEL_NAME = 'Logistic Regression'
 DEFAULT_OUTPUT_DIR = Path('outputs/baselines/logreg')

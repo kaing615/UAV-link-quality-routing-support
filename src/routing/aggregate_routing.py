@@ -1,10 +1,14 @@
 from __future__ import annotations
+
 import argparse
 from pathlib import Path
+
 import matplotlib
+
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import pandas as pd
+
 STRATEGY_LABELS = {'olsr': 'OLSR (actual, ns-3)', 'hop': 'Shortest Hop', 'delay': 'Delay-Weighted', 'xgb': 'XGBoost-Assisted', 'gnn': 'GNN-Assisted (Edge-SAGE)'}
 STRATEGY_ORDER = ['olsr', 'hop', 'delay', 'xgb', 'gnn']
 COLORS = {'olsr': '#d62728', 'hop': '#9e9e9e', 'delay': '#1f77b4', 'xgb': '#ff7f0e', 'gnn': '#2ca02c'}

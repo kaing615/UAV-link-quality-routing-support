@@ -1,7 +1,10 @@
 from __future__ import annotations
+
 import argparse
 from pathlib import Path
+
 import pandas as pd
+
 
 def compute_load_proxy(nodes_df: pd.DataFrame) -> pd.DataFrame:
     df = nodes_df.copy()

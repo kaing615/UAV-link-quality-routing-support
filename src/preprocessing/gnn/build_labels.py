@@ -1,7 +1,10 @@
 from __future__ import annotations
+
 import argparse
 from pathlib import Path
+
 import pandas as pd
+
 
 def assign_label(connected_next: int, snr_next: float, packet_loss_next: float, delay_next: float, tau_snr: float, tau_loss: float, tau_delay: float) -> int:
     if int(connected_next) != 1:

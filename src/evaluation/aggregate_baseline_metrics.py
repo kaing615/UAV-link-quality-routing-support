@@ -1,8 +1,11 @@
 from __future__ import annotations
+
 import argparse
 import fnmatch
 from pathlib import Path
+
 import pandas as pd
+
 METRIC_COLUMNS = ['accuracy', 'precision', 'recall', 'f1', 'macro_f1', 'n_samples', 'positive_ratio', 'tn', 'fp', 'fn', 'tp']
 
 def infer_scenario(run_name: str) -> str:
@@ -31,10 +34,10 @@ def collect_detail_rows(outputs_root: Path, model_pattern: str, run_pattern: str
     if not outputs_root.is_dir():
         raise FileNotFoundError(f'Outputs root not found: {outputs_root}')
     frames: list[pd.DataFrame] = []
-    for model_dir in sorted((path for path in outputs_root.iterdir() if path.is_dir())):
+    for model_dir in sorted(path for path in outputs_root.iterdir() if path.is_dir()):
         if not fnmatch.fnmatch(model_dir.name, model_pattern):
             continue
-        for run_dir in sorted((path for path in model_dir.iterdir() if path.is_dir())):
+        for run_dir in sorted(path for path in model_dir.iterdir() if path.is_dir()):
             if not fnmatch.fnmatch(run_dir.name, run_pattern):
                 continue
             metrics_path = run_dir / 'metrics.csv'

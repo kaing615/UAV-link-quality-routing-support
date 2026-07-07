@@ -1,7 +1,10 @@
 from __future__ import annotations
+
 import argparse
 from pathlib import Path
+
 import pandas as pd
+
 
 def build_time_split(edges_labeled_csv: Path, output_dir: Path, train_ratio: float=0.7, val_ratio: float=0.15) -> Path:
     df = pd.read_csv(edges_labeled_csv)
@@ -29,7 +32,7 @@ def build_time_split(edges_labeled_csv: Path, output_dir: Path, train_ratio: flo
     split_csv = output_dir / 'time_splits.csv'
     split_df.to_csv(split_csv, index=False)
     for name, values in [('train', train_times), ('val', val_times), ('test', test_times)]:
-        (output_dir / f'{name}_times.txt').write_text('\n'.join((str(v) for v in values)), encoding='utf-8')
+        (output_dir / f'{name}_times.txt').write_text('\n'.join(str(v) for v in values), encoding='utf-8')
     return split_csv
 
 def parse_args() -> argparse.Namespace:

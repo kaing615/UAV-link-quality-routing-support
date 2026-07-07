@@ -1,10 +1,14 @@
 from __future__ import annotations
+
 import argparse
 from pathlib import Path
+
 import matplotlib
+
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import pandas as pd
+
 STRATEGY_LABELS = {'xgb': 'XGBoost-Assisted', 'gnn': 'GNN-Assisted (Edge-SAGE)'}
 COLORS = {'xgb': '#ff7f0e', 'gnn': '#2ca02c'}
 REF_COLOR = '#9e9e9e'

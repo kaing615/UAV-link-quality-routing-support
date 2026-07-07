@@ -1,12 +1,16 @@
 from __future__ import annotations
+
 import argparse
 import fnmatch
 import json
 from pathlib import Path
+
 import pandas as pd
 import torch
+
 from src.models.gnn.edge_gnn import EdgeAwareSAGEEdgeClassifier, GATEdgeClassifier, GraphSAGEEdgeClassifier
 from src.training.gnn.common import evaluate_split, make_loader
+
 _MODELS = {'graphsage': GraphSAGEEdgeClassifier, 'gat': GATEdgeClassifier, 'edge-sage': EdgeAwareSAGEEdgeClassifier}
 NODE_IN = 8
 EDGE_IN = 7
@@ -37,10 +41,10 @@ def main() -> None:
     args = parse_args()
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     refreshed = failures = 0
-    for model_dir in sorted((p for p in args.gnn_root.iterdir() if p.is_dir())):
+    for model_dir in sorted(p for p in args.gnn_root.iterdir() if p.is_dir()):
         if not fnmatch.fnmatch(model_dir.name, args.model_pattern):
             continue
-        for run_dir in sorted((p for p in model_dir.iterdir() if p.is_dir())):
+        for run_dir in sorted(p for p in model_dir.iterdir() if p.is_dir()):
             if not fnmatch.fnmatch(run_dir.name, args.run_pattern):
                 continue
             if not (run_dir / 'best_model.pt').exists():

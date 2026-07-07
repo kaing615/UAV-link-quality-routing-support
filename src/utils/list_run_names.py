@@ -1,7 +1,9 @@
 from __future__ import annotations
+
 import argparse
 import fnmatch
 from pathlib import Path
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='List RUN_NAME directories under data/graph_dataset.')
@@ -15,7 +17,7 @@ def main() -> None:
     pattern = args.pattern
     if not runs_root.is_dir():
         raise SystemExit(f'Runs root not found: {runs_root}')
-    matched = sorted((path.name for path in runs_root.iterdir() if path.is_dir() and fnmatch.fnmatch(path.name, pattern)))
+    matched = sorted(path.name for path in runs_root.iterdir() if path.is_dir() and fnmatch.fnmatch(path.name, pattern))
     if not matched:
         raise SystemExit(f"No RUN_NAME matched pattern '{pattern}' in {runs_root}")
     for run_name in matched:

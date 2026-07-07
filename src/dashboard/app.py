@@ -1,8 +1,10 @@
-import streamlit as st
-import networkx as nx
-import matplotlib.pyplot as plt
-import httpx
 import json
+
+import httpx
+import matplotlib.pyplot as plt
+import networkx as nx
+import streamlit as st
+
 API_URL = 'http://localhost:8000'
 st.set_page_config(page_title='UAV-GNN Routing Dashboard', layout='wide')
 st.title('UAV-GNN Link Quality & Routing Dashboard')

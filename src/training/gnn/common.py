@@ -1,12 +1,23 @@
 from __future__ import annotations
+
 import time
 from pathlib import Path
+
 import numpy as np
 import pandas as pd
 import torch
-from sklearn.metrics import accuracy_score, average_precision_score, confusion_matrix, f1_score, precision_score, recall_score, roc_auc_score
+from sklearn.metrics import (
+    accuracy_score,
+    average_precision_score,
+    confusion_matrix,
+    f1_score,
+    precision_score,
+    recall_score,
+    roc_auc_score,
+)
 from torch_geometric.data import Data
 from torch_geometric.loader import DataLoader
+
 
 def load_graphs(pt_path: Path) -> list[Data]:
     raw = torch.load(pt_path, weights_only=False)
@@ -20,8 +31,8 @@ def make_loader(pt_path: Path, batch_size: int, shuffle: bool=False) -> DataLoad
     return DataLoader(load_graphs(pt_path), batch_size=batch_size, shuffle=shuffle)
 
 def compute_pos_weight(train_graphs: list[Data]) -> torch.Tensor:
-    n0 = sum((int((g.edge_label == 0).sum()) for g in train_graphs))
-    n1 = sum((int((g.edge_label == 1).sum()) for g in train_graphs))
+    n0 = sum(int((g.edge_label == 0).sum()) for g in train_graphs)
+    n1 = sum(int((g.edge_label == 1).sum()) for g in train_graphs)
     return torch.tensor([n0 / max(n1, 1)], dtype=torch.float32)
 
 def collect_scores(model: torch.nn.Module, loader: DataLoader, device: torch.device) -> tuple[np.ndarray, np.ndarray]:

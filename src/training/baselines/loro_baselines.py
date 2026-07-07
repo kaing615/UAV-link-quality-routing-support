@@ -1,7 +1,9 @@
 from __future__ import annotations
+
 import argparse
 import json
 from pathlib import Path
+
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
@@ -9,9 +11,11 @@ from sklearn.neural_network import MLPClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from xgboost import XGBClassifier
+
 from src.training.baselines.common import FEATURE_COLUMNS, evaluate_split, find_best_threshold
 from src.training.baselines.RSSI_SNR_Baseline import ThresholdModel
 from src.training.baselines.RSSI_SNR_Baseline import find_best_threshold as find_rssi_snr_thresholds
+
 _MODEL_NAMES = {'xgb': 'XGBoost', 'mlp': 'Small MLP', 'logreg': 'Logistic Regression', 'rf': 'Random Forest', 'threshold': 'RSSI/SNR Threshold'}
 
 def load_run_rows(run_name: str, splits: list[str] | None) -> pd.DataFrame:

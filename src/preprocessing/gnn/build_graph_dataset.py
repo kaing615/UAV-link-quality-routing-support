@@ -1,9 +1,12 @@
 from __future__ import annotations
+
 import argparse
 import json
 from pathlib import Path
+
 import pandas as pd
 import torch
+
 NODE_FEATURES = ['x', 'y', 'z', 'vx', 'vy', 'vz', 'degree', 'load']
 EDGE_FEATURES = ['distance', 'rssi', 'snr', 'delay', 'packet_loss', 'relative_speed', 'throughput']
 
@@ -45,8 +48,8 @@ def build_graph_records(nodes_csv: Path, edges_labeled_csv: Path, split_csv: Pat
     for split, graphs in graphs_by_split.items():
         out_path = output_dir / f'{split}.pt'
         torch.save(graphs, out_path)
-        num_labels_1 = sum((int(g['edge_label'].sum().item()) for g in graphs))
-        num_labels_0 = sum((int(g['edge_label'].numel() - g['edge_label'].sum().item()) for g in graphs))
+        num_labels_1 = sum(int(g['edge_label'].sum().item()) for g in graphs)
+        num_labels_0 = sum(int(g['edge_label'].numel() - g['edge_label'].sum().item()) for g in graphs)
         summary['splits'][split] = {'num_graphs': len(graphs), 'num_edge_labels': num_labels_0 + num_labels_1, 'label_1_count': num_labels_1, 'label_0_count': num_labels_0, 'output': str(out_path), 'times': [g['time'] for g in graphs]}
     summary_path = output_dir / 'dataset_summary.json'
     summary_path.write_text(json.dumps(summary, indent=2), encoding='utf-8')

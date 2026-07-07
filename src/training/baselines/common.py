@@ -1,11 +1,22 @@
 from __future__ import annotations
+
 import json
 import pickle
 import time
 from pathlib import Path
+
 import numpy as np
 import pandas as pd
-from sklearn.metrics import accuracy_score, average_precision_score, confusion_matrix, f1_score, precision_score, recall_score, roc_auc_score
+from sklearn.metrics import (
+    accuracy_score,
+    average_precision_score,
+    confusion_matrix,
+    f1_score,
+    precision_score,
+    recall_score,
+    roc_auc_score,
+)
+
 FEATURE_COLUMNS = ['distance', 'rssi', 'snr', 'delay', 'packet_loss', 'relative_speed', 'throughput']
 DEFAULT_TRAIN_WEIGHTED = Path('data/processed/baseline_standardized/imbalance/train_weighted.csv')
 DEFAULT_TRAIN_OVERSAMPLED = Path('data/processed/baseline_standardized/imbalance/train_oversampled.csv')

@@ -1,10 +1,13 @@
 from __future__ import annotations
+
 import argparse
 import json
 import math
 from pathlib import Path
 from typing import cast
+
 import pandas as pd
+
 DEFAULT_TRAIN_CSV = Path('data/processed/baseline_standardized/train_scaled.csv')
 DEFAULT_OUTPUT_DIR = Path('data/processed/baseline_standardized/imbalance')
 

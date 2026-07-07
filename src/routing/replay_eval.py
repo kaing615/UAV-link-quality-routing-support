@@ -1,9 +1,12 @@
 from __future__ import annotations
+
 import argparse
 from pathlib import Path
 from typing import Any, cast
+
 import networkx as nx
 import pandas as pd
+
 TAU_SNR = 18.0
 TAU_LOSS = 0.1
 TAU_DELAY = 10.0
@@ -35,7 +38,7 @@ def load_prediction_scores(csv_path: Path) -> dict[tuple[int, int, int], float]:
 
 def load_test_times(run_name: str) -> list[int]:
     splits = pd.read_csv(Path('data/graph_dataset') / run_name / 'splits' / 'time_splits.csv')
-    return sorted((int(t) for t in splits[splits['split'] == 'test']['time']))
+    return sorted(int(t) for t in splits[splits['split'] == 'test']['time'])
 
 def load_olsr_routes(run_name: str) -> tuple[tuple[int, int] | None, dict[int, list[int] | None]]:
     log_csv = Path('data/raw_snapshots') / run_name / 'traffic_log.csv'
@@ -79,7 +82,7 @@ def path_edges(path: list[int]) -> list[tuple[int, int]]:
     return [canonical(u, v) for u, v in zip(path[:-1], path[1:])]
 
 def path_valid(path: list[int], edges_t: dict[tuple[int, int], dict]) -> bool:
-    return all((e in edges_t and edges_t[e]['valid'] for e in path_edges(path)))
+    return all(e in edges_t and edges_t[e]['valid'] for e in path_edges(path))
 
 def path_pdr(path: list[int], edges_t: dict[tuple[int, int], dict]) -> float:
     pdr = 1.0
@@ -140,7 +143,7 @@ def evaluate_run(run_name: str, gnn_predictions_csv: Path, horizon: int=5, p_th:
                         disconnected = 1
                         break
                     cur = new_path
-                records.append({'time': t, 'src': s, 'dst': d, 'strategy': st, 'route_found': 1, 'hops': len(path) - 1, 'e2e_delay_ms': sum((edges_t[e]['delay'] for e in path_edges(path))), 'est_pdr': path_pdr(path, edges_t), 'horizon': h_t, 'route_lifetime': lifetime, 'survival_at_1': int(lifetime >= 1), 'realized_pdr_t1': path_pdr(path, raw.get(t + 1, {})) if path_valid(path, raw.get(t + 1, {})) else 0.0, 'route_changes': changes, 'disconnected': disconnected})
+                records.append({'time': t, 'src': s, 'dst': d, 'strategy': st, 'route_found': 1, 'hops': len(path) - 1, 'e2e_delay_ms': sum(edges_t[e]['delay'] for e in path_edges(path)), 'est_pdr': path_pdr(path, edges_t), 'horizon': h_t, 'route_lifetime': lifetime, 'survival_at_1': int(lifetime >= 1), 'realized_pdr_t1': path_pdr(path, raw.get(t + 1, {})) if path_valid(path, raw.get(t + 1, {})) else 0.0, 'route_changes': changes, 'disconnected': disconnected})
     if olsr_pair is not None:
         strategies.append('olsr')
         s, d = olsr_pair
@@ -171,7 +174,7 @@ def evaluate_run(run_name: str, gnn_predictions_csv: Path, horizon: int=5, p_th:
                     changes += 1
                 prev = nxt
             present = [e for e in path_edges(path) if e in edges_t]
-            records.append({'time': t, 'src': s, 'dst': d, 'strategy': 'olsr', 'route_found': 1, 'hops': len(path) - 1, 'e2e_delay_ms': sum((edges_t[e]['delay'] for e in present)) if len(present) == len(path) - 1 else float('nan'), 'est_pdr': path_pdr(path, edges_t), 'horizon': h_t, 'route_lifetime': lifetime, 'survival_at_1': int(lifetime >= 1), 'realized_pdr_t1': path_pdr(path, raw.get(t + 1, {})) if path_valid(path, raw.get(t + 1, {})) else 0.0, 'route_changes': changes, 'disconnected': disconnected})
+            records.append({'time': t, 'src': s, 'dst': d, 'strategy': 'olsr', 'route_found': 1, 'hops': len(path) - 1, 'e2e_delay_ms': sum(edges_t[e]['delay'] for e in present) if len(present) == len(path) - 1 else float('nan'), 'est_pdr': path_pdr(path, edges_t), 'horizon': h_t, 'route_lifetime': lifetime, 'survival_at_1': int(lifetime >= 1), 'realized_pdr_t1': path_pdr(path, raw.get(t + 1, {})) if path_valid(path, raw.get(t + 1, {})) else 0.0, 'route_changes': changes, 'disconnected': disconnected})
     details = pd.DataFrame(records)
     output_dir = output_dir or Path('outputs/routing') / run_name
     output_dir.mkdir(parents=True, exist_ok=True)

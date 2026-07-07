@@ -1,10 +1,14 @@
 from __future__ import annotations
+
 import argparse
 import json
 from pathlib import Path
+
 import pandas as pd
 import torch
+
 from src.models.gnn.edge_gnn import EdgeAwareSAGEEdgeClassifier, GATEdgeClassifier, GraphSAGEEdgeClassifier
+
 _MODELS = {'graphsage': GraphSAGEEdgeClassifier, 'gat': GATEdgeClassifier, 'edge-sage': EdgeAwareSAGEEdgeClassifier}
 NODE_IN = 8
 EDGE_IN = 7

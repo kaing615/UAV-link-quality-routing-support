@@ -1,9 +1,12 @@
 from __future__ import annotations
+
 import argparse
 import json
 import sys
 from pathlib import Path
+
 import torch
+
 NODE_FEATURE_RANGES = {0: ('x', -5000, 5000), 1: ('y', -5000, 5000), 2: ('z', 0, 1000), 3: ('vx', -100, 100), 4: ('vy', -100, 100), 5: ('vz', -50, 50), 6: ('speed', 0, 200), 7: ('degree', 0, 50)}
 EDGE_FEATURE_RANGES = {0: ('distance', 0, 5000), 1: ('rssi', -120, 0), 2: ('snr', -10, 60), 3: ('delay', 0, 1000), 4: ('packet_loss', 0, 1), 5: ('relative_speed', 0, 300), 6: ('throughput', 0, 100)}
 
@@ -75,7 +78,7 @@ def main() -> None:
     parser.add_argument('--output', type=Path, default=Path('reports/data_quality.json'))
     parser.add_argument('--fail-on-error', action='store_true', default=False)
     args = parser.parse_args()
-    run_dirs = sorted((d for d in args.data_dir.iterdir() if d.is_dir() and (d / 'graph_dataset').exists())) if args.data_dir.exists() else []
+    run_dirs = sorted(d for d in args.data_dir.iterdir() if d.is_dir() and (d / 'graph_dataset').exists()) if args.data_dir.exists() else []
     report = {'total_runs': len(run_dirs), 'runs': [], 'summary': {}}
     n_errors = 0
     n_warnings = 0

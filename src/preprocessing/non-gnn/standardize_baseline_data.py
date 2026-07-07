@@ -1,9 +1,12 @@
 from __future__ import annotations
+
 import argparse
 import json
 from pathlib import Path
+
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
+
 FEATURE_COLUMNS = ['distance', 'rssi', 'snr', 'delay', 'packet_loss', 'relative_speed', 'throughput']
 DEFAULT_EDGES_LABELED = Path('data/processed/edges_labeled.csv')
 DEFAULT_SPLITS = Path('data/splits/time_splits.csv')

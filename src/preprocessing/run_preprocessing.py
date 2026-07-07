@@ -1,10 +1,13 @@
 from __future__ import annotations
+
 import argparse
 from pathlib import Path
+
 from src.preprocessing.common.split_dataset import build_time_split
 from src.preprocessing.gnn.build_features import build_feature_tables
 from src.preprocessing.gnn.build_graph_dataset import build_graph_records
 from src.preprocessing.gnn.build_labels import build_labeled_edges
+
 
 def run_pipeline(nodes_csv: Path, edges_csv: Path, output_root: Path, tau_snr: float=18.0, tau_loss: float=0.1, tau_delay: float=10.0, train_ratio: float=0.7, val_ratio: float=0.15) -> dict[str, Path]:
     processed_dir = output_root / 'features'

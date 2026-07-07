@@ -1,8 +1,24 @@
 from __future__ import annotations
+
 import argparse
 from pathlib import Path
+
 from xgboost import XGBClassifier
-from src.training.baselines.common import DEFAULT_TEST, DEFAULT_TRAIN_OVERSAMPLED, DEFAULT_TRAIN_WEIGHTED, DEFAULT_VAL, FEATURE_COLUMNS, evaluate_split, extract_xy, find_best_threshold, load_dataframe, resolve_paths, save_outputs
+
+from src.training.baselines.common import (
+    DEFAULT_TEST,
+    DEFAULT_TRAIN_OVERSAMPLED,
+    DEFAULT_TRAIN_WEIGHTED,
+    DEFAULT_VAL,
+    FEATURE_COLUMNS,
+    evaluate_split,
+    extract_xy,
+    find_best_threshold,
+    load_dataframe,
+    resolve_paths,
+    save_outputs,
+)
+
 MODEL_ID = 'xgb'
 MODEL_NAME = 'XGBoost'
 DEFAULT_OUTPUT_DIR = Path('outputs/baselines/xgb')
