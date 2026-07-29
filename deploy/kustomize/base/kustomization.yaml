@@ -8,6 +8,11 @@ resources:
   - configmap.yaml
   - deployment-serve.yaml
   - service-serve.yaml
+  - ingress.yaml
+  - hpa.yaml
+  - poddisruptionbudget.yaml
+  - networkpolicy.yaml
+  - podsecurity.yaml
 
 commonLabels:
   app.kubernetes.io/name: uav-gnn

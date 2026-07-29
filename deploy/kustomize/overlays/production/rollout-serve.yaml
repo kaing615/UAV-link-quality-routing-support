@@ -1,0 +1,98 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: uav-gnn-serve-stable
+spec:
+  selector:
+    app.kubernetes.io/component: inference
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: uav-gnn-serve-canary
+spec:
+  selector:
+    app.kubernetes.io/component: inference
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: error-rate
+spec:
+  metrics:
+    - name: error-rate
+      interval: 5m
+      successCondition: result <= 0.01
+      provider:
+        prometheus:
+          address: http://prometheus-kube-prometheus-prometheus.monitoring.svc:9090
+          query: sum(rate(http_requests_total{status=~"5.."}[5m])) / sum(rate(http_requests_total[5m]))
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: uav-gnn-serve
+spec:
+  replicas: 2
+  revisionHistoryLimit: 5
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: inference
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: inference
+    spec:
+      containers:
+        - name: serve
+          image: uav-gnn-serve
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+              name: http
+          envFrom:
+            - configMapRef:
+                name: uav-gnn-config
+          resources:
+            requests:
+              cpu: 500m
+              memory: 512Mi
+            limits:
+              cpu: "2"
+              memory: 1Gi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+  strategy:
+    canary:
+      stableService: uav-gnn-serve-stable
+      canaryService: uav-gnn-serve-canary
+      steps:
+        - setWeight: 10
+        - pause:
+            duration: 10m
+        - setWeight: 50
+        - pause:
+            duration: 10m
+        - setWeight: 100
+      analysis:
+        templates:
+          - templateName: error-rate
+        startingStep: 1

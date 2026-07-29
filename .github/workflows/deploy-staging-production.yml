@@ -1,0 +1,34 @@
+name: Deploy staging and production
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  smoke-test-staging:
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run staging smoke tests
+        run: bash .github/workflows/scripts/smoke-test.sh https://api-staging.example.com
+
+  approve-production:
+    runs-on: ubuntu-latest
+    needs: smoke-test-staging
+    environment: production
+    steps:
+      - run: echo "Manual approval gate passed"
+
+  deploy-production:
+    runs-on: ubuntu-latest
+    needs: approve-production
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy production manifest placeholder
+        run: echo "Production deployment would run here"

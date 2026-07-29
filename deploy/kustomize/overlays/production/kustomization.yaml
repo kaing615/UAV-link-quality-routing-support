@@ -3,6 +3,7 @@ kind: Kustomization
 
 resources:
   - ../../base
+  - rollout-serve.yaml
 
 namespace: uav-gnn-production
 
@@ -22,6 +23,13 @@ patches:
       - op: replace
         path: /spec/template/spec/containers/0/resources/limits/memory
         value: 2Gi
+  - target:
+      kind: Ingress
+      name: uav-gnn-serve
+    patch: |
+      - op: replace
+        path: /spec/rules/0/host
+        value: api.example.com
 
 images:
   - name: uav-gnn-serve
