@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: external-dns
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://kubernetes-sigs.github.io/external-dns
+    chart: external-dns
+    targetRevision: 1.15.0
+    helm:
+      valuesObject:
+        serviceAccount:
+          create: false
+          name: external-dns
+        provider: aws
+        domainFilters: []
+        policy: upsert-only
+        registry: txt
+        txtOwnerId: uav-gnn-staging
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kube-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
