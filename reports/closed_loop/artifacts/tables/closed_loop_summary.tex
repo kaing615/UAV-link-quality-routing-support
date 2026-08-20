@@ -1,0 +1,17 @@
+\begin{table}[tb]
+\caption{Trace-driven closed-loop ns-3 results with run-level bootstrap 95% confidence intervals.}
+\label{tab:closed-loop-summary}
+\begin{tabular}{lrllll}
+\toprule
+Strategy & n\_runs & PDR & Mean delay (ms) & Throughput (Mbps) & Route changes \\
+\midrule
+OLSR & 10 & 0.341 [0.111, 0.604] & 102.544 [21.108, 218.145] & 0.091 [0.029, 0.162] & 1.700 [0.700, 2.800] \\
+Shortest hop & 10 & 0.513 [0.305, 0.736] & 111.945 [49.780, 181.338] & 0.140 [0.084, 0.199] & 5.200 [2.500, 7.702] \\
+Delay weighted & 10 & 0.514 [0.296, 0.742] & 115.810 [43.041, 201.037] & 0.139 [0.079, 0.200] & 5.200 [2.500, 7.802] \\
+Persistence & 10 & 0.513 [0.305, 0.736] & 111.945 [49.780, 181.338] & 0.140 [0.084, 0.199] & 5.200 [2.500, 7.702] \\
+Logistic Regression & 10 & 0.532 [0.301, 0.768] & 121.380 [40.287, 227.269] & 0.144 [0.082, 0.207] & 3.600 [1.600, 5.900] \\
+XGBoost & 10 & 0.527 [0.301, 0.768] & 95.098 [31.072, 171.140] & 0.145 [0.085, 0.208] & 5.900 [3.100, 8.900] \\
+Edge-SAGE & 10 & 0.558 [0.330, 0.794] & 103.250 [34.181, 185.296] & 0.152 [0.091, 0.215] & 4.200 [1.800, 7.100] \\
+\bottomrule
+\end{tabular}
+\end{table}

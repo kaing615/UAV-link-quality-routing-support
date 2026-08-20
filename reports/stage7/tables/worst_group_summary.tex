@@ -1,0 +1,26 @@
+\begin{table}[tb]
+\caption{Worst-group Macro-F1 by mobility and density group.}
+\label{tab:stage7-worst-group}
+\begin{tabular}{lllllll}
+\toprule
+Group & Target & Model & k=1 & k=2 & k=3 & k=5 \\
+\midrule
+density & qos & Edge-SAGE (full) & 0.822 (dense) & 0.801 (dense) & 0.741 (dense) & 0.696 (dense) \\
+density & qos & Logistic Regression & 0.847 (dense) & 0.825 (dense) & 0.805 (dense) & 0.762 (dense) \\
+density & qos & Persistence & 0.810 (dense) & 0.786 (dense) & 0.763 (dense) & 0.733 (dense) \\
+density & qos & XGBoost & 0.834 (dense) & 0.822 (dense) & 0.799 (dense) & 0.760 (dense) \\
+density & survival & Edge-SAGE (full) & 0.698 (dense) & 0.740 (dense) & 0.764 (dense) & 0.746 (dense) \\
+density & survival & Logistic Regression & 0.815 (sparse) & 0.854 (sparse) & 0.852 (sparse) & 0.832 (sparse) \\
+density & survival & Persistence & 0.471 (dense) & 0.458 (dense) & 0.448 (dense) & 0.434 (dense) \\
+density & survival & XGBoost & 0.813 (sparse) & 0.851 (sparse) & 0.855 (sparse) & 0.831 (sparse) \\
+mobility & qos & Edge-SAGE (full) & 0.806 (gauss-markov) & 0.784 (gauss-markov) & 0.731 (gauss-markov) & 0.690 (gauss-markov) \\
+mobility & qos & Logistic Regression & 0.842 (gauss-markov) & 0.818 (gauss-markov) & 0.798 (gauss-markov) & 0.757 (gauss-markov) \\
+mobility & qos & Persistence & 0.796 (gauss-markov) & 0.779 (gauss-markov) & 0.756 (gauss-markov) & 0.729 (gauss-markov) \\
+mobility & qos & XGBoost & 0.832 (gauss-markov) & 0.813 (gauss-markov) & 0.791 (gauss-markov) & 0.759 (gauss-markov) \\
+mobility & survival & Edge-SAGE (full) & 0.697 (gauss-markov) & 0.746 (gauss-markov) & 0.738 (gauss-markov) & 0.708 (gauss-markov) \\
+mobility & survival & Logistic Regression & 0.809 (random-waypoint) & 0.864 (random-waypoint) & 0.879 (random-waypoint) & 0.851 (gauss-markov) \\
+mobility & survival & Persistence & 0.471 (gauss-markov) & 0.458 (gauss-markov) & 0.448 (gauss-markov) & 0.432 (gauss-markov) \\
+mobility & survival & XGBoost & 0.812 (random-waypoint) & 0.850 (gauss-markov) & 0.871 (gauss-markov) & 0.810 (gauss-markov) \\
+\bottomrule
+\end{tabular}
+\end{table}

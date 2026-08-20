@@ -1,0 +1,38 @@
+% Set this path relative to the paper's main.tex when necessary.
+\providecommand{\StageSevenRoot}{reports/stage7}
+
+\subsection{Multi-horizon and generalization results}
+Figure~\ref{fig:stage7-multihorizon} reports the within-run trend across prediction horizons.
+Figure~\ref{fig:stage7-ood} compares within-run, LORO, and cross-mobility protocols.
+\begin{figure}[tb]
+  \centering
+  \includegraphics[width=\linewidth]{\StageSevenRoot/figures/multihorizon_macro_f1.pdf}
+  \caption{Within-run Macro-F1 across prediction horizons with run-level bootstrap 95\% confidence intervals.}
+  \label{fig:stage7-multihorizon}
+\end{figure}
+\begin{figure}[tb]
+  \centering
+  \includegraphics[width=\linewidth]{\StageSevenRoot/figures/ood_macro_f1.pdf}
+  \caption{Macro-F1 under within-run, leave-one-run-out, and cross-mobility evaluation.}
+  \label{fig:stage7-ood}
+\end{figure}
+\input{\StageSevenRoot/tables/protocol_summary.tex}
+
+\subsection{Edge-feature ablation and worst-group analysis}
+Figure~\ref{fig:stage7-ablation} separates edge features used in message passing from those used in the decoder.
+Figure~\ref{fig:stage7-worst-group} reports the weakest mobility group for each configuration.
+\begin{figure}[tb]
+  \centering
+  \includegraphics[width=\linewidth]{\StageSevenRoot/figures/edge_sage_ablation.pdf}
+  \caption{Edge-SAGE ablation comparing full, decoder-only, message-only, and no-edge variants.}
+  \label{fig:stage7-ablation}
+\end{figure}
+\begin{figure}[tb]
+  \centering
+  \includegraphics[width=\linewidth]{\StageSevenRoot/figures/worst_group_macro_f1.pdf}
+  \caption{Macro-F1 of the worst mobility group, exposing variation hidden by the overall mean.}
+  \label{fig:stage7-worst-group}
+\end{figure}
+\input{\StageSevenRoot/tables/ablation_summary.tex}
+\input{\StageSevenRoot/tables/paired_effects.tex}
+\input{\StageSevenRoot/tables/worst_group_summary.tex}

@@ -9,6 +9,7 @@ import torch
 
 NODE_FEATURES = ["x", "y", "z", "vx", "vy", "vz", "degree", "load"]
 EDGE_FEATURES = ["distance", "rssi", "snr", "delay", "packet_loss", "relative_speed", "throughput"]
+LABEL_METADATA = ["target", "horizon", "support_horizon", "tau_snr", "tau_loss", "tau_delay"]
 
 
 def duplicate_undirected_edges(edge_pairs: list[tuple[int, int]], edge_attrs: list[list[float]]):
@@ -31,7 +32,14 @@ def build_graph_records(nodes_csv: Path, edges_labeled_csv: Path, split_csv: Pat
     summary = {"feature_names": {"node": NODE_FEATURES, "edge": EDGE_FEATURES}, "splits": {}}
     split_map = dict(zip(splits["time"], splits["split"]))
     for time in sorted(edges["time"].unique().tolist()):
-        split = split_map[int(time)]
+        split = split_map.get(int(time))
+        if split is None:
+            raise ValueError(f"Missing split assignment for time {time}")
+        if split == "purged":
+            continue
+        if split not in graphs_by_split:
+            raise ValueError(f"Unknown split {split!r} for time {time}")
+
         node_t = nodes[nodes["time"] == time].sort_values("node_id").copy()
         edge_t = edges[edges["time"] == time].sort_values(["src", "dst"]).copy()
         node_ids = node_t["node_id"].tolist()
@@ -57,6 +65,7 @@ def build_graph_records(nodes_csv: Path, edges_labeled_csv: Path, split_csv: Pat
             "edge_label_name": edge_label_name,
             "node_feature_names": NODE_FEATURES,
             "edge_feature_names": EDGE_FEATURES,
+            **{name: edge_t[name].iloc[0] for name in LABEL_METADATA},
         }
         graphs_by_split[split].append(graph)
     for split, graphs in graphs_by_split.items():

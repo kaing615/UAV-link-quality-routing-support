@@ -6,7 +6,7 @@ from pathlib import Path
 from src.preprocessing.common.split_dataset import build_time_split
 from src.preprocessing.gnn.build_features import build_feature_tables
 from src.preprocessing.gnn.build_graph_dataset import build_graph_records
-from src.preprocessing.gnn.build_labels import build_labeled_edges
+from src.preprocessing.gnn.build_labels import HORIZONS, TARGETS, build_labeled_edges
 
 
 def run_pipeline(
@@ -16,7 +16,10 @@ def run_pipeline(
     tau_snr: float = 18.0,
     tau_loss: float = 0.1,
     tau_delay: float = 10.0,
-    train_ratio: float = 0.7,
+    target: str = "qos",
+    horizon: int = 1,
+    common_max_horizon: int | None = None,
+    train_ratio: float = 0.70,
     val_ratio: float = 0.15,
 ) -> dict[str, Path]:
     processed_dir = output_root / "features"
@@ -29,7 +32,8 @@ def run_pipeline(
     nodes_features_csv, edges_features_csv = build_feature_tables(
         nodes_csv=nodes_csv, edges_csv=edges_csv, output_dir=processed_dir
     )
-    print("[2/4] Building t+1 edge labels...")
+
+    print(f"[2/4] Building {target} edge labels for t+{horizon}...")
     edges_labeled_csv = processed_dir / "edges_labeled.csv"
     build_labeled_edges(
         edges_features_csv=edges_features_csv,
@@ -37,10 +41,17 @@ def run_pipeline(
         tau_snr=tau_snr,
         tau_loss=tau_loss,
         tau_delay=tau_delay,
+        target=target,
+        horizon=horizon,
+        common_max_horizon=common_max_horizon,
     )
     print("[3/4] Splitting dataset by time...")
     splits_csv = build_time_split(
-        edges_labeled_csv=edges_labeled_csv, output_dir=splits_dir, train_ratio=train_ratio, val_ratio=val_ratio
+        edges_labeled_csv=edges_labeled_csv,
+        output_dir=splits_dir,
+        train_ratio=train_ratio,
+        val_ratio=val_ratio,
+        horizon=horizon,
     )
     print("[4/4] Building graph dataset...")
     summary_json = build_graph_records(
@@ -67,7 +78,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--tau-snr", type=float, default=18.0)
     parser.add_argument("--tau-loss", type=float, default=0.1)
     parser.add_argument("--tau-delay", type=float, default=10.0)
-    parser.add_argument("--train-ratio", type=float, default=0.7)
+    parser.add_argument("--target", choices=TARGETS, default="qos")
+    parser.add_argument("--horizon", choices=HORIZONS, type=int, default=1)
+    parser.add_argument("--common-max-horizon", choices=HORIZONS, type=int, default=None)
+    parser.add_argument("--train-ratio", type=float, default=0.70)
     parser.add_argument("--val-ratio", type=float, default=0.15)
     return parser.parse_args()
 
@@ -96,6 +110,9 @@ def validate_args(args: argparse.Namespace) -> None:
         raise ValueError("--val-ratio must be in (0, 1)")
     if args.train_ratio + args.val_ratio >= 1.0:
         raise ValueError("train_ratio + val_ratio must be < 1.0")
+    if args.common_max_horizon is not None and args.common_max_horizon < args.horizon:
+        raise ValueError("--common-max-horizon must be >= --horizon")
+
     args.output_root.parent.mkdir(parents=True, exist_ok=True)
 
 
@@ -113,6 +130,9 @@ if __name__ == "__main__":
         tau_snr=args.tau_snr,
         tau_loss=args.tau_loss,
         tau_delay=args.tau_delay,
+        target=args.target,
+        horizon=args.horizon,
+        common_max_horizon=args.common_max_horizon,
         train_ratio=args.train_ratio,
         val_ratio=args.val_ratio,
     )

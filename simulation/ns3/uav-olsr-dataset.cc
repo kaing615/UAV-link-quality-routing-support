@@ -36,6 +36,7 @@
 
 #include "ns3/applications-module.h"
 #include "ns3/core-module.h"
+#include "ns3/flow-monitor-module.h"
 #include "ns3/internet-module.h"
 #include "ns3/mobility-module.h"
 #include "ns3/netanim-module.h"
@@ -44,10 +45,12 @@
 #include "ns3/olsr-routing-protocol.h"
 #include "ns3/wifi-module.h"
 
+#include <algorithm>
 #include <cmath>
 #include <cstring>
 #include <fstream>
 #include <iomanip>
+#include <limits>
 #include <map>
 #include <sstream>
 #include <vector>
@@ -80,9 +83,18 @@ static uint32_t g_sourceId = 0;
 static uint32_t g_destId = 4;
 static std::string g_outputDir = ".";
 static bool g_enableAnim = true;
+static bool g_enableDataFlow = false;
+static std::string g_routePlanPath;
+static std::string g_routingStrategy = "olsr";
+static std::string g_predictionTarget = "none";
+static uint32_t g_predictionHorizon = 1;
+static std::string g_costMode = "none";
+static double g_appRateKbps = 256.0;
+static uint32_t g_appPacketSize = 512;
 
 static constexpr double PROBE_INTERVAL = 0.05;
 static constexpr uint16_t PROBE_PORT = 9999;
+static constexpr uint16_t DATA_PORT = 9000;
 
 // ---------------------------------------------------------------------------
 struct LinkWindow
@@ -94,6 +106,7 @@ struct LinkWindow
 };
 
 static NodeContainer g_nodes;
+static Ipv4InterfaceContainer g_ifaces;
 static std::vector<Ptr<Socket>> g_txSockets;
 static std::map<Mac48Address, uint32_t> g_macToNode;
 static std::map<Ipv4Address, uint32_t> g_ipToNode;
@@ -105,6 +118,18 @@ static std::vector<uint32_t> g_prevDegree;
 static std::ofstream g_nodesCsv;
 static std::ofstream g_edgesCsv;
 static std::ofstream g_trafficCsv;
+
+struct RoutePlanEntry
+{
+    bool found = false;
+    std::vector<uint32_t> path;
+};
+
+static std::map<uint32_t, RoutePlanEntry> g_routePlan;
+static std::vector<uint32_t> g_currentPath;
+static uint32_t g_planSteps = 0;
+static uint32_t g_planFound = 0;
+static uint32_t g_routeChanges = 0;
 
 static double
 Clamp01(double x)
@@ -280,6 +305,137 @@ WalkRoute(uint32_t src, uint32_t dst, std::vector<uint32_t> &path)
     return current == dst;
 }
 
+static std::vector<uint32_t>
+ParseRoutePath(const std::string &value)
+{
+    std::vector<uint32_t> path;
+    if (value.empty())
+    {
+        return path;
+    }
+    std::stringstream stream(value);
+    std::string token;
+    while (std::getline(stream, token, '>'))
+    {
+        if (!token.empty() && token.back() == '-')
+        {
+            token.pop_back();
+        }
+        if (!token.empty())
+        {
+            path.push_back(static_cast<uint32_t>(std::stoul(token)));
+        }
+    }
+    return path;
+}
+
+static void
+LoadRoutePlan(const std::string &path)
+{
+    std::ifstream input(path);
+    NS_ABORT_MSG_IF(!input, "Cannot open route plan: " << path);
+    std::string line;
+    std::getline(input, line); // header
+    while (std::getline(input, line))
+    {
+        if (line.empty())
+        {
+            continue;
+        }
+        std::vector<std::string> fields;
+        std::stringstream row(line);
+        std::string field;
+        while (std::getline(row, field, ','))
+        {
+            fields.push_back(field);
+        }
+        NS_ABORT_MSG_IF(fields.size() < 5, "Malformed route-plan row: " << line);
+        uint32_t step = static_cast<uint32_t>(std::stoul(fields[0]));
+        uint32_t source = static_cast<uint32_t>(std::stoul(fields[1]));
+        uint32_t destination = static_cast<uint32_t>(std::stoul(fields[2]));
+        bool found = std::stoul(fields[3]) == 1;
+        std::vector<uint32_t> nodes = ParseRoutePath(fields[4]);
+        NS_ABORT_MSG_IF(source != g_sourceId || destination != g_destId,
+                        "Route-plan source/destination does not match CLI arguments");
+        NS_ABORT_MSG_IF(g_routePlan.count(step) != 0, "Duplicate route-plan time " << step);
+        if (found)
+        {
+            NS_ABORT_MSG_IF(nodes.size() < 2 || nodes.front() != source || nodes.back() != destination,
+                            "Invalid route path at time " << step);
+            NS_ABORT_MSG_IF(*std::max_element(nodes.begin(), nodes.end()) >= g_numUavs,
+                            "Route path contains an unknown node at time " << step);
+        }
+        g_routePlan[step] = {found, nodes};
+    }
+    NS_ABORT_MSG_IF(g_routePlan.empty(), "Route plan contains no usable rows: " << path);
+}
+
+static Ptr<Ipv4StaticRouting>
+GetStaticRouting(uint32_t nodeId)
+{
+    Ipv4StaticRoutingHelper helper;
+    return helper.GetStaticRouting(g_nodes.Get(nodeId)->GetObject<Ipv4>());
+}
+
+static void
+RemovePlannedRoutes()
+{
+    Ipv4Address destination = g_ifaces.GetAddress(g_destId);
+    for (uint32_t nodeId = 0; nodeId < g_numUavs; ++nodeId)
+    {
+        Ptr<Ipv4StaticRouting> routing = GetStaticRouting(nodeId);
+        for (uint32_t index = routing->GetNRoutes(); index > 0; --index)
+        {
+            if (routing->GetRoute(index - 1).GetDest() == destination)
+            {
+                routing->RemoveRoute(index - 1);
+            }
+        }
+    }
+}
+
+static void
+ApplyRoutePlan(uint32_t step)
+{
+    auto plan = g_routePlan.find(step);
+    if (plan == g_routePlan.end())
+    {
+        return;
+    }
+    const RoutePlanEntry &entry = plan->second;
+    if (g_planSteps > 0 && entry.path != g_currentPath)
+    {
+        g_routeChanges += 1;
+    }
+    g_planSteps += 1;
+    g_planFound += entry.found ? 1 : 0;
+    g_currentPath = entry.path;
+    RemovePlannedRoutes();
+    if (!entry.found)
+    {
+        Ptr<Ipv4> sourceIpv4 = g_nodes.Get(g_sourceId)->GetObject<Ipv4>();
+        int32_t sourceInterface =
+            sourceIpv4->GetInterfaceForDevice(g_nodes.Get(g_sourceId)->GetDevice(0));
+        NS_ABORT_MSG_IF(sourceInterface < 0, "No IPv4 interface on source node");
+        GetStaticRouting(g_sourceId)->AddHostRouteTo(
+            g_ifaces.GetAddress(g_destId), static_cast<uint32_t>(sourceInterface));
+        return;
+    }
+
+    Ipv4Address destination = g_ifaces.GetAddress(g_destId);
+    for (size_t index = 0; index + 1 < entry.path.size(); ++index)
+    {
+        uint32_t current = entry.path[index];
+        uint32_t next = entry.path[index + 1];
+        Ptr<Ipv4> ipv4 = g_nodes.Get(current)->GetObject<Ipv4>();
+        int32_t interface = ipv4->GetInterfaceForDevice(g_nodes.Get(current)->GetDevice(0));
+        NS_ABORT_MSG_IF(interface < 0, "No IPv4 interface for planned route node " << current);
+        GetStaticRouting(current)->AddHostRouteTo(destination,
+                                                  g_ifaces.GetAddress(next),
+                                                  static_cast<uint32_t>(interface));
+    }
+}
+
 static void
 TakeSnapshot(uint32_t step)
 {
@@ -397,7 +553,30 @@ TakeSnapshot(uint32_t step)
     g_prevDegree = degree;
 
     std::vector<uint32_t> path;
-    bool reachable = WalkRoute(g_sourceId, g_destId, path);
+    bool reachable = false;
+    if (g_routingStrategy == "olsr")
+    {
+        reachable = WalkRoute(g_sourceId, g_destId, path);
+        if (g_routePlan.count(step) != 0)
+        {
+            if (g_planSteps > 0 && path != g_currentPath)
+            {
+                g_routeChanges += 1;
+            }
+            g_planSteps += 1;
+            g_planFound += reachable ? 1 : 0;
+            g_currentPath = path;
+        }
+    }
+    else
+    {
+        auto plan = g_routePlan.find(step);
+        if (plan != g_routePlan.end() && plan->second.found)
+        {
+            path = plan->second.path;
+            reachable = true;
+        }
+    }
     std::ostringstream pathStr;
     if (reachable)
     {
@@ -411,16 +590,80 @@ TakeSnapshot(uint32_t step)
         }
     }
     double rtSizeSum = 0.0;
-    for (uint32_t i = 0; i < n; ++i)
+    if (g_routingStrategy == "olsr")
     {
-        Ptr<olsr::RoutingProtocol> o = GetOlsr(g_nodes.Get(i));
-        rtSizeSum += o ? o->GetRoutingTableEntries().size() : 0;
+        for (uint32_t i = 0; i < n; ++i)
+        {
+            Ptr<olsr::RoutingProtocol> o = GetOlsr(g_nodes.Get(i));
+            rtSizeSum += o ? o->GetRoutingTableEntries().size() : 0;
+        }
     }
     g_trafficCsv << step << ',' << g_sourceId << ',' << g_destId << ',' << (reachable ? 1 : 0)
-                 << ',' << pathStr.str() << ',' << numConnectedEdges << ",olsr(ns3),0,"
+                 << ',' << pathStr.str() << ',' << numConnectedEdges << ',' << g_routingStrategy
+                 << ",0,"
                  << rtSizeSum / n << '\n';
 
     g_window.clear();
+}
+
+static void
+WriteClosedLoopMetrics(Ptr<FlowMonitor> monitor, FlowMonitorHelper &helper)
+{
+    monitor->CheckForLostPackets();
+    Ptr<Ipv4FlowClassifier> classifier = DynamicCast<Ipv4FlowClassifier>(helper.GetClassifier());
+    Ipv4Address sourceAddress = g_ifaces.GetAddress(g_sourceId);
+    Ipv4Address destinationAddress = g_ifaces.GetAddress(g_destId);
+    uint64_t txPackets = 0;
+    uint64_t rxPackets = 0;
+    uint64_t lostPackets = 0;
+    uint64_t rxBytes = 0;
+    double delaySumSeconds = 0.0;
+    double firstTxSeconds = std::numeric_limits<double>::infinity();
+    double lastRxSeconds = 0.0;
+
+    for (const auto &[flowId, stats] : monitor->GetFlowStats())
+    {
+        Ipv4FlowClassifier::FiveTuple tuple = classifier->FindFlow(flowId);
+        if (tuple.sourceAddress != sourceAddress || tuple.destinationAddress != destinationAddress ||
+            tuple.destinationPort != DATA_PORT)
+        {
+            continue;
+        }
+        txPackets += stats.txPackets;
+        rxPackets += stats.rxPackets;
+        lostPackets += stats.lostPackets;
+        rxBytes += stats.rxBytes;
+        delaySumSeconds += stats.delaySum.GetSeconds();
+        if (stats.txPackets > 0)
+        {
+            firstTxSeconds = std::min(firstTxSeconds, stats.timeFirstTxPacket.GetSeconds());
+        }
+        if (stats.rxPackets > 0)
+        {
+            lastRxSeconds = std::max(lastRxSeconds, stats.timeLastRxPacket.GetSeconds());
+        }
+    }
+
+    double pdr = txPackets > 0 ? static_cast<double>(rxPackets) / txPackets : 0.0;
+    double meanDelayMs = rxPackets > 0 ? delaySumSeconds * 1000.0 / rxPackets : 0.0;
+    double duration = std::isfinite(firstTxSeconds) && lastRxSeconds > firstTxSeconds
+                          ? lastRxSeconds - firstTxSeconds
+                          : 0.0;
+    double throughputMbps = duration > 0.0 ? rxBytes * 8.0 / duration / 1.0e6 : 0.0;
+    double foundRate = g_planSteps > 0 ? static_cast<double>(g_planFound) / g_planSteps : 0.0;
+
+    std::ofstream output(g_outputDir + "/closed_loop_metrics.csv");
+    output << std::fixed << std::setprecision(6)
+           << "strategy,target,horizon,cost_mode,seed,source,destination,app_rate_kbps,"
+              "packet_size,tx_packets,rx_packets,"
+              "lost_packets,pdr,mean_delay_ms,throughput_mbps,route_changes,plan_steps,"
+              "route_found_rate\n"
+           << g_routingStrategy << ',' << g_predictionTarget << ',' << g_predictionHorizon << ','
+           << g_costMode << ',' << g_seed << ',' << g_sourceId << ',' << g_destId << ','
+           << g_appRateKbps << ',' << g_appPacketSize << ',' << txPackets << ',' << rxPackets << ','
+           << lostPackets << ',' << pdr << ','
+           << meanDelayMs << ',' << throughputMbps << ',' << g_routeChanges << ',' << g_planSteps
+           << ',' << foundRate << '\n';
 }
 
 static void
@@ -455,7 +698,14 @@ WriteScenarioJson(const std::string &runName)
       << "  \"probe_interval_s\": " << PROBE_INTERVAL << ",\n"
       << "  \"wifi_standard\": \"802.11g\",\n"
       << "  \"wifi_rate\": \"ErpOfdmRate6Mbps\",\n"
-      << "  \"routing\": \"ns3::olsr\",\n"
+      << "  \"routing\": \"" << g_routingStrategy << "\",\n"
+      << "  \"route_plan\": \"" << g_routePlanPath << "\",\n"
+      << "  \"prediction_target\": \"" << g_predictionTarget << "\",\n"
+      << "  \"prediction_horizon\": " << g_predictionHorizon << ",\n"
+      << "  \"cost_mode\": \"" << g_costMode << "\",\n"
+      << "  \"data_flow_enabled\": " << (g_enableDataFlow ? "true" : "false") << ",\n"
+      << "  \"app_rate_kbps\": " << g_appRateKbps << ",\n"
+      << "  \"app_packet_size\": " << g_appPacketSize << ",\n"
       << "  \"output_dir\": \"" << g_outputDir << "\"\n"
       << "}\n";
 }
@@ -487,11 +737,36 @@ int main(int argc, char *argv[])
     cmd.AddValue("destId", "Traffic log destination node", g_destId);
     cmd.AddValue("outputDir", "Directory for CSV output", g_outputDir);
     cmd.AddValue("enableAnim", "Generate NetAnim XML (true/false)", g_enableAnim);
+    cmd.AddValue("enableDataFlow", "Send a measured unicast UDP flow", g_enableDataFlow);
+    cmd.AddValue("routePlan", "CSV route plan; also defines the evaluation window", g_routePlanPath);
+    cmd.AddValue("routingStrategy", "olsr | hop | delay | persistence | logreg | xgb | edge-sage",
+                 g_routingStrategy);
+    cmd.AddValue("predictionTarget", "qos | survival | none", g_predictionTarget);
+    cmd.AddValue("predictionHorizon", "Prediction horizon k", g_predictionHorizon);
+    cmd.AddValue("costMode", "neglog | one-minus | none", g_costMode);
+    cmd.AddValue("appRateKbps", "Offered UDP data rate (kbps)", g_appRateKbps);
+    cmd.AddValue("appPacketSize", "UDP payload size (bytes)", g_appPacketSize);
     cmd.Parse(argc, argv);
 
+    NS_ABORT_MSG_IF(g_numUavs < 2, "numUavs must be at least 2");
     if (g_destId >= g_numUavs)
     {
         g_destId = g_numUavs - 1;
+    }
+    NS_ABORT_MSG_IF(g_sourceId >= g_numUavs || g_sourceId == g_destId,
+                    "sourceId and destId must identify different UAVs");
+    bool supportedStrategy = g_routingStrategy == "olsr" || g_routingStrategy == "hop" ||
+                             g_routingStrategy == "delay" || g_routingStrategy == "persistence" ||
+                             g_routingStrategy == "logreg" || g_routingStrategy == "xgb" ||
+                             g_routingStrategy == "edge-sage";
+    NS_ABORT_MSG_IF(!supportedStrategy, "Unsupported routing strategy: " << g_routingStrategy);
+    NS_ABORT_MSG_IF(g_enableDataFlow && g_routePlanPath.empty(),
+                    "enableDataFlow requires routePlan to define the evaluation window");
+    NS_ABORT_MSG_IF(g_enableDataFlow && (g_appRateKbps <= 0.0 || g_appPacketSize == 0),
+                    "appRateKbps and appPacketSize must be positive");
+    if (!g_routePlanPath.empty())
+    {
+        LoadRoutePlan(g_routePlanPath);
     }
 
     RngSeedManager::SetSeed(g_seed == 0 ? 1 : g_seed);
@@ -595,7 +870,9 @@ int main(int argc, char *argv[])
     }
 
     OlsrHelper olsrHelper;
+    Ipv4StaticRoutingHelper staticRouting;
     Ipv4ListRoutingHelper listRouting;
+    listRouting.Add(staticRouting, 20);
     listRouting.Add(olsrHelper, 10);
 
     InternetStackHelper stack;
@@ -604,10 +881,10 @@ int main(int argc, char *argv[])
 
     Ipv4AddressHelper addr;
     addr.SetBase("10.0.0.0", "255.255.255.0");
-    Ipv4InterfaceContainer ifaces = addr.Assign(devices);
+    g_ifaces = addr.Assign(devices);
     for (uint32_t i = 0; i < g_numUavs; ++i)
     {
-        g_ipToNode[ifaces.GetAddress(i)] = i;
+        g_ipToNode[g_ifaces.GetAddress(i)] = i;
     }
 
     TypeId udpTid = TypeId::LookupByName("ns3::UdpSocketFactory");
@@ -629,6 +906,40 @@ int main(int argc, char *argv[])
 
     Config::Connect("/NodeList/*/DeviceList/*/$ns3::WifiNetDevice/Phy/MonitorSnifferRx",
                     MakeCallback(&MonitorSniffRx));
+
+    FlowMonitorHelper flowMonitorHelper;
+    Ptr<FlowMonitor> flowMonitor;
+    if (g_enableDataFlow)
+    {
+        double firstPlanTime = g_routePlan.begin()->first;
+        double lastPlanTime = g_routePlan.rbegin()->first;
+        double appStart = g_warmup + firstPlanTime + 1.01;
+        double appStop = g_warmup + lastPlanTime + 2.0;
+        double intervalSeconds = g_appPacketSize * 8.0 / (g_appRateKbps * 1000.0);
+
+        UdpServerHelper server(DATA_PORT);
+        ApplicationContainer serverApp = server.Install(g_nodes.Get(g_destId));
+        serverApp.Start(Seconds(appStart - 0.1));
+        serverApp.Stop(Seconds(appStop + 0.1));
+
+        UdpClientHelper client(g_ifaces.GetAddress(g_destId), DATA_PORT);
+        client.SetAttribute("MaxPackets", UintegerValue(std::numeric_limits<uint32_t>::max()));
+        client.SetAttribute("Interval", TimeValue(Seconds(intervalSeconds)));
+        client.SetAttribute("PacketSize", UintegerValue(g_appPacketSize));
+        ApplicationContainer clientApp = client.Install(g_nodes.Get(g_sourceId));
+        clientApp.Start(Seconds(appStart));
+        clientApp.Stop(Seconds(appStop));
+        flowMonitor = flowMonitorHelper.InstallAll();
+
+        if (g_routingStrategy != "olsr")
+        {
+            for (const auto &[step, entry] : g_routePlan)
+            {
+                (void)entry;
+                Simulator::Schedule(Seconds(g_warmup + step + 1.001), &ApplyRoutePlan, step);
+            }
+        }
+    }
 
     g_nodesCsv.open(g_outputDir + "/nodes.csv");
     g_edgesCsv.open(g_outputDir + "/edges.csv");
@@ -682,6 +993,10 @@ int main(int argc, char *argv[])
 
     Simulator::Stop(Seconds(g_warmup + g_timeSteps + 1.0));
     Simulator::Run();
+    if (g_enableDataFlow)
+    {
+        WriteClosedLoopMetrics(flowMonitor, flowMonitorHelper);
+    }
     Simulator::Destroy();
 
     delete anim;

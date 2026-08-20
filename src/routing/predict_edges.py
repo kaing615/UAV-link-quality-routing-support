@@ -14,7 +14,49 @@ NODE_IN = 8
 EDGE_IN = 7
 
 
-def predict_edges(run_name: str, model_id: str = "edge-sage", output_csv: Path | None = None) -> Path:
+def attach_prediction_identity(
+    predictions_csv: Path,
+    test_pt: Path,
+    output_csv: Path,
+) -> Path:
+    """Attach ``time/src/dst`` to saved GNN scores using test graph order."""
+    predictions = pd.read_csv(predictions_csv)
+    graphs = torch.load(test_pt, weights_only=False)
+    identity_rows = []
+    labels = []
+    for graph in graphs:
+        node_ids = graph["node_ids"]
+        edge_label_index = graph["edge_label_index"].numpy()
+        edge_labels = graph["edge_label"].numpy()
+        for index in range(edge_label_index.shape[1]):
+            identity_rows.append(
+                {
+                    "time": int(graph["time"]),
+                    "src": int(node_ids[edge_label_index[0, index]]),
+                    "dst": int(node_ids[edge_label_index[1, index]]),
+                }
+            )
+            labels.append(int(edge_labels[index]))
+
+    if len(identity_rows) != len(predictions):
+        raise ValueError(
+            f"Prediction/graph row mismatch: {len(predictions)} predictions, "
+            f"{len(identity_rows)} labeled edges"
+        )
+    if "y_true" in predictions and predictions["y_true"].astype(int).tolist() != labels:
+        raise ValueError("Prediction rows do not match the test graph edge order")
+
+    identified = pd.concat([pd.DataFrame(identity_rows), predictions.reset_index(drop=True)], axis=1)
+    output_csv.parent.mkdir(parents=True, exist_ok=True)
+    identified.to_csv(output_csv, index=False)
+    return output_csv
+
+
+def predict_edges(
+    run_name: str,
+    model_id: str = "edge-sage",
+    output_csv: Path | None = None,
+) -> Path:
     model_dir = Path("outputs/gnn") / model_id / run_name
     metadata = json.loads((model_dir / "metadata.json").read_text(encoding="utf-8"))
     base_id = model_id.replace("-noedge", "")

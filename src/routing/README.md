@@ -1,4 +1,4 @@
-# Routing Support Module (Nội dung 6+7)
+# Hỗ trợ định tuyến và đánh giá hiệu năng mạng
 
 Tích hợp đầu ra của mô hình dự đoán link quality vào lựa chọn tuyến, và đánh
 giá tác động ở mức hiệu năng mạng bằng **replay** trên các test snapshot đã
@@ -7,9 +7,10 @@ ghi — không cần mô phỏng lại trong ns-3.
 ## Ý tưởng
 
 Xác suất ổn định `ŷ` của từng link (từ GNN hoặc baseline) được ánh xạ thành
-trọng số cạnh `w = 1 − ŷ + ε`, đưa vào Dijkstra để ưu tiên các link được dự
-đoán là bền. Tùy chọn ngưỡng `p_th` loại hẳn các link có `ŷ < p_th` khỏi tập
-ứng viên (thiết kế hệ thống §12, §13.5).
+trọng số cạnh. Replay cũ dùng `w = 1 − ŷ + ε`; đánh giá đa thời điểm dùng
+`w = −log(max(ŷ, ε)) + ε` làm cấu hình chính và giữ `1 − ŷ` làm đối chứng.
+Dijkstra nhờ đó ưu tiên các link được dự đoán là bền. Tùy chọn ngưỡng `p_th`
+loại hẳn các link có `ŷ < p_th` khỏi tập ứng viên.
 
 ## Protocol đánh giá
 
@@ -21,7 +22,9 @@ chọn một tuyến trên topology quan sát tại `t`, sau đó "tua" dữ li�
 |---|---|
 | `route_lifetime` | số bước liên tiếp tuyến còn "sống" |
 | `survival_at_1` | tuyến còn sống tại t+1 hay không |
+| `survival_at_horizon` | tuyến còn sống liên tục đến đúng mốc t+k hay không |
 | `realized_pdr_t1` | tích `(1 − packet_loss)` dọc tuyến tại t+1 (0 nếu đứt) |
+| `realized_pdr_at_horizon` | proxy PDR của tuyến tại đúng mốc t+k (0 nếu đứt) |
 | `route_changes` | số lần phải tính lại tuyến trong horizon |
 | `e2e_delay_ms`, `hops`, `est_pdr` | thuộc tính tuyến tại thời điểm chọn |
 
@@ -31,13 +34,20 @@ nhờ đó "tuyến sống" nhất quán với định nghĩa nhãn lớp 1.
 
 ## Các chiến lược so sánh
 
-| Strategy | Mô tả |
-|----------|-------|
-| `hop` | Dijkstra trọng số 1 (shortest hop) — chặn trên của OLSR thật (topology ground-truth tức thời, không có HELLO/TC delay) |
-| `delay` | Dijkstra theo delay đo tại t |
-| `xgb` | `w = 1 − ŷ` từ XGBoost baseline |
-| `gnn` | `w = 1 − ŷ` từ GNN (mặc định edge-sage) |
-| `olsr` | **OLSR thật**: tuyến `ns3::olsr` đã chọn, đọc từ `route_path` trong `traffic_log.csv` (1 cặp src–dst mỗi run) |
+- `hop` — Dijkstra trọng số 1 (shortest hop). **Lưu ý**: đây chính là logic
+  chọn tuyến của OLSR (link-state, metric hop-count) nhưng trên topology
+  ground-truth tức thời — tức một *chặn trên* của hiệu năng OLSR thật (vốn
+  chịu trễ hội tụ HELLO/TC). Vượt baseline này nghĩa là vượt OLSR.
+- `delay` — Dijkstra theo delay đo tại t.
+- `persistence` — giữ nguyên trạng thái liên kết hiện tại làm dự đoán tương lai.
+- `logreg` — xác suất ổn định từ Logistic Regression.
+- `xgb` — xác suất ổn định từ XGBoost baseline.
+- `gnn` / `edge-sage` — xác suất ổn định từ Edge-Aware GraphSAGE.
+- `olsr` — **OLSR thật**: tuyến `ns3::olsr` đã chọn, đọc từ `route_path`
+  trong `traffic_log.csv` (mỗi run chỉ ghi một cặp src–dst). Vì vậy ngoài
+  summary all-pairs còn có `summary_olsr_pair.csv`: mọi chiến lược lọc về
+  đúng cặp đó (cùng tập session) để so sánh công bằng — chart
+  `routing_comparison_olsr_pair.png`.
 
 ## Kết quả chính (100 runs, ns3big dataset)
 
@@ -112,6 +122,12 @@ Compare: hop vs xgb vs gnn
   biểu đồ so sánh chiến lược 4 panel.
 - `plot_pth_sweep.py` — gộp mọi `summary_pth*.csv` và vẽ đường cong
   trade-off an toàn tuyến ↔ duy trì liên thông theo `p_th`.
+- `multihorizon_eval.py` — dùng predictor riêng cho từng target và
+  `k=1,2,3,5`, chạy cùng session cho sáu chiến lược, so sánh `-log(p)` với
+  `1-p`, rồi sinh bootstrap CI và paired sign-flip test theo run.
+- `closed_loop.py` — tạo kế hoạch tuyến theo từng snapshot rồi chạy lại cùng
+  scenario/seed trong ns-3. Một luồng UDP unicast thật đi qua tuyến được cài;
+  FlowMonitor đo PDR, delay, throughput và packet loss.
 
 ## Lệnh dùng
 
@@ -124,9 +140,23 @@ python3 -m src.routing.replay_eval --run-name <RUN> \
     --p-th 0.0,0.1,0.2,0.3,0.5,0.7,0.9 --strict
 python3 -m src.routing.plot_pth_sweep
 
-# Sweep horizon (TODO)
-./scripts/routing/sweep_horizon.sh 'ns3big_*' edge-sage 1,3,5,10
+# Replay đa thời điểm; có resume, không train lại
+python3 -m src.routing.multihorizon_eval
+
+# Đánh giá vòng kín dựa trên trace trong ns-3
+docker build -t uav-ns3-closed-loop .
+docker run --rm -v "${PWD}:/workspace" -w /workspace \
+  uav-ns3-closed-loop /venv/bin/python -m src.routing.closed_loop \
+  --binary /app/simulation/ns3/build/uav-olsr-dataset \
+  --baseline-run <RUN> --target survival --horizon 3 --cost-mode neglog
 ```
+
+Đánh giá trên là **trace-driven closed loop**: predictor tạo route plan từ
+trace gốc trước khi ns-3 chạy; ns-3 sau đó cài tuyến theo từng snapshot và đo
+luồng UDP thật. OLSR vẫn chạy làm control traffic cho mọi chiến lược, còn các
+chiến lược hỗ trợ dùng static host route có ưu tiên cao hơn. Đây chưa phải suy
+luận Python trực tiếp bên trong từng event ns-3. Mỗi kết luận so sánh cần nhiều
+baseline run ghép cặp; một run chỉ dùng để kiểm tra triển khai.
 
 ## Output
 
@@ -139,7 +169,10 @@ outputs/aggregates/routing/summary_by_strategy.csv
 outputs/aggregates/routing/routing_comparison.png
 outputs/aggregates/routing/routing_comparison_olsr_pair.png
 outputs/aggregates/routing/{pth_sweep.csv, pth_tradeoff.png}
-outputs/aggregates/routing/{horizon_sweep.csv, horizon_tradeoff.png}  # TODO
+outputs/routing_multihorizon/<TARGET>/k<K>/<COST>/<RUN>/{summary,details}.csv
+reports/routing_multihorizon/{detailed_by_run,summary_by_strategy,paired_comparisons}.csv
+outputs/closed_loop/<RUN>/<TARGET>/k<K>/<COST>/<STRATEGY>/closed_loop_metrics.csv
+reports/closed_loop/{detailed,summary,paired_comparisons}.csv
 ```
 
 ## Cách đọc kết quả

@@ -1,0 +1,38 @@
+\begin{table}[tb]
+\caption{Run-paired Macro-F1 effects (comparator minus reference), bootstrap 95% CI and Holm-adjusted p-value.}
+\label{tab:stage7-paired}
+\begin{tabular}{llrlrlr}
+\toprule
+Protocol & Target & k & Comparison & Runs & Delta Macro-F1 [95\% CI] & Holm p \\
+\midrule
+Within-run & qos & 1 & Logistic Regression -> Edge-SAGE (full) & 10 & -0.023 [-0.033, -0.015] & 0.015625 \\
+Within-run & qos & 2 & Logistic Regression -> Edge-SAGE (full) & 10 & -0.027 [-0.041, -0.010] & 0.017578 \\
+Within-run & qos & 3 & Logistic Regression -> Edge-SAGE (full) & 10 & -0.042 [-0.071, -0.017] & 0.015625 \\
+Within-run & qos & 5 & Logistic Regression -> Edge-SAGE (full) & 10 & -0.045 [-0.077, -0.018] & 0.054688 \\
+Within-run & survival & 1 & Logistic Regression -> Edge-SAGE (full) & 10 & -0.101 [-0.147, -0.058] & 0.015625 \\
+Within-run & survival & 2 & Logistic Regression -> Edge-SAGE (full) & 10 & -0.082 [-0.130, -0.036] & 0.015625 \\
+Within-run & survival & 3 & Logistic Regression -> Edge-SAGE (full) & 10 & -0.086 [-0.142, -0.035] & 0.015625 \\
+Within-run & survival & 5 & Logistic Regression -> Edge-SAGE (full) & 10 & -0.082 [-0.142, -0.026] & 0.039062 \\
+LORO & qos & 1 & Logistic Regression -> Edge-SAGE (full) & 10 & 0.003 [-0.008, 0.013] & 1.000000 \\
+LORO & qos & 5 & Logistic Regression -> Edge-SAGE (full) & 10 & 0.037 [0.023, 0.052] & 0.007812 \\
+LORO & survival & 1 & Logistic Regression -> Edge-SAGE (full) & 10 & -0.003 [-0.020, 0.011] & 1.000000 \\
+LORO & survival & 5 & Logistic Regression -> Edge-SAGE (full) & 10 & 0.042 [0.030, 0.057] & 0.007812 \\
+Cross-mobility & qos & 1 & Logistic Regression -> Edge-SAGE (full) & 10 & -0.004 [-0.014, 0.007] & 1.000000 \\
+Cross-mobility & qos & 5 & Logistic Regression -> Edge-SAGE (full) & 10 & -0.012 [-0.030, 0.006] & 0.921875 \\
+Cross-mobility & survival & 1 & Logistic Regression -> Edge-SAGE (full) & 10 & -0.030 [-0.048, -0.015] & 0.023438 \\
+Cross-mobility & survival & 5 & Logistic Regression -> Edge-SAGE (full) & 10 & 0.007 [-0.021, 0.037] & 1.000000 \\
+Ablation & qos & 1 & Edge-SAGE (full) -> Decoder-only & 10 & -0.000 [-0.010, 0.009] & 0.964844 \\
+Ablation & qos & 1 & Edge-SAGE (full) -> Message-only & 10 & -0.155 [-0.199, -0.099] & 0.007812 \\
+Ablation & qos & 1 & Edge-SAGE (full) -> No-edge & 10 & -0.307 [-0.350, -0.259] & 0.005859 \\
+Ablation & qos & 5 & Edge-SAGE (full) -> Decoder-only & 10 & 0.002 [-0.027, 0.041] & 0.896484 \\
+Ablation & qos & 5 & Edge-SAGE (full) -> Message-only & 10 & -0.118 [-0.169, -0.059] & 0.015625 \\
+Ablation & qos & 5 & Edge-SAGE (full) -> No-edge & 10 & -0.240 [-0.288, -0.189] & 0.005859 \\
+Ablation & survival & 1 & Edge-SAGE (full) -> Decoder-only & 10 & -0.008 [-0.049, 0.033] & 0.750000 \\
+Ablation & survival & 1 & Edge-SAGE (full) -> Message-only & 10 & -0.111 [-0.144, -0.078] & 0.005859 \\
+Ablation & survival & 1 & Edge-SAGE (full) -> No-edge & 10 & -0.232 [-0.265, -0.198] & 0.005859 \\
+Ablation & survival & 5 & Edge-SAGE (full) -> Decoder-only & 10 & 0.012 [-0.022, 0.057] & 0.761719 \\
+Ablation & survival & 5 & Edge-SAGE (full) -> Message-only & 10 & -0.148 [-0.194, -0.101] & 0.005859 \\
+Ablation & survival & 5 & Edge-SAGE (full) -> No-edge & 10 & -0.257 [-0.297, -0.216] & 0.005859 \\
+\bottomrule
+\end{tabular}
+\end{table}

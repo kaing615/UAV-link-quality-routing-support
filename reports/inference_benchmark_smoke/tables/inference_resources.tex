@@ -1,0 +1,13 @@
+\begin{table}[tb]
+\caption{CPU inference resource benchmark on ten runs (one thread).}
+\label{tab:inference-resources}
+\begin{tabular}{rrrrrrl}
+\toprule
+n\_runs & latency\_ms\_per\_sample\_median\_mean & latency\_ms\_per\_snapshot\_median\_mean & peak\_rss\_mb\_mean & checkpoint\_mb\_mean & complexity\_count\_mean & Model \\
+\midrule
+1 & 0.029270 & 0.960438 & 423.113281 & 0.316884 & 79533.000000 & Edge-SAGE \\
+1 & 0.001226 & 0.040244 & 424.187500 & 0.000890 & 8.000000 & Logistic Regression \\
+1 & 0.009190 & 0.301531 & 430.230469 & 0.551795 & 11082.000000 & XGBoost \\
+\bottomrule
+\end{tabular}
+\end{table}

@@ -32,6 +32,13 @@ cmake --build simulation/ns3/build
 
 (Script `run_one_dataset_ns3.sh` tự build ở lần chạy đầu.)
 
+Trên Windows có thể build binary và toàn bộ runtime bằng Docker:
+
+```powershell
+docker build --target ns3-build -t uav-ns3-closed-loop-build .
+docker build -t uav-ns3-closed-loop .
+```
+
 ## Chạy
 
 ```bash
@@ -61,3 +68,18 @@ Chạy binary trực tiếp (xem đủ tham số với `--help`):
 - 10 giây warm-up trước snapshot đầu để OLSR hội tụ
 - `traffic_log.csv`: walk bảng định tuyến OLSR từ source → dest mỗi giây
   (`olsr_mpr_nodes` luôn 0 — ns-3 không expose MPR set công khai)
+
+## Đánh giá định tuyến vòng kín dựa trên trace
+
+Khi truyền `--enableDataFlow=true` và `--routePlan=<CSV>`, binary đọc tuyến
+theo từng snapshot, cài static host route động và phát một luồng UDP unicast
+source–destination. FlowMonitor ghi `closed_loop_metrics.csv` gồm số gói
+phát/nhận/mất, PDR, delay trung bình và throughput. Với `routingStrategy=olsr`,
+route plan chỉ xác định cửa sổ đánh giá và gói tin dùng bảng định tuyến OLSR.
+Các chiến lược khác dùng static route ưu tiên cao hơn; OLSR vẫn hoạt động ở nền
+để tải điều khiển giống nhau giữa các lần chạy.
+
+Route plan được tạo trước từ trace gốc, nên cách chạy này là **trace-driven
+closed loop**, chưa phải nhúng model inference vào vòng event của ns-3. Luồng
+dữ liệu thật vẫn tham gia tranh chấp kênh và ảnh hưởng telemetry đo trong lần
+chạy mới.

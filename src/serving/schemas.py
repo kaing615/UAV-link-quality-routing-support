@@ -11,8 +11,8 @@ class NodeFeatures(BaseModel):
     vx: float
     vy: float
     vz: float
-    speed: float
     degree: int
+    load: float
 
 
 class EdgeFeatures(BaseModel):

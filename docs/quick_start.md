@@ -82,7 +82,92 @@ Vùng bay điều chỉnh qua `SIM_X_MAX`/`SIM_Y_MAX` (mặc định 500×500m).
 batch random 10–30 UAV và tự scale vùng bay theo `sqrt(num_uavs/8)` để giữ
 mật độ kết nối ổn định (tránh dataset degenerate khi tăng số node).
 
-## 3c. Xóa toàn bộ data và output cũ
+## 3c. Pilot multi-horizon từ raw snapshot hiện có
+
+Lệnh sau giữ nguyên dữ liệu/kết quả sơ khởi và ghi riêng vào
+`data/multihorizon/`. Mặc định chọn xen kẽ mobility cho 3 run, sinh đủ
+`qos/survival` với `k=1,2,3,5`, rồi đánh giá persistence baseline.
+
+```bash
+python3 -m scripts.dataset.build_multihorizon_pilot --limit 3
+python3 -m src.training.baselines.persistence_baseline
+python3 -m scripts.train.run_multihorizon_benchmark
+```
+
+Bảng kiểm tra được ghi tại `reports/multihorizon_pilot_summary.csv` và
+`reports/persistence_pilot_summary.csv`. Benchmark có resume và ghi bảng chi
+tiết/tổng hợp vào `reports/multihorizon_benchmark_summary*.csv`.
+
+### 3e. Đánh giá tổng quát hóa, kiểm định thống kê và phân tích ablation
+
+Phần này kiểm tra mô hình trên dữ liệu chưa thấy và xác định thành phần nào của
+Edge-SAGE thực sự tạo ra cải thiện:
+
+- **Leave-One-Run-Out (LORO):** huấn luyện trên 9 run và kiểm tra trên 1 run
+  chưa thấy, lần lượt đổi run được giữ lại;
+- **cross-mobility:** huấn luyện trên một họ chuyển động và kiểm tra trên họ
+  chuyển động còn lại;
+- **ablation:** tách riêng việc dùng edge features tại message passing và tại
+  decoder;
+- **kiểm định ghép cặp:** tính bootstrap CI, paired sign-flip test và kết quả
+  worst-group với `run` là đơn vị độc lập.
+
+Các đánh giá chạy trên hai mốc đại diện `k=1,5`. Runner có thể tiếp tục từ kết
+quả đã hoàn thành:
+
+```bash
+python3 -m scripts.analysis.analyze_multihorizon_stage6
+python3 -m scripts.train.run_stage6_benchmark \
+  --protocols loro cross-mobility \
+  --horizons 1 5
+```
+
+Các ablation Edge-SAGE được tách thành `decoder-only`, `message-only` và
+`noedge`; full Edge-SAGE từ benchmark 10-run được giữ làm đối chứng:
+
+```bash
+python3 -m scripts.train.run_stage6_benchmark \
+  --protocols ablation --targets qos survival --horizons 1 5
+```
+
+Output nằm trong `outputs/stage6/` và các bảng báo cáo trong `reports/stage6/`;
+`stage6` ở đây chỉ là tên thư mục nội bộ được giữ để tương thích với kết quả đã
+chạy.
+Đơn vị độc lập của CI/kiểm định là run; không diễn giải từng edge như quan sát
+độc lập. Có thể giới hạn `--targets` hoặc chạy lại lệnh để tiếp tục các output
+đã hoàn thành.
+
+### 3f. Sinh hình, bảng và nội dung LaTeX cho báo cáo/bài báo
+
+Lệnh dưới đây tổng hợp kết quả benchmark đa thời điểm, đánh giá tổng quát hóa,
+kiểm định thống kê và ablation để tạo artifact công bố; lệnh chỉ đọc kết quả
+đã có và không huấn luyện lại:
+
+```bash
+python3 -m scripts.analysis.generate_stage7_artifacts
+```
+
+Artifact được ghi vào `reports/stage7/`; `stage7` chỉ là tên thư mục nội bộ:
+
+- `figures/*.png` và `figures/*.pdf`: multi-horizon, OOD, ablation và worst-group;
+- `tables/*.csv` và `tables/*.tex`: bảng đầy đủ cùng bản LaTeX rút gọn;
+- `stage7_results.tex`: đoạn LaTeX có caption, label và tham chiếu hình/bảng.
+
+Khi chèn snippet vào paper, đặt `\StageSevenRoot` theo đường dẫn tương đối từ
+`main.tex`, rồi `\input{.../stage7_results.tex}`. Paper cần `graphicx` và
+`booktabs`.
+
+Kiểm tra độ nhạy của định nghĩa nhãn QoS trên lưới 27 bộ ngưỡng:
+
+```bash
+python3 -m scripts.dataset.analyze_threshold_sensitivity
+```
+
+Kết quả theo run và bảng tổng hợp nằm trong `reports/threshold_sensitivity/`.
+Các ngưỡng SNR/loss/delay định nghĩa nhãn và không được chọn bằng F1; ngưỡng
+quyết định của mô hình mới được khóa trên validation bằng macro-F1.
+
+## 3d. Xóa toàn bộ data và output cũ
 
 ```bash
 ./scripts/utils/clean_data_outputs.sh             # hỏi xác nhận trước khi xóa
@@ -304,16 +389,43 @@ python3 -m src.routing.plot_pth_sweep
 
 Kết quả: `outputs/aggregates/routing/{routing_comparison.png, pth_tradeoff.png}`.
 
-### Khảo sát horizon (TODO)
+### Đánh giá định tuyến bằng predictor riêng cho từng mốc tương lai
 
-Khảo sát hiệu năng routing theo các horizon khác nhau (H=1, 3, 5, 10) để xem
-prediction-assisted routing có cải thiện ở horizon xa hơn không:
+Lệnh này dùng đúng mô hình đã huấn luyện cho từng `k=1,2,3,5`, giữ nguyên tập
+`(run, time, src, dst)` giữa mọi chiến lược và so sánh hai cách đổi xác suất
+thành chi phí cạnh: `-log(p)` (chính) và `1-p` (đối chứng). Các chiến lược gồm
+shortest-hop, delay-weighted, persistence, Logistic Regression, XGBoost và
+Edge-SAGE. Lệnh có resume và không huấn luyện lại:
 
 ```bash
-./scripts/routing/sweep_horizon.sh 'ns3big_*' edge-sage '1,3,5,10'
+python3 -m src.routing.multihorizon_eval
 ```
 
-Kết quả: `outputs/aggregates/routing/horizon_sweep/{horizon_sweep.csv, horizon_tradeoff.png}`.
+Có thể chạy thử một phần bằng `--targets survival --horizons 2
+--cost-modes neglog --limit 1`. Kết quả từng run nằm trong
+`outputs/routing_multihorizon/`; bảng tổng hợp, bootstrap CI và paired
+sign-flip test theo run nằm trong `reports/routing_multihorizon/`.
+
+### Đánh giá định tuyến vòng kín dựa trên trace trong ns-3
+
+Build image một lần, sau đó chạy mọi chiến lược trên cùng scenario, seed,
+source và destination:
+
+```powershell
+docker build -t uav-ns3-closed-loop .
+docker run --rm -v "${PWD}:/workspace" -w /workspace `
+  uav-ns3-closed-loop /venv/bin/python -m src.routing.closed_loop `
+  --binary /app/simulation/ns3/build/uav-olsr-dataset `
+  --baseline-run ns3big_001_rwp_s17296_n18_c211_t108 `
+  --strategies olsr hop delay persistence logreg xgb edge-sage `
+  --target survival --horizon 3 --cost-mode neglog
+```
+
+Controller tạo route plan theo snapshot; ns-3 cài tuyến và FlowMonitor đo luồng
+UDP thật. Đây là **trace-driven closed loop**: dự đoán được tính trước từ trace
+gốc, chưa chạy model Python trực tiếp trong từng event ns-3. Một run chỉ là
+smoke test; so sánh khoa học cần lặp trên nhiều baseline run ghép cặp. Kết quả
+nằm tại `outputs/closed_loop/` và bảng tổng hợp tại `reports/closed_loop/`.
 
 ### Tổng hợp riêng cho Baselines (đồ cũ)
 
@@ -334,6 +446,10 @@ outputs/routing/<RUN_NAME>/                 # predictions + replay (summary, det
 outputs/aggregates/all_models/
 outputs/aggregates/loro/
 outputs/aggregates/routing/
+outputs/routing_multihorizon/<TARGET>/k<K>/<COST>/<RUN_NAME>/
+reports/routing_multihorizon/              # tổng hợp và kiểm định ghép cặp
+outputs/closed_loop/<RUN>/<TARGET>/k<K>/<COST>/<STRATEGY>/
+reports/closed_loop/                       # FlowMonitor + so sánh ghép cặp
 outputs/aggregates/baselines/
 ```
 
@@ -487,17 +603,22 @@ uvicorn src.serving.app:app --host 0.0.0.0 --port 8000 --reload
     curl -X POST http://127.0.0.1:8000/predict \
       -H "Content-Type: application/json" \
       -d '{
-        "model_type": "gnn",
-        "run_name": "ns3big_001_rwp_s17296_n18_c211_t108",
-        "time": 20,
-        "src": 1,
-        "dst": 2,
-        "features": {
+        "nodes": [
+          {"node_id": 1, "x": 0, "y": 0, "z": 100, "vx": 2, "vy": 0, "vz": 0, "degree": 1, "load": 0.1},
+          {"node_id": 2, "x": 120.5, "y": 0, "z": 100, "vx": 1, "vy": 0, "vz": 0, "degree": 1, "load": 0.1}
+        ],
+        "edges": [{
+          "src": 1,
+          "dst": 2,
           "distance": 120.5,
+          "rssi": -67.6,
           "snr": 22.4,
           "packet_loss": 0.02,
-          "delay": 4.5
-        }
+          "delay": 4.5,
+          "relative_speed": 1.0,
+          "throughput": 18.0
+        }],
+        "query_edges": [[1, 2]]
       }'
     ```
 

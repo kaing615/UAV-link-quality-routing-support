@@ -3,21 +3,24 @@ from __future__ import annotations
 import json
 import logging
 import os
-import sys
 from contextlib import asynccontextmanager
 from pathlib import Path
 
 import torch
 from fastapi import FastAPI, HTTPException
 
-sys.path.insert(0, "/app/src")
-
-from models.gnn.edge_gnn import EdgeAwareSAGEEdgeClassifier, GATEdgeClassifier, GraphSAGEEdgeClassifier
-from serving.schemas import EdgePrediction, HealthResponse, PredictionRequest, PredictionResponse
+from src.models.gnn.edge_gnn import EdgeAwareSAGEEdgeClassifier, GATEdgeClassifier, GraphSAGEEdgeClassifier
+from src.preprocessing.gnn.build_graph_dataset import NODE_FEATURES
+from src.serving.schemas import EdgePrediction, HealthResponse, PredictionRequest, PredictionResponse
 
 logger = logging.getLogger("uav_gnn.serving")
-_MODELS = {"graphsage": GraphSAGEEdgeClassifier, "gat": GATEdgeClassifier, "edge-sage": EdgeAwareSAGEEdgeClassifier}
-NODE_IN = 8
+
+_MODELS = {
+    "graphsage": GraphSAGEEdgeClassifier,
+    "gat": GATEdgeClassifier,
+    "edge-sage": EdgeAwareSAGEEdgeClassifier,
+}
+NODE_IN = len(NODE_FEATURES)
 EDGE_IN = 7
 _model = None
 _model_id = None
@@ -85,7 +88,11 @@ def predict(req: PredictionRequest):
     if _model is None:
         raise HTTPException(status_code=503, detail="Model not loaded")
     node_id_map = {n.node_id: i for i, n in enumerate(req.nodes)}
-    x = torch.tensor([[n.x, n.y, n.z, n.vx, n.vy, n.vz, n.speed, n.degree] for n in req.nodes], dtype=torch.float32)
+    x = torch.tensor(
+        [[getattr(node, feature) for feature in NODE_FEATURES] for node in req.nodes],
+        dtype=torch.float32,
+    )
+
     edge_index_list = []
     edge_attr_list = []
     for e in req.edges:

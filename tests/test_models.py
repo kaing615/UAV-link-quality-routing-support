@@ -8,6 +8,7 @@ from src.models.gnn.edge_gnn import (
     GATEdgeClassifier,
     GraphSAGEEdgeClassifier,
 )
+from src.training.gnn.train_gnn import resolve_edge_mode
 
 
 @pytest.mark.parametrize(
@@ -44,3 +45,55 @@ def test_noedge_ablation(model_cls, sample_graph, sample_labeled_edge_attr):
     with torch.no_grad():
         logits = model(g["x"], g["edge_index"], g["edge_attr"], g["edge_label_index"], sample_labeled_edge_attr)
     assert logits.shape == (g["edge_label_index"].shape[1],)
+
+
+@pytest.mark.parametrize(
+    "message_edges,decoder_edges,expected_message_dim,expected_decoder_width",
+    [
+        (True, True, 7, 71),
+        (False, True, 0, 71),
+        (True, False, 7, 64),
+        (False, False, 0, 64),
+    ],
+)
+def test_edge_sage_supports_separate_message_and_decoder_ablation(
+    message_edges,
+    decoder_edges,
+    expected_message_dim,
+    expected_decoder_width,
+    sample_graph,
+    sample_labeled_edge_attr,
+):
+    model = EdgeAwareSAGEEdgeClassifier(
+        node_in_channels=8,
+        edge_in_channels=7,
+        hidden_channels=32,
+        use_message_edge_features=message_edges,
+        use_decoder_edge_features=decoder_edges,
+    )
+    model.eval()
+    with torch.no_grad():
+        logits = model(
+            sample_graph["x"],
+            sample_graph["edge_index"],
+            sample_graph["edge_attr"],
+            sample_graph["edge_label_index"],
+            sample_labeled_edge_attr,
+        )
+
+    assert model.convs[0].edge_dim == expected_message_dim
+    assert model.edge_mlp[0].in_features == expected_decoder_width
+    assert logits.shape == (sample_graph["edge_label_index"].shape[1],)
+
+
+@pytest.mark.parametrize(
+    "mode,expected",
+    [
+        ("full", (True, True, "edge-sage")),
+        ("decoder-only", (False, True, "edge-sage-decoder-only")),
+        ("message-only", (True, False, "edge-sage-message-only")),
+        ("noedge", (False, False, "edge-sage-noedge")),
+    ],
+)
+def test_resolve_edge_mode_maps_ablation_to_model_identity(mode, expected):
+    assert resolve_edge_mode(mode) == expected

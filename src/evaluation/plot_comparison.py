@@ -82,10 +82,13 @@ def main() -> None:
     n_models = len(present)
     metrics = ["accuracy_mean", "f1_mean", "macro_f1_mean", "recall_mean"]
     metric_labels = ["Accuracy", "F1-Score", "Macro F1-Score", "Recall"]
-    plt.rcParams["font.sans-serif"] = "Arial"
+
+    # Initialize plotting styles
+    plt.rcParams["font.sans-serif"] = ["DejaVu Sans", "Arial", "sans-serif"]
     plt.rcParams["font.family"] = "sans-serif"
     plt.style.use("ggplot")
-    fig, ax = plt.subplots(figsize=(11, 6), dpi=150)
+
+    fig, ax = plt.subplots(figsize=(12, 6.8), dpi=150)
     fig.patch.set_facecolor("#ffffff")
     ax.set_facecolor("#fcfcfc")
     x_indices = range(len(metric_labels))
@@ -111,30 +114,45 @@ def main() -> None:
         for pos, val in zip(positions, means):
             ax.text(
                 pos,
-                val + 0.015,
+                val + 0.012,
                 f"{val:.2f}",
                 ha="center",
                 va="bottom",
-                fontsize=8,
+                fontsize=6,
+                rotation=90,
                 color="#333333",
                 fontweight="semibold",
             )
-    ax.set_title(args.title, fontsize=14, fontweight="bold", pad=50, color="#2c3e50")
+
+    fig.suptitle(
+        args.title,
+        fontsize=14,
+        fontweight="bold",
+        y=0.985,
+        color="#2c3e50",
+    )
     ax.set_xticks(x_indices)
     ax.set_xticklabels(metric_labels, fontsize=11, fontweight="semibold", color="#2c3e50")
     ax.set_ylabel("Score (0.0 - 1.0)", fontsize=11, fontweight="semibold", color="#2c3e50")
-    ax.set_ylim(0, 1.1)
-    ax.legend(
-        loc="lower center",
-        bbox_to_anchor=(0.5, 1.02),
-        ncol=3,
+    ax.set_ylim(0, 1.14)
+
+    # Keep title, legend, and plotting area in separate vertical bands.
+    handles, labels = ax.get_legend_handles_labels()
+    fig.legend(
+        handles,
+        labels,
+        loc="upper center",
+        bbox_to_anchor=(0.5, 0.94),
+        ncol=4,
         frameon=True,
         facecolor="#ffffff",
         edgecolor="#dddddd",
-        fontsize=9,
+        fontsize=8,
     )
     ax.grid(True, linestyle="--", alpha=0.5, color="#cccccc")
-    plt.tight_layout()
+
+    fig.tight_layout(rect=(0, 0, 1, 0.84))
+
     args.output_dir.mkdir(parents=True, exist_ok=True)
     out_path = args.output_dir / args.filename
     plt.savefig(out_path, dpi=300, facecolor=fig.get_facecolor(), edgecolor="none")

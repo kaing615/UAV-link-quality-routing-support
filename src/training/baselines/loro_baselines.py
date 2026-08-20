@@ -25,8 +25,9 @@ _MODEL_NAMES = {
 }
 
 
-def load_run_rows(run_name: str, splits: list[str] | None) -> pd.DataFrame:
-    run_root = Path("data/graph_dataset") / run_name
+def load_run_rows(data_root: Path, run_name: str, splits: list[str] | None) -> pd.DataFrame:
+    """Load labeled edge rows of a run, optionally filtered to given time splits."""
+    run_root = data_root / run_name
     df = pd.read_csv(run_root / "features" / "edges_labeled.csv")
     if splits is not None:
         time_splits = pd.read_csv(run_root / "splits" / "time_splits.csv")
@@ -99,8 +100,11 @@ def oversample_minority(df: pd.DataFrame, random_state: int) -> pd.DataFrame:
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Leave-one-run-out baseline training (xgb/mlp/logreg/rf/threshold).")
-    p.add_argument("--test-run", type=str, required=True)
+    test_group = p.add_mutually_exclusive_group(required=True)
+    test_group.add_argument("--test-run", type=str)
+    test_group.add_argument("--test-runs", type=str, help="Comma-separated held-out runs evaluated by one fitted model")
     p.add_argument("--train-runs", type=str, required=True, help="Comma-separated training run names")
+    p.add_argument("--data-root", type=Path, default=Path("data/graph_dataset"))
     p.add_argument("--model", type=str, default="xgb", choices=list(_MODEL_NAMES.keys()))
     p.add_argument("--output-dir", type=Path, default=None)
     p.add_argument("--random-state", type=int, default=42)
@@ -112,14 +116,19 @@ def main() -> None:
     model_id = args.model
     model_name = _MODEL_NAMES[model_id]
     train_runs = [r.strip() for r in args.train_runs.split(",") if r.strip()]
-    output_dir = args.output_dir or Path("outputs/loro") / model_id / args.test_run
+    test_runs = [r.strip() for r in (args.test_runs or args.test_run).split(",") if r.strip()]
+
+    output_dir = args.output_dir or (Path("outputs/loro") / model_id / "_".join(test_runs))
     output_dir.mkdir(parents=True, exist_ok=True)
-    print(f"[LORO] model={model_id} | test_run={args.test_run}")
+
+    print(f"[LORO] model={model_id} | test_runs={test_runs}")
     print(f"       train_runs ({len(train_runs)}): {train_runs}")
-    train_df = pd.concat([load_run_rows(r, ["train"]) for r in train_runs], ignore_index=True)
-    val_df = pd.concat([load_run_rows(r, ["val"]) for r in train_runs], ignore_index=True)
-    test_df = load_run_rows(args.test_run, None)
-    print(f"       rows: train={len(train_df)} val={len(val_df)} test={len(test_df)}")
+
+    train_df = pd.concat([load_run_rows(args.data_root, r, ["train"]) for r in train_runs], ignore_index=True)
+    val_df = pd.concat([load_run_rows(args.data_root, r, ["val"]) for r in train_runs], ignore_index=True)
+
+    print(f"       rows: train={len(train_df)} val={len(val_df)}")
+
     n_pos = int((train_df["label"] == 1).sum())
     n_neg = int((train_df["label"] == 0).sum())
     pos_weight = n_neg / max(n_pos, 1)
@@ -135,15 +144,29 @@ def main() -> None:
         threshold, tuned_val_f1 = find_best_threshold(model, val_df)
         print(f"[THR] tuned threshold={threshold:.2f} (val macro_f1={tuned_val_f1:.4f})")
     val_metrics, val_preds = evaluate_split(model, model_id, model_name, val_df, "val", threshold=threshold)
-    test_metrics, test_preds = evaluate_split(model, model_id, model_name, test_df, "test", threshold=threshold)
-    pd.DataFrame([val_metrics, test_metrics]).to_csv(output_dir / "metrics.csv", index=False)
+    val_metrics["run_name"] = "__validation__"
+    metric_rows = [val_metrics]
+    for test_run in test_runs:
+        test_df = load_run_rows(args.data_root, test_run, None)
+        test_metrics, test_preds = evaluate_split(
+            model, model_id, model_name, test_df, "test", threshold=threshold
+        )
+        test_metrics["run_name"] = test_run
+        metric_rows.append(test_metrics)
+        test_preds.to_csv(output_dir / f"test_predictions_{test_run}.csv", index=False)
+        print(
+            f"[OK]  test ({test_run}): macro_f1={test_metrics['macro_f1']:.4f}"
+            f"  f1={test_metrics['f1']:.4f}  recall={test_metrics['recall']:.4f}"
+        )
+
+    pd.DataFrame(metric_rows).to_csv(output_dir / "metrics.csv", index=False)
     val_preds.to_csv(output_dir / "val_predictions.csv", index=False)
-    test_preds.to_csv(output_dir / "test_predictions.csv", index=False)
+
     metadata = {
         "model_id": model_id,
         "model_name": model_name,
         "protocol": "leave-one-run-out",
-        "test_run": args.test_run,
+        "test_runs": test_runs,
         "train_runs": train_runs,
         "feature_columns": FEATURE_COLUMNS,
         "scale_pos_weight": pos_weight if model_id == "xgb" else None,
@@ -154,9 +177,7 @@ def main() -> None:
         "snr_thresh": float(model.snr_thresh) if model_id == "threshold" else None,
     }
     (output_dir / "metadata.json").write_text(json.dumps(metadata, indent=2), encoding="utf-8")
-    print(
-        f"[OK]  test ({args.test_run}): macro_f1={test_metrics['macro_f1']:.4f}  f1={test_metrics['f1']:.4f}  recall={test_metrics['recall']:.4f}"
-    )
+
     print(f"      outputs → {output_dir}")
 
 

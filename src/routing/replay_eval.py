@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import math
 from pathlib import Path
 from typing import Any, cast
 
@@ -10,16 +11,20 @@ import pandas as pd
 TAU_SNR = 18.0
 TAU_LOSS = 0.1
 TAU_DELAY = 10.0
-PREDICTION_STRATEGIES = ("xgb", "gnn")
-EPS = 1e-06
+
+EPS = 1e-6
 
 
 def canonical(u: int, v: int) -> tuple[int, int]:
     return (u, v) if u <= v else (v, u)
 
 
-def load_raw_edges(run_name: str) -> dict[int, dict[tuple[int, int], dict]]:
-    edges = pd.read_csv(Path("data/raw_snapshots") / run_name / "edges.csv")
+def load_raw_edges(
+    run_name: str,
+    raw_root: Path = Path("data/raw_snapshots"),
+) -> dict[int, dict[tuple[int, int], dict]]:
+    """time -> {(u, v) -> row dict} for connected edges; includes validity flag."""
+    edges = pd.read_csv(raw_root / run_name / "edges.csv")
     by_time: dict[int, dict[tuple[int, int], dict]] = {}
     for r in edges.itertuples(index=False):
         row: Any = r
@@ -36,6 +41,12 @@ def load_raw_edges(run_name: str) -> dict[int, dict[tuple[int, int], dict]]:
 
 def load_prediction_scores(csv_path: Path) -> dict[tuple[int, int, int], float]:
     df = pd.read_csv(csv_path)
+    required = {"time", "src", "dst", "pred_score"}
+    missing = required.difference(df.columns)
+    if missing:
+        raise ValueError(f"Prediction file {csv_path} is missing columns: {sorted(missing)}")
+    if df["pred_score"].isna().any() or not df["pred_score"].between(0.0, 1.0).all():
+        raise ValueError(f"Prediction scores must be finite values in [0, 1]: {csv_path}")
     scores = {}
     for r in df.itertuples(index=False):
         row: Any = r
@@ -44,13 +55,19 @@ def load_prediction_scores(csv_path: Path) -> dict[tuple[int, int, int], float]:
     return scores
 
 
-def load_test_times(run_name: str) -> list[int]:
-    splits = pd.read_csv(Path("data/graph_dataset") / run_name / "splits" / "time_splits.csv")
+def load_test_times(run_name: str, split_csv: Path | None = None) -> list[int]:
+    split_csv = split_csv or (Path("data/graph_dataset") / run_name / "splits" / "time_splits.csv")
+    splits = pd.read_csv(split_csv)
     return sorted(int(t) for t in splits[splits["split"] == "test"]["time"])
 
 
-def load_olsr_routes(run_name: str) -> tuple[tuple[int, int] | None, dict[int, list[int] | None]]:
-    log_csv = Path("data/raw_snapshots") / run_name / "traffic_log.csv"
+def load_olsr_routes(
+    run_name: str,
+    raw_root: Path = Path("data/raw_snapshots"),
+) -> tuple[tuple[int, int] | None, dict[int, list[int] | None]]:
+    """Actual routes chosen by ns-3's OLSR (traffic_log.csv) for the single
+    recorded (src, dst) pair: time -> node path, None when unreachable."""
+    log_csv = raw_root / run_name / "traffic_log.csv"
     if not log_csv.exists():
         return (None, {})
     df = pd.read_csv(log_csv)
@@ -73,7 +90,10 @@ def build_strategy_graph(
     t: int,
     scores: dict[str, dict[tuple[int, int, int], float]],
     p_th: float,
+    weight_mode: str = "one-minus",
 ) -> nx.Graph:
+    if weight_mode not in {"one-minus", "neglog"}:
+        raise ValueError("weight_mode must be 'one-minus' or 'neglog'")
     g = nx.Graph()
     for (u, v), attrs in edges_t.items():
         if strategy == "hop":
@@ -84,7 +104,7 @@ def build_strategy_graph(
             score = scores[strategy].get((t, u, v), 0.5)
             if score < p_th:
                 continue
-            w = 1.0 - score + EPS
+            w = -math.log(max(score, EPS)) + EPS if weight_mode == "neglog" else (1.0 - score) + EPS
         g.add_edge(u, v, weight=w)
     return g
 
@@ -115,22 +135,50 @@ def path_pdr(path: list[int], edges_t: dict[tuple[int, int], dict]) -> float:
 
 def evaluate_run(
     run_name: str,
-    gnn_predictions_csv: Path,
+    gnn_predictions_csv: Path | None,
     horizon: int = 5,
     p_th: float = 0.0,
     output_dir: Path | None = None,
     strict: bool = False,
+    *,
+    prediction_csvs: dict[str, Path] | None = None,
+    split_csv: Path | None = None,
+    raw_root: Path = Path("data/raw_snapshots"),
+    weight_mode: str = "one-minus",
+    include_olsr: bool = True,
+    target: str | None = None,
+    prediction_horizon: int | None = None,
 ) -> tuple[Path, Path]:
-    raw = load_raw_edges(run_name)
+    raw = load_raw_edges(run_name, raw_root)
+    if not raw:
+        raise ValueError(f"No connected raw edges found for {run_name}")
     max_time = max(raw.keys())
-    test_times = [t for t in load_test_times(run_name) if t + 1 <= max_time]
-    scores = {"gnn": load_prediction_scores(gnn_predictions_csv)}
-    xgb_csv = Path("outputs/baselines/xgb") / run_name / "test_predictions.csv"
-    strategies = ["hop", "delay", "gnn"] if p_th == 0.0 else ["gnn"]
-    if xgb_csv.exists():
-        scores["xgb"] = load_prediction_scores(xgb_csv)
-        strategies.insert(-1, "xgb")
-    olsr_pair, olsr_routes = (None, {}) if p_th != 0.0 else load_olsr_routes(run_name)
+    test_times = [t for t in load_test_times(run_name, split_csv) if t + 1 <= max_time]
+
+    if prediction_csvs is None:
+        if gnn_predictions_csv is None:
+            raise ValueError("gnn_predictions_csv or prediction_csvs is required")
+        prediction_csvs = {"gnn": gnn_predictions_csv}
+        xgb_csv = Path("outputs/baselines/xgb") / run_name / "test_predictions.csv"
+        if xgb_csv.exists():
+            prediction_csvs["xgb"] = xgb_csv
+    scores = {strategy: load_prediction_scores(path) for strategy, path in prediction_csvs.items()}
+    prediction_strategies = set(scores)
+    # hop/delay ignore the p_th filter — only evaluate them on the unfiltered
+    # pass (p_th == 0) and reuse those rows as the reference in sweeps.
+    strategies = (["hop", "delay"] if p_th == 0.0 else []) + list(scores)
+
+    # Routes ns-3's OLSR actually chose, for its single recorded pair.
+    olsr_pair, olsr_routes = (
+        (None, {}) if p_th != 0.0 or not include_olsr else load_olsr_routes(run_name, raw_root)
+    )
+
+    context = {
+        "target": target,
+        "prediction_horizon": prediction_horizon,
+        "weight_mode": weight_mode,
+    }
+
     records = []
     for t in test_times:
         edges_t = raw.get(t, {})
@@ -142,14 +190,30 @@ def evaluate_run(
         pairs = [(s, d) for i, s in enumerate(nodes) for d in nodes[i + 1 :] if nx.has_path(base_graph, s, d)]
         if olsr_pair is not None and olsr_pair not in set(pairs):
             pairs.append(olsr_pair)
-        graphs = {st: build_strategy_graph(edges_t, st, t, scores, p_th) for st in strategies}
+
+        graphs = {
+            st: build_strategy_graph(edges_t, st, t, scores, p_th, weight_mode) for st in strategies
+        }
+
         for s, d in pairs:
             for st in strategies:
                 path = shortest_path(graphs[st], s, d)
-                if path is None and st in PREDICTION_STRATEGIES and (p_th > 0.0) and (not strict):
-                    path = shortest_path(build_strategy_graph(edges_t, st, t, scores, 0.0), s, d)
+                if path is None and st in prediction_strategies and p_th > 0.0 and not strict:
+                    # p_th filter disconnected the pair: fall back to unfiltered
+                    path = shortest_path(
+                        build_strategy_graph(edges_t, st, t, scores, 0.0, weight_mode), s, d
+                    )
                 if path is None:
-                    records.append({"time": t, "src": s, "dst": d, "strategy": st, "route_found": 0})
+                    records.append(
+                        {
+                            "time": t,
+                            "src": s,
+                            "dst": d,
+                            "strategy": st,
+                            "route_found": 0,
+                            **context,
+                        }
+                    )
                     continue
                 lifetime = 0
                 for k in range(1, h_t + 1):
@@ -166,7 +230,9 @@ def evaluate_run(
                     if path_valid(cur, edges_tk):
                         continue
                     changes += 1
-                    new_path = shortest_path(build_strategy_graph(edges_tk, st, tk, scores, p_th), s, d)
+                    new_path = shortest_path(
+                        build_strategy_graph(edges_tk, st, tk, scores, p_th, weight_mode), s, d
+                    )
                     if new_path is None:
                         disconnected = 1
                         break
@@ -184,11 +250,16 @@ def evaluate_run(
                         "horizon": h_t,
                         "route_lifetime": lifetime,
                         "survival_at_1": int(lifetime >= 1),
+                        "survival_at_horizon": int(lifetime >= h_t),
                         "realized_pdr_t1": path_pdr(path, raw.get(t + 1, {}))
                         if path_valid(path, raw.get(t + 1, {}))
                         else 0.0,
+                        "realized_pdr_at_horizon": path_pdr(path, raw.get(t + h_t, {}))
+                        if path_valid(path, raw.get(t + h_t, {}))
+                        else 0.0,
                         "route_changes": changes,
                         "disconnected": disconnected,
+                        **context,
                     }
                 )
     if olsr_pair is not None:
@@ -201,7 +272,16 @@ def evaluate_run(
             h_t = min(horizon, max_time - t)
             path = olsr_routes.get(t)
             if not path:
-                records.append({"time": t, "src": s, "dst": d, "strategy": "olsr", "route_found": 0})
+                records.append(
+                    {
+                        "time": t,
+                        "src": s,
+                        "dst": d,
+                        "strategy": "olsr",
+                        "route_found": 0,
+                        **context,
+                    }
+                )
                 continue
             lifetime = 0
             for k in range(1, h_t + 1):
@@ -236,11 +316,16 @@ def evaluate_run(
                     "horizon": h_t,
                     "route_lifetime": lifetime,
                     "survival_at_1": int(lifetime >= 1),
+                    "survival_at_horizon": int(lifetime >= h_t),
                     "realized_pdr_t1": path_pdr(path, raw.get(t + 1, {}))
                     if path_valid(path, raw.get(t + 1, {}))
                     else 0.0,
+                    "realized_pdr_at_horizon": path_pdr(path, raw.get(t + h_t, {}))
+                    if path_valid(path, raw.get(t + h_t, {}))
+                    else 0.0,
                     "route_changes": changes,
                     "disconnected": disconnected,
+                    **context,
                 }
             )
     details = pd.DataFrame(records)
@@ -274,10 +359,13 @@ def evaluate_run(
                     "mean_est_pdr": m("est_pdr"),
                     "mean_route_lifetime": m("route_lifetime"),
                     "survival_at_1": m("survival_at_1"),
+                    "survival_at_horizon": m("survival_at_horizon"),
                     "mean_realized_pdr_t1": m("realized_pdr_t1"),
+                    "mean_realized_pdr_at_horizon": m("realized_pdr_at_horizon"),
                     "mean_route_changes": m("route_changes"),
                     "disconnected_rate": m("disconnected"),
                     "mean_horizon": m("horizon"),
+                    **context,
                 }
             )
         return pd.DataFrame(rows)

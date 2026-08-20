@@ -1,6 +1,6 @@
 FROM ubuntu:24.04 AS ns3-build
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    g++ cmake ninja-build wget ca-certificates && rm -rf /var/lib/apt/lists/*
+    g++ cmake ninja-build wget ca-certificates bzip2 && rm -rf /var/lib/apt/lists/*
 
 ARG NS3_VERSION=3.48
 RUN wget -q https://www.nsnam.org/releases/ns-allinone-${NS3_VERSION}.tar.bz2 \
@@ -10,11 +10,11 @@ WORKDIR /ns-allinone-${NS3_VERSION}/ns-${NS3_VERSION}
 RUN cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=/opt/ns3 \
     -DNS3_EXAMPLES=OFF -DNS3_TESTS=OFF -DNS3_PYTHON_BINDINGS=OFF \
-    -DNS3_ENABLED_MODULES="olsr;wifi;mobility;internet;applications;propagation;netanim" \
+    -DNS3_ENABLED_MODULES="olsr;wifi;mobility;internet;applications;propagation;netanim;flow-monitor" \
     && cmake --build build && cmake --install build
 
 COPY simulation/ns3/ /src/ns3/
-RUN cmake -B /src/ns3/build -S /src/ns3 -DCMAKE_BUILD_TYPE=Release -DNS3_PREFIX=/opt/ns3 \
+RUN cmake -B /src/ns3/build -S /src/ns3 -G Ninja -DCMAKE_BUILD_TYPE=Release -DNS3_PREFIX=/opt/ns3 \
     && cmake --build /src/ns3/build
 
 FROM ubuntu:24.04

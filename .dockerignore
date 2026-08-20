@@ -20,3 +20,11 @@ dvc.yaml
 dvc.lock
 pyproject.toml
 README.md
+
+# Dockerfile build inputs required even though generated simulator artifacts
+# and the rest of the simulation tree stay outside the build context.
+!requirements.txt
+!simulation/
+simulation/*
+!simulation/ns3/
+!simulation/ns3/**

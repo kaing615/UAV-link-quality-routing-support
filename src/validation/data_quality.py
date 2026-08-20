@@ -7,16 +7,21 @@ from pathlib import Path
 
 import torch
 
-NODE_FEATURE_RANGES = {
-    0: ("x", -5000, 5000),
-    1: ("y", -5000, 5000),
-    2: ("z", 0, 1000),
-    3: ("vx", -100, 100),
-    4: ("vy", -100, 100),
-    5: ("vz", -50, 50),
-    6: ("speed", 0, 200),
-    7: ("degree", 0, 50),
+from src.preprocessing.gnn.build_graph_dataset import NODE_FEATURES
+
+# Expected feature ranges (min, max) based on physical constraints
+_NODE_FEATURE_LIMITS = {
+    "x": (-5000, 5000),
+    "y": (-5000, 5000),
+    "z": (0, 1000),
+    "vx": (-100, 100),
+    "vy": (-100, 100),
+    "vz": (-50, 50),
+    "degree": (0, 50),
+    "load": (0, 1),
 }
+NODE_FEATURE_RANGES = {index: (feature, *_NODE_FEATURE_LIMITS[feature]) for index, feature in enumerate(NODE_FEATURES)}
+
 EDGE_FEATURE_RANGES = {
     0: ("distance", 0, 5000),
     1: ("rssi", -120, 0),

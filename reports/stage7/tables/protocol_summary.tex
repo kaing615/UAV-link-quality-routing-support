@@ -1,0 +1,28 @@
+\begin{table}[tb]
+\caption{Prediction performance across evaluation protocols; Macro-F1 is higher-is-better.}
+\label{tab:stage7-protocols}
+\begin{tabular}{lllll}
+\toprule
+Protocol & Target & Model & k=1 & k=5 \\
+\midrule
+Cross-mobility & qos & Edge-SAGE (full) & 0.879 [0.867, 0.891] & 0.813 [0.777, 0.842] \\
+Cross-mobility & qos & Logistic Regression & 0.883 [0.868, 0.897] & 0.825 [0.800, 0.849] \\
+Cross-mobility & qos & XGBoost & 0.883 [0.873, 0.893] & 0.833 [0.815, 0.852] \\
+Cross-mobility & survival & Edge-SAGE (full) & 0.754 [0.728, 0.774] & 0.813 [0.784, 0.841] \\
+Cross-mobility & survival & Logistic Regression & 0.785 [0.773, 0.795] & 0.806 [0.786, 0.827] \\
+Cross-mobility & survival & XGBoost & 0.768 [0.753, 0.783] & 0.818 [0.797, 0.837] \\
+LORO & qos & Edge-SAGE (full) & 0.880 [0.867, 0.892] & 0.856 [0.835, 0.875] \\
+LORO & qos & Logistic Regression & 0.877 [0.858, 0.895] & 0.819 [0.786, 0.849] \\
+LORO & qos & XGBoost & 0.881 [0.868, 0.893] & 0.835 [0.815, 0.854] \\
+LORO & survival & Edge-SAGE (full) & 0.778 [0.753, 0.797] & 0.847 [0.818, 0.874] \\
+LORO & survival & Logistic Regression & 0.781 [0.769, 0.792] & 0.805 [0.780, 0.830] \\
+LORO & survival & XGBoost & 0.768 [0.754, 0.783] & 0.816 [0.802, 0.830] \\
+Within-run & qos & Edge-SAGE (full) & 0.848 [0.800, 0.883] & 0.755 [0.688, 0.819] \\
+Within-run & qos & Logistic Regression & 0.871 [0.826, 0.904] & 0.800 [0.756, 0.844] \\
+Within-run & qos & XGBoost & 0.863 [0.817, 0.897] & 0.798 [0.754, 0.839] \\
+Within-run & survival & Edge-SAGE (full) & 0.729 [0.698, 0.759] & 0.776 [0.729, 0.821] \\
+Within-run & survival & Logistic Regression & 0.830 [0.808, 0.857] & 0.858 [0.817, 0.890] \\
+Within-run & survival & XGBoost & 0.813 [0.797, 0.831] & 0.841 [0.802, 0.872] \\
+\bottomrule
+\end{tabular}
+\end{table}

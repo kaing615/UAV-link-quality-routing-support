@@ -1,0 +1,18 @@
+\begin{table}[tb]
+\caption{Edge-SAGE ablation on ten runs; Macro-F1 is higher-is-better.}
+\label{tab:stage7-ablation}
+\begin{tabular}{llll}
+\toprule
+Target & Model & k=1 & k=5 \\
+\midrule
+qos & Decoder-only & 0.847 [0.797, 0.886] & 0.758 [0.703, 0.804] \\
+qos & Edge-SAGE (full) & 0.848 [0.800, 0.883] & 0.755 [0.688, 0.819] \\
+qos & Message-only & 0.693 [0.659, 0.732] & 0.637 [0.601, 0.678] \\
+qos & No-edge & 0.541 [0.491, 0.595] & 0.516 [0.468, 0.571] \\
+survival & Decoder-only & 0.721 [0.674, 0.766] & 0.788 [0.734, 0.836] \\
+survival & Edge-SAGE (full) & 0.729 [0.698, 0.759] & 0.776 [0.729, 0.821] \\
+survival & Message-only & 0.618 [0.596, 0.640] & 0.628 [0.588, 0.664] \\
+survival & No-edge & 0.497 [0.467, 0.531] & 0.519 [0.476, 0.564] \\
+\bottomrule
+\end{tabular}
+\end{table}

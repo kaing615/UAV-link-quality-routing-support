@@ -26,6 +26,20 @@ _MODELS = {
 }
 NODE_IN = 8
 EDGE_IN = 7
+EDGE_MODES = ("full", "decoder-only", "message-only", "noedge")
+
+
+def resolve_edge_mode(edge_mode: str) -> tuple[bool, bool, str]:
+    modes = {
+        "full": (True, True, "edge-sage"),
+        "decoder-only": (False, True, "edge-sage-decoder-only"),
+        "message-only": (True, False, "edge-sage-message-only"),
+        "noedge": (False, False, "edge-sage-noedge"),
+    }
+    try:
+        return modes[edge_mode]
+    except KeyError as exc:
+        raise ValueError(f"Unknown edge mode: {edge_mode}") from exc
 
 
 def train_one_epoch(
@@ -48,6 +62,7 @@ def train_one_epoch(
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Train a GNN edge classifier on UAV link stability data.")
     p.add_argument("--run-name", type=str, required=True, help="Batch run name under data/graph_dataset/")
+    p.add_argument("--data-root", type=Path, default=Path("data/graph_dataset"))
     p.add_argument("--model", type=str, default="graphsage", choices=list(_MODELS.keys()))
     p.add_argument("--lr-scheduler", action="store_true", default=False, help="Use ReduceLROnPlateau scheduler")
     p.add_argument(
@@ -61,6 +76,12 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         default=False,
         help="Ablation: drop edge features from message passing and decoder (model_id gets '-noedge' suffix)",
+    )
+    p.add_argument(
+        "--edge-mode",
+        choices=EDGE_MODES,
+        default="full",
+        help="Edge-SAGE ablation: use edge features in both paths, one path, or neither.",
     )
     p.add_argument("--output-dir", type=Path, default=None)
     p.add_argument("--hidden", type=int, default=64)
@@ -79,12 +100,21 @@ def main() -> None:
     args = parse_args()
     torch.manual_seed(args.seed)
     model_cls, model_name = _MODELS[args.model]
-    model_id = args.model
-    if args.no_edge_features:
-        model_id += "-noedge"
-        model_name += " (no edge features)"
-    run_root = Path("data/graph_dataset") / args.run_name / "graph_dataset"
-    output_dir = args.output_dir or Path("outputs/gnn") / model_id / args.run_name
+    edge_mode = "noedge" if args.no_edge_features else args.edge_mode
+    if args.model == "edge-sage":
+        use_message_edges, use_decoder_edges, model_id = resolve_edge_mode(edge_mode)
+        if edge_mode != "full":
+            model_name += f" ({edge_mode})"
+    else:
+        if edge_mode not in ("full", "noedge"):
+            raise ValueError("decoder-only/message-only are only supported by edge-sage")
+        use_message_edges = use_decoder_edges = edge_mode == "full"
+        model_id = args.model + ("-noedge" if edge_mode == "noedge" else "")
+        if edge_mode == "noedge":
+            model_name += " (no edge features)"
+
+    run_root = args.data_root / args.run_name / "graph_dataset"
+    output_dir = args.output_dir or (Path("outputs/gnn") / model_id / args.run_name)
     output_dir.mkdir(parents=True, exist_ok=True)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"[RUN] model={model_id} | run={args.run_name} | device={device}")
@@ -96,13 +126,22 @@ def main() -> None:
     test_loader = make_loader(run_root / "test.pt", batch_size=args.batch_size, shuffle=False)
     pos_weight = compute_pos_weight(train_graphs).to(device)
     criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
+
+    model_kwargs = {
+        "node_in_channels": NODE_IN,
+        "edge_in_channels": EDGE_IN,
+        "hidden_channels": args.hidden,
+        "num_layers": args.num_layers,
+        "dropout": args.dropout,
+        "use_edge_features": use_message_edges and use_decoder_edges,
+    }
+    if args.model == "edge-sage":
+        model_kwargs.update(
+            use_message_edge_features=use_message_edges,
+            use_decoder_edge_features=use_decoder_edges,
+        )
     model = model_cls(
-        node_in_channels=NODE_IN,
-        edge_in_channels=EDGE_IN,
-        hidden_channels=args.hidden,
-        num_layers=args.num_layers,
-        dropout=args.dropout,
-        use_edge_features=not args.no_edge_features,
+        **model_kwargs,
     ).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
     scheduler = None
@@ -110,7 +149,9 @@ def main() -> None:
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
             optimizer, mode="max", factor=0.5, patience=10, min_lr=1e-05
         )
-    with Live(dir=str(output_dir / "dvclive"), report="auto") as live:
+
+    # --- DVCLive: experiment tracking ---
+    with Live(dir=str(output_dir / "dvclive"), report=None, save_dvc_exp=False) as live:
         live.log_param("model_id", model_id)
         live.log_param("model_name", model_name)
         live.log_param("run_name", args.run_name)
@@ -120,7 +161,9 @@ def main() -> None:
         live.log_param("lr", args.lr)
         live.log_param("weight_decay", args.weight_decay)
         live.log_param("lr_scheduler", args.lr_scheduler)
-        live.log_param("use_edge_features", not args.no_edge_features)
+        live.log_param("edge_mode", edge_mode)
+        live.log_param("use_message_edge_features", use_message_edges)
+        live.log_param("use_decoder_edge_features", use_decoder_edges)
         live.log_param("batch_size", args.batch_size)
         live.log_param("seed", args.seed)
         live.log_param("protocol", "within-run")
@@ -192,7 +235,9 @@ def main() -> None:
         "lr": args.lr,
         "weight_decay": args.weight_decay,
         "lr_scheduler": args.lr_scheduler,
-        "use_edge_features": not args.no_edge_features,
+        "edge_mode": edge_mode,
+        "use_message_edge_features": use_message_edges,
+        "use_decoder_edge_features": use_decoder_edges,
         "threshold": threshold,
         "best_epoch": best_epoch,
         "best_val_macro_f1": best_macro_f1,

@@ -1,0 +1,38 @@
+{
+  "total_runs": 3,
+  "runs": [
+    {
+      "run_name": "ns3big_001_rwp_s17296_n18_c211_t108",
+      "issues": [],
+      "stats": {
+        "train_graphs": 71,
+        "val_graphs": 14,
+        "test_graphs": 16
+      }
+    },
+    {
+      "run_name": "ns3big_005_gm_s37696_n18_c199_t107",
+      "issues": [],
+      "stats": {
+        "train_graphs": 70,
+        "val_graphs": 14,
+        "test_graphs": 16
+      }
+    },
+    {
+      "run_name": "ns3big_006_gm_s16078_n13_c225_t124",
+      "issues": [],
+      "stats": {
+        "train_graphs": 82,
+        "val_graphs": 16,
+        "test_graphs": 19
+      }
+    }
+  ],
+  "summary": {
+    "total_runs_checked": 3,
+    "total_errors": 0,
+    "total_warnings": 0,
+    "status": "PASS"
+  }
+}

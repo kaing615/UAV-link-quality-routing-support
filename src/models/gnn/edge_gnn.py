@@ -166,23 +166,34 @@ class EdgeAwareSAGEEdgeClassifier(nn.Module):
         num_layers: int = 2,
         dropout: float = 0.3,
         use_edge_features: bool = True,
+        use_message_edge_features: bool | None = None,
+        use_decoder_edge_features: bool | None = None,
     ):
         super().__init__()
         self.dropout = dropout
         self.use_edge_features = use_edge_features
+        self.use_message_edge_features = (
+            use_edge_features if use_message_edge_features is None else use_message_edge_features
+        )
+        self.use_decoder_edge_features = (
+            use_edge_features if use_decoder_edge_features is None else use_decoder_edge_features
+        )
+
         self.node_bn = nn.BatchNorm1d(node_in_channels)
-        self.edge_mp_bn = nn.BatchNorm1d(edge_in_channels) if use_edge_features else None
-        self.edge_clf_bn = nn.BatchNorm1d(edge_in_channels) if use_edge_features else None
+        self.edge_mp_bn = nn.BatchNorm1d(edge_in_channels) if self.use_message_edge_features else None
+        self.edge_clf_bn = nn.BatchNorm1d(edge_in_channels) if self.use_decoder_edge_features else None
+
         self.convs = nn.ModuleList()
         self.bns = nn.ModuleList()
         in_ch = node_in_channels
-        edge_dim = edge_in_channels if use_edge_features else 0
+        edge_dim = edge_in_channels if self.use_message_edge_features else 0
         for i in range(num_layers):
             self.convs.append(EdgeAwareSAGEConv(in_ch, hidden_channels, edge_dim=edge_dim))
             if i < num_layers - 1:
                 self.bns.append(nn.BatchNorm1d(hidden_channels))
             in_ch = hidden_channels
-        mlp_in = hidden_channels * 2 + (edge_in_channels if use_edge_features else 0)
+
+        mlp_in = hidden_channels * 2 + (edge_in_channels if self.use_decoder_edge_features else 0)
         self.edge_mlp = nn.Sequential(
             nn.Linear(mlp_in, hidden_channels),
             nn.BatchNorm1d(hidden_channels),
@@ -195,7 +206,7 @@ class EdgeAwareSAGEEdgeClassifier(nn.Module):
 
     def encode(self, x: torch.Tensor, edge_index: torch.Tensor, edge_attr: torch.Tensor) -> torch.Tensor:
         h = self.node_bn(x)
-        ea = self.edge_mp_bn(edge_attr) if self.use_edge_features else None
+        ea = self.edge_mp_bn(edge_attr) if self.use_message_edge_features else None
         for i, conv in enumerate(self.convs):
             h = conv(h, edge_index, ea)
             if i < len(self.convs) - 1:
@@ -206,7 +217,7 @@ class EdgeAwareSAGEEdgeClassifier(nn.Module):
 
     def decode(self, h: torch.Tensor, edge_label_index: torch.Tensor, labeled_edge_attr: torch.Tensor) -> torch.Tensor:
         src, dst = edge_label_index
-        if self.use_edge_features:
+        if self.use_decoder_edge_features:
             e = self.edge_clf_bn(labeled_edge_attr)
             edge_repr = torch.cat([h[src], h[dst], e], dim=1)
         else:

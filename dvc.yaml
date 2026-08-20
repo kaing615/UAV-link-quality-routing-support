@@ -1,73 +1,273 @@
-stages:
-  generate:
-    cmd: python scripts/dataset/generate_batch.py
-    deps: [scripts/dataset/generate_batch.py, simulation/ns3/uav-olsr-dataset.cc, src/preprocessing/]
-    params: [generate]
-    outs: [data/raw_snapshots/, data/graph_dataset/]
-  validate:
-    cmd: python -m src.validation.data_quality --fail-on-error
-    deps:
-      - data/graph_dataset/
-      - src/validation/
-    metrics:
-      - reports/data_quality.json:
-          cache: false
-  train_baselines:
-    cmd: bash scripts/train/baselines/run_all_baselines_for_runs.sh 'ns3big_*'
-    deps:
-      - data/graph_dataset/
-      - reports/data_quality.json
-      - scripts/train/baselines/
-      - src/training/baselines/
-    outs: [outputs/baselines/]
-  train_gnn:
-    cmd: >-
-      bash scripts/train/gnn/run_all_gnn_for_runs.sh 'ns3big_*' graphsage
-      && bash scripts/train/gnn/run_all_gnn_for_runs.sh 'ns3big_*' gat
-      && HIDDEN=${train.gnn_hidden} EPOCHS=${train.gnn_epochs}
-      bash scripts/train/gnn/run_edge_sage_for_runs.sh 'ns3big_*'
-      && bash scripts/train/gnn/run_all_gnn_for_runs.sh 'ns3big_*' graphsage noedge
-      && bash scripts/train/gnn/run_all_gnn_for_runs.sh 'ns3big_*' gat noedge
-      && HIDDEN=${train.gnn_hidden} EPOCHS=${train.gnn_epochs} NOEDGE=1
-      bash scripts/train/gnn/run_edge_sage_for_runs.sh 'ns3big_*'
-    deps:
-      - data/graph_dataset/
-      - reports/data_quality.json
-      - scripts/train/gnn/run_all_gnn_for_runs.sh
-      - scripts/train/gnn/run_edge_sage_for_runs.sh
-      - src/training/gnn/
-      - src/models/
-    params: [train]
-    outs: [outputs/gnn/]
-  evaluate:
-    cmd: python -m src.evaluation.aggregate_all_metrics --filter-balanced && python -m src.evaluation.plot_comparison
-    deps: [outputs/baselines/, outputs/gnn/, src/evaluation/]
-    outs: [outputs/aggregates/all_models/]
-  routing:
-    cmd: >-
-      bash scripts/routing/run_routing_for_runs.sh 'ns3big_*' edge-sage
-      && bash scripts/routing/run_pth_sweep.sh
-    deps:
-      - outputs/gnn/
-      - src/routing/
-      - scripts/routing/run_routing_for_runs.sh
-      - scripts/routing/run_pth_sweep.sh
-    outs: [outputs/routing/, outputs/aggregates/routing/]
-  loro:
-    cmd: >-
-      bash scripts/train/gnn/run_loro.sh
-      && python -m src.evaluation.aggregate_all_metrics --loro
-      && python -m src.evaluation.plot_comparison
-      --summary-csv outputs/aggregates/loro/summary_by_model_split.csv
-      --output-dir outputs/aggregates/loro
-      --title 'LORO Generalization Comparison (Held-out Run)'
-      --filename loro_model_comparison.png
-    deps:
-      - data/graph_dataset/
-      - reports/data_quality.json
-      - scripts/train/gnn/run_loro.sh
-      - src/training/
-      - src/models/
-      - src/evaluation/
-    outs: [outputs/loro/, outputs/aggregates/loro/]
+params:
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/survival/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/qos/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/survival/k1/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/survival/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/qos/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/survival/k1/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/survival/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/qos/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/survival/k1/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/survival/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/qos/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/survival/k1/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/survival/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/qos/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/survival/k1/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/survival/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/qos/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/survival/k1/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/survival/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/qos/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/survival/k1/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/survival/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/qos/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/survival/k1/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/survival/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/qos/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/survival/k1/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/qos/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/survival/k1/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/qos/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/survival/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/qos/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/survival/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/qos/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/survival/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/qos/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/survival/k1/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/survival/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/survival/k1/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/survival/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/params.yaml
+- outputs/stage6/loro/edge-sage/qos/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/params.yaml
+metrics:
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/survival/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/qos/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/survival/k1/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/survival/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/qos/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/survival/k1/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/survival/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/qos/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/survival/k1/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/survival/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/qos/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/survival/k1/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/survival/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/qos/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/survival/k1/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/survival/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/qos/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/survival/k1/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/survival/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/qos/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/survival/k1/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/survival/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/qos/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/survival/k1/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/survival/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/qos/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/survival/k1/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/qos/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/survival/k1/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/qos/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/survival/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/qos/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/survival/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/qos/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/survival/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/qos/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/survival/k1/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/survival/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/survival/k1/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/survival/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/metrics.json
+- outputs/stage6/loro/edge-sage/qos/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/metrics.json
+plots:
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/survival/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/qos/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/survival/k1/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/survival/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/qos/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/survival/k1/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/survival/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/qos/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/survival/k1/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/survival/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/qos/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/survival/k1/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/survival/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/qos/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/survival/k1/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/survival/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/qos/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/survival/k1/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/survival/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/qos/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/survival/k1/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/survival/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/qos/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/survival/k1/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/survival/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/qos/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/survival/k1/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/qos/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/survival/k1/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/qos/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/survival/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/qos/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/survival/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/qos/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/survival/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/qos/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/survival/k1/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/survival/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/survival/k1/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/qos/k1/ns3big_007_rwp_s40108_n22_c190_t150/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/survival/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/plots/metrics:
+    x: step
+- outputs/stage6/loro/edge-sage/qos/k5/ns3big_001_rwp_s17296_n18_c211_t108/dvclive/plots/metrics:
+    x: step
 
+    x: step

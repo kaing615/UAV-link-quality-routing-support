@@ -1,0 +1,65 @@
+\begin{table}[tb]
+\caption{Run-paired closed-loop effects (comparator minus reference) and Holm-adjusted p-values.}
+\label{tab:closed-loop-paired}
+\begin{tabular}{llrlr}
+\toprule
+Metric & Comparison & Runs & Effect [95\% CI] & Holm p \\
+\midrule
+pdr & OLSR -> Shortest hop & 10 & 0.173 [0.060, 0.292] & 0.437500 \\
+pdr & OLSR -> Delay weighted & 10 & 0.173 [0.065, 0.299] & 0.343750 \\
+pdr & OLSR -> Persistence & 10 & 0.173 [0.060, 0.292] & 0.437500 \\
+pdr & OLSR -> Logistic Regression & 10 & 0.191 [0.060, 0.331] & 0.343750 \\
+pdr & OLSR -> XGBoost & 10 & 0.187 [0.071, 0.306] & 0.343750 \\
+pdr & OLSR -> Edge-SAGE & 10 & 0.217 [0.073, 0.366] & 0.343750 \\
+pdr & Shortest hop -> Logistic Regression & 10 & 0.019 [-0.038, 0.064] & 1.000000 \\
+pdr & Shortest hop -> XGBoost & 10 & 0.014 [-0.036, 0.062] & 1.000000 \\
+pdr & Shortest hop -> Edge-SAGE & 10 & 0.044 [-0.010, 0.098] & 0.750000 \\
+pdr & XGBoost -> Edge-SAGE & 10 & 0.031 [-0.008, 0.082] & 1.000000 \\
+pdr & Logistic Regression -> Edge-SAGE & 10 & 0.026 [0.005, 0.048] & 0.625000 \\
+mean\_delay\_ms & OLSR -> Shortest hop & 10 & 9.401 [-111.373, 120.797] & 1.000000 \\
+mean\_delay\_ms & OLSR -> Delay weighted & 10 & 13.267 [-121.970, 147.293] & 1.000000 \\
+mean\_delay\_ms & OLSR -> Persistence & 10 & 9.401 [-111.373, 120.797] & 1.000000 \\
+mean\_delay\_ms & OLSR -> Logistic Regression & 10 & 18.837 [-131.995, 170.484] & 1.000000 \\
+mean\_delay\_ms & OLSR -> XGBoost & 10 & -7.445 [-138.233, 114.293] & 1.000000 \\
+mean\_delay\_ms & OLSR -> Edge-SAGE & 10 & 0.707 [-137.657, 125.968] & 1.000000 \\
+mean\_delay\_ms & Shortest hop -> Logistic Regression & 10 & 9.435 [-23.238, 50.439] & 1.000000 \\
+mean\_delay\_ms & Shortest hop -> XGBoost & 10 & -16.847 [-46.936, 11.608] & 1.000000 \\
+mean\_delay\_ms & Shortest hop -> Edge-SAGE & 10 & -8.695 [-35.457, 18.698] & 1.000000 \\
+mean\_delay\_ms & XGBoost -> Edge-SAGE & 10 & 8.152 [0.190, 18.070] & 1.000000 \\
+mean\_delay\_ms & Logistic Regression -> Edge-SAGE & 10 & -18.130 [-54.551, 10.643] & 1.000000 \\
+throughput\_mbps & OLSR -> Shortest hop & 10 & 0.048 [0.016, 0.081] & 0.562500 \\
+throughput\_mbps & OLSR -> Delay weighted & 10 & 0.048 [0.018, 0.083] & 0.343750 \\
+throughput\_mbps & OLSR -> Persistence & 10 & 0.048 [0.016, 0.081] & 0.562500 \\
+throughput\_mbps & OLSR -> Logistic Regression & 10 & 0.053 [0.017, 0.092] & 0.562500 \\
+throughput\_mbps & OLSR -> XGBoost & 10 & 0.053 [0.021, 0.086] & 0.343750 \\
+throughput\_mbps & OLSR -> Edge-SAGE & 10 & 0.060 [0.022, 0.101] & 0.562500 \\
+throughput\_mbps & Shortest hop -> Logistic Regression & 10 & 0.005 [-0.012, 0.018] & 1.000000 \\
+throughput\_mbps & Shortest hop -> XGBoost & 10 & 0.005 [-0.008, 0.018] & 1.000000 \\
+throughput\_mbps & Shortest hop -> Edge-SAGE & 10 & 0.012 [-0.003, 0.027] & 0.875000 \\
+throughput\_mbps & XGBoost -> Edge-SAGE & 10 & 0.007 [-0.003, 0.022] & 1.000000 \\
+throughput\_mbps & Logistic Regression -> Edge-SAGE & 10 & 0.007 [0.002, 0.014] & 0.562500 \\
+route\_changes & OLSR -> Shortest hop & 10 & 3.500 [1.600, 5.400] & 0.312500 \\
+route\_changes & OLSR -> Delay weighted & 10 & 3.500 [1.500, 5.800] & 0.312500 \\
+route\_changes & OLSR -> Persistence & 10 & 3.500 [1.600, 5.400] & 0.312500 \\
+route\_changes & OLSR -> Logistic Regression & 10 & 1.900 [0.300, 4.000] & 0.437500 \\
+route\_changes & OLSR -> XGBoost & 10 & 4.200 [1.900, 6.900] & 0.171875 \\
+route\_changes & OLSR -> Edge-SAGE & 10 & 2.500 [0.400, 5.300] & 0.437500 \\
+route\_changes & Shortest hop -> Logistic Regression & 10 & -1.600 [-3.100, -0.200] & 0.500000 \\
+route\_changes & Shortest hop -> XGBoost & 10 & 0.700 [-0.900, 2.400] & 0.750000 \\
+route\_changes & Shortest hop -> Edge-SAGE & 10 & -1.000 [-2.800, 0.700] & 0.750000 \\
+route\_changes & XGBoost -> Edge-SAGE & 10 & -1.700 [-3.300, -0.400] & 0.437500 \\
+route\_changes & Logistic Regression -> Edge-SAGE & 10 & 0.600 [0.000, 1.400] & 0.750000 \\
+route\_found\_rate & OLSR -> Shortest hop & 10 & -0.009 [-0.146, 0.141] & 1.000000 \\
+route\_found\_rate & OLSR -> Delay weighted & 10 & -0.009 [-0.146, 0.141] & 1.000000 \\
+route\_found\_rate & OLSR -> Persistence & 10 & -0.009 [-0.146, 0.141] & 1.000000 \\
+route\_found\_rate & OLSR -> Logistic Regression & 10 & -0.009 [-0.146, 0.141] & 1.000000 \\
+route\_found\_rate & OLSR -> XGBoost & 10 & -0.009 [-0.146, 0.141] & 1.000000 \\
+route\_found\_rate & OLSR -> Edge-SAGE & 10 & -0.009 [-0.146, 0.141] & 1.000000 \\
+route\_found\_rate & Shortest hop -> Logistic Regression & 10 & 0.000 [0.000, 0.000] & 1.000000 \\
+route\_found\_rate & Shortest hop -> XGBoost & 10 & 0.000 [0.000, 0.000] & 1.000000 \\
+route\_found\_rate & Shortest hop -> Edge-SAGE & 10 & 0.000 [0.000, 0.000] & 1.000000 \\
+route\_found\_rate & XGBoost -> Edge-SAGE & 10 & 0.000 [0.000, 0.000] & 1.000000 \\
+route\_found\_rate & Logistic Regression -> Edge-SAGE & 10 & 0.000 [0.000, 0.000] & 1.000000 \\
+\bottomrule
+\end{tabular}
+\end{table}

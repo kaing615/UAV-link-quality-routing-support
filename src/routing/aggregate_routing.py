@@ -9,6 +9,8 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import pandas as pd
 
+from src.evaluation.paired_statistics import bootstrap_mean_ci, paired_comparisons
+
 STRATEGY_LABELS = {
     "olsr": "OLSR (actual, ns-3)",
     "hop": "Shortest Hop",
@@ -24,6 +26,18 @@ PANELS = [
     ("mean_realized_pdr_t1", "Realized PDR @ t+1", False),
     ("mean_e2e_delay_ms", "E2E Delay (ms)", True),
 ]
+
+ROUTING_METRICS = {
+    "route_found_rate": True,
+    "mean_hops": False,
+    "mean_e2e_delay_ms": False,
+    "mean_est_pdr": True,
+    "mean_route_lifetime": True,
+    "survival_at_1": True,
+    "mean_realized_pdr_t1": True,
+    "mean_route_changes": False,
+    "disconnected_rate": False,
+}
 
 
 def aggregate(
@@ -64,9 +78,30 @@ def aggregate(
         )
         .reset_index()
     )
+
+    # Confidence intervals are clustered at run level; retain mean/std for
+    # compatibility with existing consumers.
+    for metric in ROUTING_METRICS:
+        ci = detailed.groupby("strategy")[metric].apply(
+            lambda values: pd.Series(
+                bootstrap_mean_ci(values.to_numpy(), seed=42),
+                index=[f"{metric}_ci95_low", f"{metric}_ci95_high"],
+            )
+        )
+        ci = ci.unstack()
+        grouped = grouped.merge(ci, left_on="strategy", right_index=True, how="left")
+
     output_dir.mkdir(parents=True, exist_ok=True)
     detailed.to_csv(output_dir / f"detailed_by_run{out_suffix}.csv", index=False)
     grouped.to_csv(output_dir / f"summary_by_strategy{out_suffix}.csv", index=False)
+    if not out_suffix:
+        comparisons = paired_comparisons(
+            detailed,
+            comparisons=[("delay", "hop"), ("xgb", "hop"), ("gnn", "hop"), ("gnn", "xgb")],
+            metrics=ROUTING_METRICS,
+            seed=42,
+        )
+        comparisons.to_csv(output_dir / "paired_comparisons.csv", index=False)
     return grouped
 
 
@@ -75,9 +110,18 @@ def plot(grouped: pd.DataFrame, output_dir: Path, title: str, filename: str = "r
     fig, axes = plt.subplots(1, len(PANELS), figsize=(4.2 * len(PANELS), 4.6))
     for ax, (col, label, lower_better) in zip(axes, PANELS):
         means = [float(grouped.loc[grouped["strategy"] == s, f"{col}_mean"].iloc[0]) for s in strategies]
-        stds = [float(grouped.loc[grouped["strategy"] == s, f"{col}_std"].iloc[0]) for s in strategies]
+        lows = [float(grouped.loc[grouped["strategy"] == s, f"{col}_ci95_low"].iloc[0]) for s in strategies]
+        highs = [float(grouped.loc[grouped["strategy"] == s, f"{col}_ci95_high"].iloc[0]) for s in strategies]
+        yerr = [[max(0.0, m - lo) for m, lo in zip(means, lows)], [max(0.0, hi - m) for m, hi in zip(means, highs)]]
         xs = range(len(strategies))
-        bars = ax.bar(xs, means, yerr=stds, capsize=4, color=[COLORS[s] for s in strategies], edgecolor="white")
+        bars = ax.bar(
+            xs,
+            means,
+            yerr=yerr,
+            capsize=4,
+            color=[COLORS[s] for s in strategies],
+            edgecolor="white",
+        )
         for x, bar, m in zip(xs, bars, means):
             ax.text(x, bar.get_height(), f"{m:.2f}", ha="center", va="bottom", fontsize=9, fontweight="bold")
         ax.set_title(f"{label}\n({('lower' if lower_better else 'higher')} is better)", fontsize=10)
