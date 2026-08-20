@@ -2,8 +2,9 @@
 
 ## 1. Mục tiêu và đầu ra bắt buộc
 
-Runbook này dành cho người chỉ phụ trách chạy thí nghiệm và gửi dữ liệu về cho
-nhóm viết paper. Không cần train model hoặc tự diễn giải kết quả.
+Mục 1--14 dành cho worker sinh dữ liệu và gửi về máy tổng hợp. Nếu được giao
+chạy luôn toàn bộ thực nghiệm, worker dùng launcher tại Mục 15 sau khi đã có đủ
+400 run; không cần tự ghép các lệnh train và routing riêng lẻ.
 
 Ma trận cuối cùng gồm **100 seed ghép cặp**, mỗi seed sinh đủ bốn scenario:
 
@@ -26,12 +27,15 @@ mobility để có thể so sánh ghép cặp.
 - Repository phải chứa phiên bản mới nhất của `Dockerfile`, `simulation/ns3/`,
   `scripts/dataset/run_controlled_scenarios.py` và
   `scripts/analysis/summarize_controlled_scenarios.py`.
-- Không cần `dvc pull` dữ liệu cũ để sinh bộ scenario này.
+- Không cần tải bộ `ns3big_*` cũ. Tuy nhiên, nếu nhóm đã đưa một phần
+  `stress_*` lên DVC thì phải tải và giải nén phần đó trước khi chạy để runner
+  nhận ra các run hoàn chỉnh và tự bỏ qua.
 
 Trước khi chạy:
 
 ```bash
 cd /workspaces/UAV-link-quality-routing-support
+git pull origin main
 git status --short
 df -h .
 docker version
@@ -39,6 +43,32 @@ docker version
 
 Nếu tên thư mục Codespace khác, dùng `pwd` rồi `cd` vào thư mục chứa
 `Dockerfile`.
+
+### 2.1. Tải các controlled run đã có từ DVC
+
+Nếu thư mục `deliverables/` có các metadata
+`controlled_*_data.tar.gz.dvc`, tải archive từ remote `storage`:
+
+```bash
+dvc pull -r storage deliverables/controlled_*_data.tar.gz.dvc
+```
+
+Kiểm tra checksum tương ứng nếu có, sau đó giải nén tại thư mục gốc repository:
+
+```bash
+for archive in deliverables/controlled_*_data.tar.gz; do
+  [ -f "$archive" ] || continue
+  checksum="${archive%_data.tar.gz}_SHA256SUMS.txt"
+  [ -f "$checksum" ] && sha256sum -c "$checksum"
+  tar -xzf "$archive"
+done
+```
+
+`dvc pull` chỉ tải archive vào `deliverables/`; bước giải nén mới đưa các file
+vào `data/raw_snapshots/` và `data/graph_dataset/`. Sau đó vẫn chạy đủ dải index
+được giao. Runner sẽ in `SKIPPED` cho run đã có đủ raw data và ba split graph,
+và chỉ sinh các run còn thiếu hoặc chưa hoàn chỉnh. Nếu không có metadata
+controlled `.dvc`, bỏ qua Mục 2.1 và chạy bình thường.
 
 ## 3. Build môi trường
 
@@ -406,7 +436,64 @@ tar -tzf deliverables/controlled_worker_001_025_data.tar.gz | head
 Sau khi kiểm tra thành công, người viết paper chỉ cần clone đúng commit, chạy
 `dvc pull deliverables/*.dvc`, giải nén bốn archive rồi thực hiện Mục 10--12.
 
-## 15. Tiêu chí nghiệm thu
+## 15. Chạy toàn bộ flow nghiên cứu trên máy tổng hợp
+
+Chỉ một máy có đủ 400 run mới chạy mục này. Launcher thực hiện tuần tự:
+
+```text
+controlled ns-3 → data quality → multi-horizon QoS/survival
+→ persistence/logreg/XGBoost/Edge-SAGE → LORO/cross-mobility/ablation
+→ routing replay → inference benchmark → closed-loop ns-3
+→ hình và bảng cho paper
+```
+
+Xem trước tám pha mà không chạy tính toán:
+
+```bash
+docker run --rm -v "$PWD:/workspace" -w /workspace \
+  uav-ns3-runner bash scripts/run_controlled_paper_pipeline.sh --dry-run
+```
+
+Chạy toàn bộ và lưu log:
+
+```bash
+mkdir -p reports/controlled_paper
+set -o pipefail
+docker run --rm -v "$PWD:/workspace" -w /workspace \
+  uav-ns3-runner bash scripts/run_controlled_paper_pipeline.sh \
+  2>&1 | tee reports/controlled_paper/pipeline.log
+```
+
+Launcher dùng riêng `data/multihorizon_controlled/`,
+`outputs/multihorizon_controlled/` và `reports/controlled_paper/`, vì vậy không
+trộn kết quả với pilot `ns3big_*`. Mặc định GNN chạy 200 epoch, patience 20;
+closed-loop và benchmark tài nguyên dùng 10 run baseline. Có thể hiệu chỉnh khi
+máy đủ tài nguyên:
+
+```bash
+export GNN_EPOCHS=200 GNN_PATIENCE=20 CLOSED_LOOP_RUNS=10
+set -o pipefail
+docker run --rm \
+  -e GNN_EPOCHS -e GNN_PATIENCE -e CLOSED_LOOP_RUNS \
+  -v "$PWD:/workspace" -w /workspace \
+  uav-ns3-runner bash scripts/run_controlled_paper_pipeline.sh \
+  2>&1 | tee reports/controlled_paper/pipeline.log
+```
+
+Nếu bị ngắt, chạy lại đúng lệnh. Các bước sinh controlled data, dựng
+multi-horizon, huấn luyện, routing, inference và closed-loop đều nhận diện output
+đã hoàn chỉnh để tiếp tục; các bước tổng hợp nhẹ có thể chạy lại. Hoàn tất khi
+launcher in:
+
+```text
+[OK] controlled paper pipeline completed: reports/controlled_paper
+```
+
+Flow đầy đủ trên 400 run tốn tài nguyên lớn, đặc biệt LORO và Edge-SAGE. Máy CPU
+Codespaces có thể chạy rất lâu; dùng máy có GPU bằng cách thêm `--gpus all` vào
+`docker run` nếu Docker/NVIDIA đã được cấu hình.
+
+## 16. Tiêu chí nghiệm thu
 
 Chỉ xem là hoàn tất khi:
 

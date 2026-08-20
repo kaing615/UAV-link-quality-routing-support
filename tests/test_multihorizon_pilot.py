@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 
 import pandas as pd
+import scripts.dataset.build_multihorizon_pilot as multihorizon_pilot
 from scripts.dataset.build_multihorizon_pilot import run_pilot, select_pilot_runs
 
 
@@ -94,3 +95,19 @@ def test_run_pilot_writes_all_targets_horizons_and_summary(tmp_path):
     assert summary_csv.exists()
     for row in summary.itertuples(index=False):
         assert (tmp_path / "multihorizon" / row.target / f"k{row.horizon}" / row.run_name).is_dir()
+
+
+def test_run_pilot_resumes_complete_outputs(tmp_path, monkeypatch):
+    raw_root = tmp_path / "raw"
+    output_root = tmp_path / "multihorizon"
+    summary_csv = tmp_path / "reports" / "summary.csv"
+    _write_raw_run(raw_root, "run_001_rwp", "random-waypoint")
+    run_pilot(raw_root, ["run_001_rwp"], output_root, summary_csv)
+
+    def fail_if_rebuilt(**_kwargs):
+        raise AssertionError("complete multi-horizon outputs should be resumed")
+
+    monkeypatch.setattr(multihorizon_pilot, "run_pipeline", fail_if_rebuilt)
+    resumed = run_pilot(raw_root, ["run_001_rwp"], output_root, summary_csv)
+
+    assert len(resumed) == 8

@@ -127,6 +127,7 @@ def run_stage6(
     force: bool,
     gnn_epochs: int,
     gnn_patience: int,
+    benchmark_summary: Path,
 ) -> None:
     coordinates = discover_coordinates(data_root, targets, horizons)
     if not coordinates:
@@ -212,7 +213,7 @@ def run_stage6(
     for protocol in protocols:
         detailed = collect_protocol_metrics(output_root / protocol, protocol)
         if protocol == "ablation":
-            benchmark = pd.read_csv("reports/multihorizon_benchmark_summary.csv")
+            benchmark = pd.read_csv(benchmark_summary)
             detailed = with_full_ablation_reference(detailed, benchmark)
         detailed.to_csv(reports_root / f"{protocol}_summary.csv", index=False)
         if not detailed.empty:
@@ -227,13 +228,23 @@ def main() -> None:
     parser.add_argument("--raw-root", type=Path, default=Path("data/raw_snapshots"))
     parser.add_argument("--output-root", type=Path, default=Path("outputs/stage6"))
     parser.add_argument("--reports-root", type=Path, default=Path("reports/stage6"))
-    parser.add_argument("--protocols", nargs="+", choices=("loro", "cross-mobility", "ablation"), default=["loro", "cross-mobility", "ablation"])
+    parser.add_argument(
+        "--protocols",
+        nargs="+",
+        choices=("loro", "cross-mobility", "ablation"),
+        default=["loro", "cross-mobility", "ablation"],
+    )
     parser.add_argument("--models", nargs="+", choices=MODELS, default=list(MODELS))
     parser.add_argument("--targets", nargs="+", choices=("qos", "survival"), default=None)
     parser.add_argument("--horizons", nargs="+", type=int, choices=(1, 2, 3, 5), default=[1, 5])
     parser.add_argument("--force", action="store_true")
     parser.add_argument("--gnn-epochs", type=int, default=200)
     parser.add_argument("--gnn-patience", type=int, default=20)
+    parser.add_argument(
+        "--benchmark-summary",
+        type=Path,
+        default=Path("reports/multihorizon_benchmark_summary.csv"),
+    )
     args = parser.parse_args()
     run_stage6(
         args.data_root,
@@ -247,6 +258,7 @@ def main() -> None:
         args.force,
         args.gnn_epochs,
         args.gnn_patience,
+        args.benchmark_summary,
     )
 
 

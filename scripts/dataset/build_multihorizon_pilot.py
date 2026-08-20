@@ -57,15 +57,26 @@ def run_pilot(raw_root: Path, run_names: list[str], output_root: Path, summary_c
         for target in TARGETS:
             for horizon in HORIZONS:
                 destination = output_root / target / f"k{horizon}" / run_name
-                print(f"[PILOT] {run_name}: target={target}, horizon={horizon}")
-                outputs = run_pipeline(
-                    nodes_csv=nodes_csv,
-                    edges_csv=edges_csv,
-                    output_root=destination,
-                    target=target,
-                    horizon=horizon,
-                    common_max_horizon=support_horizon,
-                )
+                outputs = {
+                    "edges_labeled": destination / "features" / "edges_labeled.csv",
+                    "splits": destination / "splits" / "time_splits.csv",
+                    "train_pt": destination / "graph_dataset" / "train.pt",
+                    "val_pt": destination / "graph_dataset" / "val.pt",
+                    "test_pt": destination / "graph_dataset" / "test.pt",
+                }
+                complete = all(path.is_file() and path.stat().st_size > 0 for path in outputs.values())
+                if complete:
+                    print(f"[SKIP] {run_name}: target={target}, horizon={horizon}")
+                else:
+                    print(f"[PILOT] {run_name}: target={target}, horizon={horizon}")
+                    outputs = run_pipeline(
+                        nodes_csv=nodes_csv,
+                        edges_csv=edges_csv,
+                        output_root=destination,
+                        target=target,
+                        horizon=horizon,
+                        common_max_horizon=support_horizon,
+                    )
 
                 labels = pd.read_csv(outputs["edges_labeled"])
                 splits = pd.read_csv(outputs["splits"])
