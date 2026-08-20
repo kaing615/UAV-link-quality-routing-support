@@ -7,9 +7,26 @@ from pathlib import Path
 import pandas as pd
 import torch
 
-from src.routing.multihorizon_eval import aggregate_multihorizon_results
+from src.routing.multihorizon_eval import aggregate_multihorizon_results, discover_coordinates
 from src.routing.predict_edges import attach_prediction_identity
 from src.routing.replay_eval import evaluate_run
+
+
+def test_routing_coordinates_can_use_the_same_balanced_controlled_subset(tmp_path: Path) -> None:
+    for run in (
+        "stress_baseline_rwp_s60001",
+        "stress_baseline_gm_s60002",
+        "stress_fast_rwp_s60001",
+        "stress_fast_gm_s60002",
+    ):
+        (tmp_path / "qos" / "k1" / run / "graph_dataset").mkdir(parents=True)
+
+    selected = discover_coordinates(tmp_path, runs_per_scenario=1)
+
+    assert [run_root.name for _, _, run_root in selected] == [
+        "stress_baseline_rwp_s60001",
+        "stress_fast_rwp_s60001",
+    ]
 
 
 def test_replay_uses_horizon_scores_on_the_same_sessions(tmp_path: Path) -> None:

@@ -6,6 +6,7 @@ import argparse
 from pathlib import Path
 
 import pandas as pd
+from scripts.train.run_multihorizon_benchmark import select_representative_runs
 
 from src.evaluation.paired_statistics import bootstrap_mean_ci, paired_comparisons
 from src.routing.predict_edges import attach_prediction_identity
@@ -45,6 +46,7 @@ def discover_coordinates(
     data_root: Path,
     targets: set[str] | None = None,
     horizons: set[int] | None = None,
+    runs_per_scenario: int | None = None,
 ) -> list[tuple[str, int, Path]]:
     coordinates = []
     for graph_dir in sorted(data_root.glob("*/k*/*/graph_dataset")):
@@ -52,6 +54,9 @@ def discover_coordinates(
         horizon = int(graph_dir.parents[1].name.removeprefix("k"))
         if (targets is None or target in targets) and (horizons is None or horizon in horizons):
             coordinates.append((target, horizon, graph_dir.parent))
+    if runs_per_scenario is not None:
+        selected = set(select_representative_runs(list({item[2].name for item in coordinates}), runs_per_scenario))
+        coordinates = [item for item in coordinates if item[2].name in selected]
     return coordinates
 
 
@@ -101,8 +106,11 @@ def run_multihorizon_routing(
     cost_modes: list[str] | None = None,
     limit: int | None = None,
     force: bool = False,
+    runs_per_scenario: int | None = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-    coordinates = discover_coordinates(data_root, targets, horizons)
+    if limit is not None and runs_per_scenario is not None:
+        raise ValueError("limit and runs_per_scenario are mutually exclusive")
+    coordinates = discover_coordinates(data_root, targets, horizons, runs_per_scenario)
     if limit is not None:
         selected_runs = sorted({run_root.name for _, _, run_root in coordinates})[:limit]
         coordinates = [item for item in coordinates if item[2].name in selected_runs]
@@ -215,7 +223,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--targets", nargs="+", choices=TARGETS, default=None)
     parser.add_argument("--horizons", nargs="+", type=int, choices=HORIZONS, default=None)
     parser.add_argument("--cost-modes", nargs="+", choices=COST_MODES, default=list(COST_MODES))
-    parser.add_argument("--limit", type=int, default=None)
+    limits = parser.add_mutually_exclusive_group()
+    limits.add_argument("--limit", type=int, default=None)
+    limits.add_argument("--runs-per-scenario", type=int, default=None)
     parser.add_argument("--force", action="store_true")
     return parser.parse_args()
 
@@ -234,6 +244,7 @@ def main() -> None:
         args.cost_modes,
         args.limit,
         args.force,
+        args.runs_per_scenario,
     )
     print(f"[OK] {len(detailed)} run/strategy rows")
     print(f"[OK] {len(aggregate)} aggregate rows")

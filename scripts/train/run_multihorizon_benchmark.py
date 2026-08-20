@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -18,11 +19,27 @@ BASELINE_MODULES = {
 }
 
 
+def select_representative_runs(runs: list[str], runs_per_scenario: int) -> list[str]:
+    if runs_per_scenario <= 0:
+        raise ValueError("runs_per_scenario must be positive")
+    grouped: dict[str, list[str]] = {}
+    for run in runs:
+        match = re.match(r"^stress_(.+)_(?:rwp|gm)_s\d+$", run)
+        grouped.setdefault(match.group(1) if match else "other", []).append(run)
+    for group in grouped.values():
+        group.sort(
+            key=lambda run: (int(match.group(1)), run) if (match := re.search(r"_s(\d+)$", run)) else (sys.maxsize, run)
+        )
+    return [run for scenario in sorted(grouped) for run in grouped[scenario][:runs_per_scenario]]
+
+
 def discover_datasets(data_root: Path) -> list[tuple[str, int, Path]]:
     datasets = []
     for graph_dir in sorted(data_root.glob("*/k*/*/graph_dataset")):
         if all((graph_dir / f"{split}.pt").exists() for split in ("train", "val", "test")):
-            datasets.append((graph_dir.parents[2].name, int(graph_dir.parents[1].name.removeprefix("k")), graph_dir.parent))
+            datasets.append(
+                (graph_dir.parents[2].name, int(graph_dir.parents[1].name.removeprefix("k")), graph_dir.parent)
+            )
     return datasets
 
 
@@ -42,7 +59,16 @@ def collect_metrics(output_root: Path) -> pd.DataFrame:
 def aggregate_metrics(detailed: pd.DataFrame) -> pd.DataFrame:
     metrics = [
         name
-        for name in ("accuracy", "precision", "recall", "f1", "macro_f1", "roc_auc", "pr_auc", "inference_ms_per_sample")
+        for name in (
+            "accuracy",
+            "precision",
+            "recall",
+            "f1",
+            "macro_f1",
+            "roc_auc",
+            "pr_auc",
+            "inference_ms_per_sample",
+        )
         if name in detailed.columns
     ]
     group_columns = ["model_id", "target", "horizon", "split"]
@@ -119,13 +145,26 @@ def run_benchmark(
     force: bool = False,
     gnn_epochs: int = 200,
     gnn_patience: int = 20,
+    runs_per_scenario: int | None = None,
 ) -> pd.DataFrame:
     datasets = [
         item
         for item in discover_datasets(data_root)
         if (targets is None or item[0] in targets) and (horizons is None or item[1] in horizons)
     ]
-    if limit is not None:
+    if limit is not None and runs_per_scenario is not None:
+        raise ValueError("limit and runs_per_scenario are mutually exclusive")
+    if runs_per_scenario is not None:
+        selected = {
+            (target, horizon, run)
+            for target, horizon in sorted({(item[0], item[1]) for item in datasets})
+            for run in select_representative_runs(
+                [item[2].name for item in datasets if item[:2] == (target, horizon)],
+                runs_per_scenario,
+            )
+        }
+        datasets = [item for item in datasets if (item[0], item[1], item[2].name) in selected]
+    elif limit is not None:
         datasets = datasets[:limit]
     if not datasets:
         raise FileNotFoundError(f"No multi-horizon graph datasets found under {data_root}")
@@ -202,7 +241,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--models", nargs="+", choices=MODELS, default=list(MODELS))
     parser.add_argument("--targets", nargs="+", choices=("qos", "survival"), default=None)
     parser.add_argument("--horizons", nargs="+", type=int, choices=(1, 2, 3, 5), default=None)
-    parser.add_argument("--limit", type=int, default=None)
+    limits = parser.add_mutually_exclusive_group()
+    limits.add_argument("--limit", type=int, default=None)
+    limits.add_argument("--runs-per-scenario", type=int, default=None)
     parser.add_argument("--force", action="store_true")
     parser.add_argument("--gnn-epochs", type=int, default=200)
     parser.add_argument("--gnn-patience", type=int, default=20)
@@ -222,4 +263,5 @@ if __name__ == "__main__":
         args.force,
         args.gnn_epochs,
         args.gnn_patience,
+        args.runs_per_scenario,
     )

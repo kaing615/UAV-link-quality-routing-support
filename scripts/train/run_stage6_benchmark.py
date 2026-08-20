@@ -9,7 +9,11 @@ import sys
 from pathlib import Path
 
 import pandas as pd
-from scripts.train.run_multihorizon_benchmark import aggregate_metrics, discover_datasets
+from scripts.train.run_multihorizon_benchmark import (
+    aggregate_metrics,
+    discover_datasets,
+    select_representative_runs,
+)
 
 MODELS = ("logreg", "xgb", "edge-sage")
 ABLATION_MODES = ("decoder-only", "message-only", "noedge")
@@ -128,6 +132,8 @@ def run_stage6(
     gnn_epochs: int,
     gnn_patience: int,
     benchmark_summary: Path,
+    loro_runs_per_scenario: int | None,
+    ablation_runs_per_scenario: int | None,
 ) -> None:
     coordinates = discover_coordinates(data_root, targets, horizons)
     if not coordinates:
@@ -136,9 +142,14 @@ def run_stage6(
     for target, horizon, runs in coordinates:
         coordinate_root = data_root / target / f"k{horizon}"
         if "ablation" in protocols:
+            ablation_runs = (
+                select_representative_runs(runs, ablation_runs_per_scenario)
+                if ablation_runs_per_scenario is not None
+                else runs
+            )
             for edge_mode in ABLATION_MODES:
                 model_id = f"edge-sage-{edge_mode}"
-                for run in runs:
+                for run in ablation_runs:
                     output_dir = output_root / "ablation" / model_id / target / f"k{horizon}" / run
                     if (output_dir / "metrics.csv").exists() and not force:
                         continue
@@ -170,7 +181,10 @@ def run_stage6(
                     )
 
         if "loro" in protocols:
-            for test_run in runs:
+            test_runs = (
+                select_representative_runs(runs, loro_runs_per_scenario) if loro_runs_per_scenario is not None else runs
+            )
+            for test_run in test_runs:
                 train_runs = [run for run in runs if run != test_run]
                 for model in models:
                     output_dir = output_root / "loro" / model / target / f"k{horizon}" / test_run
@@ -240,6 +254,8 @@ def main() -> None:
     parser.add_argument("--force", action="store_true")
     parser.add_argument("--gnn-epochs", type=int, default=200)
     parser.add_argument("--gnn-patience", type=int, default=20)
+    parser.add_argument("--loro-runs-per-scenario", type=int, default=None)
+    parser.add_argument("--ablation-runs-per-scenario", type=int, default=None)
     parser.add_argument(
         "--benchmark-summary",
         type=Path,
@@ -259,6 +275,8 @@ def main() -> None:
         args.gnn_epochs,
         args.gnn_patience,
         args.benchmark_summary,
+        args.loro_runs_per_scenario,
+        args.ablation_runs_per_scenario,
     )
 
 

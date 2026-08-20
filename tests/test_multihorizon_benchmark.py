@@ -6,7 +6,12 @@ from pathlib import Path
 
 import pandas as pd
 import pytest
-from scripts.train.run_multihorizon_benchmark import aggregate_metrics, collect_metrics, discover_datasets
+from scripts.train.run_multihorizon_benchmark import (
+    aggregate_metrics,
+    collect_metrics,
+    discover_datasets,
+    select_representative_runs,
+)
 
 from src.training.baselines.loro_baselines import load_run_rows
 
@@ -32,6 +37,28 @@ def test_discovery_and_collection_preserve_benchmark_coordinates(tmp_path: Path)
         2,
         "run-a",
     )
+
+
+def test_representative_runs_are_deterministic_and_balanced_by_controlled_scenario():
+    runs = [
+        "stress_sparse_rwp_s60003",
+        "stress_sparse_rwp_s60001",
+        "stress_fast_rwp_s60003",
+        "stress_fast_rwp_s60001",
+        "stress_baseline_gm_s60002",
+        "stress_sparse_gm_s60002",
+        "stress_fast_gm_s60002",
+        "stress_baseline_rwp_s60001",
+    ]
+
+    assert select_representative_runs(runs, 2) == [
+        "stress_baseline_rwp_s60001",
+        "stress_baseline_gm_s60002",
+        "stress_fast_rwp_s60001",
+        "stress_fast_gm_s60002",
+        "stress_sparse_rwp_s60001",
+        "stress_sparse_gm_s60002",
+    ]
 
 
 def test_aggregate_metrics_keeps_run_as_the_independent_unit():

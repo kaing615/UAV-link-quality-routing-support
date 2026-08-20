@@ -466,15 +466,28 @@ docker run --rm -v "$PWD:/workspace" -w /workspace \
 
 Launcher dùng riêng `data/multihorizon_controlled/`,
 `outputs/multihorizon_controlled/` và `reports/controlled_paper/`, vì vậy không
-trộn kết quả với pilot `ns3big_*`. Mặc định GNN chạy 200 epoch, patience 20;
-closed-loop và benchmark tài nguyên dùng 10 run baseline. Có thể hiệu chỉnh khi
-máy đủ tài nguyên:
+trộn kết quả với pilot `ns3big_*`. Dữ liệu vẫn gồm đủ 100 seed cho mỗi scenario
+(400 run) tại từng mốc `t+1`, `t+2`, `t+3`, `t+5`. Để tránh hàng nghìn lần
+huấn luyện GNN không cần thiết, mặc định within-run dùng 10 run/scenario, LORO
+giữ ra 5 fold/scenario, ablation dùng 10 run/scenario và closed-loop dùng 10
+run baseline. Các fold LORO vẫn huấn luyện trên toàn bộ run còn lại. GNN chạy
+200 epoch với patience 20. Run đại diện được chọn theo seed tăng dần; seed
+lẻ/chẵn của bộ controlled xen kẽ Random Waypoint và Gauss–Markov.
+
+Có thể tăng hoặc giảm khối lượng huấn luyện mà không sinh lại dữ liệu:
 
 ```bash
-export GNN_EPOCHS=200 GNN_PATIENCE=20 CLOSED_LOOP_RUNS=10
+export WITHIN_RUNS_PER_SCENARIO=10
+export LORO_FOLDS_PER_SCENARIO=5
+export ABLATION_RUNS_PER_SCENARIO=10
+export CLOSED_LOOP_RUNS=10
+export GNN_EPOCHS=200 GNN_PATIENCE=20
 set -o pipefail
 docker run --rm \
-  -e GNN_EPOCHS -e GNN_PATIENCE -e CLOSED_LOOP_RUNS \
+  -e WITHIN_RUNS_PER_SCENARIO \
+  -e LORO_FOLDS_PER_SCENARIO \
+  -e ABLATION_RUNS_PER_SCENARIO \
+  -e CLOSED_LOOP_RUNS -e GNN_EPOCHS -e GNN_PATIENCE \
   -v "$PWD:/workspace" -w /workspace \
   uav-ns3-runner bash scripts/run_controlled_paper_pipeline.sh \
   2>&1 | tee reports/controlled_paper/pipeline.log
@@ -489,9 +502,10 @@ launcher in:
 [OK] controlled paper pipeline completed: reports/controlled_paper
 ```
 
-Flow đầy đủ trên 400 run tốn tài nguyên lớn, đặc biệt LORO và Edge-SAGE. Máy CPU
-Codespaces có thể chạy rất lâu; dùng máy có GPU bằng cách thêm `--gpus all` vào
-`docker run` nếu Docker/NVIDIA đã được cấu hình.
+Không đặt ba giới hạn theo scenario thành 100 trừ khi thật sự có cụm tính toán:
+cấu hình đó tạo lại hàng nghìn lần huấn luyện Edge-SAGE nhưng không tạo thêm dữ
+liệu. Máy CPU Codespaces vẫn không phù hợp cho flow này; dùng máy có GPU bằng
+cách thêm `--gpus all` vào `docker run` nếu Docker/NVIDIA đã được cấu hình.
 
 ## 16. Phân biệt publish paper và promote model serving
 

@@ -7,22 +7,27 @@ REPORT_ROOT="reports/controlled_paper"
 STAGE6_OUTPUT="outputs/controlled_stage6"
 CLOSED_LOOP_OUTPUT="outputs/closed_loop_controlled"
 CLOSED_LOOP_RUNS="${CLOSED_LOOP_RUNS:-10}"
+WITHIN_RUNS_PER_SCENARIO="${WITHIN_RUNS_PER_SCENARIO:-10}"
+LORO_FOLDS_PER_SCENARIO="${LORO_FOLDS_PER_SCENARIO:-5}"
+ABLATION_RUNS_PER_SCENARIO="${ABLATION_RUNS_PER_SCENARIO:-10}"
 GNN_EPOCHS="${GNN_EPOCHS:-200}"
 GNN_PATIENCE="${GNN_PATIENCE:-20}"
 NS3_BINARY="simulation/ns3/build/uav-olsr-dataset"
 
-[[ "$CLOSED_LOOP_RUNS" =~ ^[1-9][0-9]*$ ]] || {
-  echo "CLOSED_LOOP_RUNS must be a positive integer" >&2
-  exit 2
-}
+for name in CLOSED_LOOP_RUNS WITHIN_RUNS_PER_SCENARIO LORO_FOLDS_PER_SCENARIO ABLATION_RUNS_PER_SCENARIO; do
+  [[ "${!name}" =~ ^[1-9][0-9]*$ ]] || {
+    echo "$name must be a positive integer" >&2
+    exit 2
+  }
+done
 
 if [[ "${1:-}" == "--dry-run" ]]; then
   printf '%s\n' \
     '1. Resume/generate 100 paired seeds x 4 controlled scenarios' \
     '2. Validate controlled raw and graph data' \
     '3. Build QoS/survival multi-horizon datasets (k=1,2,3,5)' \
-    '4. Train persistence, Logistic Regression, XGBoost, and Edge-SAGE' \
-    '5. Run LORO, cross-mobility, and edge-feature ablations' \
+    "4. Train within-run models on ${WITHIN_RUNS_PER_SCENARIO} runs/scenario; retain all 400 datasets" \
+    "5. Run LORO on ${LORO_FOLDS_PER_SCENARIO} folds/scenario, ablation on ${ABLATION_RUNS_PER_SCENARIO} runs/scenario, and full cross-mobility" \
     '6. Run multi-horizon routing replay and paired statistics' \
     "7. Run inference resources and closed-loop ns-3 on ${CLOSED_LOOP_RUNS} baseline runs" \
     '8. Generate publication figures and tables'
@@ -59,6 +64,7 @@ python -m scripts.train.run_multihorizon_benchmark \
   --data-root "$MULTIHORIZON_DATA" \
   --output-root "$MULTIHORIZON_OUTPUT" \
   --summary "$REPORT_ROOT/multihorizon_benchmark_summary.csv" \
+  --runs-per-scenario "$WITHIN_RUNS_PER_SCENARIO" \
   --gnn-epochs "$GNN_EPOCHS" --gnn-patience "$GNN_PATIENCE"
 
 python -m scripts.analysis.analyze_multihorizon_stage6 \
@@ -69,17 +75,20 @@ python -m scripts.train.run_stage6_benchmark \
   --output-root "$STAGE6_OUTPUT" \
   --reports-root "$REPORT_ROOT/stage6" \
   --benchmark-summary "$REPORT_ROOT/multihorizon_benchmark_summary.csv" \
+  --loro-runs-per-scenario "$LORO_FOLDS_PER_SCENARIO" \
+  --ablation-runs-per-scenario "$ABLATION_RUNS_PER_SCENARIO" \
   --gnn-epochs "$GNN_EPOCHS" --gnn-patience "$GNN_PATIENCE"
 
 python -m src.routing.multihorizon_eval \
   --data-root "$MULTIHORIZON_DATA" \
   --model-root "$MULTIHORIZON_OUTPUT" \
   --routing-root outputs/routing_multihorizon_controlled \
-  --reports-root "$REPORT_ROOT/routing_multihorizon"
+  --reports-root "$REPORT_ROOT/routing_multihorizon" \
+  --runs-per-scenario "$WITHIN_RUNS_PER_SCENARIO"
 
 mapfile -t sample_runs < <(
   find "$MULTIHORIZON_DATA/survival/k3" -mindepth 1 -maxdepth 1 \
-    -type d -name 'stress_baseline_*' -printf '%f\n' | sort | sed -n "1,${CLOSED_LOOP_RUNS}p"
+    -type d -name 'stress_baseline_*' -printf '%f\n' | sort -t_ -k4.2n | sed -n "1,${CLOSED_LOOP_RUNS}p"
 )
 [[ "${#sample_runs[@]}" -eq "$CLOSED_LOOP_RUNS" ]] || {
   echo "Expected $CLOSED_LOOP_RUNS complete baseline runs, found ${#sample_runs[@]}" >&2
