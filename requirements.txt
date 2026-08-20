@@ -12,3 +12,4 @@ dvc[gdrive]==3.67.1
 dvclive>=3.0.0
 streamlit>=1.30.0
 httpx>=0.25.0
+-r requirements-serve.txt
