@@ -126,6 +126,20 @@ Riêng `run_many_random_datasets_ns3.sh` còn **scale vùng bay theo số UAV**
 cấu hình gốc 6–10 UAV / 500×500m. Không có bước này, nhiều UAV trong vùng
 bay cố định sẽ làm mạng quá dày và dataset degenerate (gần 100% nhãn stable).
 
+### Chạy bộ controlled scenarios cho paper
+
+Bộ controlled cố định gồm 100 seed ghép cặp. Mỗi seed sinh đủ `baseline`,
+`fast`, `sparse`, `dense`: **100 run cho mỗi scenario, tổng cộng 400 run**.
+
+```bash
+python -m scripts.dataset.run_controlled_scenarios \
+  --start-index 1 --end-index 100
+```
+
+Không dùng script batch ngẫu nhiên cho thí nghiệm này. Cấu hình, cách chia máy,
+resume, kiểm tra và đóng gói kết quả được mô tả trong
+[CONTROLLED_SCENARIOS_RUNBOOK.md](./CONTROLLED_SCENARIOS_RUNBOOK.md).
+
 ## 6. Khi nào giữ seed, khi nào đổi seed
 
 ### Giữ cùng seed

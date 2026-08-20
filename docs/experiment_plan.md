@@ -18,6 +18,10 @@
   - Mobility: Random Waypoint + Gauss-Markov
   - UAVs: 10-30, Area scaled theo density
   - Metrics: RSSI (PHY MonitorSnifferRx), delay/loss (UDP probes), Nakagami fading
+- **Controlled scenario benchmark**: 100 seed ghép cặp, mỗi seed sinh đủ
+  `baseline`, `fast`, `sparse`, `dense`; mỗi scenario có 100 run, tổng cộng
+  400 run. Cấu hình và lệnh chạy nằm trong
+  [CONTROLLED_SCENARIOS_RUNBOOK.md](./CONTROLLED_SCENARIOS_RUNBOOK.md).
 - **7 edge features**: distance, rssi, snr, delay, packet_loss, relative_speed, throughput
 - **1 node feature**: position_3d
 

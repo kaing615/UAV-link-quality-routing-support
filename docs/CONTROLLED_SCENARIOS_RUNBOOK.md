@@ -1,0 +1,353 @@
+# Runbook: sinh 400 run Fast/Sparse/Dense bằng ns-3
+
+## 1. Mục tiêu và đầu ra bắt buộc
+
+Runbook này dành cho người chỉ phụ trách chạy thí nghiệm và gửi dữ liệu về cho
+nhóm viết paper. Không cần train model hoặc tự diễn giải kết quả.
+
+Ma trận cuối cùng gồm **100 seed ghép cặp**, mỗi seed sinh đủ bốn scenario:
+
+| Scenario | Run | UAV | Vùng bay | Range | Tốc độ |
+|---|---:|---:|---:|---:|---:|
+| `baseline` | 100 | 20 | 800×800 m | 240 m | 3–8 m/s |
+| `fast` | 100 | 20 | 800×800 m | 240 m | 12–20 m/s |
+| `sparse` | 100 | 20 | 800×800 m | 160 m | 3–8 m/s |
+| `dense` | 100 | 20 | 800×800 m | 300 m | 3–8 m/s |
+
+Tổng cộng: **400 run**. Mỗi run có 120 snapshot. Seed lẻ dùng Random Waypoint,
+seed chẵn dùng Gauss–Markov; bốn scenario của cùng một seed luôn dùng cùng
+mobility để có thể so sánh ghép cặp.
+
+## 2. Yêu cầu máy chạy
+
+- Ubuntu/Linux hoặc GitHub Codespaces.
+- Docker hoạt động: `docker version` không báo lỗi daemon.
+- Khuyến nghị tối thiểu 4 CPU, 16 GB RAM, 64 GB storage.
+- Repository phải chứa phiên bản mới nhất của `Dockerfile`, `simulation/ns3/`,
+  `scripts/dataset/run_controlled_scenarios.py` và
+  `scripts/analysis/summarize_controlled_scenarios.py`.
+- Không cần `dvc pull` dữ liệu cũ để sinh bộ scenario này.
+
+Trước khi chạy:
+
+```bash
+cd /workspaces/UAV-link-quality-routing-support
+git status --short
+df -h .
+docker version
+```
+
+Nếu tên thư mục Codespace khác, dùng `pwd` rồi `cd` vào thư mục chứa
+`Dockerfile`.
+
+## 3. Build môi trường
+
+```bash
+docker build -t uav-ns3-runner .
+```
+
+Build có thể lâu ở lần đầu vì phải tải và biên dịch ns-3, PyTorch và các thư
+viện Python. Không hủy nếu terminal vẫn đang có log mới.
+
+Kiểm tra image:
+
+```bash
+docker image inspect uav-ns3-runner --format '{{.Id}}'
+```
+
+## 4. Dry-run bắt buộc
+
+Dry-run không sinh dữ liệu, chỉ xác nhận đúng ma trận 400 job:
+
+```bash
+docker run --rm \
+  -v "$PWD:/workspace" \
+  -w /workspace \
+  uav-ns3-runner \
+  python -m scripts.dataset.run_controlled_scenarios \
+    --start-index 1 \
+    --end-index 100 \
+    --dry-run
+```
+
+Kết quả phải ghi:
+
+```text
+total_jobs=400
+baseline    100
+dense       100
+fast        100
+sparse      100
+```
+
+Nếu không đúng 400 thì dừng, không chạy thật.
+
+## 5. Chạy thử một seed trước
+
+Lệnh sau sinh 4 run (`baseline`, `fast`, `sparse`, `dense`) cho seed đầu tiên:
+
+```bash
+docker run --rm \
+  -v "$PWD:/workspace" \
+  -w /workspace \
+  uav-ns3-runner \
+  bash -lc '
+    set -euo pipefail
+    mkdir -p simulation/ns3/build
+    cp /app/simulation/ns3/build/uav-olsr-dataset simulation/ns3/build/
+    chmod +x simulation/ns3/build/uav-olsr-dataset
+    python -m scripts.dataset.run_controlled_scenarios \
+      --start-index 1 --end-index 1
+  '
+```
+
+Kiểm tra bốn run:
+
+```bash
+find data/raw_snapshots -maxdepth 2 \
+  -path '*/stress_*_s60001/scenario.json' | sort
+
+find data/graph_dataset -maxdepth 3 \
+  -path '*/stress_*_s60001/graph_dataset/test.pt' | sort
+```
+
+Mỗi lệnh phải in đúng bốn đường dẫn. Kiểm tra dung lượng và thời gian trong
+manifest trước khi quyết định số máy cần dùng:
+
+```bash
+du -sh data/raw_snapshots/stress_*_s60001
+du -sh data/graph_dataset/stress_*_s60001
+cat reports/controlled_scenarios/workers/worker_001_001.csv
+```
+
+## 6. Chạy toàn bộ trên một máy
+
+Lệnh có resume. Khi chạy lại, run có đủ raw CSV và train/val/test graph sẽ được
+đánh dấu `SKIPPED`.
+
+```bash
+docker run --rm \
+  -v "$PWD:/workspace" \
+  -w /workspace \
+  uav-ns3-runner \
+  bash -lc '
+    set -euo pipefail
+    mkdir -p simulation/ns3/build
+    cp /app/simulation/ns3/build/uav-olsr-dataset simulation/ns3/build/
+    chmod +x simulation/ns3/build/uav-olsr-dataset
+    python -m scripts.dataset.run_controlled_scenarios \
+      --start-index 1 --end-index 100
+  '
+```
+
+Không đóng hoặc xóa Codespace khi job đang chạy. Nếu job dừng, chạy lại đúng
+lệnh trên; không xóa output đã có.
+
+## 7. Chia nhiều máy
+
+Chia theo index, không chia theo scenario. Mỗi máy luôn sinh đủ bốn scenario
+cho các seed được giao.
+
+| Máy | `--start-index` | `--end-index` | Tổng run |
+|---|---:|---:|---:|
+| 1 | 1 | 25 | 100 |
+| 2 | 26 | 50 | 100 |
+| 3 | 51 | 75 | 100 |
+| 4 | 76 | 100 | 100 |
+
+Mỗi máy dùng lệnh ở Mục 6 và thay hai index. Ví dụ máy 2:
+
+```bash
+python -m scripts.dataset.run_controlled_scenarios \
+  --start-index 26 --end-index 50
+```
+
+Không cho hai máy chạy trùng index. Tên run chứa scenario, mobility và seed nên
+các dải không trùng có thể giải nén vào cùng một repository.
+
+## 8. Theo dõi và xử lý lỗi
+
+Manifest của từng worker được cập nhật sau mỗi run:
+
+```text
+reports/controlled_scenarios/workers/worker_START_END.csv
+```
+
+Xem tiến độ gần nhất:
+
+```bash
+tail -n 20 reports/controlled_scenarios/workers/worker_001_100.csv
+```
+
+Đếm run hoàn chỉnh hiện tại:
+
+```bash
+for scenario in baseline fast sparse dense; do
+  raw=$(find data/raw_snapshots -maxdepth 2 \
+    -path "*/stress_${scenario}_*/scenario.json" | wc -l)
+  graph=$(find data/graph_dataset -maxdepth 3 \
+    -path "*/stress_${scenario}_*/graph_dataset/test.pt" | wc -l)
+  echo "${scenario}: raw=${raw}/100 graph=${graph}/100"
+done
+```
+
+Nếu một run báo `FAILED` hoặc `INCOMPLETE`:
+
+1. Giữ nguyên thư mục output để điều tra.
+2. Ghi lại tên run và phần stack trace cuối terminal.
+3. Kiểm tra `df -h .` và `docker version`.
+4. Chạy lại đúng dải index. Runner sẽ bỏ qua run hoàn chỉnh.
+5. Không tự sửa CSV, không đổi seed và không đổi tham số scenario.
+
+## 9. Đóng gói dữ liệu từ từng worker
+
+Mỗi worker chỉ đóng gói dải seed mình đã chạy. Ví dụ máy 1 chạy index 1–25,
+tương ứng seed 60001–60025:
+
+```bash
+mkdir -p deliverables
+
+find data/raw_snapshots data/graph_dataset -mindepth 1 -maxdepth 1 \
+  -type d -name 'stress_*_s*' | while IFS= read -r path; do
+    seed=${path##*_s}
+    if [ "$seed" -ge 60001 ] && [ "$seed" -le 60025 ]; then
+      printf '%s\n' "$path"
+    fi
+  done | sort > deliverables/worker_001_025_files.txt
+
+test "$(wc -l < deliverables/worker_001_025_files.txt)" -eq 200
+
+tar -czf deliverables/controlled_worker_001_025_data.tar.gz \
+  -T deliverables/worker_001_025_files.txt
+
+cp reports/controlled_scenarios/workers/worker_001_025.csv deliverables/
+
+sha256sum deliverables/controlled_worker_001_025_data.tar.gz \
+  > deliverables/controlled_worker_001_025_SHA256SUMS.txt
+```
+
+Nếu câu lệnh chọn seed không in đúng thư mục, dừng và kiểm tra bằng:
+
+```bash
+find data/raw_snapshots data/graph_dataset -maxdepth 1 -type d \
+  -name 'stress_*' | sort | head
+```
+
+Con số `200` ở lệnh `test` là 25 index × 4 scenario × 2 thư mục dữ liệu
+(`raw_snapshots` và `graph_dataset`). Với worker khác, thay dải seed, tên file và
+số thư mục mong đợi tương ứng. Gửi file `.tar.gz`, manifest `.csv`, danh sách
+`_files.txt` và checksum `.txt`. Không chỉ gửi report; nhóm viết paper cần cả
+raw snapshot và graph dataset để chạy mô hình.
+
+## 10. Ghép dữ liệu từ nhiều worker
+
+Trên máy tổng hợp, đặt các archive vào `incoming/`, rồi chạy:
+
+```bash
+for archive in incoming/controlled_worker_*_data.tar.gz; do
+  tar -xzf "$archive"
+done
+```
+
+Kiểm tra không thiếu/trùng:
+
+```bash
+for scenario in baseline fast sparse dense; do
+  echo -n "${scenario}: "
+  find data/raw_snapshots -maxdepth 2 \
+    -path "*/stress_${scenario}_*/scenario.json" | wc -l
+done
+```
+
+Mỗi dòng phải bằng `100`.
+
+## 11. Sinh report cuối
+
+Chạy report generator sau khi đã ghép đủ dữ liệu:
+
+```bash
+docker run --rm \
+  -v "$PWD:/workspace" \
+  -w /workspace \
+  uav-ns3-runner \
+  python -m scripts.analysis.summarize_controlled_scenarios \
+    --expected-per-scenario 100 \
+    --fail-on-check
+```
+
+Report kiểm tra:
+
+- 100 run hoàn chỉnh cho từng scenario;
+- 100 bộ seed–mobility có đủ bốn scenario;
+- tốc độ Fast lớn hơn Baseline;
+- topology churn của Fast lớn hơn Baseline;
+- mean degree của Sparse thấp hơn Baseline;
+- mean degree của Dense cao hơn Baseline;
+- connected-edge rate và positive label ratio theo scenario.
+
+Đầu ra:
+
+```text
+reports/controlled_scenarios/
+├── REPORT.md
+├── run_inventory.csv
+├── scenario_summary.csv
+├── manipulation_checks.csv
+├── figures/
+│   ├── scenario_manipulation_checks.png
+│   └── scenario_manipulation_checks.pdf
+└── workers/
+    └── worker_*.csv
+```
+
+Nếu command kết thúc với `[CONTROLLED SCENARIOS] FAIL`, không được tuyên bố bộ
+dữ liệu hoàn tất. Gửi `REPORT.md`, `manipulation_checks.csv` và log lỗi cho
+người phụ trách code.
+
+## 12. Data-quality check cuối
+
+```bash
+docker run --rm \
+  -v "$PWD:/workspace" \
+  -w /workspace \
+  uav-ns3-runner \
+  python -m src.validation.data_quality \
+    --data-dir data/graph_dataset \
+    --output reports/controlled_scenarios/data_quality.json \
+    --fail-on-error
+```
+
+Warning về class imbalance được phép giữ lại và phải gửi kèm. Error về missing
+split, NaN, Inf hoặc invalid edge index phải được xử lý trước khi bàn giao.
+
+## 13. Gói bàn giao cuối cùng
+
+```bash
+mkdir -p deliverables
+
+tar -czf deliverables/controlled_scenarios_reports.tar.gz \
+  reports/controlled_scenarios
+
+sha256sum deliverables/controlled_scenarios_reports.tar.gz \
+  > deliverables/controlled_scenarios_reports_SHA256SUMS.txt
+```
+
+Người chạy gửi:
+
+1. Bốn archive dữ liệu hoặc đường dẫn cloud chứa toàn bộ 400 run.
+2. `controlled_scenarios_reports.tar.gz`.
+3. Các file `SHA256SUMS.txt`.
+4. Commit SHA đã dùng: `git rev-parse HEAD`.
+5. Docker image ID: `docker image inspect uav-ns3-runner --format '{{.Id}}'`.
+
+## 14. Tiêu chí nghiệm thu
+
+Chỉ xem là hoàn tất khi:
+
+- `baseline`, `fast`, `sparse`, `dense` đều có `raw=100/100` và
+  `graph=100/100`;
+- `REPORT.md` có `Overall status: PASS`;
+- data-quality có `total_errors = 0`;
+- archive giải nén được và checksum hợp lệ;
+- manifest không có trạng thái `FAILED` hoặc `INCOMPLETE`;
+- người nhận có cả raw data, graph data và report, không chỉ có hình.

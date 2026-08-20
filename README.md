@@ -132,6 +132,11 @@ generate ──► validate ──► train_baselines ──► evaluate
 | `routing` | Replay routing: hop / delay / xgb / gnn so với OLSR thật, 100 runs |
 | `loro` | Leave-One-Run-Out: 6 folds × (3 GNN + 5 baselines) + tổng hợp & biểu đồ |
 
+Các dòng `100 run` trên là bộ dữ liệu nền của pipeline DVC. Bộ thí nghiệm
+controlled dùng cho so sánh scenario là một batch riêng: **100 run cho từng
+scenario** `baseline`, `fast`, `sparse`, `dense`, tổng cộng **400 run**. Xem
+[runbook controlled scenarios](./docs/CONTROLLED_SCENARIOS_RUNBOOK.md).
+
 ```bash
 # Lấy lại data + models đã train (không cần mô phỏng/train lại)
 git clone <repo> && cd <repo>

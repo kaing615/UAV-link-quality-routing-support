@@ -139,19 +139,20 @@ Ví dụ:
 ./scripts/dataset/run_one_dataset.sh seed_44_rwp 44 random-waypoint
 ```
 
-## 4. Gợi ý bộ scenario cho báo cáo
+## 4. Bộ scenario dùng cho báo cáo
 
-Một bộ nhỏ nhưng đủ dùng:
+So sánh controlled chính dùng 100 seed ghép cặp. Mỗi seed sinh đủ bốn
+scenario sau:
 
-- `rwp`
-- `gm`
-- `dense`
-- `sparse`
-- `fast`
+- `baseline`: 100 run;
+- `fast`: 100 run;
+- `sparse`: 100 run;
+- `dense`: 100 run.
 
-Nếu cần chắc hơn:
-
-- với mỗi scenario, chạy 3 đến 5 seed
+Tổng cộng có 400 run. Seed lẻ dùng Random Waypoint, seed chẵn dùng
+Gauss--Markov; bốn scenario cùng seed luôn dùng cùng mobility. Tham số chính
+thức và lệnh chạy nằm trong
+[CONTROLLED_SCENARIOS_RUNBOOK.md](./CONTROLLED_SCENARIOS_RUNBOOK.md).
 
 ## 5. Quy tắc đặt tên
 

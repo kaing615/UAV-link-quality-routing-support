@@ -111,6 +111,11 @@ generate ──► train_baselines ──► evaluate
 | `routing` | Routing replay: hop / delay / xgb / gnn vs. recorded OLSR, 100 runs |
 | `loro` | Leave-One-Run-Out: 6 folds × (3 GNNs + 5 baselines) + aggregation & chart |
 
+The 100 runs above are the DVC pipeline's baseline dataset. The controlled
+scenario benchmark is a separate batch with **100 runs per scenario** for
+`baseline`, `fast`, `sparse`, and `dense` (**400 runs total**). See the
+[controlled-scenario runbook](./docs/CONTROLLED_SCENARIOS_RUNBOOK.md).
+
 ```plaintext
 # Fetch the trained data + models (no simulation/training needed)
 git clone <repo> &amp;&amp; cd <repo>
