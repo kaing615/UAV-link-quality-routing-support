@@ -493,7 +493,51 @@ Flow đầy đủ trên 400 run tốn tài nguyên lớn, đặc biệt LORO và
 Codespaces có thể chạy rất lâu; dùng máy có GPU bằng cách thêm `--gpus all` vào
 `docker run` nếu Docker/NVIDIA đã được cấu hình.
 
-## 16. Tiêu chí nghiệm thu
+## 16. Phân biệt publish paper và promote model serving
+
+Đây là hai việc độc lập:
+
+```text
+Data/kết quả paper → dvc add + dvc push thủ công
+Model chạy API      → promote_model.sh tự dvc add + dvc push model
+```
+
+### 16.1. Publish dữ liệu và kết quả paper
+
+Sau khi launcher in `[OK]`, đóng gói data, outputs và reports thành
+`deliverables/controlled_paper_full.tar.gz`, rồi chạy:
+
+```bash
+dvc add deliverables/controlled_paper_full.tar.gz
+dvc push -r storage deliverables/controlled_paper_full.tar.gz.dvc
+
+git add deliverables/controlled_paper_full.tar.gz.dvc \
+  deliverables/controlled_paper_full_SHA256SUMS.txt \
+  deliverables/controlled_paper_full_files.txt \
+  deliverables/.gitignore
+git commit -m "data: publish controlled paper experiment"
+git push origin main
+```
+
+Đây là bước bàn giao kết quả paper. Không chạy `promote_model.sh` chỉ để upload
+data.
+
+### 16.2. Promote model serving (không bắt buộc cho paper)
+
+Chỉ thực hiện sau khi đã phân tích metric và chọn một thư mục model có
+`best_model.pt` cùng `metadata.json`:
+
+```bash
+bash scripts/mlops/promote_model.sh \
+  outputs/multihorizon_controlled/edge-sage/survival/k3/<RUN_NAME> \
+  <MACRO_F1>
+```
+
+Script tự tạo artifact DVC nhỏ dành cho serving, push artifact, commit pointer
+và tạo tag `model-v*` để kích hoạt workflow build image. Không cần `dvc push`
+model thêm lần nữa. Nếu chỉ viết paper, bỏ qua toàn bộ Mục 16.2.
+
+## 17. Tiêu chí nghiệm thu
 
 Chỉ xem là hoàn tất khi:
 

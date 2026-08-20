@@ -624,10 +624,27 @@ uvicorn src.serving.app:app --host 0.0.0.0 --port 8000 --reload
 
 ### Containerization (Chạy với Docker)
 ```bash
+# Sau khi đã promote model, tải đúng artifact serving từ DVC
+bash scripts/mlops/stage_serving_model.sh
+
 # Build Docker image cho API serving
 docker build -f Dockerfile.serve -t uav-gnn-serve:latest .
 
 # Chạy container
 docker run -p 8000:8000 uav-gnn-serve:latest
 ```
+
+### Promote một model mới
+
+Chạy trên nhánh `main` sạch và truyền trực tiếp thư mục chứa
+`best_model.pt` cùng `metadata.json`:
+
+```bash
+bash scripts/mlops/promote_model.sh \
+  outputs/multihorizon_controlled/edge-sage/survival/k3/<RUN_NAME> \
+  <MACRO_F1>
 ```
+
+Script chỉ đưa hai file serving vào `deploy/serving_model_artifact`, push đúng
+artifact này lên DVC, commit pointer và tạo tag `model-v*`. Tag kích hoạt workflow
+build image; push thông thường lên `main` chỉ chạy CI kiểm tra code.
