@@ -1,9 +1,6 @@
 name: MLOps Deploy to Cloud Run
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 concurrency:
