@@ -340,7 +340,73 @@ Người chạy gửi:
 4. Commit SHA đã dùng: `git rev-parse HEAD`.
 5. Docker image ID: `docker image inspect uav-ns3-runner --format '{{.Id}}'`.
 
-## 14. Tiêu chí nghiệm thu
+## 14. Đưa dữ liệu đã nghiệm thu lên DVC remote
+
+Chỉ thực hiện bước này trên **máy tổng hợp**, sau khi report và data-quality đều
+đạt. Không để từng worker tự `dvc push`, vì mỗi worker chỉ giữ một phần dataset.
+
+Các thư mục `data/raw_snapshots/` và `data/graph_dataset/` đang là output của
+stage `generate` dành cho bộ dữ liệu nền. Vì controlled scenarios được chạy bằng
+runner riêng, không dùng `dvc commit generate` và không `dvc add` đè lên hai thư
+mục này. Thay vào đó, DVC theo dõi các archive đã kiểm tra checksum.
+
+Đặt đủ bốn archive worker vào `deliverables/`, rồi kiểm tra:
+
+```bash
+test "$(find deliverables -maxdepth 1 -type f \
+  -name 'controlled_worker_*_data.tar.gz' | wc -l)" -eq 4
+
+sha256sum -c deliverables/controlled_worker_001_025_SHA256SUMS.txt
+sha256sum -c deliverables/controlled_worker_026_050_SHA256SUMS.txt
+sha256sum -c deliverables/controlled_worker_051_075_SHA256SUMS.txt
+sha256sum -c deliverables/controlled_worker_076_100_SHA256SUMS.txt
+sha256sum -c deliverables/controlled_scenarios_reports_SHA256SUMS.txt
+```
+
+Máy tổng hợp phải có quyền ghi vào remote `storage` đã cấu hình trong
+`.dvc/config`. Không ghi credential vào Git. Xác nhận remote và trạng thái đăng
+nhập trước khi tạo metadata:
+
+```bash
+dvc remote list
+dvc remote default
+```
+
+Đưa bốn archive dữ liệu và archive report vào DVC cache:
+
+```bash
+dvc add deliverables/controlled_worker_*_data.tar.gz \
+  deliverables/controlled_scenarios_reports.tar.gz
+
+git add deliverables/*.dvc deliverables/*SHA256SUMS.txt \
+  deliverables/.gitignore
+git commit -m "data: version controlled scenario dataset"
+```
+
+Đẩy cache lên Google Drive rồi mới đẩy metadata Git:
+
+```bash
+dvc push -r storage deliverables/*.dvc
+git push origin main
+```
+
+`dvc push` chỉ tải các object đã có trong DVC cache; nó không tự đọc và tải mọi
+file mới trong workspace. Vì vậy `dvc add` ở trên là bước bắt buộc. Nếu push báo
+lỗi xác thực Google Drive, dừng lại và nhờ chủ remote cấp quyền; không đổi URL
+remote và không commit file credential.
+
+Kiểm tra từ một clone/Codespace khác:
+
+```bash
+dvc pull deliverables/*.dvc
+sha256sum -c deliverables/controlled_worker_001_025_SHA256SUMS.txt
+tar -tzf deliverables/controlled_worker_001_025_data.tar.gz | head
+```
+
+Sau khi kiểm tra thành công, người viết paper chỉ cần clone đúng commit, chạy
+`dvc pull deliverables/*.dvc`, giải nén bốn archive rồi thực hiện Mục 10--12.
+
+## 15. Tiêu chí nghiệm thu
 
 Chỉ xem là hoàn tất khi:
 
@@ -350,4 +416,6 @@ Chỉ xem là hoàn tất khi:
 - data-quality có `total_errors = 0`;
 - archive giải nén được và checksum hợp lệ;
 - manifest không có trạng thái `FAILED` hoặc `INCOMPLETE`;
+- `dvc push -r storage deliverables/*.dvc` hoàn tất trên máy tổng hợp;
+- metadata `.dvc` đã được commit và push lên Git;
 - người nhận có cả raw data, graph data và report, không chỉ có hình.
