@@ -28,9 +28,9 @@ def test_discover_coordinates_groups_runs_by_target_and_horizon(tmp_path: Path):
 def test_collect_protocol_metrics_preserves_test_run_from_file(tmp_path: Path):
     path = tmp_path / "loro" / "logreg" / "qos" / "k1" / "fold-a" / "metrics.csv"
     path.parent.mkdir(parents=True)
-    pd.DataFrame(
-        [{"split": "test", "run_name": "run-a", "model_id": "logreg", "macro_f1": 0.8}]
-    ).to_csv(path, index=False)
+    pd.DataFrame([{"split": "test", "run_name": "run-a", "model_id": "logreg", "macro_f1": 0.8}]).to_csv(
+        path, index=False
+    )
 
     row = collect_protocol_metrics(tmp_path / "loro", "loro").iloc[0]
     assert (row["protocol"], row["target"], row["horizon"], row["run_name"]) == (
@@ -44,9 +44,7 @@ def test_collect_protocol_metrics_preserves_test_run_from_file(tmp_path: Path):
 def test_collect_protocol_metrics_uses_output_directory_when_metric_has_no_run_name(tmp_path: Path):
     path = tmp_path / "ablation" / "edge-sage-noedge" / "qos" / "k1" / "run-a" / "metrics.csv"
     path.parent.mkdir(parents=True)
-    pd.DataFrame([{"split": "test", "model_id": "edge-sage-noedge", "macro_f1": 0.4}]).to_csv(
-        path, index=False
-    )
+    pd.DataFrame([{"split": "test", "model_id": "edge-sage-noedge", "macro_f1": 0.4}]).to_csv(path, index=False)
 
     row = collect_protocol_metrics(tmp_path / "ablation", "ablation").iloc[0]
     assert row["run_name"] == "run-a"

@@ -15,8 +15,22 @@ from scripts.analysis.generate_stage7_artifacts import (
 def test_combine_protocol_aggregates_keeps_only_test_rows():
     within = pd.DataFrame(
         [
-            {"model_id": "edge-sage", "target": "qos", "horizon": 1, "split": "val", "n_runs": 10, "macro_f1_mean": 0.9},
-            {"model_id": "edge-sage", "target": "qos", "horizon": 1, "split": "test", "n_runs": 10, "macro_f1_mean": 0.8},
+            {
+                "model_id": "edge-sage",
+                "target": "qos",
+                "horizon": 1,
+                "split": "val",
+                "n_runs": 10,
+                "macro_f1_mean": 0.9,
+            },
+            {
+                "model_id": "edge-sage",
+                "target": "qos",
+                "horizon": 1,
+                "split": "test",
+                "n_runs": 10,
+                "macro_f1_mean": 0.8,
+            },
         ]
     )
     loro = pd.DataFrame(
@@ -36,11 +50,46 @@ def test_combine_protocol_aggregates_keeps_only_test_rows():
 def test_paired_ablation_effects_uses_shared_runs_and_full_as_reference():
     detailed = pd.DataFrame(
         [
-            {"model_id": "edge-sage", "target": "qos", "horizon": 1, "split": "test", "run_name": "r1", "macro_f1": 0.8},
-            {"model_id": "edge-sage-noedge", "target": "qos", "horizon": 1, "split": "test", "run_name": "r1", "macro_f1": 0.5},
-            {"model_id": "edge-sage", "target": "qos", "horizon": 1, "split": "test", "run_name": "r2", "macro_f1": 0.9},
-            {"model_id": "edge-sage-noedge", "target": "qos", "horizon": 1, "split": "test", "run_name": "r2", "macro_f1": 0.4},
-            {"model_id": "edge-sage-noedge", "target": "qos", "horizon": 1, "split": "test", "run_name": "unpaired", "macro_f1": 0.1},
+            {
+                "model_id": "edge-sage",
+                "target": "qos",
+                "horizon": 1,
+                "split": "test",
+                "run_name": "r1",
+                "macro_f1": 0.8,
+            },
+            {
+                "model_id": "edge-sage-noedge",
+                "target": "qos",
+                "horizon": 1,
+                "split": "test",
+                "run_name": "r1",
+                "macro_f1": 0.5,
+            },
+            {
+                "model_id": "edge-sage",
+                "target": "qos",
+                "horizon": 1,
+                "split": "test",
+                "run_name": "r2",
+                "macro_f1": 0.9,
+            },
+            {
+                "model_id": "edge-sage-noedge",
+                "target": "qos",
+                "horizon": 1,
+                "split": "test",
+                "run_name": "r2",
+                "macro_f1": 0.4,
+            },
+            {
+                "model_id": "edge-sage-noedge",
+                "target": "qos",
+                "horizon": 1,
+                "split": "test",
+                "run_name": "unpaired",
+                "macro_f1": 0.1,
+            },
         ]
     )
 
@@ -106,18 +155,39 @@ def test_combine_paired_effects_recomputes_pairs_from_complete_detail():
     for run, reference in (("r1", 0.7), ("r2", 0.8)):
         rows.extend(
             [
-                {"model_id": "logreg", "target": "qos", "horizon": 1, "split": "test", "run_name": run, "macro_f1": reference, "pr_auc": 0.8},
-                {"model_id": "xgb", "target": "qos", "horizon": 1, "split": "test", "run_name": run, "macro_f1": reference - 0.1, "pr_auc": 0.7},
-                {"model_id": "edge-sage", "target": "qos", "horizon": 1, "split": "test", "run_name": run, "macro_f1": reference + 0.05, "pr_auc": 0.85},
+                {
+                    "model_id": "logreg",
+                    "target": "qos",
+                    "horizon": 1,
+                    "split": "test",
+                    "run_name": run,
+                    "macro_f1": reference,
+                    "pr_auc": 0.8,
+                },
+                {
+                    "model_id": "xgb",
+                    "target": "qos",
+                    "horizon": 1,
+                    "split": "test",
+                    "run_name": run,
+                    "macro_f1": reference - 0.1,
+                    "pr_auc": 0.7,
+                },
+                {
+                    "model_id": "edge-sage",
+                    "target": "qos",
+                    "horizon": 1,
+                    "split": "test",
+                    "run_name": run,
+                    "macro_f1": reference + 0.05,
+                    "pr_auc": 0.85,
+                },
             ]
         )
     detail = pd.DataFrame(rows)
 
     result = combine_paired_effects(detail, detail, detail, pd.DataFrame())
-    edge_vs_logreg = result[
-        (result["reference_strategy"] == "logreg")
-        & (result["comparator_strategy"] == "edge-sage")
-    ]
+    edge_vs_logreg = result[(result["reference_strategy"] == "logreg") & (result["comparator_strategy"] == "edge-sage")]
 
     assert set(edge_vs_logreg["protocol"]) == {"Within-run", "LORO", "Cross-mobility"}
     assert set(edge_vs_logreg["n_pairs"]) == {2}

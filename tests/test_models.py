@@ -3,6 +3,7 @@
 import pytest
 import torch
 
+import src.training.gnn.train_gnn as train_gnn
 from src.models.gnn.edge_gnn import (
     EdgeAwareSAGEEdgeClassifier,
     GATEdgeClassifier,
@@ -97,3 +98,19 @@ def test_edge_sage_supports_separate_message_and_decoder_ablation(
 )
 def test_resolve_edge_mode_maps_ablation_to_model_identity(mode, expected):
     assert resolve_edge_mode(mode) == expected
+
+
+def test_dvclive_tracking_does_not_modify_pipeline_file(tmp_path, monkeypatch):
+    pipeline = tmp_path / "dvc.yaml"
+    original = "stages:\n  smoke:\n    cmd: echo ok\n"
+    pipeline.write_text(original, encoding="utf-8")
+    monkeypatch.chdir(tmp_path)
+
+    make_live = getattr(train_gnn, "make_live", None)
+    assert make_live is not None, "training must expose the safe DVCLive factory"
+
+    with make_live(tmp_path / "outputs" / "dvclive") as live:
+        live.log_metric("loss", 1.0)
+        live.next_step()
+
+    assert pipeline.read_text(encoding="utf-8") == original

@@ -7,7 +7,6 @@ from pathlib import Path
 import pandas as pd
 import torch
 import torch.nn as nn
-from dvclive import Live
 from torch_geometric.loader import DataLoader
 
 from src.training.gnn.common import (
@@ -17,7 +16,15 @@ from src.training.gnn.common import (
     find_best_threshold,
     load_graphs,
 )
-from src.training.gnn.train_gnn import _MODELS, EDGE_IN, EDGE_MODES, NODE_IN, resolve_edge_mode, train_one_epoch
+from src.training.gnn.train_gnn import (
+    _MODELS,
+    EDGE_IN,
+    EDGE_MODES,
+    NODE_IN,
+    make_live,
+    resolve_edge_mode,
+    train_one_epoch,
+)
 
 
 def load_run_split(data_root: Path, run_name: str, split: str) -> list:
@@ -85,8 +92,7 @@ def main() -> None:
     train_loader = DataLoader(train_graphs, batch_size=args.batch_size, shuffle=True)
     val_loader = DataLoader(val_graphs, batch_size=args.batch_size, shuffle=False)
     test_loaders = {
-        run: DataLoader(graphs, batch_size=args.batch_size, shuffle=False)
-        for run, graphs in test_graphs.items()
+        run: DataLoader(graphs, batch_size=args.batch_size, shuffle=False) for run, graphs in test_graphs.items()
     }
 
     pos_weight = compute_pos_weight(train_graphs).to(device)
@@ -115,7 +121,7 @@ def main() -> None:
         )
 
     # --- DVCLive: experiment tracking ---
-    with Live(dir=str(output_dir / "dvclive"), report=None, save_dvc_exp=False) as live:
+    with make_live(output_dir / "dvclive") as live:
         live.log_param("model_id", model_id)
         live.log_param("model_name", model_name)
         live.log_param("protocol", "leave-one-run-out")

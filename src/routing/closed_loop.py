@@ -117,9 +117,7 @@ def build_route_plan(
     if not raw:
         raise ValueError(f"No connected raw edges found for {run_name}")
     max_time = max(raw)
-    scores = (
-        {strategy: load_prediction_scores(predictions_csv)} if predictions_csv is not None else {}
-    )
+    scores = {strategy: load_prediction_scores(predictions_csv)} if predictions_csv is not None else {}
 
     rows = []
     for time in load_test_times(run_name, split_csv):
@@ -200,9 +198,7 @@ def aggregate_closed_loop_results(
 
         paired_input = group.rename(columns={"baseline_run": "run_name"})
         strategies = set(group["strategy"])
-        comparisons = [
-            pair for pair in CLOSED_LOOP_COMPARISONS if pair[0] in strategies and pair[1] in strategies
-        ]
+        comparisons = [pair for pair in CLOSED_LOOP_COMPARISONS if pair[0] in strategies and pair[1] in strategies]
         if comparisons:
             paired = pd.concat(
                 [

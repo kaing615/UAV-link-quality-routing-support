@@ -148,9 +148,7 @@ def main() -> None:
     metric_rows = [val_metrics]
     for test_run in test_runs:
         test_df = load_run_rows(args.data_root, test_run, None)
-        test_metrics, test_preds = evaluate_split(
-            model, model_id, model_name, test_df, "test", threshold=threshold
-        )
+        test_metrics, test_preds = evaluate_split(model, model_id, model_name, test_df, "test", threshold=threshold)
         test_metrics["run_name"] = test_run
         metric_rows.append(test_metrics)
         test_preds.to_csv(output_dir / f"test_predictions_{test_run}.csv", index=False)

@@ -60,21 +60,12 @@ def _write_synthetic_run(
         encoding="utf-8",
     )
     pd.DataFrame(
-        [
-            {"time": time, "node_id": node, "speed": speed, "degree": degree}
-            for time in (0, 1)
-            for node in (0, 1)
-        ]
+        [{"time": time, "node_id": node, "speed": speed, "degree": degree} for time in (0, 1) for node in (0, 1)]
     ).to_csv(raw_dir / "nodes.csv", index=False)
     pd.DataFrame(
-        [
-            {"time": time, "src": 0, "dst": 1, "connected": value}
-            for time, value in enumerate(connected)
-        ]
+        [{"time": time, "src": 0, "dst": 1, "connected": value} for time, value in enumerate(connected)]
     ).to_csv(raw_dir / "edges.csv", index=False)
-    pd.DataFrame({"label": [0, 1]}).to_csv(
-        graph_dir / "features" / "edges_labeled.csv", index=False
-    )
+    pd.DataFrame({"label": [0, 1]}).to_csv(graph_dir / "features" / "edges_labeled.csv", index=False)
     for split in ("train", "val", "test"):
         (graph_dir / "graph_dataset" / f"{split}.pt").write_bytes(b"complete")
 

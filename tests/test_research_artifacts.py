@@ -164,11 +164,7 @@ def test_resource_benchmark_does_not_load_gnn_runtime_for_tabular_import() -> No
         [
             sys.executable,
             "-c",
-            (
-                "import sys; "
-                "import scripts.analysis.benchmark_inference_resources; "
-                "print(int('torch' in sys.modules))"
-            ),
+            ("import sys; import scripts.analysis.benchmark_inference_resources; print(int('torch' in sys.modules))"),
         ],
         check=True,
         capture_output=True,

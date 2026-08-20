@@ -40,8 +40,7 @@ def attach_prediction_identity(
 
     if len(identity_rows) != len(predictions):
         raise ValueError(
-            f"Prediction/graph row mismatch: {len(predictions)} predictions, "
-            f"{len(identity_rows)} labeled edges"
+            f"Prediction/graph row mismatch: {len(predictions)} predictions, {len(identity_rows)} labeled edges"
         )
     if "y_true" in predictions and predictions["y_true"].astype(int).tolist() != labels:
         raise ValueError("Prediction rows do not match the test graph edge order")

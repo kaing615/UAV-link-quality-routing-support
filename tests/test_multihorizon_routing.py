@@ -71,8 +71,7 @@ def test_replay_uses_horizon_scores_on_the_same_sessions(tmp_path: Path) -> None
     summary = pd.read_csv(summary_csv)
     session_columns = ["time", "src", "dst"]
     session_sets = [
-        set(group[session_columns].itertuples(index=False, name=None))
-        for _, group in details.groupby("strategy")
+        set(group[session_columns].itertuples(index=False, name=None)) for _, group in details.groupby("strategy")
     ]
 
     assert session_sets and all(sessions == session_sets[0] for sessions in session_sets[1:])

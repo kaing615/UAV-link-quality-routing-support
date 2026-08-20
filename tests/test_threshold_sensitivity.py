@@ -27,12 +27,8 @@ def test_threshold_grid_reports_split_level_prevalence_and_reference_agreement()
         delay_values=[10.0],
     )
 
-    reference_val = result[
-        (result["split"] == "val") & (result["tau_snr"] == 18.0)
-    ].iloc[0]
-    loose_train = result[
-        (result["split"] == "train") & (result["tau_snr"] == 15.0)
-    ].iloc[0]
+    reference_val = result[(result["split"] == "val") & (result["tau_snr"] == 18.0)].iloc[0]
+    loose_train = result[(result["split"] == "train") & (result["tau_snr"] == 15.0)].iloc[0]
 
     assert reference_val["n_samples"] == 2
     assert reference_val["positive_ratio"] == 0.0

@@ -29,6 +29,10 @@ EDGE_IN = 7
 EDGE_MODES = ("full", "decoder-only", "message-only", "noedge")
 
 
+def make_live(output_dir: Path) -> Live:
+    return Live(dir=str(output_dir), report=None, save_dvc_exp=False, dvcyaml=False)
+
+
 def resolve_edge_mode(edge_mode: str) -> tuple[bool, bool, str]:
     modes = {
         "full": (True, True, "edge-sage"),
@@ -151,7 +155,7 @@ def main() -> None:
         )
 
     # --- DVCLive: experiment tracking ---
-    with Live(dir=str(output_dir / "dvclive"), report=None, save_dvc_exp=False) as live:
+    with make_live(output_dir / "dvclive") as live:
         live.log_param("model_id", model_id)
         live.log_param("model_name", model_name)
         live.log_param("run_name", args.run_name)

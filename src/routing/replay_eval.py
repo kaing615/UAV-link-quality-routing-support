@@ -169,9 +169,7 @@ def evaluate_run(
     strategies = (["hop", "delay"] if p_th == 0.0 else []) + list(scores)
 
     # Routes ns-3's OLSR actually chose, for its single recorded pair.
-    olsr_pair, olsr_routes = (
-        (None, {}) if p_th != 0.0 or not include_olsr else load_olsr_routes(run_name, raw_root)
-    )
+    olsr_pair, olsr_routes = (None, {}) if p_th != 0.0 or not include_olsr else load_olsr_routes(run_name, raw_root)
 
     context = {
         "target": target,
@@ -191,18 +189,14 @@ def evaluate_run(
         if olsr_pair is not None and olsr_pair not in set(pairs):
             pairs.append(olsr_pair)
 
-        graphs = {
-            st: build_strategy_graph(edges_t, st, t, scores, p_th, weight_mode) for st in strategies
-        }
+        graphs = {st: build_strategy_graph(edges_t, st, t, scores, p_th, weight_mode) for st in strategies}
 
         for s, d in pairs:
             for st in strategies:
                 path = shortest_path(graphs[st], s, d)
                 if path is None and st in prediction_strategies and p_th > 0.0 and not strict:
                     # p_th filter disconnected the pair: fall back to unfiltered
-                    path = shortest_path(
-                        build_strategy_graph(edges_t, st, t, scores, 0.0, weight_mode), s, d
-                    )
+                    path = shortest_path(build_strategy_graph(edges_t, st, t, scores, 0.0, weight_mode), s, d)
                 if path is None:
                     records.append(
                         {
@@ -230,9 +224,7 @@ def evaluate_run(
                     if path_valid(cur, edges_tk):
                         continue
                     changes += 1
-                    new_path = shortest_path(
-                        build_strategy_graph(edges_tk, st, tk, scores, p_th, weight_mode), s, d
-                    )
+                    new_path = shortest_path(build_strategy_graph(edges_tk, st, tk, scores, p_th, weight_mode), s, d)
                     if new_path is None:
                         disconnected = 1
                         break

@@ -38,7 +38,14 @@ def test_load_run_metadata_derives_spatial_density(tmp_path: Path):
 def test_paired_model_comparisons_stays_within_target_and_horizon():
     detailed = pd.DataFrame(
         [
-            {"model_id": model, "target": "qos", "horizon": horizon, "split": "test", "run_name": run, "macro_f1": value}
+            {
+                "model_id": model,
+                "target": "qos",
+                "horizon": horizon,
+                "split": "test",
+                "run_name": run,
+                "macro_f1": value,
+            }
             for horizon in (1, 5)
             for run, base in (("r1", 0.5), ("r2", 0.6))
             for model, value in (("logreg", base), ("edge-sage", base + 0.1))
@@ -61,8 +68,22 @@ def test_paired_model_comparisons_stays_within_target_and_horizon():
 def test_worst_group_metrics_marks_lower_mobility_group():
     detailed = pd.DataFrame(
         [
-            {"model_id": "edge-sage", "target": "qos", "horizon": 1, "split": "test", "run_name": "rwp", "macro_f1": 0.8},
-            {"model_id": "edge-sage", "target": "qos", "horizon": 1, "split": "test", "run_name": "gm", "macro_f1": 0.6},
+            {
+                "model_id": "edge-sage",
+                "target": "qos",
+                "horizon": 1,
+                "split": "test",
+                "run_name": "rwp",
+                "macro_f1": 0.8,
+            },
+            {
+                "model_id": "edge-sage",
+                "target": "qos",
+                "horizon": 1,
+                "split": "test",
+                "run_name": "gm",
+                "macro_f1": 0.6,
+            },
         ]
     )
     metadata = pd.DataFrame(
