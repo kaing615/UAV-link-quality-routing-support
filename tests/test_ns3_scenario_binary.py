@@ -63,9 +63,7 @@ def test_background_throughput_uses_one_observation_duration(tmp_path: Path) -> 
     with (tmp_path / "background_flow_metrics.csv").open(newline="", encoding="utf-8") as stream:
         rows = list(csv.DictReader(stream))
     receiving = [row for row in rows if int(row["rx_packets"]) > 0]
-    throughput_per_packet = [
-        float(row["throughput_mbps"]) / int(row["rx_packets"]) for row in receiving
-    ]
+    throughput_per_packet = [float(row["throughput_mbps"]) / int(row["rx_packets"]) for row in receiving]
     assert len(receiving) >= 2
     assert max(throughput_per_packet) - min(throughput_per_packet) < 1e-9
     metadata = json.loads((tmp_path / "scenario.json").read_text(encoding="utf-8"))

@@ -5,8 +5,8 @@ from __future__ import annotations
 import json
 
 import pandas as pd
-import torch
 import scripts.dataset.build_multihorizon_pilot as multihorizon_pilot
+import torch
 from scripts.dataset.build_multihorizon_pilot import run_pilot, select_pilot_runs
 
 

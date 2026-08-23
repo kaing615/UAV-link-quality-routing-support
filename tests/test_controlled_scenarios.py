@@ -86,12 +86,8 @@ def test_extension_jobs_add_ten_ctrl_load_pairs_by_default() -> None:
     load_jobs = [job for job in jobs if job.scenario == "load"]
     assert len(ctrl_jobs) == 10
     assert len(load_jobs) == 10
-    assert {job.run_name for job in ctrl_jobs} == {
-        f"stress_partition_ctrl_s{seed}" for seed in range(60001, 60011)
-    }
-    assert {(job.mobility, job.mobility_tag) for job in ctrl_jobs} == {
-        ("event-controlled-waypoint", "ctrl")
-    }
+    assert {job.run_name for job in ctrl_jobs} == {f"stress_partition_ctrl_s{seed}" for seed in range(60001, 60011)}
+    assert {(job.mobility, job.mobility_tag) for job in ctrl_jobs} == {("event-controlled-waypoint", "ctrl")}
     assert {(job.scenario_mode, job.background_flows, job.background_rate_kbps) for job in ctrl_jobs} == {
         ("partition-reconnect", 0, 0.0)
     }
@@ -350,11 +346,7 @@ def _write_extension_run(
     run_dir = raw_root / run_name
     run_dir.mkdir(parents=True)
     pd.DataFrame(
-        [
-            {"time": time, "node_id": node_id, "speed": 5.0, "degree": 2}
-            for time in range(12)
-            for node_id in range(4)
-        ]
+        [{"time": time, "node_id": node_id, "speed": 5.0, "degree": 2} for time in range(12) for node_id in range(4)]
     ).to_csv(run_dir / "nodes.csv", index=False)
     pd.DataFrame(edges).to_csv(run_dir / "edges.csv", index=False)
     pd.DataFrame(traffic).to_csv(run_dir / "traffic_log.csv", index=False)
@@ -450,16 +442,8 @@ def test_extension_report_validates_partition_and_load_interventions(tmp_path: P
         else:
             ctrl_edges.extend(_edge_rows(time, post_edges, delay=5.0, loss=0.02))
 
-    baseline_edges = [
-        row
-        for time in range(12)
-        for row in _edge_rows(time, pre_edges, delay=5.0, loss=0.02)
-    ]
-    load_edges = [
-        row
-        for time in range(12)
-        for row in _edge_rows(time, pre_edges, delay=8.0, loss=0.07)
-    ]
+    baseline_edges = [row for time in range(12) for row in _edge_rows(time, pre_edges, delay=5.0, loss=0.02)]
+    load_edges = [row for time in range(12) for row in _edge_rows(time, pre_edges, delay=8.0, loss=0.07)]
     traffic_rows = _traffic_rows(range(12), {*range(4), 11})
 
     def background_rows(offered: tuple[float, float], throughput: tuple[float, float]) -> list[dict[str, object]]:
@@ -588,11 +572,7 @@ def test_partition_recovery_starts_at_observed_cross_group_reconnection(tmp_path
     connected_links = [(0, 1), (1, 2), (2, 3)]
     partition_links = [(0, 1), (2, 3)]
     edges = [
-        row
-        for time in range(12)
-        for row in _edge_rows(
-            time, partition_links if 4 <= time <= 8 else connected_links
-        )
+        row for time in range(12) for row in _edge_rows(time, partition_links if 4 <= time <= 8 else connected_links)
     ]
     traffic = _traffic_rows(range(12), {*range(4), *range(9, 12)})
     _write_extension_run(
@@ -609,9 +589,7 @@ def test_partition_recovery_starts_at_observed_cross_group_reconnection(tmp_path
         partition_groups=groups,
     )
 
-    inventory, _, checks = generate_extension_report(
-        raw_root, tmp_path / "reports", expected_per_scenario=1
-    )
+    inventory, _, checks = generate_extension_report(raw_root, tmp_path / "reports", expected_per_scenario=1)
 
     row = inventory.iloc[0]
     assert row["physical_reconnect_step"] == 9.0
@@ -625,11 +603,7 @@ def test_extension_inventory_accepts_canonical_partition_identity(tmp_path: Path
     from scripts.analysis.summarize_extension_scenarios import collect_inventory
 
     raw_root = tmp_path / "raw"
-    edges = [
-        row
-        for time in range(12)
-        for row in _edge_rows(time, [(0, 1), (1, 2), (2, 3)])
-    ]
+    edges = [row for time in range(12) for row in _edge_rows(time, [(0, 1), (1, 2), (2, 3)])]
     traffic = _traffic_rows(range(12), set(range(12)))
     _write_extension_run(
         raw_root,
@@ -703,9 +677,7 @@ def test_extension_report_rejects_complete_channel_collapse(tmp_path: Path) -> N
         background_rows=collapsed,
     )
 
-    inventory, _, checks = generate_extension_report(
-        raw_root, tmp_path / "reports", expected_per_scenario=1
-    )
+    inventory, _, checks = generate_extension_report(raw_root, tmp_path / "reports", expected_per_scenario=1)
 
     row = inventory.iloc[0]
     assert bool(row["raw_complete"]) is True

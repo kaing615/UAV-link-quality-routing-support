@@ -121,9 +121,9 @@ def test_temporal_benchmark_dispatches_selected_runs_and_resumes_complete_metric
     output_root = tmp_path / "outputs"
     stale_metrics = output_root / "edge-sage-gru" / "survival" / "k3" / "unselected" / "metrics.csv"
     stale_metrics.parent.mkdir(parents=True)
-    pd.DataFrame(
-        [{"model_id": "edge-sage-gru", "split": "test", "macro_f1": 0.1, "pr_auc": 0.1}]
-    ).to_csv(stale_metrics, index=False)
+    pd.DataFrame([{"model_id": "edge-sage-gru", "split": "test", "macro_f1": 0.1, "pr_auc": 0.1}]).to_csv(
+        stale_metrics, index=False
+    )
     commands = []
 
     def fake_run(command):
@@ -148,9 +148,9 @@ def test_temporal_benchmark_dispatches_selected_runs_and_resumes_complete_metric
             encoding="utf-8",
         )
         for split in ("val", "test"):
-            pd.DataFrame(
-                [{"time": 1, "src": 1, "dst": 2, "y_true": 1, "y_pred": 1, "pred_score": 0.9}]
-            ).to_csv(output_dir / f"{split}_predictions.csv", index=False)
+            pd.DataFrame([{"time": 1, "src": 1, "dst": 2, "y_true": 1, "y_pred": 1, "pred_score": 0.9}]).to_csv(
+                output_dir / f"{split}_predictions.csv", index=False
+            )
 
     monkeypatch.setattr("scripts.train.run_temporal_benchmark._run", fake_run)
     summary = run_temporal_benchmark(data_root, output_root, tmp_path / "summary.csv")

@@ -244,12 +244,38 @@ def test_temporal_effects_preserves_each_paired_comparison_holm_family(monkeypat
 def test_temporal_artifacts_select_the_static_edge_sage_counterpart(tmp_path):
     static = pd.DataFrame(
         [
-            {"model_id": "logreg", "target": "survival", "horizon": 3, "run_name": "r1", "split": "test", "macro_f1": 0.4, "pr_auc": 0.5},
-            {"model_id": "edge-sage", "target": "survival", "horizon": 3, "run_name": "r1", "split": "test", "macro_f1": 0.6, "pr_auc": 0.7},
+            {
+                "model_id": "logreg",
+                "target": "survival",
+                "horizon": 3,
+                "run_name": "r1",
+                "split": "test",
+                "macro_f1": 0.4,
+                "pr_auc": 0.5,
+            },
+            {
+                "model_id": "edge-sage",
+                "target": "survival",
+                "horizon": 3,
+                "run_name": "r1",
+                "split": "test",
+                "macro_f1": 0.6,
+                "pr_auc": 0.7,
+            },
         ]
     )
     temporal = pd.DataFrame(
-        [{"model_id": "edge-sage-gru", "target": "survival", "horizon": 3, "run_name": "r1", "split": "test", "macro_f1": 0.7, "pr_auc": 0.8}]
+        [
+            {
+                "model_id": "edge-sage-gru",
+                "target": "survival",
+                "horizon": 3,
+                "run_name": "r1",
+                "split": "test",
+                "macro_f1": 0.7,
+                "pr_auc": 0.8,
+            }
+        ]
     )
 
     detailed, _ = generate_temporal_artifacts(static, temporal, tmp_path, n_resamples=100)

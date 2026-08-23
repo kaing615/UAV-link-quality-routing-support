@@ -19,8 +19,7 @@ def build_temporal_windows(run_root: Path, split: str, window_size: int = 4) -> 
 
     graph_dir = run_root / "graph_dataset"
     records_by_split = {
-        name: torch.load(graph_dir / f"{name}.pt", weights_only=False)
-        for name in ("train", "val", "test", "purged")
+        name: torch.load(graph_dir / f"{name}.pt", weights_only=False) for name in ("train", "val", "test", "purged")
     }
     records = [(name, record) for name, values in records_by_split.items() for record in values]
     for _, record in records:

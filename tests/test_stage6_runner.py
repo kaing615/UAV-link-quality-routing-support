@@ -117,9 +117,7 @@ def test_cross_mobility_excludes_partition_and_load_run_identities(tmp_path: Pat
     for run_name, mobility in mobility_by_run.items():
         run_dir = tmp_path / run_name
         run_dir.mkdir()
-        (run_dir / "scenario.json").write_text(
-            '{"mobility_model": "' + mobility + '"}', encoding="utf-8"
-        )
+        (run_dir / "scenario.json").write_text('{"mobility_model": "' + mobility + '"}', encoding="utf-8")
 
     assert _mobility_groups(tmp_path, list(mobility_by_run)) == {
         "gauss-markov": ["stress_fast_gm_s60002", "stress_dense_gm_s60002"],
