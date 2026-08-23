@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import csv
+import json
 import os
 import subprocess
 from pathlib import Path
@@ -92,3 +93,23 @@ def test_zero_background_rerun_removes_only_stale_background_metrics(tmp_path: P
 
     assert not stale.exists()
     assert unrelated.read_text(encoding="utf-8") == "keep\n"
+
+
+def test_partition_metadata_marks_divergence_window_start(tmp_path: Path) -> None:
+    _run_ns3(
+        tmp_path,
+        "--runName=partition_metadata",
+        "--numUavs=20",
+        "--timeSteps=12",
+        "--seed=7",
+        "--mobility=random-waypoint",
+        "--commRange=240",
+        "--xMax=800",
+        "--yMax=800",
+        "--scenarioMode=partition-reconnect",
+    )
+
+    metadata = json.loads((tmp_path / "scenario.json").read_text(encoding="utf-8"))
+    assert metadata["partition_start_step"] == 3
+    assert metadata["partition_end_step"] == 8
+    assert metadata["reconnect_step"] == 10

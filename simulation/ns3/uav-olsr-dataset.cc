@@ -177,10 +177,11 @@ ConfigurePartitionMobility()
         }
     }
 
-    g_partitionStartStep = g_timeSteps / 3;
+    const uint32_t departureStep = g_timeSteps / 4;
+    const uint32_t separationStep = g_timeSteps / 3;
+    g_partitionStartStep = departureStep;
     g_partitionEndStep = 2 * g_timeSteps / 3;
     g_reconnectStep = 5 * g_timeSteps / 6;
-    const uint32_t departureStep = g_timeSteps / 4;
     const double spacing = std::min(10.0, g_commRange / (2.0 * std::ceil(std::sqrt(g_numUavs))));
     const uint32_t groupColumns = static_cast<uint32_t>(std::ceil(std::sqrt(groupSize)));
     const double groupWidth = (groupColumns - 1) * spacing;
@@ -222,7 +223,7 @@ ConfigurePartitionMobility()
         Ptr<WaypointMobilityModel> model = g_nodes.Get(nodeId)->GetObject<WaypointMobilityModel>();
         model->AddWaypoint(Waypoint(Seconds(0.0), initial));
         model->AddWaypoint(Waypoint(Seconds(g_warmup + departureStep + 1.0), initial));
-        model->AddWaypoint(Waypoint(Seconds(g_warmup + g_partitionStartStep + 1.0), separated));
+        model->AddWaypoint(Waypoint(Seconds(g_warmup + separationStep + 1.0), separated));
         model->AddWaypoint(Waypoint(Seconds(g_warmup + g_partitionEndStep + 1.0), separated));
         model->AddWaypoint(Waypoint(Seconds(g_warmup + g_reconnectStep + 1.0), initial));
     }
