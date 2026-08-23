@@ -87,7 +87,7 @@ def build_extension_jobs(count: int = 10, seed_base: int = 60_000) -> list[Scena
                 speed_min=speed_min,
                 speed_max=speed_max,
                 run_name=f"stress_ctrl_{tag}_s{seed}",
-                scenario_mode="ctrl",
+                scenario_mode="partition-reconnect",
             )
         )
         jobs.append(
@@ -101,9 +101,9 @@ def build_extension_jobs(count: int = 10, seed_base: int = 60_000) -> list[Scena
                 speed_min=speed_min,
                 speed_max=speed_max,
                 run_name=f"stress_load_{tag}_s{seed}",
-                scenario_mode="load",
-                background_flows=1,
-                background_rate_kbps=256.0,
+                scenario_mode="high-load",
+                background_flows=8,
+                background_rate_kbps=600.0,
             )
         )
     return jobs

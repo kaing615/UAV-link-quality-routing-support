@@ -45,8 +45,14 @@ def test_extension_jobs_add_ten_ctrl_load_pairs_by_default() -> None:
     assert {job.run_name for job in ctrl_jobs} == {
         f"stress_ctrl_{'gm' if seed % 2 == 0 else 'rwp'}_s{seed}" for seed in range(60001, 60011)
     }
+    assert {(job.scenario_mode, job.background_flows, job.background_rate_kbps) for job in ctrl_jobs} == {
+        ("partition-reconnect", 0, 0.0)
+    }
     assert {(job.seed, job.mobility) for job in load_jobs} == {
         (seed, "gauss-markov" if seed % 2 == 0 else "random-waypoint") for seed in range(60001, 60011)
+    }
+    assert {(job.scenario_mode, job.background_flows, job.background_rate_kbps) for job in load_jobs} == {
+        ("high-load", 8, 600.0)
     }
 
 
