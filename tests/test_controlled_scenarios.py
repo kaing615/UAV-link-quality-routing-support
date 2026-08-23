@@ -1,11 +1,54 @@
 from __future__ import annotations
 
 import json
+import os
+import subprocess
 from collections import Counter
 from pathlib import Path
 from typing import Any
 
 import pandas as pd
+
+
+def test_ns3_pipeline_forwards_extension_environment_to_binary(tmp_path: Path) -> None:
+    project_root = tmp_path / "project"
+    script = project_root / "scripts" / "dataset" / "run_one_dataset_ns3.sh"
+    binary = project_root / "simulation" / "ns3" / "build" / "uav-olsr-dataset"
+    python = project_root / "simulation" / ".venv" / "bin" / "python"
+    script.parent.mkdir(parents=True)
+    binary.parent.mkdir(parents=True)
+    python.parent.mkdir(parents=True)
+    script.write_bytes(Path("scripts/dataset/run_one_dataset_ns3.sh").read_bytes().replace(b"\r", b""))
+    binary.write_bytes(b'#!/usr/bin/env bash\nprintf "%s\\n" "$@" > captured_args.txt\n')
+    python.write_bytes(b"#!/usr/bin/env bash\nexit 0\n")
+    script.chmod(0o755)
+    binary.chmod(0o755)
+    python.chmod(0o755)
+    env = dict(os.environ)
+    env.pop("VIRTUAL_ENV", None)
+
+    completed = subprocess.run(
+        [
+            "bash",
+            "-lc",
+            "SIM_SCENARIO_MODE=partition-reconnect SIM_BACKGROUND_FLOWS=8 "
+            "SIM_BACKGROUND_RATE_KBPS=600 SIM_SOURCE_ID=2 SIM_DEST_ID=15 "
+            "scripts/dataset/run_one_dataset_ns3.sh test_run 7 random-waypoint",
+        ],
+        cwd=project_root,
+        env=env,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert completed.returncode == 0, completed.stderr
+
+    arguments = (project_root / "captured_args.txt").read_text(encoding="utf-8").splitlines()
+    assert "--scenarioMode=partition-reconnect" in arguments
+    assert "--backgroundFlows=8" in arguments
+    assert "--backgroundRateKbps=600" in arguments
+    assert "--sourceId=2" in arguments
+    assert "--destId=15" in arguments
 
 
 def test_controlled_matrix_creates_one_hundred_paired_runs_per_scenario() -> None:

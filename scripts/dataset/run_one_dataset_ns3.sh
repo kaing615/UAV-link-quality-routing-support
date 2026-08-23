@@ -24,6 +24,11 @@ RWP_SPEED_MIN="${SIM_RWP_SPEED_MIN:-3}"
 RWP_SPEED_MAX="${SIM_RWP_SPEED_MAX:-8}"
 X_MAX="${SIM_X_MAX:-500}"
 Y_MAX="${SIM_Y_MAX:-500}"
+SCENARIO_MODE="${SIM_SCENARIO_MODE:-standard}"
+BACKGROUND_FLOWS="${SIM_BACKGROUND_FLOWS:-0}"
+BACKGROUND_RATE_KBPS="${SIM_BACKGROUND_RATE_KBPS:-0}"
+SOURCE_ID="${SIM_SOURCE_ID:-0}"
+DEST_ID="${SIM_DEST_ID:-4}"
 
 if [[ -n "${VIRTUAL_ENV:-}" ]]; then
   PYTHON_BIN="python3"
@@ -64,6 +69,11 @@ echo "[1/4] Running ns-3 simulation"
   --rwpSpeedMax="${RWP_SPEED_MAX}" \
   --xMax="${X_MAX}" \
   --yMax="${Y_MAX}" \
+  --scenarioMode="${SCENARIO_MODE}" \
+  --backgroundFlows="${BACKGROUND_FLOWS}" \
+  --backgroundRateKbps="${BACKGROUND_RATE_KBPS}" \
+  --sourceId="${SOURCE_ID}" \
+  --destId="${DEST_ID}" \
   --outputDir="${OUTPUT_DIR}" \
   --enableAnim=false
 

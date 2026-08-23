@@ -91,10 +91,20 @@ static uint32_t g_predictionHorizon = 1;
 static std::string g_costMode = "none";
 static double g_appRateKbps = 256.0;
 static uint32_t g_appPacketSize = 512;
+static std::string g_scenarioMode = "standard";
+static uint32_t g_backgroundFlows = 0;
+static double g_backgroundRateKbps = 0.0;
+static uint32_t g_partitionStartStep = 0;
+static uint32_t g_partitionEndStep = 0;
+static uint32_t g_reconnectStep = 0;
+static std::vector<uint32_t> g_partitionGroupA;
+static std::vector<uint32_t> g_partitionGroupB;
 
 static constexpr double PROBE_INTERVAL = 0.05;
 static constexpr uint16_t PROBE_PORT = 9999;
 static constexpr uint16_t DATA_PORT = 9000;
+static constexpr uint16_t BACKGROUND_PORT_BASE = 9100;
+static constexpr uint32_t BACKGROUND_PACKET_SIZE = 512;
 
 // ---------------------------------------------------------------------------
 struct LinkWindow
@@ -130,6 +140,90 @@ static std::vector<uint32_t> g_currentPath;
 static uint32_t g_planSteps = 0;
 static uint32_t g_planFound = 0;
 static uint32_t g_routeChanges = 0;
+
+struct BackgroundFlow
+{
+    uint32_t source;
+    uint32_t destination;
+    uint16_t port;
+};
+
+static std::vector<BackgroundFlow> g_backgroundFlowDefinitions;
+
+static void
+ConfigurePartitionMobility()
+{
+    const uint32_t groupSize = g_numUavs / 2;
+    std::vector<bool> inGroupA(g_numUavs, false);
+    inGroupA[g_sourceId] = true;
+    g_partitionGroupA.push_back(g_sourceId);
+    for (uint32_t nodeId = 0; nodeId < g_numUavs && g_partitionGroupA.size() < groupSize;
+         ++nodeId)
+    {
+        if (nodeId != g_sourceId && nodeId != g_destId)
+        {
+            inGroupA[nodeId] = true;
+            g_partitionGroupA.push_back(nodeId);
+        }
+    }
+    for (uint32_t nodeId = 0; nodeId < g_numUavs; ++nodeId)
+    {
+        if (!inGroupA[nodeId])
+        {
+            g_partitionGroupB.push_back(nodeId);
+        }
+    }
+
+    g_partitionStartStep = g_timeSteps / 3;
+    g_partitionEndStep = 2 * g_timeSteps / 3;
+    g_reconnectStep = 5 * g_timeSteps / 6;
+    const uint32_t departureStep = g_timeSteps / 4;
+    const double spacing = std::min(10.0, g_commRange / (2.0 * std::ceil(std::sqrt(g_numUavs))));
+    const uint32_t groupColumns = static_cast<uint32_t>(std::ceil(std::sqrt(groupSize)));
+    const double groupWidth = (groupColumns - 1) * spacing;
+    NS_ABORT_MSG_IF(g_xMax - 2.0 * groupWidth - 2.0 * spacing <= g_commRange,
+                    "partition-reconnect requires enough xMax for cross-group separation");
+
+    auto gridPosition = [spacing](uint32_t index, uint32_t count, double centerX, double centerY)
+    {
+        uint32_t columns = static_cast<uint32_t>(std::ceil(std::sqrt(count)));
+        uint32_t rows = (count + columns - 1) / columns;
+        double x = centerX + (static_cast<double>(index % columns) - (columns - 1) / 2.0) * spacing;
+        double y = centerY + (static_cast<double>(index / columns) - (rows - 1) / 2.0) * spacing;
+        return Vector(x, y, (g_zMin + g_zMax) / 2.0);
+    };
+
+    MobilityHelper mobility;
+    mobility.SetMobilityModel("ns3::WaypointMobilityModel");
+    mobility.Install(g_nodes);
+    const double centerX = g_xMax / 2.0;
+    const double centerY = g_yMax / 2.0;
+    const double leftCenterX = groupWidth / 2.0 + spacing;
+    const double rightCenterX = g_xMax - groupWidth / 2.0 - spacing;
+    std::vector<uint32_t> rank(g_numUavs);
+    for (uint32_t index = 0; index < g_partitionGroupA.size(); ++index)
+    {
+        rank[g_partitionGroupA[index]] = index;
+    }
+    for (uint32_t index = 0; index < g_partitionGroupB.size(); ++index)
+    {
+        rank[g_partitionGroupB[index]] = index;
+    }
+    for (uint32_t nodeId = 0; nodeId < g_numUavs; ++nodeId)
+    {
+        bool groupA = inGroupA[nodeId];
+        const std::vector<uint32_t> &group = groupA ? g_partitionGroupA : g_partitionGroupB;
+        Vector initial = gridPosition(nodeId, g_numUavs, centerX, centerY);
+        Vector separated = gridPosition(rank[nodeId], group.size(),
+                                        groupA ? leftCenterX : rightCenterX, centerY);
+        Ptr<WaypointMobilityModel> model = g_nodes.Get(nodeId)->GetObject<WaypointMobilityModel>();
+        model->AddWaypoint(Waypoint(Seconds(0.0), initial));
+        model->AddWaypoint(Waypoint(Seconds(g_warmup + departureStep + 1.0), initial));
+        model->AddWaypoint(Waypoint(Seconds(g_warmup + g_partitionStartStep + 1.0), separated));
+        model->AddWaypoint(Waypoint(Seconds(g_warmup + g_partitionEndStep + 1.0), separated));
+        model->AddWaypoint(Waypoint(Seconds(g_warmup + g_reconnectStep + 1.0), initial));
+    }
+}
 
 static double
 Clamp01(double x)
@@ -667,6 +761,113 @@ WriteClosedLoopMetrics(Ptr<FlowMonitor> monitor, FlowMonitorHelper &helper)
 }
 
 static void
+WriteBackgroundFlowMetrics(Ptr<FlowMonitor> monitor, FlowMonitorHelper &helper)
+{
+    struct Metrics
+    {
+        uint64_t txPackets = 0;
+        uint64_t rxPackets = 0;
+        uint64_t rxBytes = 0;
+        double delaySumSeconds = 0.0;
+        double firstTxSeconds = std::numeric_limits<double>::infinity();
+        double lastTxSeconds = 0.0;
+        double lastRxSeconds = 0.0;
+    };
+
+    monitor->CheckForLostPackets();
+    Ptr<Ipv4FlowClassifier> classifier = DynamicCast<Ipv4FlowClassifier>(helper.GetClassifier());
+    std::vector<Metrics> metrics(g_backgroundFlowDefinitions.size());
+    for (const auto &[flowId, stats] : monitor->GetFlowStats())
+    {
+        Ipv4FlowClassifier::FiveTuple tuple = classifier->FindFlow(flowId);
+        for (uint32_t index = 0; index < g_backgroundFlowDefinitions.size(); ++index)
+        {
+            const BackgroundFlow &flow = g_backgroundFlowDefinitions[index];
+            if (tuple.sourceAddress != g_ifaces.GetAddress(flow.source) ||
+                tuple.destinationAddress != g_ifaces.GetAddress(flow.destination) ||
+                tuple.destinationPort != flow.port)
+            {
+                continue;
+            }
+            Metrics &row = metrics[index];
+            row.txPackets += stats.txPackets;
+            row.rxPackets += stats.rxPackets;
+            row.rxBytes += stats.rxBytes;
+            row.delaySumSeconds += stats.delaySum.GetSeconds();
+            if (stats.txPackets > 0)
+            {
+                row.firstTxSeconds = std::min(row.firstTxSeconds,
+                                              stats.timeFirstTxPacket.GetSeconds());
+                row.lastTxSeconds = std::max(row.lastTxSeconds,
+                                             stats.timeLastTxPacket.GetSeconds());
+            }
+            if (stats.rxPackets > 0)
+            {
+                row.lastRxSeconds = std::max(row.lastRxSeconds,
+                                             stats.timeLastRxPacket.GetSeconds());
+            }
+            break;
+        }
+    }
+
+    std::vector<double> throughputMbps(metrics.size(), 0.0);
+    double aggregateThroughputMbps = 0.0;
+    double throughputSquareSum = 0.0;
+    for (uint32_t index = 0; index < metrics.size(); ++index)
+    {
+        const Metrics &row = metrics[index];
+        double duration = std::isfinite(row.firstTxSeconds) && row.lastRxSeconds > row.firstTxSeconds
+                              ? row.lastRxSeconds - row.firstTxSeconds
+                              : 0.0;
+        throughputMbps[index] = duration > 0.0 ? row.rxBytes * 8.0 / duration / 1.0e6 : 0.0;
+        aggregateThroughputMbps += throughputMbps[index];
+        throughputSquareSum += throughputMbps[index] * throughputMbps[index];
+    }
+    double fairness = throughputSquareSum > 0.0
+                          ? aggregateThroughputMbps * aggregateThroughputMbps /
+                                (metrics.size() * throughputSquareSum)
+                          : 0.0;
+
+    std::ofstream output(g_outputDir + "/background_flow_metrics.csv");
+    output << std::fixed << std::setprecision(6)
+           << "flow_index,source,destination,port,configured_offered_rate_kbps,"
+              "observed_offered_rate_kbps,tx_packets,rx_packets,lost_packets,pdr,"
+              "mean_delay_ms,throughput_mbps,aggregate_throughput_mbps,jain_fairness\n";
+    for (uint32_t index = 0; index < metrics.size(); ++index)
+    {
+        const BackgroundFlow &flow = g_backgroundFlowDefinitions[index];
+        const Metrics &row = metrics[index];
+        double txDuration = std::isfinite(row.firstTxSeconds) && row.lastTxSeconds > row.firstTxSeconds
+                                ? row.lastTxSeconds - row.firstTxSeconds
+                                : 0.0;
+        double observedRateKbps = txDuration > 0.0
+                                      ? row.txPackets * BACKGROUND_PACKET_SIZE * 8.0 /
+                                            txDuration / 1000.0
+                                      : 0.0;
+        double pdr = row.txPackets > 0 ? static_cast<double>(row.rxPackets) / row.txPackets : 0.0;
+        double meanDelayMs = row.rxPackets > 0
+                                 ? row.delaySumSeconds * 1000.0 / row.rxPackets
+                                 : 0.0;
+        uint64_t lostPackets = row.txPackets - row.rxPackets;
+        output << index << ',' << flow.source << ',' << flow.destination << ',' << flow.port << ','
+               << g_backgroundRateKbps << ',' << observedRateKbps << ',' << row.txPackets << ','
+               << row.rxPackets << ',' << lostPackets << ',' << pdr << ',' << meanDelayMs << ','
+               << throughputMbps[index] << ',' << aggregateThroughputMbps << ',' << fairness << '\n';
+    }
+}
+
+static void
+WriteNodeList(std::ostream &output, const std::vector<uint32_t> &nodes)
+{
+    output << '[';
+    for (uint32_t index = 0; index < nodes.size(); ++index)
+    {
+        output << (index == 0 ? "" : ", ") << nodes[index];
+    }
+    output << ']';
+}
+
+static void
 WriteScenarioJson(const std::string &runName)
 {
     std::ofstream f(g_outputDir + "/scenario.json");
@@ -686,6 +887,44 @@ WriteScenarioJson(const std::string &runName)
       << "  \"comm_range\": " << g_commRange << ",\n"
       << "  \"source_id\": " << g_sourceId << ",\n"
       << "  \"dest_id\": " << g_destId << ",\n"
+      << "  \"scenario_mode\": \"" << g_scenarioMode << "\",\n"
+      << "  \"partition_start_step\": ";
+    if (g_scenarioMode == "partition-reconnect")
+    {
+        f << g_partitionStartStep;
+    }
+    else
+    {
+        f << "null";
+    }
+    f << ",\n  \"partition_end_step\": ";
+    if (g_scenarioMode == "partition-reconnect")
+    {
+        f << g_partitionEndStep;
+    }
+    else
+    {
+        f << "null";
+    }
+    f << ",\n  \"reconnect_step\": ";
+    if (g_scenarioMode == "partition-reconnect")
+    {
+        f << g_reconnectStep;
+    }
+    else
+    {
+        f << "null";
+    }
+    f << ",\n  \"partition_groups\": {\"group_a\": ";
+    WriteNodeList(f, g_partitionGroupA);
+    f << ", \"group_b\": ";
+    WriteNodeList(f, g_partitionGroupB);
+    f << "},\n"
+      << "  \"background_flows\": " << g_backgroundFlows << ",\n"
+      << "  \"background_rate_kbps\": " << g_backgroundRateKbps << ",\n"
+      << "  \"configured_total_offered_load_kbps\": "
+      << g_backgroundFlows * g_backgroundRateKbps + (g_enableDataFlow ? g_appRateKbps : 0.0)
+      << ",\n"
       << "  \"gauss_markov_alpha\": " << g_gmAlpha << ",\n"
       << "  \"rwp_speed_range\": [" << g_rwpSpeedMin << ", " << g_rwpSpeedMax << "],\n"
       << "  \"tx_power_dbm\": " << g_txPowerDbm << ",\n"
@@ -746,6 +985,10 @@ int main(int argc, char *argv[])
     cmd.AddValue("costMode", "neglog | one-minus | none", g_costMode);
     cmd.AddValue("appRateKbps", "Offered UDP data rate (kbps)", g_appRateKbps);
     cmd.AddValue("appPacketSize", "UDP payload size (bytes)", g_appPacketSize);
+    cmd.AddValue("scenarioMode", "standard | partition-reconnect | high-load", g_scenarioMode);
+    cmd.AddValue("backgroundFlows", "Number of measured background UDP flows", g_backgroundFlows);
+    cmd.AddValue("backgroundRateKbps", "Offered rate per background flow (kbps)",
+                 g_backgroundRateKbps);
     cmd.Parse(argc, argv);
 
     NS_ABORT_MSG_IF(g_numUavs < 2, "numUavs must be at least 2");
@@ -759,7 +1002,21 @@ int main(int argc, char *argv[])
                              g_routingStrategy == "delay" || g_routingStrategy == "persistence" ||
                              g_routingStrategy == "logreg" || g_routingStrategy == "xgb" ||
                              g_routingStrategy == "edge-sage";
+    bool supportedScenario = g_scenarioMode == "standard" ||
+                             g_scenarioMode == "partition-reconnect" ||
+                             g_scenarioMode == "high-load";
     NS_ABORT_MSG_IF(!supportedStrategy, "Unsupported routing strategy: " << g_routingStrategy);
+    NS_ABORT_MSG_IF(!supportedScenario, "Unsupported scenario mode: " << g_scenarioMode);
+    bool validBackground = (g_backgroundFlows == 0 && g_backgroundRateKbps == 0.0) ||
+                           (g_backgroundFlows > 0 && g_backgroundRateKbps > 0.0);
+    NS_ABORT_MSG_IF(!validBackground,
+                    "backgroundFlows and backgroundRateKbps must both be zero or both positive");
+    NS_ABORT_MSG_IF(g_backgroundFlows > std::numeric_limits<uint16_t>::max() - BACKGROUND_PORT_BASE,
+                    "backgroundFlows exceeds the available UDP port range");
+    NS_ABORT_MSG_IF(g_scenarioMode == "partition-reconnect" && g_timeSteps < 12,
+                    "partition-reconnect requires at least 12 time steps");
+    NS_ABORT_MSG_IF(g_scenarioMode == "partition-reconnect" && g_commRange <= 0.0,
+                    "partition-reconnect requires a positive commRange");
     NS_ABORT_MSG_IF(g_enableDataFlow && g_routePlanPath.empty(),
                     "enableDataFlow requires routePlan to define the evaluation window");
     NS_ABORT_MSG_IF(g_enableDataFlow && (g_appRateKbps <= 0.0 || g_appPacketSize == 0),
@@ -775,57 +1032,65 @@ int main(int argc, char *argv[])
     g_nodes.Create(g_numUavs);
     g_prevDegree.assign(g_numUavs, 0);
 
-    MobilityHelper mobility;
-    std::ostringstream xRv;
-    xRv << "ns3::UniformRandomVariable[Min=0.0|Max=" << g_xMax << "]";
-    std::ostringstream yRv;
-    yRv << "ns3::UniformRandomVariable[Min=0.0|Max=" << g_yMax << "]";
-    std::ostringstream zRv;
-    zRv << "ns3::UniformRandomVariable[Min=" << g_zMin << "|Max=" << g_zMax << "]";
-
-    mobility.SetPositionAllocator("ns3::RandomBoxPositionAllocator",
-                                  "X", StringValue(xRv.str()),
-                                  "Y", StringValue(yRv.str()),
-                                  "Z", StringValue(zRv.str()));
-
-    if (g_mobility == "gauss-markov")
+    if (g_scenarioMode == "partition-reconnect")
     {
-        std::ostringstream meanVel;
-        meanVel << "ns3::UniformRandomVariable[Min=" << g_rwpSpeedMin << "|Max=" << g_rwpSpeedMax
-                << "]";
-        mobility.SetMobilityModel(
-            "ns3::GaussMarkovMobilityModel",
-            "Bounds", BoxValue(Box(0.0, g_xMax, 0.0, g_yMax, g_zMin, g_zMax)),
-            "TimeStep", TimeValue(Seconds(1.0)),
-            "Alpha", DoubleValue(g_gmAlpha),
-            "MeanVelocity", StringValue(meanVel.str()),
-            "MeanDirection", StringValue("ns3::UniformRandomVariable[Min=0.0|Max=6.2831853]"),
-            "MeanPitch", StringValue("ns3::UniformRandomVariable[Min=-0.3|Max=0.3]"),
-            "NormalVelocity",
-            StringValue("ns3::NormalRandomVariable[Mean=0.0|Variance=2.0|Bound=4.0]"),
-            "NormalDirection",
-            StringValue("ns3::NormalRandomVariable[Mean=0.0|Variance=0.4|Bound=0.8]"),
-            "NormalPitch",
-            StringValue("ns3::NormalRandomVariable[Mean=0.0|Variance=0.06|Bound=0.12]"));
-        mobility.Install(g_nodes);
+        ConfigurePartitionMobility();
     }
     else
     {
-        std::ostringstream speedRv;
-        speedRv << "ns3::UniformRandomVariable[Min=" << g_rwpSpeedMin << "|Max=" << g_rwpSpeedMax
-                << "]";
-        ObjectFactory posFactory;
-        posFactory.SetTypeId("ns3::RandomBoxPositionAllocator");
-        posFactory.Set("X", StringValue(xRv.str()));
-        posFactory.Set("Y", StringValue(yRv.str()));
-        posFactory.Set("Z", StringValue(zRv.str()));
-        Ptr<PositionAllocator> wpAlloc = posFactory.Create()->GetObject<PositionAllocator>();
+        MobilityHelper mobility;
+        std::ostringstream xRv;
+        xRv << "ns3::UniformRandomVariable[Min=0.0|Max=" << g_xMax << "]";
+        std::ostringstream yRv;
+        yRv << "ns3::UniformRandomVariable[Min=0.0|Max=" << g_yMax << "]";
+        std::ostringstream zRv;
+        zRv << "ns3::UniformRandomVariable[Min=" << g_zMin << "|Max=" << g_zMax << "]";
 
-        mobility.SetMobilityModel("ns3::RandomWaypointMobilityModel",
-                                  "Speed", StringValue(speedRv.str()),
-                                  "Pause", StringValue("ns3::ConstantRandomVariable[Constant=0.0]"),
-                                  "PositionAllocator", PointerValue(wpAlloc));
-        mobility.Install(g_nodes);
+        mobility.SetPositionAllocator("ns3::RandomBoxPositionAllocator",
+                                      "X", StringValue(xRv.str()),
+                                      "Y", StringValue(yRv.str()),
+                                      "Z", StringValue(zRv.str()));
+
+        if (g_mobility == "gauss-markov")
+        {
+            std::ostringstream meanVel;
+            meanVel << "ns3::UniformRandomVariable[Min=" << g_rwpSpeedMin << "|Max="
+                    << g_rwpSpeedMax << "]";
+            mobility.SetMobilityModel(
+                "ns3::GaussMarkovMobilityModel",
+                "Bounds", BoxValue(Box(0.0, g_xMax, 0.0, g_yMax, g_zMin, g_zMax)),
+                "TimeStep", TimeValue(Seconds(1.0)),
+                "Alpha", DoubleValue(g_gmAlpha),
+                "MeanVelocity", StringValue(meanVel.str()),
+                "MeanDirection", StringValue("ns3::UniformRandomVariable[Min=0.0|Max=6.2831853]"),
+                "MeanPitch", StringValue("ns3::UniformRandomVariable[Min=-0.3|Max=0.3]"),
+                "NormalVelocity",
+                StringValue("ns3::NormalRandomVariable[Mean=0.0|Variance=2.0|Bound=4.0]"),
+                "NormalDirection",
+                StringValue("ns3::NormalRandomVariable[Mean=0.0|Variance=0.4|Bound=0.8]"),
+                "NormalPitch",
+                StringValue("ns3::NormalRandomVariable[Mean=0.0|Variance=0.06|Bound=0.12]"));
+            mobility.Install(g_nodes);
+        }
+        else
+        {
+            std::ostringstream speedRv;
+            speedRv << "ns3::UniformRandomVariable[Min=" << g_rwpSpeedMin << "|Max="
+                    << g_rwpSpeedMax << "]";
+            ObjectFactory posFactory;
+            posFactory.SetTypeId("ns3::RandomBoxPositionAllocator");
+            posFactory.Set("X", StringValue(xRv.str()));
+            posFactory.Set("Y", StringValue(yRv.str()));
+            posFactory.Set("Z", StringValue(zRv.str()));
+            Ptr<PositionAllocator> wpAlloc = posFactory.Create()->GetObject<PositionAllocator>();
+
+            mobility.SetMobilityModel(
+                "ns3::RandomWaypointMobilityModel",
+                "Speed", StringValue(speedRv.str()),
+                "Pause", StringValue("ns3::ConstantRandomVariable[Constant=0.0]"),
+                "PositionAllocator", PointerValue(wpAlloc));
+            mobility.Install(g_nodes);
+        }
     }
 
     YansWifiChannelHelper channel;
@@ -929,7 +1194,6 @@ int main(int argc, char *argv[])
         ApplicationContainer clientApp = client.Install(g_nodes.Get(g_sourceId));
         clientApp.Start(Seconds(appStart));
         clientApp.Stop(Seconds(appStop));
-        flowMonitor = flowMonitorHelper.InstallAll();
 
         if (g_routingStrategy != "olsr")
         {
@@ -939,6 +1203,37 @@ int main(int argc, char *argv[])
                 Simulator::Schedule(Seconds(g_warmup + step + 1.001), &ApplyRoutePlan, step);
             }
         }
+    }
+    if (g_backgroundFlows > 0)
+    {
+        double appStart = g_warmup + 0.01;
+        double appStop = g_warmup + g_timeSteps + 0.99;
+        double intervalSeconds = BACKGROUND_PACKET_SIZE * 8.0 /
+                                 (g_backgroundRateKbps * 1000.0);
+        for (uint32_t index = 0; index < g_backgroundFlows; ++index)
+        {
+            uint32_t source = index % g_numUavs;
+            uint32_t destination = (source + std::max<uint32_t>(1, g_numUavs / 2)) % g_numUavs;
+            uint16_t port = static_cast<uint16_t>(BACKGROUND_PORT_BASE + index);
+            g_backgroundFlowDefinitions.push_back({source, destination, port});
+
+            UdpServerHelper server(port);
+            ApplicationContainer serverApp = server.Install(g_nodes.Get(destination));
+            serverApp.Start(Seconds(appStart - 0.1));
+            serverApp.Stop(Seconds(appStop + 0.1));
+
+            UdpClientHelper client(g_ifaces.GetAddress(destination), port);
+            client.SetAttribute("MaxPackets", UintegerValue(std::numeric_limits<uint32_t>::max()));
+            client.SetAttribute("Interval", TimeValue(Seconds(intervalSeconds)));
+            client.SetAttribute("PacketSize", UintegerValue(BACKGROUND_PACKET_SIZE));
+            ApplicationContainer clientApp = client.Install(g_nodes.Get(source));
+            clientApp.Start(Seconds(appStart));
+            clientApp.Stop(Seconds(appStop));
+        }
+    }
+    if (g_enableDataFlow || g_backgroundFlows > 0)
+    {
+        flowMonitor = flowMonitorHelper.InstallAll();
     }
 
     g_nodesCsv.open(g_outputDir + "/nodes.csv");
@@ -996,6 +1291,10 @@ int main(int argc, char *argv[])
     if (g_enableDataFlow)
     {
         WriteClosedLoopMetrics(flowMonitor, flowMonitorHelper);
+    }
+    if (g_backgroundFlows > 0)
+    {
+        WriteBackgroundFlowMetrics(flowMonitor, flowMonitorHelper);
     }
     Simulator::Destroy();
 
