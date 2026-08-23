@@ -48,6 +48,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstring>
+#include <filesystem>
 #include <fstream>
 #include <iomanip>
 #include <limits>
@@ -105,6 +106,8 @@ static constexpr uint16_t PROBE_PORT = 9999;
 static constexpr uint16_t DATA_PORT = 9000;
 static constexpr uint16_t BACKGROUND_PORT_BASE = 9100;
 static constexpr uint32_t BACKGROUND_PACKET_SIZE = 512;
+static constexpr double BACKGROUND_START_OFFSET = 0.01;
+static constexpr double BACKGROUND_STOP_OFFSET = 0.99;
 
 // ---------------------------------------------------------------------------
 struct LinkWindow
@@ -771,7 +774,6 @@ WriteBackgroundFlowMetrics(Ptr<FlowMonitor> monitor, FlowMonitorHelper &helper)
         double delaySumSeconds = 0.0;
         double firstTxSeconds = std::numeric_limits<double>::infinity();
         double lastTxSeconds = 0.0;
-        double lastRxSeconds = 0.0;
     };
 
     monitor->CheckForLostPackets();
@@ -801,11 +803,6 @@ WriteBackgroundFlowMetrics(Ptr<FlowMonitor> monitor, FlowMonitorHelper &helper)
                 row.lastTxSeconds = std::max(row.lastTxSeconds,
                                              stats.timeLastTxPacket.GetSeconds());
             }
-            if (stats.rxPackets > 0)
-            {
-                row.lastRxSeconds = std::max(row.lastRxSeconds,
-                                             stats.timeLastRxPacket.GetSeconds());
-            }
             break;
         }
     }
@@ -813,13 +810,11 @@ WriteBackgroundFlowMetrics(Ptr<FlowMonitor> monitor, FlowMonitorHelper &helper)
     std::vector<double> throughputMbps(metrics.size(), 0.0);
     double aggregateThroughputMbps = 0.0;
     double throughputSquareSum = 0.0;
+    double observationDuration = g_timeSteps + BACKGROUND_STOP_OFFSET - BACKGROUND_START_OFFSET;
     for (uint32_t index = 0; index < metrics.size(); ++index)
     {
         const Metrics &row = metrics[index];
-        double duration = std::isfinite(row.firstTxSeconds) && row.lastRxSeconds > row.firstTxSeconds
-                              ? row.lastRxSeconds - row.firstTxSeconds
-                              : 0.0;
-        throughputMbps[index] = duration > 0.0 ? row.rxBytes * 8.0 / duration / 1.0e6 : 0.0;
+        throughputMbps[index] = row.rxBytes * 8.0 / observationDuration / 1.0e6;
         aggregateThroughputMbps += throughputMbps[index];
         throughputSquareSum += throughputMbps[index] * throughputMbps[index];
     }
@@ -1206,8 +1201,8 @@ int main(int argc, char *argv[])
     }
     if (g_backgroundFlows > 0)
     {
-        double appStart = g_warmup + 0.01;
-        double appStop = g_warmup + g_timeSteps + 0.99;
+        double appStart = g_warmup + BACKGROUND_START_OFFSET;
+        double appStop = g_warmup + g_timeSteps + BACKGROUND_STOP_OFFSET;
         double intervalSeconds = BACKGROUND_PACKET_SIZE * 8.0 /
                                  (g_backgroundRateKbps * 1000.0);
         for (uint32_t index = 0; index < g_backgroundFlows; ++index)
@@ -1295,6 +1290,12 @@ int main(int argc, char *argv[])
     if (g_backgroundFlows > 0)
     {
         WriteBackgroundFlowMetrics(flowMonitor, flowMonitorHelper);
+    }
+    else
+    {
+        std::error_code error;
+        std::filesystem::remove(g_outputDir + "/background_flow_metrics.csv", error);
+        NS_ABORT_MSG_IF(error, "Cannot remove stale background metrics: " << error.message());
     }
     Simulator::Destroy();
 
