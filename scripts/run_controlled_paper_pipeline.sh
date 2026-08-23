@@ -5,16 +5,21 @@ MULTIHORIZON_DATA="data/multihorizon_controlled"
 MULTIHORIZON_OUTPUT="outputs/multihorizon_controlled"
 REPORT_ROOT="reports/controlled_paper"
 STAGE6_OUTPUT="outputs/controlled_stage6"
+TEMPORAL_OUTPUT="outputs/temporal_controlled"
 CLOSED_LOOP_OUTPUT="outputs/closed_loop_controlled"
 CLOSED_LOOP_RUNS="${CLOSED_LOOP_RUNS:-10}"
 WITHIN_RUNS_PER_SCENARIO="${WITHIN_RUNS_PER_SCENARIO:-10}"
 LORO_FOLDS_PER_SCENARIO="${LORO_FOLDS_PER_SCENARIO:-5}"
 ABLATION_RUNS_PER_SCENARIO="${ABLATION_RUNS_PER_SCENARIO:-10}"
+EXTENSION_RUNS="${EXTENSION_RUNS:-10}"
+TEMPORAL_RUNS_PER_SCENARIO="${TEMPORAL_RUNS_PER_SCENARIO:-10}"
+TEMPORAL_EPOCHS="${TEMPORAL_EPOCHS:-100}"
+TEMPORAL_PATIENCE="${TEMPORAL_PATIENCE:-10}"
 GNN_EPOCHS="${GNN_EPOCHS:-200}"
 GNN_PATIENCE="${GNN_PATIENCE:-20}"
 NS3_BINARY="simulation/ns3/build/uav-olsr-dataset"
 
-for name in CLOSED_LOOP_RUNS WITHIN_RUNS_PER_SCENARIO LORO_FOLDS_PER_SCENARIO ABLATION_RUNS_PER_SCENARIO; do
+for name in CLOSED_LOOP_RUNS WITHIN_RUNS_PER_SCENARIO LORO_FOLDS_PER_SCENARIO ABLATION_RUNS_PER_SCENARIO EXTENSION_RUNS TEMPORAL_RUNS_PER_SCENARIO TEMPORAL_EPOCHS TEMPORAL_PATIENCE; do
   [[ "${!name}" =~ ^[1-9][0-9]*$ ]] || {
     echo "$name must be a positive integer" >&2
     exit 2
@@ -23,14 +28,15 @@ done
 
 if [[ "${1:-}" == "--dry-run" ]]; then
   printf '%s\n' \
-    '1. Resume/generate 100 paired seeds x 4 controlled scenarios' \
-    '2. Validate controlled raw and graph data' \
-    '3. Build QoS/survival multi-horizon datasets (k=1,2,3,5)' \
-    "4. Train within-run models on ${WITHIN_RUNS_PER_SCENARIO} runs/scenario; retain all 400 datasets" \
-    "5. Run LORO on ${LORO_FOLDS_PER_SCENARIO} folds/scenario, ablation on ${ABLATION_RUNS_PER_SCENARIO} runs/scenario, and full cross-mobility" \
-    '6. Run multi-horizon routing replay and paired statistics' \
-    "7. Run inference resources and closed-loop ns-3 on ${CLOSED_LOOP_RUNS} baseline runs" \
-    '8. Generate publication figures and tables'
+    "1. Resume/generate 400 core + $((EXTENSION_RUNS * 2)) extension controlled runs" \
+    '2. Validate core raw/graph data and extension partition/load manipulation checks before training' \
+    "3. Build QoS/survival multi-horizon datasets for $((400 + EXTENSION_RUNS * 2)) accepted runs (k=1,2,3,5)" \
+    "4. Train within-run models on ${WITHIN_RUNS_PER_SCENARIO} runs/scenario; retain all $((400 + EXTENSION_RUNS * 2)) datasets" \
+    "5. Run LORO on ${LORO_FOLDS_PER_SCENARIO} folds/scenario and ablation on ${ABLATION_RUNS_PER_SCENARIO} runs/scenario; partition/load stay sampled here but are excluded from cross-mobility" \
+    "6. Run temporal survival coordinates k=3,5 on ${TEMPORAL_RUNS_PER_SCENARIO} runs/scenario, then generate paired temporal artifacts" \
+    '7. Run multi-horizon routing replay and paired statistics' \
+    "8. Run inference resources and closed-loop ns-3 on ${CLOSED_LOOP_RUNS} baseline runs" \
+    '9. Generate publication figures and tables'
   exit 0
 fi
 
@@ -44,13 +50,16 @@ fi
   exit 1
 }
 
-python -m scripts.dataset.run_controlled_scenarios --start-index 1 --end-index 100
+python -m scripts.dataset.run_controlled_scenarios --start-index 1 --end-index 100 \
+  --include-extensions --extension-count "$EXTENSION_RUNS"
 python -m scripts.analysis.summarize_controlled_scenarios --fail-on-check
+python -m scripts.analysis.summarize_extension_scenarios \
+  --expected-per-scenario "$EXTENSION_RUNS" --fail-on-check
 python -m src.validation.data_quality \
   --output reports/controlled_scenarios/data_quality.json --fail-on-error
 
 python -m scripts.dataset.build_multihorizon_pilot \
-  --pattern 'stress_*' --limit 400 \
+  --pattern 'stress_*' --limit "$((400 + EXTENSION_RUNS * 2))" \
   --output-root "$MULTIHORIZON_DATA" \
   --summary "$REPORT_ROOT/multihorizon_dataset_summary.csv"
 python -m scripts.dataset.analyze_threshold_sensitivity \
@@ -78,6 +87,18 @@ python -m scripts.train.run_stage6_benchmark \
   --loro-runs-per-scenario "$LORO_FOLDS_PER_SCENARIO" \
   --ablation-runs-per-scenario "$ABLATION_RUNS_PER_SCENARIO" \
   --gnn-epochs "$GNN_EPOCHS" --gnn-patience "$GNN_PATIENCE"
+
+python -m scripts.train.run_temporal_benchmark \
+  --data-root "$MULTIHORIZON_DATA" \
+  --output-root "$TEMPORAL_OUTPUT" \
+  --summary "$REPORT_ROOT/temporal_benchmark_summary.csv" \
+  --targets survival --horizons 3 5 \
+  --runs-per-scenario "$TEMPORAL_RUNS_PER_SCENARIO" \
+  --epochs "$TEMPORAL_EPOCHS" --patience "$TEMPORAL_PATIENCE"
+python -m scripts.analysis.generate_temporal_artifacts \
+  --static "$REPORT_ROOT/multihorizon_benchmark_summary.csv" \
+  --temporal "$REPORT_ROOT/temporal_benchmark_summary.csv" \
+  --output-dir "$REPORT_ROOT/temporal"
 
 python -m src.routing.multihorizon_eval \
   --data-root "$MULTIHORIZON_DATA" \

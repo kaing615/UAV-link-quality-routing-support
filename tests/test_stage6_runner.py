@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import subprocess
 from pathlib import Path
 
 import pandas as pd
@@ -14,6 +15,27 @@ from scripts.train.run_stage6_benchmark import (
 )
 
 from src.training.gnn.train_gnn_loro import load_run_split
+
+
+def test_controlled_launcher_dry_run_states_extension_count_and_temporal_selection():
+    """Catches a launcher that omits the accepted extension or temporal cohort."""
+    project_root = Path(__file__).resolve().parents[1]
+
+    completed = subprocess.run(
+        [
+            "bash",
+            "-c",
+            "{ printf 'set -- --dry-run\\n'; tr -d '\\r' < scripts/run_controlled_paper_pipeline.sh; } | bash -s",
+        ],
+        cwd=project_root,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    assert "400 core + 20 extension" in completed.stdout
+    assert "420 accepted runs" in completed.stdout
+    assert "temporal survival coordinates k=3,5" in completed.stdout
 
 
 def test_discover_coordinates_groups_runs_by_target_and_horizon(tmp_path: Path):
