@@ -32,6 +32,16 @@ class ScenarioJob:
     speed_min: int
     speed_max: int
     run_name: str
+    scenario_mode: str = "standard"
+    background_flows: int = 0
+    background_rate_kbps: float = 0.0
+    source_id: int = 0
+    dest_id: int = 4
+
+
+def _mobility_for_index(index: int) -> tuple[str, str]:
+    mobility = "gauss-markov" if index % 2 == 0 else "random-waypoint"
+    return mobility, ("gm" if mobility == "gauss-markov" else "rwp")
 
 
 def build_jobs(start_index: int, end_index: int, seed_base: int = 60_000) -> list[ScenarioJob]:
@@ -40,8 +50,7 @@ def build_jobs(start_index: int, end_index: int, seed_base: int = 60_000) -> lis
     jobs = []
     for index in range(start_index, end_index + 1):
         seed = seed_base + index
-        mobility = "gauss-markov" if index % 2 == 0 else "random-waypoint"
-        tag = "gm" if mobility == "gauss-markov" else "rwp"
+        mobility, tag = _mobility_for_index(index)
         for scenario, (comm_range, speed_min, speed_max) in SCENARIOS.items():
             jobs.append(
                 ScenarioJob(
@@ -56,6 +65,47 @@ def build_jobs(start_index: int, end_index: int, seed_base: int = 60_000) -> lis
                     run_name=f"stress_{scenario}_{tag}_s{seed}",
                 )
             )
+    return jobs
+
+
+def build_extension_jobs(count: int = 10, seed_base: int = 60_000) -> list[ScenarioJob]:
+    if not 1 <= count <= 100:
+        raise ValueError("Expected 1 <= count <= 100")
+    jobs = []
+    comm_range, speed_min, speed_max = SCENARIOS["baseline"]
+    for index in range(1, count + 1):
+        seed = seed_base + index
+        mobility, tag = _mobility_for_index(index)
+        jobs.append(
+            ScenarioJob(
+                scenario="ctrl",
+                index=index,
+                seed=seed,
+                mobility=mobility,
+                mobility_tag=tag,
+                comm_range=comm_range,
+                speed_min=speed_min,
+                speed_max=speed_max,
+                run_name=f"stress_ctrl_{tag}_s{seed}",
+                scenario_mode="ctrl",
+            )
+        )
+        jobs.append(
+            ScenarioJob(
+                scenario="load",
+                index=index,
+                seed=seed,
+                mobility=mobility,
+                mobility_tag=tag,
+                comm_range=comm_range,
+                speed_min=speed_min,
+                speed_max=speed_max,
+                run_name=f"stress_load_{tag}_s{seed}",
+                scenario_mode="load",
+                background_flows=1,
+                background_rate_kbps=256.0,
+            )
+        )
     return jobs
 
 
@@ -94,6 +144,11 @@ def run_jobs(
                 "SIM_RWP_SPEED_MAX": str(job.speed_max),
                 "SIM_X_MAX": "800",
                 "SIM_Y_MAX": "800",
+                "SIM_SCENARIO_MODE": job.scenario_mode,
+                "SIM_BACKGROUND_FLOWS": str(job.background_flows),
+                "SIM_BACKGROUND_RATE_KBPS": str(job.background_rate_kbps),
+                "SIM_SOURCE_ID": str(job.source_id),
+                "SIM_DEST_ID": str(job.dest_id),
             }
             try:
                 subprocess.run(
@@ -126,8 +181,12 @@ def main() -> None:
     parser.add_argument("--graph-root", type=Path, default=Path("data/graph_dataset"))
     parser.add_argument("--manifest", type=Path, default=None)
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--include-extensions", action="store_true")
+    parser.add_argument("--extension-count", type=int, default=10)
     args = parser.parse_args()
     jobs = build_jobs(args.start_index, args.end_index, args.seed_base)
+    if args.include_extensions:
+        jobs.extend(build_extension_jobs(args.extension_count, args.seed_base))
     counts = pd.Series([job.scenario for job in jobs]).value_counts().sort_index()
     print(f"[PLAN] indices={args.start_index}..{args.end_index}; total_jobs={len(jobs)}")
     print(counts.to_string())
