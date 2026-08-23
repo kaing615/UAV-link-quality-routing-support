@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import subprocess
 import sys
 from pathlib import Path
@@ -16,11 +17,43 @@ from scripts.train.run_multihorizon_benchmark import (
 )
 
 MODEL_ID = "edge-sage-gru"
+_PREDICTION_COLUMNS = {"time", "src", "dst", "y_true", "y_pred", "pred_score"}
 
 
 def _run(command: list[str]) -> None:
     print("[RUN]", " ".join(command))
     subprocess.run(command, check=True)
+
+
+def _benchmark_config(window_size: int, epochs: int, patience: int) -> dict[str, int | str]:
+    return {"model_id": MODEL_ID, "window_size": window_size, "epochs": epochs, "patience": patience}
+
+
+def _resume_ready(output_dir: Path, config: dict[str, int | str]) -> bool:
+    required = [
+        output_dir / "best_model.pt",
+        output_dir / "metadata.json",
+        output_dir / "metrics.csv",
+        output_dir / "val_predictions.csv",
+        output_dir / "test_predictions.csv",
+        output_dir / "temporal_benchmark_config.json",
+    ]
+    if not all(path.is_file() for path in required):
+        return False
+    try:
+        metadata = json.loads((output_dir / "metadata.json").read_text(encoding="utf-8"))
+        marker = json.loads((output_dir / "temporal_benchmark_config.json").read_text(encoding="utf-8"))
+        metrics = pd.read_csv(output_dir / "metrics.csv")
+        predictions = [pd.read_csv(output_dir / f"{split}_predictions.csv") for split in ("val", "test")]
+    except (OSError, ValueError, pd.errors.ParserError):
+        return False
+    return (
+        metadata.get("model_id") == MODEL_ID
+        and metadata.get("window_size") == config["window_size"]
+        and marker == config
+        and set(metrics.get("split", ())) == {"val", "test"}
+        and all(not frame.empty and _PREDICTION_COLUMNS.issubset(frame.columns) for frame in predictions)
+    )
 
 
 def run_temporal_benchmark(
@@ -54,10 +87,11 @@ def run_temporal_benchmark(
     datasets = [item for item in datasets if (*item[:2], item[2].name) in selected]
     if not datasets:
         raise FileNotFoundError(f"No selected temporal graph datasets found under {data_root}")
+    config = _benchmark_config(window_size, epochs, patience)
 
     for target, horizon, run_root in datasets:
         output_dir = output_root / MODEL_ID / target / f"k{horizon}" / run_root.name
-        if (output_dir / "metrics.csv").exists() and not force:
+        if not force and _resume_ready(output_dir, config):
             print(f"[SKIP] {MODEL_ID}/{target}/k{horizon}/{run_root.name}")
             continue
         _run(
@@ -79,8 +113,21 @@ def run_temporal_benchmark(
                 str(patience),
             ]
         )
+        (output_dir / "temporal_benchmark_config.json").write_text(json.dumps(config, indent=2), encoding="utf-8")
 
     detailed = collect_metrics(output_root)
+    detailed = detailed[
+        (detailed["model_id"] == MODEL_ID)
+        & pd.Series(
+            [
+                (target, horizon, run_name) in selected
+                for target, horizon, run_name in zip(
+                    detailed["target"], detailed["horizon"], detailed["run_name"], strict=True
+                )
+            ],
+            index=detailed.index,
+        )
+    ].copy()
     summary_csv.parent.mkdir(parents=True, exist_ok=True)
     detailed.to_csv(summary_csv, index=False)
     aggregate_path = summary_csv.with_name(f"{summary_csv.stem}_aggregate.csv")

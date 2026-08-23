@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import pandas as pd
 import pytest
+import scripts.analysis.generate_temporal_artifacts as temporal_artifacts
 from scripts.analysis.generate_stage7_artifacts import (
     combine_paired_effects,
     combine_protocol_aggregates,
@@ -213,6 +214,31 @@ def test_temporal_effects_requires_exact_static_coordinates_and_uses_paired_delt
 
     with pytest.raises(ValueError, match="missing temporal coordinates"):
         temporal_effects(static, temporal.iloc[:1], n_resamples=100)
+
+
+def test_temporal_effects_preserves_each_paired_comparison_holm_family(monkeypatch):
+    detail = pd.DataFrame(
+        [
+            {"target": "survival", "horizon": horizon, "run_name": "r1", "split": split, "macro_f1": 0.6, "pr_auc": 0.7}
+            for horizon, split in ((3, "val"), (5, "test"))
+        ]
+    )
+
+    def paired(*_args, **_kwargs):
+        return pd.DataFrame(
+            [
+                {"metric": "macro_f1", "p_raw": 0.01, "p_holm": 0.02},
+                {"metric": "pr_auc", "p_raw": 0.04, "p_holm": 0.04},
+            ]
+        )
+
+    monkeypatch.setattr(temporal_artifacts, "paired_comparisons", paired)
+    result = temporal_effects(detail, detail)
+
+    assert result.groupby("metric")["p_holm"].apply(set).to_dict() == {
+        "macro_f1": {0.02},
+        "pr_auc": {0.04},
+    }
 
 
 def test_temporal_artifacts_select_the_static_edge_sage_counterpart(tmp_path):

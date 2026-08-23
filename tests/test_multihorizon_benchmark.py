@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pandas as pd
@@ -118,18 +119,37 @@ def test_temporal_benchmark_dispatches_selected_runs_and_resumes_complete_metric
     for split in ("train", "val", "test"):
         (run_root / "graph_dataset" / f"{split}.pt").touch()
     output_root = tmp_path / "outputs"
+    stale_metrics = output_root / "edge-sage-gru" / "survival" / "k3" / "unselected" / "metrics.csv"
+    stale_metrics.parent.mkdir(parents=True)
+    pd.DataFrame(
+        [{"model_id": "edge-sage-gru", "split": "test", "macro_f1": 0.1, "pr_auc": 0.1}]
+    ).to_csv(stale_metrics, index=False)
     commands = []
 
     def fake_run(command):
         commands.append(command)
         output_dir = Path(command[command.index("--output-dir") + 1])
-        output_dir.mkdir(parents=True)
+        output_dir.mkdir(parents=True, exist_ok=True)
         pd.DataFrame(
             [
                 {"model_id": "edge-sage-gru", "split": "val", "macro_f1": 0.7, "pr_auc": 0.8},
                 {"model_id": "edge-sage-gru", "split": "test", "macro_f1": 0.8, "pr_auc": 0.9},
             ]
         ).to_csv(output_dir / "metrics.csv", index=False)
+        (output_dir / "best_model.pt").touch()
+        (output_dir / "metadata.json").write_text(
+            json.dumps(
+                {
+                    "model_id": "edge-sage-gru",
+                    "window_size": int(command[command.index("--window-size") + 1]),
+                }
+            ),
+            encoding="utf-8",
+        )
+        for split in ("val", "test"):
+            pd.DataFrame(
+                [{"time": 1, "src": 1, "dst": 2, "y_true": 1, "y_pred": 1, "pred_score": 0.9}]
+            ).to_csv(output_dir / f"{split}_predictions.csv", index=False)
 
     monkeypatch.setattr("scripts.train.run_temporal_benchmark._run", fake_run)
     summary = run_temporal_benchmark(data_root, output_root, tmp_path / "summary.csv")
@@ -139,9 +159,24 @@ def test_temporal_benchmark_dispatches_selected_runs_and_resumes_complete_metric
     assert commands[0][commands[0].index("--epochs") + 1] == "100"
     assert commands[0][commands[0].index("--patience") + 1] == "10"
     assert set(summary["split"]) == {"val", "test"}
+    assert set(summary["run_name"]) == {run_root.name}
 
     monkeypatch.setattr(
         "scripts.train.run_temporal_benchmark._run",
         lambda command: pytest.fail(f"complete metrics should resume, got {command}"),
     )
     run_temporal_benchmark(data_root, output_root, tmp_path / "resumed.csv")
+
+    output_dir = output_root / "edge-sage-gru" / "survival" / "k3" / run_root.name
+    (output_dir / "test_predictions.csv").unlink()
+    monkeypatch.setattr("scripts.train.run_temporal_benchmark._run", fake_run)
+    run_temporal_benchmark(data_root, output_root, tmp_path / "incomplete.csv")
+    assert len(commands) == 2
+
+    marker = output_dir / "temporal_benchmark_config.json"
+    marker.write_text(
+        json.dumps({"model_id": "edge-sage-gru", "window_size": 9, "epochs": 100, "patience": 10}),
+        encoding="utf-8",
+    )
+    run_temporal_benchmark(data_root, output_root, tmp_path / "stale.csv")
+    assert len(commands) == 3

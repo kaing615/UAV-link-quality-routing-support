@@ -9,7 +9,7 @@ import matplotlib
 import numpy as np
 import pandas as pd
 
-from src.evaluation.paired_statistics import holm_adjust, paired_comparisons
+from src.evaluation.paired_statistics import paired_comparisons
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
@@ -90,12 +90,7 @@ def temporal_effects(
         for column, value in zip(("target", "horizon", "split"), coordinates, strict=True):
             result[column] = value
         rows.append(result)
-    effects = pd.concat(rows, ignore_index=True) if rows else pd.DataFrame()
-    if not effects.empty:
-        finite = effects["p_raw"].notna()
-        effects["p_holm"] = np.nan
-        effects.loc[finite, "p_holm"] = holm_adjust(effects.loc[finite, "p_raw"].to_numpy())
-    return effects
+    return pd.concat(rows, ignore_index=True) if rows else pd.DataFrame()
 
 
 def _write_latex(effects: pd.DataFrame, path: Path) -> None:
