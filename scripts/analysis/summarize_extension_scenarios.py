@@ -40,6 +40,51 @@ def _pick_time(times: list[int], target: int) -> int:
     return min(times, key=lambda time: (abs(time - target), time))
 
 
+def _partition_defaults() -> dict[str, object]:
+    return {
+        "partition_metadata_complete": np.nan,
+        "partition_metadata_issue": "",
+        "pre_time": np.nan,
+        "middle_time": np.nan,
+        "post_time": np.nan,
+        "pre_connected": False,
+        "pre_components": np.nan,
+        "pre_cross_group_links": np.nan,
+        "middle_connected": False,
+        "middle_components": np.nan,
+        "middle_cross_group_links": np.nan,
+        "post_connected": False,
+        "post_components": np.nan,
+        "post_cross_group_links": np.nan,
+        "traffic_partition_outage": False,
+        "recovery_steps": np.nan,
+    }
+
+
+def _partition_metadata_status(metadata: dict[str, object]) -> tuple[bool, str, set[int], set[int]]:
+    if metadata.get("scenario_mode") != "partition-reconnect":
+        return True, "", set(), set()
+    partition_start = metadata.get("partition_start_step")
+    partition_end = metadata.get("partition_end_step")
+    reconnect_step = metadata.get("reconnect_step")
+    if partition_start is None or partition_end is None or reconnect_step is None:
+        return False, "missing_phase_steps", set(), set()
+    groups = metadata.get("partition_groups")
+    if not isinstance(groups, dict):
+        return False, "missing_or_empty_partition_groups", set(), set()
+    group_a = {int(node) for node in groups.get("group_a", [])}
+    group_b = {int(node) for node in groups.get("group_b", [])}
+    if not group_a or not group_b:
+        return False, "missing_or_empty_partition_groups", set(), set()
+    if group_a & group_b:
+        return False, "overlapping_partition_groups", set(), set()
+    expected_nodes = set(range(int(metadata["num_uavs"])))
+    covered_nodes = group_a | group_b
+    if covered_nodes != expected_nodes:
+        return False, "incomplete_partition_group_cover", set(), set()
+    return True, "", group_a, group_b
+
+
 def _snapshot_metrics(
     edges: pd.DataFrame,
     *,
@@ -68,14 +113,18 @@ def _partition_metrics(raw_dir: Path, metadata: dict[str, object]) -> dict[str, 
     partition_start = metadata.get("partition_start_step")
     partition_end = metadata.get("partition_end_step")
     reconnect_step = metadata.get("reconnect_step")
-    groups = metadata.get("partition_groups") or {}
+    valid, issue, group_a, group_b = _partition_metadata_status(metadata)
+    if not valid:
+        return {
+            **_partition_defaults(),
+            "partition_metadata_complete": False,
+            "partition_metadata_issue": issue,
+        }
     if partition_start is None or partition_end is None or reconnect_step is None:
         return {}
     edges = pd.read_csv(raw_dir / "edges.csv", usecols=["time", "src", "dst", "connected"])
     traffic = pd.read_csv(raw_dir / "traffic_log.csv", usecols=["time", "reachable"])
     times = sorted(edges["time"].astype(int).unique().tolist())
-    group_a = {int(node) for node in groups.get("group_a", [])}
-    group_b = {int(node) for node in groups.get("group_b", [])}
     pre_time = _pick_time(times, int(partition_start) - 1)
     middle_time = _pick_time(times, (int(partition_start) + int(partition_end)) // 2)
     post_time = _pick_time(times, int(reconnect_step))
@@ -109,6 +158,8 @@ def _partition_metrics(raw_dir: Path, metadata: dict[str, object]) -> dict[str, 
     if not recovering.empty:
         recovery_steps = float(int(recovering["time"].astype(int).iloc[0]) - int(reconnect_step))
     return {
+        "partition_metadata_complete": True,
+        "partition_metadata_issue": "",
         "pre_time": float(pre_time),
         "middle_time": float(middle_time),
         "post_time": float(post_time),
@@ -156,6 +207,7 @@ def collect_inventory(raw_root: Path) -> pd.DataFrame:
             "mobility": "random-waypoint" if mobility_tag == "rwp" else "gauss-markov",
             "raw_complete": False,
             "complete": False,
+            **_partition_defaults(),
         }
         required = [raw_dir / name for name in _required_files(scenario)]
         complete = all(path.exists() and path.stat().st_size > 0 for path in required)
@@ -181,6 +233,8 @@ def collect_inventory(raw_root: Path) -> pd.DataFrame:
             )
             row.update(_partition_metrics(raw_dir, metadata))
             row.update(_load_metrics(raw_dir, scenario))
+            if scenario == "ctrl":
+                row["complete"] = bool(row["raw_complete"]) and bool(row["partition_metadata_complete"])
         rows.append(row)
     return pd.DataFrame(rows)
 
@@ -275,7 +329,8 @@ def build_checks(inventory: pd.DataFrame, expected_per_scenario: int) -> pd.Data
         }
     )
 
-    ctrl = inventory[(inventory["scenario"] == "ctrl") & inventory["complete"]].copy()
+    ctrl_all = inventory[inventory["scenario"] == "ctrl"].copy()
+    ctrl = ctrl_all[ctrl_all["complete"]].copy()
     partition_pass = pd.Series(False, index=ctrl.index)
     if not ctrl.empty:
         partition_pass = (
@@ -291,10 +346,11 @@ def build_checks(inventory: pd.DataFrame, expected_per_scenario: int) -> pd.Data
             "expected": expected_per_scenario,
             "status": "PASS" if int(partition_pass.sum()) == expected_per_scenario else "FAIL",
             "details": (
+                f"incomplete_ctrl_runs={int((~ctrl_all['complete'].astype(bool)).sum())}; "
                 f"middle_components_mean={ctrl['middle_components'].mean():.3f}; "
                 f"middle_cross_group_links_mean={ctrl['middle_cross_group_links'].mean():.3f}"
                 if not ctrl.empty
-                else ""
+                else f"incomplete_ctrl_runs={int((~ctrl_all['complete'].astype(bool)).sum())}"
             ),
         }
     )
@@ -311,10 +367,14 @@ def build_checks(inventory: pd.DataFrame, expected_per_scenario: int) -> pd.Data
             "expected": "finite recovery after reconnect",
             "status": "PASS" if int(recovery_pass.sum()) == expected_per_scenario else "FAIL",
             "details": (
+                f"incomplete_ctrl_runs={int((~ctrl_all['complete'].astype(bool)).sum())}; "
                 f"recovered_runs={int(recovery_pass.sum())}/{expected_per_scenario}; "
                 f"max_recovery_steps={ctrl['recovery_steps'].max():.3f}"
                 if not ctrl.empty and ctrl["recovery_steps"].notna().any()
-                else f"recovered_runs={int(recovery_pass.sum())}/{expected_per_scenario}"
+                else (
+                    f"incomplete_ctrl_runs={int((~ctrl_all['complete'].astype(bool)).sum())}; "
+                    f"recovered_runs={int(recovery_pass.sum())}/{expected_per_scenario}"
+                )
             ),
         }
     )

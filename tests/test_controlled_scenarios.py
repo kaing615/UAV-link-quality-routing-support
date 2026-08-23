@@ -309,53 +309,22 @@ def test_extension_report_validates_partition_and_load_interventions(tmp_path: P
         for time in range(12)
     ]
 
-    _write_extension_run(
-        raw_root,
-        "stress_baseline_rwp_s60001",
-        scenario_mode="standard",
-        seed=60001,
-        mobility_model="random-waypoint",
-        edges=baseline_edges,
-        traffic=traffic_rows,
-    )
-    _write_extension_run(
-        raw_root,
-        "stress_ctrl_rwp_s60001",
-        scenario_mode="partition-reconnect",
-        seed=60001,
-        mobility_model="random-waypoint",
-        edges=ctrl_edges,
-        traffic=traffic_rows,
-        partition_start_step=4,
-        partition_end_step=8,
-        reconnect_step=10,
-        partition_groups=partition_groups,
-    )
-    _write_extension_run(
-        raw_root,
-        "stress_load_rwp_s60001",
-        scenario_mode="high-load",
-        seed=60001,
-        mobility_model="random-waypoint",
-        edges=load_edges,
-        traffic=traffic_rows,
-        background_flows=2,
-        background_rate_kbps=600.0,
-        background_rows=[
+    def background_rows(offered: tuple[float, float], throughput: tuple[float, float]) -> list[dict[str, object]]:
+        return [
             {
                 "flow_index": 0,
                 "source": 0,
                 "destination": 2,
                 "port": 9000,
                 "configured_offered_rate_kbps": 600.0,
-                "observed_offered_rate_kbps": 540.0,
+                "observed_offered_rate_kbps": offered[0],
                 "tx_packets": 120,
                 "rx_packets": 100,
                 "lost_packets": 20,
                 "pdr": 100 / 120,
                 "mean_delay_ms": 8.0,
-                "throughput_mbps": 0.55,
-                "aggregate_throughput_mbps": 1.0,
+                "throughput_mbps": throughput[0],
+                "aggregate_throughput_mbps": sum(throughput),
                 "jain_fairness": 0.98,
             },
             {
@@ -364,26 +333,65 @@ def test_extension_report_validates_partition_and_load_interventions(tmp_path: P
                 "destination": 3,
                 "port": 9001,
                 "configured_offered_rate_kbps": 600.0,
-                "observed_offered_rate_kbps": 510.0,
+                "observed_offered_rate_kbps": offered[1],
                 "tx_packets": 120,
                 "rx_packets": 92,
                 "lost_packets": 28,
                 "pdr": 92 / 120,
                 "mean_delay_ms": 9.0,
-                "throughput_mbps": 0.45,
-                "aggregate_throughput_mbps": 1.0,
+                "throughput_mbps": throughput[1],
+                "aggregate_throughput_mbps": sum(throughput),
                 "jain_fairness": 0.98,
             },
-        ],
-    )
+        ]
+
+    for seed, mobility_model, tag, offered, throughput in (
+        (60001, "random-waypoint", "rwp", (540.0, 510.0), (0.55, 0.45)),
+        (60002, "gauss-markov", "gm", (520.0, 500.0), (0.52, 0.44)),
+    ):
+        _write_extension_run(
+            raw_root,
+            f"stress_baseline_{tag}_s{seed}",
+            scenario_mode="standard",
+            seed=seed,
+            mobility_model=mobility_model,
+            edges=baseline_edges,
+            traffic=traffic_rows,
+        )
+        _write_extension_run(
+            raw_root,
+            f"stress_ctrl_{tag}_s{seed}",
+            scenario_mode="partition-reconnect",
+            seed=seed,
+            mobility_model=mobility_model,
+            edges=ctrl_edges,
+            traffic=traffic_rows,
+            partition_start_step=4,
+            partition_end_step=8,
+            reconnect_step=10,
+            partition_groups=partition_groups,
+        )
+        _write_extension_run(
+            raw_root,
+            f"stress_load_{tag}_s{seed}",
+            scenario_mode="high-load",
+            seed=seed,
+            mobility_model=mobility_model,
+            edges=load_edges,
+            traffic=traffic_rows,
+            background_flows=2,
+            background_rate_kbps=600.0,
+            background_rows=background_rows(offered, throughput),
+        )
 
     inventory, summary, checks = generate_extension_report(
         raw_root,
         tmp_path / "reports",
-        expected_per_scenario=1,
+        expected_per_scenario=2,
     )
 
     assert set(inventory["scenario"]) == {"baseline", "ctrl", "load"}
+    assert set(inventory[inventory["scenario"] == "load"]["seed"]) == {60001, 60002}
     assert set(summary["scenario"]) == {"baseline", "ctrl", "load"}
     expected_checks = {
         "ctrl_complete_runs",
@@ -396,6 +404,10 @@ def test_extension_report_validates_partition_and_load_interventions(tmp_path: P
     }
     assert expected_checks.issubset(set(checks["check"]))
     status_by_check = checks.set_index("check")["status"].to_dict()
+    observed_by_check = checks.set_index("check")["observed"].to_dict()
+    assert observed_by_check["ctrl_complete_runs"] == 2
+    assert observed_by_check["load_complete_runs"] == 2
+    assert observed_by_check["paired_baseline_load_seed_sets"] == 2
     assert status_by_check["partition_sequence"] == "PASS"
     assert status_by_check["partition_recovery"] == "PASS"
     assert status_by_check["load_multiple_flows"] == "PASS"
@@ -408,6 +420,125 @@ def test_extension_report_validates_partition_and_load_interventions(tmp_path: P
     assert (tmp_path / "reports/REPORT.md").exists()
     assert (tmp_path / "reports/figures/extension_manipulation_checks.png").exists()
     assert (tmp_path / "reports/figures/extension_manipulation_checks.pdf").exists()
+
+
+def test_extension_report_fails_ctrl_run_with_missing_partition_groups(tmp_path: Path) -> None:
+    from scripts.analysis.summarize_extension_scenarios import generate_extension_report
+
+    raw_root = tmp_path / "raw"
+    _write_extension_run(
+        raw_root,
+        "stress_ctrl_rwp_s60001",
+        scenario_mode="partition-reconnect",
+        seed=60001,
+        mobility_model="random-waypoint",
+        edges=[
+            {
+                "time": time,
+                "src": 0,
+                "dst": 1,
+                "distance": 100.0,
+                "connected": 1,
+                "relative_speed": 0.0,
+                "rssi": -55.0,
+                "snr": 20.0,
+                "delay": 5.0,
+                "packet_loss": 0.02,
+                "throughput": 6.0,
+                "p_stable": 0.95,
+                "weight": 0.05,
+            }
+            for time in range(12)
+        ],
+        traffic=[
+            {
+                "time": time,
+                "source": 0,
+                "destination": 3,
+                "reachable": 0,
+                "route_path": "",
+                "num_edges": 0,
+                "routing_protocol": "OLSR",
+                "olsr_mpr_nodes": 2,
+                "olsr_avg_rt_size": 3.0,
+            }
+            for time in range(12)
+        ],
+        partition_start_step=4,
+        partition_end_step=8,
+        reconnect_step=10,
+        partition_groups=None,
+    )
+
+    inventory, _, checks = generate_extension_report(raw_root, tmp_path / "reports", expected_per_scenario=1)
+
+    row = inventory.set_index("run_name").loc["stress_ctrl_rwp_s60001"]
+    assert bool(row["raw_complete"]) is True
+    assert bool(row["partition_metadata_complete"]) is False
+    assert bool(row["complete"]) is False
+    assert str(row["partition_metadata_issue"]) == "missing_or_empty_partition_groups"
+    status_by_check = checks.set_index("check")["status"].to_dict()
+    assert status_by_check["ctrl_complete_runs"] == "FAIL"
+    assert status_by_check["partition_sequence"] == "FAIL"
+    assert status_by_check["partition_recovery"] == "FAIL"
+
+
+def test_extension_report_fails_ctrl_run_with_missing_phase_metadata(tmp_path: Path) -> None:
+    from scripts.analysis.summarize_extension_scenarios import generate_extension_report
+
+    raw_root = tmp_path / "raw"
+    _write_extension_run(
+        raw_root,
+        "stress_ctrl_rwp_s60001",
+        scenario_mode="partition-reconnect",
+        seed=60001,
+        mobility_model="random-waypoint",
+        edges=[
+            {
+                "time": time,
+                "src": 0,
+                "dst": 1,
+                "distance": 100.0,
+                "connected": 1,
+                "relative_speed": 0.0,
+                "rssi": -55.0,
+                "snr": 20.0,
+                "delay": 5.0,
+                "packet_loss": 0.02,
+                "throughput": 6.0,
+                "p_stable": 0.95,
+                "weight": 0.05,
+            }
+            for time in range(12)
+        ],
+        traffic=[
+            {
+                "time": time,
+                "source": 0,
+                "destination": 3,
+                "reachable": 0,
+                "route_path": "",
+                "num_edges": 0,
+                "routing_protocol": "OLSR",
+                "olsr_mpr_nodes": 2,
+                "olsr_avg_rt_size": 3.0,
+            }
+            for time in range(12)
+        ],
+        partition_groups={"group_a": [0, 1], "group_b": [2, 3]},
+    )
+
+    inventory, _, checks = generate_extension_report(raw_root, tmp_path / "reports", expected_per_scenario=1)
+
+    row = inventory.set_index("run_name").loc["stress_ctrl_rwp_s60001"]
+    assert bool(row["raw_complete"]) is True
+    assert bool(row["partition_metadata_complete"]) is False
+    assert bool(row["complete"]) is False
+    assert str(row["partition_metadata_issue"]) == "missing_phase_steps"
+    status_by_check = checks.set_index("check")["status"].to_dict()
+    assert status_by_check["ctrl_complete_runs"] == "FAIL"
+    assert status_by_check["partition_sequence"] == "FAIL"
+    assert status_by_check["partition_recovery"] == "FAIL"
 
 
 def test_controlled_report_checks_completeness_and_manipulations(tmp_path: Path) -> None:
