@@ -11,7 +11,11 @@ from scripts.analysis.generate_stage7_artifacts import (
     paired_ablation_effects,
     write_tables,
 )
-from scripts.analysis.generate_temporal_artifacts import generate_temporal_artifacts, temporal_effects
+from scripts.analysis.generate_temporal_artifacts import (
+    generate_temporal_artifacts,
+    paired_detail,
+    temporal_effects,
+)
 
 
 def test_combine_protocol_aggregates_keeps_only_test_rows():
@@ -214,6 +218,37 @@ def test_temporal_effects_requires_exact_static_coordinates_and_uses_paired_delt
 
     with pytest.raises(ValueError, match="missing temporal coordinates"):
         temporal_effects(static, temporal.iloc[:1], n_resamples=100)
+
+
+def test_temporal_paired_detail_rejects_duplicate_coordinates():
+    row = {
+        "target": "survival",
+        "horizon": 3,
+        "run_name": "r1",
+        "split": "test",
+        "macro_f1": 0.6,
+        "pr_auc": 0.7,
+    }
+    static = pd.DataFrame([row, row])
+    temporal = pd.DataFrame([row])
+
+    with pytest.raises(ValueError, match="static metrics contains duplicate coordinates"):
+        paired_detail(static, temporal)
+
+
+def test_temporal_paired_detail_rejects_missing_static_coordinates():
+    first = {
+        "target": "survival",
+        "horizon": 3,
+        "run_name": "r1",
+        "split": "test",
+        "macro_f1": 0.6,
+        "pr_auc": 0.7,
+    }
+    second = {**first, "run_name": "r2"}
+
+    with pytest.raises(ValueError, match="missing static coordinates"):
+        paired_detail(pd.DataFrame([first]), pd.DataFrame([first, second]))
 
 
 def test_temporal_effects_preserves_each_paired_comparison_holm_family(monkeypatch):

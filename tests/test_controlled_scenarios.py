@@ -193,16 +193,31 @@ def _write_resume_artifacts(
     graph_dir = graph_root / job.run_name / "graph_dataset"
     raw_dir.mkdir(parents=True)
     graph_dir.mkdir(parents=True)
-    scenario = metadata or {
+    scenario = {
+        "run_name": job.run_name,
+        "seed": job.seed,
+        "mobility_model": job.mobility,
+        "comm_range": job.comm_range,
+        "rwp_speed_range": [job.speed_min, job.speed_max],
+        "source_id": job.source_id,
+        "dest_id": job.dest_id,
         "scenario_mode": job.scenario_mode,
-        "num_uavs": 4,
-        "time_steps": 12,
-        "partition_start_step": 3,
-        "partition_end_step": 8,
-        "reconnect_step": 10,
-        "partition_groups": {"group_a": [0, 1], "group_b": [2, 3]},
         "background_flows": job.background_flows,
+        "background_rate_kbps": job.background_rate_kbps,
     }
+    scenario.update(
+        metadata
+        or {
+            "scenario_mode": job.scenario_mode,
+            "num_uavs": 4,
+            "time_steps": 12,
+            "partition_start_step": 3,
+            "partition_end_step": 8,
+            "reconnect_step": 10,
+            "partition_groups": {"group_a": [0, 1], "group_b": [2, 3]},
+            "background_flows": job.background_flows,
+        }
+    )
     (raw_dir / "scenario.json").write_text(json.dumps(scenario), encoding="utf-8")
     (raw_dir / "nodes.csv").write_text("time,node_id\n0,0\n", encoding="utf-8")
     (raw_dir / "edges.csv").write_text("time,src,dst,connected\n0,0,1,1\n", encoding="utf-8")
@@ -244,6 +259,64 @@ def test_resume_requires_exact_configured_high_load_flow_count(tmp_path: Path) -
     metadata["background_flows"] = 7
     (raw_root / job.run_name / "scenario.json").write_text(json.dumps(metadata), encoding="utf-8")
     assert _complete(job, raw_root, graph_root) is False
+
+
+@pytest.mark.parametrize(
+    ("field", "bad_value"),
+    [
+        ("run_name", "foreign-run"),
+        ("seed", 70001),
+        ("mobility_model", "gauss-markov"),
+        ("comm_range", 300),
+        ("rwp_speed_range", [3, 20]),
+        ("background_rate_kbps", 500.0),
+        ("source_id", 1),
+        ("dest_id", 5),
+    ],
+)
+def test_resume_rejects_material_job_metadata_mismatch(tmp_path: Path, field: str, bad_value: object) -> None:
+    from scripts.dataset.run_controlled_scenarios import _complete, build_extension_jobs
+
+    job = next(job for job in build_extension_jobs(1) if job.scenario == "load")
+    raw_root = tmp_path / "raw"
+    graph_root = tmp_path / "graph"
+    _write_resume_artifacts(
+        job,
+        raw_root,
+        graph_root,
+        background_flow_indices=list(range(job.background_flows)),
+    )
+    assert _complete(job, raw_root, graph_root) is True
+
+    scenario_path = raw_root / job.run_name / "scenario.json"
+    metadata = json.loads(scenario_path.read_text(encoding="utf-8"))
+    metadata[field] = bad_value
+    scenario_path.write_text(json.dumps(metadata), encoding="utf-8")
+
+    assert _complete(job, raw_root, graph_root) is False
+
+
+def test_resume_accepts_metadata_float_serialization_rounding(tmp_path: Path) -> None:
+    from scripts.dataset.run_controlled_scenarios import _complete, build_extension_jobs
+
+    job = next(job for job in build_extension_jobs(1) if job.scenario == "load")
+    raw_root = tmp_path / "raw"
+    graph_root = tmp_path / "graph"
+    _write_resume_artifacts(
+        job,
+        raw_root,
+        graph_root,
+        metadata={
+            "comm_range": job.comm_range + 0.00004,
+            "rwp_speed_range": [job.speed_min + 0.00004, job.speed_max - 0.00004],
+            "background_rate_kbps": job.background_rate_kbps + 0.00004,
+            "num_uavs": 4,
+            "time_steps": 12,
+        },
+        background_flow_indices=list(range(job.background_flows)),
+    )
+
+    assert _complete(job, raw_root, graph_root) is True
 
 
 @pytest.mark.parametrize(
@@ -599,6 +672,44 @@ def test_partition_recovery_starts_at_observed_cross_group_reconnection(tmp_path
     assert checks.set_index("check").loc["partition_recovery", "status"] == "PASS"
 
 
+def test_partition_sequence_rejects_cross_group_link_with_isolated_node(tmp_path: Path) -> None:
+    from scripts.analysis.summarize_extension_scenarios import generate_extension_report
+
+    raw_root = tmp_path / "raw"
+    groups = {"group_a": [0, 1], "group_b": [2, 3]}
+    connected_links = [(0, 1), (1, 2), (2, 3)]
+    partition_links = [(0, 1), (2, 3)]
+    partial_reconnect_links = [(0, 1), (0, 2)]
+    edges = [
+        row
+        for time in range(12)
+        for row in _edge_rows(
+            time,
+            connected_links if time < 4 else partition_links if time <= 8 else partial_reconnect_links,
+        )
+    ]
+    _write_extension_run(
+        raw_root,
+        "stress_ctrl_rwp_s60001",
+        scenario_mode="partition-reconnect",
+        seed=60001,
+        mobility_model="random-waypoint",
+        edges=edges,
+        traffic=_traffic_rows(range(12), {*range(4), *range(9, 12)}),
+        partition_start_step=4,
+        partition_end_step=8,
+        reconnect_step=10,
+        partition_groups=groups,
+    )
+
+    inventory, _, checks = generate_extension_report(raw_root, tmp_path / "reports", expected_per_scenario=1)
+
+    row = inventory.iloc[0]
+    assert row["post_cross_group_links"] > 0
+    assert bool(row["post_connected"]) is False
+    assert checks.set_index("check").loc["partition_sequence", "status"] == "FAIL"
+
+
 def test_extension_inventory_accepts_canonical_partition_identity(tmp_path: Path) -> None:
     from scripts.analysis.summarize_extension_scenarios import collect_inventory
 
@@ -686,6 +797,59 @@ def test_extension_report_rejects_complete_channel_collapse(tmp_path: Path) -> N
     statuses = checks.set_index("check")["status"].to_dict()
     assert statuses["load_complete_runs"] == "FAIL"
     assert statuses["load_multiple_flows"] == "FAIL"
+
+
+@pytest.mark.parametrize(
+    ("column", "bad_value"),
+    [
+        ("configured_offered_rate_kbps", 500.0),
+        ("observed_offered_rate_kbps", 0.0),
+    ],
+)
+def test_extension_inventory_rejects_per_flow_rate_not_bound_to_metadata(
+    tmp_path: Path, column: str, bad_value: float
+) -> None:
+    from scripts.analysis.summarize_extension_scenarios import collect_inventory
+
+    rows = [
+        {
+            "flow_index": flow,
+            "source": flow,
+            "destination": flow + 2,
+            "port": 9000 + flow,
+            "configured_offered_rate_kbps": 600.0,
+            "observed_offered_rate_kbps": 600.0,
+            "tx_packets": 100,
+            "rx_packets": 90,
+            "lost_packets": 10,
+            "pdr": 0.9,
+            "mean_delay_ms": 8.0,
+            "throughput_mbps": 0.5,
+            "aggregate_throughput_mbps": 1.0,
+            "jain_fairness": 1.0,
+        }
+        for flow in range(2)
+    ]
+    rows[0][column] = bad_value
+    raw_root = tmp_path / "raw"
+    _write_extension_run(
+        raw_root,
+        "stress_load_rwp_s60001",
+        scenario_mode="high-load",
+        seed=60001,
+        mobility_model="random-waypoint",
+        edges=_edge_rows(0, [(0, 1)]),
+        traffic=_traffic_rows(range(1), {0}),
+        background_flows=2,
+        background_rate_kbps=600.0,
+        background_rows=rows,
+    )
+
+    row = collect_inventory(raw_root).iloc[0]
+
+    assert bool(row["raw_complete"]) is True
+    assert bool(row["load_metrics_valid"]) is False
+    assert bool(row["complete"]) is False
 
 
 def test_extension_report_fails_ctrl_run_with_missing_partition_groups(tmp_path: Path) -> None:

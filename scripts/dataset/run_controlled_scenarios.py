@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import os
 import subprocess
 import time
@@ -124,27 +125,47 @@ def _complete(job: ScenarioJob, raw_root: Path, graph_root: Path) -> bool:
         return False
 
     raw_dir = raw_root / job.run_name
+    try:
+        metadata = json.loads((raw_dir / "scenario.json").read_text(encoding="utf-8"))
+        speed_range = metadata["rwp_speed_range"]
+        if not isinstance(speed_range, list) or len(speed_range) != 2:
+            return False
+        numbers_match = all(
+            math.isclose(float(actual), float(expected), rel_tol=1e-9, abs_tol=1e-4)
+            for actual, expected in (
+                (metadata["comm_range"], job.comm_range),
+                (speed_range[0], job.speed_min),
+                (speed_range[1], job.speed_max),
+                (metadata["background_rate_kbps"], job.background_rate_kbps),
+            )
+        )
+    except (KeyError, OSError, TypeError, ValueError, json.JSONDecodeError):
+        return False
+    if (
+        metadata.get("run_name") != job.run_name
+        or metadata.get("seed") != job.seed
+        or metadata.get("mobility_model") != job.mobility
+        or metadata.get("scenario_mode") != job.scenario_mode
+        or metadata.get("background_flows") != job.background_flows
+        or metadata.get("source_id") != job.source_id
+        or metadata.get("dest_id") != job.dest_id
+        or not numbers_match
+    ):
+        return False
+
     if job.scenario_mode == "high-load":
         metrics_path = raw_dir / "background_flow_metrics.csv"
         if not metrics_path.exists() or metrics_path.stat().st_size == 0:
             return False
         try:
             metrics = pd.read_csv(metrics_path, usecols=["flow_index"])
-            metadata = json.loads((raw_dir / "scenario.json").read_text(encoding="utf-8"))
-            configured_flows = int(metadata["background_flows"])
-        except (KeyError, OSError, TypeError, ValueError, json.JSONDecodeError, pd.errors.EmptyDataError):
+        except (OSError, TypeError, ValueError, pd.errors.EmptyDataError):
             return False
-        if (
-            metadata.get("scenario_mode") != job.scenario_mode
-            or configured_flows != job.background_flows
-            or len(metrics) != configured_flows
-            or metrics["flow_index"].nunique() != configured_flows
-        ):
+        if len(metrics) != job.background_flows or metrics["flow_index"].nunique() != job.background_flows:
             return False
 
     if job.scenario_mode == "partition-reconnect":
         try:
-            metadata = json.loads((raw_dir / "scenario.json").read_text(encoding="utf-8"))
             start = metadata["partition_start_step"]
             end = metadata["partition_end_step"]
             reconnect = metadata["reconnect_step"]

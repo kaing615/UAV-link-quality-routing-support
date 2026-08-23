@@ -32,8 +32,8 @@ if [[ "${1:-}" == "--dry-run" ]]; then
     '2. Validate core raw/graph data and extension partition/load manipulation checks before training' \
     "3. Build QoS/survival multi-horizon datasets for $((400 + EXTENSION_RUNS * 2)) accepted runs (k=1,2,3,5)" \
     "4. Train within-run models on ${WITHIN_RUNS_PER_SCENARIO} runs/scenario; retain all $((400 + EXTENSION_RUNS * 2)) datasets" \
-    "5. Run LORO on ${LORO_FOLDS_PER_SCENARIO} folds/scenario and ablation on ${ABLATION_RUNS_PER_SCENARIO} runs/scenario; partition/load stay sampled here but are excluded from cross-mobility" \
-    "6. Run temporal survival coordinates k=3,5 on ${TEMPORAL_RUNS_PER_SCENARIO} runs/scenario, then generate paired temporal artifacts" \
+    "5. Run temporal survival coordinates k=3,5 on ${TEMPORAL_RUNS_PER_SCENARIO} runs/scenario, then generate paired temporal artifacts" \
+    "6. Run LORO on ${LORO_FOLDS_PER_SCENARIO} folds/scenario and ablation on ${ABLATION_RUNS_PER_SCENARIO} runs/scenario; partition/load stay sampled here but are excluded from cross-mobility" \
     '7. Run multi-horizon routing replay and paired statistics' \
     "8. Run inference resources and closed-loop ns-3 on ${CLOSED_LOOP_RUNS} baseline runs" \
     '9. Generate publication figures and tables'
@@ -76,18 +76,6 @@ python -m scripts.train.run_multihorizon_benchmark \
   --runs-per-scenario "$WITHIN_RUNS_PER_SCENARIO" \
   --gnn-epochs "$GNN_EPOCHS" --gnn-patience "$GNN_PATIENCE"
 
-python -m scripts.analysis.analyze_multihorizon_stage6 \
-  --summary "$REPORT_ROOT/multihorizon_benchmark_summary.csv" \
-  --output-dir "$REPORT_ROOT/stage6"
-python -m scripts.train.run_stage6_benchmark \
-  --data-root "$MULTIHORIZON_DATA" \
-  --output-root "$STAGE6_OUTPUT" \
-  --reports-root "$REPORT_ROOT/stage6" \
-  --benchmark-summary "$REPORT_ROOT/multihorizon_benchmark_summary.csv" \
-  --loro-runs-per-scenario "$LORO_FOLDS_PER_SCENARIO" \
-  --ablation-runs-per-scenario "$ABLATION_RUNS_PER_SCENARIO" \
-  --gnn-epochs "$GNN_EPOCHS" --gnn-patience "$GNN_PATIENCE"
-
 python -m scripts.train.run_temporal_benchmark \
   --data-root "$MULTIHORIZON_DATA" \
   --output-root "$TEMPORAL_OUTPUT" \
@@ -99,6 +87,18 @@ python -m scripts.analysis.generate_temporal_artifacts \
   --static "$REPORT_ROOT/multihorizon_benchmark_summary.csv" \
   --temporal "$REPORT_ROOT/temporal_benchmark_summary.csv" \
   --output-dir "$REPORT_ROOT/temporal"
+
+python -m scripts.analysis.analyze_multihorizon_stage6 \
+  --summary "$REPORT_ROOT/multihorizon_benchmark_summary.csv" \
+  --output-dir "$REPORT_ROOT/stage6"
+python -m scripts.train.run_stage6_benchmark \
+  --data-root "$MULTIHORIZON_DATA" \
+  --output-root "$STAGE6_OUTPUT" \
+  --reports-root "$REPORT_ROOT/stage6" \
+  --benchmark-summary "$REPORT_ROOT/multihorizon_benchmark_summary.csv" \
+  --loro-runs-per-scenario "$LORO_FOLDS_PER_SCENARIO" \
+  --ablation-runs-per-scenario "$ABLATION_RUNS_PER_SCENARIO" \
+  --gnn-epochs "$GNN_EPOCHS" --gnn-patience "$GNN_PATIENCE"
 
 python -m src.routing.multihorizon_eval \
   --data-root "$MULTIHORIZON_DATA" \

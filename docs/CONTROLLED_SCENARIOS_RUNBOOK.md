@@ -450,8 +450,8 @@ Launcher thực hiện tuần tự:
 ```text
 controlled ns-3 (400 + 20) → core/extension checks → data quality
 → multi-horizon QoS/survival (420) → persistence/logreg/XGBoost/Edge-SAGE
-→ LORO/cross-mobility/ablation → temporal Edge-SAGE--GRU survival k=3,5
-→ paired temporal artifacts → routing replay → inference benchmark
+→ temporal Edge-SAGE--GRU survival k=3,5 → paired temporal artifacts
+→ LORO/cross-mobility/ablation → routing replay → inference benchmark
 → closed-loop ns-3 → hình và bảng cho paper
 ```
 

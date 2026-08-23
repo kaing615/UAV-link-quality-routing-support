@@ -127,9 +127,7 @@ def _partition_metrics(raw_dir: Path, metadata: dict[str, object]) -> dict[str, 
     if partition_start is None or partition_end is None or reconnect_step is None:
         return {}
     edges = pd.read_csv(raw_dir / "edges.csv", usecols=["time", "src", "dst", "connected"])
-    traffic = pd.read_csv(
-        raw_dir / "traffic_log.csv", usecols=["time", "reachable", "routing_protocol"]
-    )
+    traffic = pd.read_csv(raw_dir / "traffic_log.csv", usecols=["time", "reachable", "routing_protocol"])
     times = sorted(edges["time"].astype(int).unique().tolist())
     pre_time = _pick_time(times, int(partition_start) - 1)
     middle_time = _pick_time(times, (int(partition_start) + int(partition_end)) // 2)
@@ -171,9 +169,7 @@ def _partition_metrics(raw_dir: Path, metadata: dict[str, object]) -> dict[str, 
     if np.isfinite(physical_reconnect_step):
         physical_step = int(physical_reconnect_step)
         partition_window = traffic[
-            traffic["time"].astype(int).between(
-                int(partition_start), physical_step - 1, inclusive="both"
-            )
+            traffic["time"].astype(int).between(int(partition_start), physical_step - 1, inclusive="both")
         ]
         recovery_window = traffic[
             (traffic["time"].astype(int) >= physical_step)
@@ -208,15 +204,15 @@ def _partition_metrics(raw_dir: Path, metadata: dict[str, object]) -> dict[str, 
     }
 
 
-def _load_metrics(
-    raw_dir: Path, scenario: str, metadata: dict[str, object]
-) -> dict[str, float | bool]:
+def _load_metrics(raw_dir: Path, scenario: str, metadata: dict[str, object]) -> dict[str, float | bool]:
     if scenario != "load":
         return {}
     metrics = pd.read_csv(raw_dir / "background_flow_metrics.csv")
     configured_flow_count = int(metadata.get("background_flows", 0))
+    configured_rate = float(metadata.get("background_rate_kbps", 0.0))
     required = {
         "flow_index",
+        "configured_offered_rate_kbps",
         "observed_offered_rate_kbps",
         "tx_packets",
         "rx_packets",
@@ -242,10 +238,17 @@ def _load_metrics(
     unique_flows = int(metrics["flow_index"].nunique())
     load_metrics_valid = bool(
         configured_flow_count > 1
+        and configured_rate > 0
         and len(metrics) == configured_flow_count
         and unique_flows == configured_flow_count
         and np.isfinite(numeric.to_numpy()).all()
-        and numeric["observed_offered_rate_kbps"].sum() > 0
+        and np.isclose(
+            numeric["configured_offered_rate_kbps"],
+            configured_rate,
+            rtol=1e-9,
+            atol=1e-4,
+        ).all()
+        and numeric["observed_offered_rate_kbps"].gt(0).all()
         and numeric["tx_packets"].gt(0).all()
         and numeric["rx_packets"].sum() > 0
         and numeric["pdr"].between(0, 1, inclusive="both").all()
@@ -288,7 +291,9 @@ def collect_inventory(raw_root: Path) -> pd.DataFrame:
             "mobility": (
                 "event-controlled-waypoint"
                 if scenario == "ctrl"
-                else "random-waypoint" if mobility_tag == "rwp" else "gauss-markov"
+                else "random-waypoint"
+                if mobility_tag == "rwp"
+                else "gauss-markov"
             ),
             "raw_complete": False,
             "complete": False,
@@ -381,15 +386,11 @@ def _paired_baseline_load(inventory: pd.DataFrame) -> pd.DataFrame:
     paired = baseline.merge(load, on=["seed", "mobility"], how="inner", validate="one_to_one")
     if paired.empty:
         return paired
-    paired["delay_delta_ms"] = (
-        paired["load_mean_connected_delay_ms"] - paired["baseline_mean_connected_delay_ms"]
-    )
+    paired["delay_delta_ms"] = paired["load_mean_connected_delay_ms"] - paired["baseline_mean_connected_delay_ms"]
     paired["packet_loss_delta"] = (
         paired["load_mean_connected_packet_loss"] - paired["baseline_mean_connected_packet_loss"]
     )
-    paired["connected_edge_rate_delta"] = (
-        paired["load_connected_edge_rate"] - paired["baseline_connected_edge_rate"]
-    )
+    paired["connected_edge_rate_delta"] = paired["load_connected_edge_rate"] - paired["baseline_connected_edge_rate"]
     return paired
 
 
@@ -427,6 +428,7 @@ def build_checks(inventory: pd.DataFrame, expected_per_scenario: int) -> pd.Data
             ctrl["pre_connected"].astype(bool)
             & ctrl["middle_components"].ge(2)
             & ctrl["middle_cross_group_links"].eq(0)
+            & ctrl["post_connected"].astype(bool)
             & ctrl["post_cross_group_links"].gt(0)
         )
     rows.append(
@@ -455,9 +457,7 @@ def build_checks(inventory: pd.DataFrame, expected_per_scenario: int) -> pd.Data
             & ctrl["recovery_delay_steps"].ge(0)
         )
         recovery_observed = (
-            float(ctrl.loc[recovery_pass, "recovery_delay_steps"].mean())
-            if recovery_pass.any()
-            else float("nan")
+            float(ctrl.loc[recovery_pass, "recovery_delay_steps"].mean()) if recovery_pass.any() else float("nan")
         )
     rows.append(
         {
@@ -541,7 +541,11 @@ def _write_figure(inventory: pd.DataFrame, output_dir: Path) -> None:
     fig, axes = plt.subplots(2, 2, figsize=(11, 8))
 
     scenario_summary = summary[summary["scenario"].isin(SCENARIOS)]
-    axes[0, 0].bar(scenario_summary["scenario"].str.title(), scenario_summary["complete_runs"], color=["#7f7f7f", "#d62728", "#4c78a8"])
+    axes[0, 0].bar(
+        scenario_summary["scenario"].str.title(),
+        scenario_summary["complete_runs"],
+        color=["#7f7f7f", "#d62728", "#4c78a8"],
+    )
     axes[0, 0].set_title("Complete runs")
     axes[0, 0].grid(axis="y", alpha=0.25)
 

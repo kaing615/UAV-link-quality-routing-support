@@ -168,6 +168,7 @@ def run_benchmark(
         datasets = datasets[:limit]
     if not datasets:
         raise FileNotFoundError(f"No multi-horizon graph datasets found under {data_root}")
+    selected_coordinates = {(target, horizon, run_root.name) for target, horizon, run_root in datasets}
 
     for target, horizon, run_root in datasets:
         combination_root = data_root / target / f"k{horizon}"
@@ -224,6 +225,18 @@ def run_benchmark(
                 raise ValueError(f"Unknown model: {model}")
 
     summary = collect_metrics(output_root)
+    summary = summary[
+        summary["model_id"].isin(models)
+        & pd.Series(
+            [
+                (target, horizon, run_name) in selected_coordinates
+                for target, horizon, run_name in zip(
+                    summary["target"], summary["horizon"], summary["run_name"], strict=True
+                )
+            ],
+            index=summary.index,
+        )
+    ].copy()
     summary_csv.parent.mkdir(parents=True, exist_ok=True)
     summary.to_csv(summary_csv, index=False)
     aggregate_path = summary_csv.with_name(f"{summary_csv.stem}_aggregate.csv")

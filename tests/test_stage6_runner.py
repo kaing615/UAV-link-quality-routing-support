@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import subprocess
 from pathlib import Path
 
@@ -36,6 +37,63 @@ def test_controlled_launcher_dry_run_states_extension_count_and_temporal_selecti
     assert "400 core + 20 extension" in completed.stdout
     assert "420 accepted runs" in completed.stdout
     assert "temporal survival coordinates k=3,5" in completed.stdout
+    assert completed.stdout.index("temporal survival coordinates") < completed.stdout.index("LORO")
+
+
+def test_controlled_launcher_runs_temporal_artifacts_before_stage6(tmp_path: Path) -> None:
+    project_root = tmp_path / "project"
+    launcher = project_root / "scripts" / "run_controlled_paper_pipeline.sh"
+    launcher.parent.mkdir(parents=True)
+    launcher.write_bytes(Path("scripts/run_controlled_paper_pipeline.sh").read_bytes().replace(b"\r", b""))
+    launcher.chmod(0o755)
+
+    ns3_binary = project_root / "simulation" / "ns3" / "build" / "uav-olsr-dataset"
+    ns3_binary.parent.mkdir(parents=True)
+    ns3_binary.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
+    ns3_binary.chmod(0o755)
+    for seed in range(60001, 60011):
+        (project_root / f"data/multihorizon_controlled/survival/k3/stress_baseline_rwp_s{seed}").mkdir(parents=True)
+
+    command_log = project_root / "python-commands.log"
+    fake_bin = project_root / "bin"
+    fake_bin.mkdir()
+    fake_python = fake_bin / "python"
+    fake_python.write_bytes(b'#!/usr/bin/env bash\nprintf "%s\\n" "$*" >> python-commands.log\n')
+    fake_python.chmod(0o755)
+    env = {
+        **os.environ,
+        "PATH": str(fake_bin) + os.pathsep + os.environ["PATH"],
+        "CLOSED_LOOP_RUNS": "1",
+        "WITHIN_RUNS_PER_SCENARIO": "1",
+        "LORO_FOLDS_PER_SCENARIO": "1",
+        "ABLATION_RUNS_PER_SCENARIO": "1",
+        "EXTENSION_RUNS": "1",
+        "TEMPORAL_RUNS_PER_SCENARIO": "1",
+        "TEMPORAL_EPOCHS": "1",
+        "TEMPORAL_PATIENCE": "1",
+    }
+
+    completed = subprocess.run(
+        ["bash", "scripts/run_controlled_paper_pipeline.sh"],
+        cwd=project_root,
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    modules = [line.split()[1] for line in command_log.read_text(encoding="utf-8").splitlines()]
+    ordered = [
+        "scripts.analysis.summarize_extension_scenarios",
+        "scripts.train.run_multihorizon_benchmark",
+        "scripts.train.run_temporal_benchmark",
+        "scripts.analysis.generate_temporal_artifacts",
+        "scripts.analysis.analyze_multihorizon_stage6",
+        "scripts.train.run_stage6_benchmark",
+        "src.routing.multihorizon_eval",
+        "scripts.analysis.generate_stage7_artifacts",
+    ]
+    assert [modules.index(module) for module in ordered] == sorted(modules.index(module) for module in ordered)
 
 
 def test_discover_coordinates_groups_runs_by_target_and_horizon(tmp_path: Path):

@@ -19,7 +19,7 @@ from scripts.train.run_multihorizon_benchmark import (
 
 MODEL_ID = "edge-sage-gru"
 _PREDICTION_COLUMNS = {"time", "src", "dst", "y_true", "y_pred", "pred_score"}
-_METRICS_COLUMNS = {"model_id", "split", "macro_f1", "pr_auc"}
+_METRICS_COLUMNS = {"model_id", "split", "has_both_classes", "macro_f1", "pr_auc"}
 
 
 def _run(command: list[str]) -> None:
@@ -49,17 +49,26 @@ def _resume_ready(output_dir: Path, run_name: str, config: dict[str, int | str])
         predictions = [pd.read_csv(output_dir / f"{split}_predictions.csv") for split in ("val", "test")]
     except (OSError, ValueError, pd.errors.ParserError):
         return False
-    metric_values = metrics[["macro_f1", "pr_auc"]].apply(pd.to_numeric, errors="coerce")
-    return (
+    if not _METRICS_COLUMNS.issubset(metrics.columns):
+        return False
+    has_both_classes = metrics["has_both_classes"]
+    if not pd.api.types.is_bool_dtype(has_both_classes):
+        return False
+    macro_f1 = pd.to_numeric(metrics["macro_f1"], errors="coerce")
+    pr_auc = pd.to_numeric(metrics["pr_auc"], errors="coerce")
+    metrics_valid = (
+        macro_f1.map(math.isfinite).all()
+        and ((has_both_classes & pr_auc.map(math.isfinite)) | (~has_both_classes & metrics["pr_auc"].isna())).all()
+    )
+    return bool(
         metadata.get("model_id") == MODEL_ID
         and metadata.get("run_name") == run_name
         and metadata.get("window_size") == config["window_size"]
         and marker == config
         and len(metrics) == 2
-        and _METRICS_COLUMNS.issubset(metrics.columns)
         and set(metrics["split"]) == {"val", "test"}
         and metrics["model_id"].eq(MODEL_ID).all()
-        and metric_values.apply(lambda column: column.map(math.isfinite)).all().all()
+        and metrics_valid
         and all(not frame.empty and _PREDICTION_COLUMNS.issubset(frame.columns) for frame in predictions)
     )
 
@@ -79,11 +88,7 @@ def run_temporal_benchmark(
     """Train the temporal model on a reproducible bounded coordinate set."""
     targets = {"survival"} if targets is None else targets
     horizons = {3, 5} if horizons is None else horizons
-    datasets = [
-        item
-        for item in discover_datasets(data_root)
-        if item[0] in targets and item[1] in horizons
-    ]
+    datasets = [item for item in discover_datasets(data_root) if item[0] in targets and item[1] in horizons]
     selected = {
         (target, horizon, run)
         for target, horizon in sorted({item[:2] for item in datasets})
