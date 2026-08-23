@@ -18,6 +18,7 @@ import matplotlib.pyplot as plt  # noqa: E402
 SCENARIOS = ("baseline", "ctrl", "load")
 EXTENSION_SCENARIOS = ("ctrl", "load")
 RUN_PATTERN = re.compile(r"^stress_(baseline|ctrl|load)_(rwp|gm)_s(\d+)$")
+PARTITION_RUN_PATTERN = re.compile(r"^stress_partition_ctrl_s(\d+)$")
 
 
 def _required_files(scenario: str) -> tuple[str, ...]:
@@ -57,6 +58,9 @@ def _partition_defaults() -> dict[str, object]:
         "post_components": np.nan,
         "post_cross_group_links": np.nan,
         "traffic_partition_outage": False,
+        "physical_reconnect_step": np.nan,
+        "route_recovery_step": np.nan,
+        "recovery_delay_steps": np.nan,
         "recovery_steps": np.nan,
     }
 
@@ -123,11 +127,12 @@ def _partition_metrics(raw_dir: Path, metadata: dict[str, object]) -> dict[str, 
     if partition_start is None or partition_end is None or reconnect_step is None:
         return {}
     edges = pd.read_csv(raw_dir / "edges.csv", usecols=["time", "src", "dst", "connected"])
-    traffic = pd.read_csv(raw_dir / "traffic_log.csv", usecols=["time", "reachable"])
+    traffic = pd.read_csv(
+        raw_dir / "traffic_log.csv", usecols=["time", "reachable", "routing_protocol"]
+    )
     times = sorted(edges["time"].astype(int).unique().tolist())
     pre_time = _pick_time(times, int(partition_start) - 1)
     middle_time = _pick_time(times, (int(partition_start) + int(partition_end)) // 2)
-    post_time = _pick_time(times, int(reconnect_step))
     pre_connected, pre_components, pre_cross_group = _snapshot_metrics(
         edges,
         time=pre_time,
@@ -142,27 +147,48 @@ def _partition_metrics(raw_dir: Path, metadata: dict[str, object]) -> dict[str, 
         group_a=group_a,
         group_b=group_b,
     )
-    post_connected, post_components, post_cross_group = _snapshot_metrics(
-        edges,
-        time=post_time,
-        num_uavs=int(metadata["num_uavs"]),
-        group_a=group_a,
-        group_b=group_b,
-    )
-    partition_window = traffic[
-        traffic["time"].astype(int).between(int(partition_start), int(reconnect_step) - 1, inclusive="both")
-    ]
-    recovery_window = traffic[traffic["time"].astype(int) >= int(reconnect_step)]
-    recovering = recovery_window[recovery_window["reachable"].astype(int) == 1]
-    recovery_steps = float("nan")
-    if not recovering.empty:
-        recovery_steps = float(int(recovering["time"].astype(int).iloc[0]) - int(reconnect_step))
+    physical_reconnect_step = float("nan")
+    post_connected = False
+    post_components = int(metadata["num_uavs"])
+    post_cross_group = 0
+    for time in (time for time in times if time >= int(partition_end)):
+        connected, components, cross_group = _snapshot_metrics(
+            edges,
+            time=time,
+            num_uavs=int(metadata["num_uavs"]),
+            group_a=group_a,
+            group_b=group_b,
+        )
+        if cross_group > 0 or connected:
+            physical_reconnect_step = float(time)
+            post_connected = connected
+            post_components = components
+            post_cross_group = cross_group
+            break
+    route_recovery_step = float("nan")
+    recovery_delay_steps = float("nan")
+    partition_window = traffic.iloc[0:0]
+    if np.isfinite(physical_reconnect_step):
+        physical_step = int(physical_reconnect_step)
+        partition_window = traffic[
+            traffic["time"].astype(int).between(
+                int(partition_start), physical_step - 1, inclusive="both"
+            )
+        ]
+        recovery_window = traffic[
+            (traffic["time"].astype(int) >= physical_step)
+            & traffic["routing_protocol"].astype(str).str.casefold().eq("olsr")
+        ]
+        recovering = recovery_window[recovery_window["reachable"].astype(int) == 1]
+        if not recovering.empty:
+            route_recovery_step = float(recovering["time"].astype(int).min())
+            recovery_delay_steps = route_recovery_step - physical_reconnect_step
     return {
         "partition_metadata_complete": True,
         "partition_metadata_issue": "",
         "pre_time": float(pre_time),
         "middle_time": float(middle_time),
-        "post_time": float(post_time),
+        "post_time": physical_reconnect_step,
         "pre_connected": bool(pre_connected),
         "pre_components": float(pre_components),
         "pre_cross_group_links": float(pre_cross_group),
@@ -175,21 +201,65 @@ def _partition_metrics(raw_dir: Path, metadata: dict[str, object]) -> dict[str, 
         "traffic_partition_outage": bool(
             not partition_window.empty and (partition_window["reachable"].astype(int) == 0).any()
         ),
-        "recovery_steps": recovery_steps,
+        "physical_reconnect_step": physical_reconnect_step,
+        "route_recovery_step": route_recovery_step,
+        "recovery_delay_steps": recovery_delay_steps,
+        "recovery_steps": recovery_delay_steps,
     }
 
 
-def _load_metrics(raw_dir: Path, scenario: str) -> dict[str, float]:
+def _load_metrics(
+    raw_dir: Path, scenario: str, metadata: dict[str, object]
+) -> dict[str, float | bool]:
     if scenario != "load":
         return {}
     metrics = pd.read_csv(raw_dir / "background_flow_metrics.csv")
-    aggregate = metrics["aggregate_throughput_mbps"].replace([np.inf, -np.inf], np.nan)
-    fairness = metrics["jain_fairness"].replace([np.inf, -np.inf], np.nan)
+    configured_flow_count = int(metadata.get("background_flows", 0))
+    required = {
+        "flow_index",
+        "observed_offered_rate_kbps",
+        "tx_packets",
+        "rx_packets",
+        "pdr",
+        "mean_delay_ms",
+        "throughput_mbps",
+        "aggregate_throughput_mbps",
+        "jain_fairness",
+    }
+    defaults: dict[str, float | bool] = {
+        "configured_flow_count": float(configured_flow_count),
+        "measured_flow_count": float(metrics["flow_index"].nunique()) if "flow_index" in metrics else 0.0,
+        "observed_offered_rate_kbps": float("nan"),
+        "aggregate_throughput_mbps": float("nan"),
+        "jain_fairness": float("nan"),
+        "load_metrics_valid": False,
+    }
+    if metrics.empty or not required.issubset(metrics.columns):
+        return defaults
+    numeric = metrics[list(required - {"flow_index"})].apply(pd.to_numeric, errors="coerce")
+    aggregate = numeric["aggregate_throughput_mbps"].iloc[0]
+    fairness = numeric["jain_fairness"].iloc[0]
+    unique_flows = int(metrics["flow_index"].nunique())
+    load_metrics_valid = bool(
+        configured_flow_count > 1
+        and len(metrics) == configured_flow_count
+        and unique_flows == configured_flow_count
+        and np.isfinite(numeric.to_numpy()).all()
+        and numeric["observed_offered_rate_kbps"].sum() > 0
+        and numeric["tx_packets"].gt(0).all()
+        and numeric["rx_packets"].sum() > 0
+        and numeric["pdr"].between(0, 1, inclusive="both").all()
+        and numeric["throughput_mbps"].sum() > 0
+        and aggregate > 0
+        and fairness > 0
+    )
     return {
-        "measured_flow_count": float(len(metrics)),
-        "observed_offered_rate_kbps": float(metrics["observed_offered_rate_kbps"].sum()),
-        "aggregate_throughput_mbps": float(aggregate.dropna().iloc[0]) if not aggregate.dropna().empty else float("nan"),
-        "jain_fairness": float(fairness.dropna().iloc[0]) if not fairness.dropna().empty else float("nan"),
+        **defaults,
+        "measured_flow_count": float(unique_flows),
+        "observed_offered_rate_kbps": float(numeric["observed_offered_rate_kbps"].sum()),
+        "aggregate_throughput_mbps": float(aggregate),
+        "jain_fairness": float(fairness),
+        "load_metrics_valid": load_metrics_valid,
     }
 
 
@@ -197,14 +267,29 @@ def collect_inventory(raw_root: Path) -> pd.DataFrame:
     rows: list[dict[str, object]] = []
     for raw_dir in sorted(path for path in raw_root.glob("stress_*") if path.is_dir()):
         match = RUN_PATTERN.match(raw_dir.name)
-        if not match:
+        partition_match = PARTITION_RUN_PATTERN.match(raw_dir.name)
+        if not match and not partition_match:
             continue
-        scenario, mobility_tag, seed_text = match.groups()
+        if partition_match:
+            scenario, mobility_tag, seed_text = "ctrl", "ctrl", partition_match.group(1)
+        else:
+            assert match is not None
+            scenario, mobility_tag, seed_text = match.groups()
+        if (
+            scenario == "ctrl"
+            and partition_match is None
+            and (raw_root / f"stress_partition_ctrl_s{seed_text}").is_dir()
+        ):
+            continue
         row: dict[str, object] = {
             "run_name": raw_dir.name,
             "scenario": scenario,
             "seed": int(seed_text),
-            "mobility": "random-waypoint" if mobility_tag == "rwp" else "gauss-markov",
+            "mobility": (
+                "event-controlled-waypoint"
+                if scenario == "ctrl"
+                else "random-waypoint" if mobility_tag == "rwp" else "gauss-markov"
+            ),
             "raw_complete": False,
             "complete": False,
             **_partition_defaults(),
@@ -232,9 +317,11 @@ def collect_inventory(raw_root: Path) -> pd.DataFrame:
                 }
             )
             row.update(_partition_metrics(raw_dir, metadata))
-            row.update(_load_metrics(raw_dir, scenario))
+            row.update(_load_metrics(raw_dir, scenario, metadata))
             if scenario == "ctrl":
                 row["complete"] = bool(row["raw_complete"]) and bool(row["partition_metadata_complete"])
+            elif scenario == "load":
+                row["complete"] = bool(row["raw_complete"]) and bool(row["load_metrics_valid"])
         rows.append(row)
     return pd.DataFrame(rows)
 
@@ -258,6 +345,9 @@ def summarize_inventory(inventory: pd.DataFrame) -> pd.DataFrame:
             "observed_offered_rate_kbps",
             "aggregate_throughput_mbps",
             "jain_fairness",
+            "physical_reconnect_step",
+            "route_recovery_step",
+            "recovery_delay_steps",
             "recovery_steps",
         ):
             row[f"{metric}_mean"] = float(group[metric].mean()) if metric in group and not group.empty else np.nan
@@ -337,7 +427,7 @@ def build_checks(inventory: pd.DataFrame, expected_per_scenario: int) -> pd.Data
             ctrl["pre_connected"].astype(bool)
             & ctrl["middle_components"].ge(2)
             & ctrl["middle_cross_group_links"].eq(0)
-            & ctrl["post_connected"].astype(bool)
+            & ctrl["post_cross_group_links"].gt(0)
         )
     rows.append(
         {
@@ -358,19 +448,28 @@ def build_checks(inventory: pd.DataFrame, expected_per_scenario: int) -> pd.Data
     recovery_pass = pd.Series(False, index=ctrl.index)
     recovery_observed = float("nan")
     if not ctrl.empty:
-        recovery_pass = ctrl["traffic_partition_outage"].astype(bool) & np.isfinite(ctrl["recovery_steps"])
-        recovery_observed = float(ctrl.loc[recovery_pass, "recovery_steps"].mean()) if recovery_pass.any() else float("nan")
+        recovery_pass = (
+            ctrl["traffic_partition_outage"].astype(bool)
+            & np.isfinite(ctrl["physical_reconnect_step"])
+            & np.isfinite(ctrl["route_recovery_step"])
+            & ctrl["recovery_delay_steps"].ge(0)
+        )
+        recovery_observed = (
+            float(ctrl.loc[recovery_pass, "recovery_delay_steps"].mean())
+            if recovery_pass.any()
+            else float("nan")
+        )
     rows.append(
         {
             "check": "partition_recovery",
             "observed": recovery_observed,
-            "expected": "finite recovery after reconnect",
+            "expected": "non-negative route recovery after observed physical reconnect",
             "status": "PASS" if int(recovery_pass.sum()) == expected_per_scenario else "FAIL",
             "details": (
                 f"incomplete_ctrl_runs={int((~ctrl_all['complete'].astype(bool)).sum())}; "
                 f"recovered_runs={int(recovery_pass.sum())}/{expected_per_scenario}; "
-                f"max_recovery_steps={ctrl['recovery_steps'].max():.3f}"
-                if not ctrl.empty and ctrl["recovery_steps"].notna().any()
+                f"max_recovery_steps={ctrl['recovery_delay_steps'].max():.3f}"
+                if not ctrl.empty and ctrl["recovery_delay_steps"].notna().any()
                 else (
                     f"incomplete_ctrl_runs={int((~ctrl_all['complete'].astype(bool)).sum())}; "
                     f"recovered_runs={int(recovery_pass.sum())}/{expected_per_scenario}"
@@ -524,6 +623,14 @@ def generate_extension_report(
             f"**{paired['load_aggregate_throughput_mbps'].mean():.3f} Mbps** aggregate throughput "
             f"with Jain fairness **{paired['load_jain_fairness'].mean():.6f}**."
         )
+    ctrl = inventory[(inventory["scenario"] == "ctrl") & inventory["complete"]]
+    recovery_line = "No complete partition runs available."
+    if not ctrl.empty:
+        recovery_line = (
+            f"Physical reconnection occurred at step **{ctrl['physical_reconnect_step'].mean():.3f}** on average; "
+            f"the first reachable OLSR route occurred at step **{ctrl['route_recovery_step'].mean():.3f}**, "
+            f"for a non-negative recovery delay of **{ctrl['recovery_delay_steps'].mean():.3f} steps**."
+        )
     report = (
         "# Extension Scenario Execution Report\n\n"
         f"Overall status: **{status}**\n\n"
@@ -531,6 +638,7 @@ def generate_extension_report(
         f"Inventory rows: **{len(inventory)}**\n\n"
         "## Conclusions\n\n"
         f"{measured_load_line}\n\n"
+        f"{recovery_line}\n\n"
         "## Scenario summary\n\n"
         f"{summary.to_markdown(index=False)}\n\n"
         "## Acceptance checks\n\n"

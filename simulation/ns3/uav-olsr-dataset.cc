@@ -867,12 +867,15 @@ static void
 WriteScenarioJson(const std::string &runName)
 {
     std::ofstream f(g_outputDir + "/scenario.json");
+    const std::string mobilityIdentity = g_scenarioMode == "partition-reconnect"
+                                             ? "event-controlled-waypoint"
+                                             : g_mobility;
     f << std::fixed << std::setprecision(4);
     f << "{\n"
       << "  \"run_name\": \"" << runName << "\",\n"
       << "  \"simulator\": \"ns-3\",\n"
       << "  \"seed\": " << g_seed << ",\n"
-      << "  \"mobility_model\": \"" << g_mobility << "\",\n"
+      << "  \"mobility_model\": \"" << mobilityIdentity << "\",\n"
       << "  \"num_uavs\": " << g_numUavs << ",\n"
       << "  \"time_steps\": " << g_timeSteps << ",\n"
       << "  \"dt\": 1.0,\n"

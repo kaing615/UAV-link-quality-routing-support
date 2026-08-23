@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -17,6 +18,7 @@ from scripts.train.run_multihorizon_benchmark import (
 
 MODELS = ("logreg", "xgb", "edge-sage")
 ABLATION_MODES = ("decoder-only", "message-only", "noedge")
+CONTROLLED_RUN_PATTERN = re.compile(r"^stress_(baseline|fast|sparse|dense)_(rwp|gm)_s\d+$")
 
 
 def discover_coordinates(
@@ -67,6 +69,8 @@ def _run(command: list[str]) -> None:
 def _mobility_groups(raw_root: Path, runs: list[str]) -> dict[str, list[str]]:
     groups: dict[str, list[str]] = {}
     for run in runs:
+        if not CONTROLLED_RUN_PATTERN.match(run):
+            continue
         scenario = json.loads((raw_root / run / "scenario.json").read_text(encoding="utf-8"))
         groups.setdefault(str(scenario["mobility_model"]), []).append(run)
     return groups

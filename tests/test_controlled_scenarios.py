@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 import pandas as pd
+import pytest
 
 
 def test_ns3_pipeline_forwards_extension_environment_to_binary(tmp_path: Path) -> None:
@@ -86,7 +87,10 @@ def test_extension_jobs_add_ten_ctrl_load_pairs_by_default() -> None:
     assert len(ctrl_jobs) == 10
     assert len(load_jobs) == 10
     assert {job.run_name for job in ctrl_jobs} == {
-        f"stress_ctrl_{'gm' if seed % 2 == 0 else 'rwp'}_s{seed}" for seed in range(60001, 60011)
+        f"stress_partition_ctrl_s{seed}" for seed in range(60001, 60011)
+    }
+    assert {(job.mobility, job.mobility_tag) for job in ctrl_jobs} == {
+        ("event-controlled-waypoint", "ctrl")
     }
     assert {(job.scenario_mode, job.background_flows, job.background_rate_kbps) for job in ctrl_jobs} == {
         ("partition-reconnect", 0, 0.0)
@@ -112,21 +116,22 @@ def test_dockerignore_excludes_generated_ns3_build_dirs_after_ns3_reinclude() ->
 
 
 def test_generated_controlled_scenario_outputs_are_git_ignored() -> None:
+    paths = [
+        "reports/controlled_scenarios/extensions_seed60001/REPORT.md",
+        "reports/controlled_scenarios/extensions_seed60001/figures/extension_manipulation_checks.pdf",
+        "reports/controlled_scenarios/extensions/REPORT.md",
+        "reports/controlled_scenarios/workers/worker_001_001.csv",
+        "simulation/ns3/build-current/CMakeCache.txt",
+    ]
     completed = subprocess.run(
-        [
-            "git",
-            "check-ignore",
-            "reports/controlled_scenarios/extensions_seed60001/REPORT.md",
-            "reports/controlled_scenarios/extensions_seed60001/figures/extension_manipulation_checks.pdf",
-            "reports/controlled_scenarios/workers/worker_001_001.csv",
-            "simulation/ns3/build-current/CMakeCache.txt",
-        ],
+        ["git", "check-ignore", *paths],
         check=False,
         capture_output=True,
         text=True,
     )
 
     assert completed.returncode == 0, completed.stderr
+    assert set(completed.stdout.splitlines()) == set(paths)
 
 
 def test_run_jobs_passes_extension_env_fields(monkeypatch, tmp_path: Path) -> None:
@@ -156,7 +161,7 @@ def test_run_jobs_passes_extension_env_fields(monkeypatch, tmp_path: Path) -> No
         speed_min=3,
         speed_max=8,
         run_name="stress_load_rwp_s60001",
-        scenario_mode="load",
+        scenario_mode="high-load",
         background_flows=3,
         background_rate_kbps=512.0,
         source_id=2,
@@ -172,11 +177,117 @@ def test_run_jobs_passes_extension_env_fields(monkeypatch, tmp_path: Path) -> No
 
     assert result.loc[0, "status"] == "COMPLETED"
     assert seen["command"] == ["bash", str(module.PIPELINE_SCRIPT), job.run_name, str(job.seed), job.mobility]
-    assert seen["env"]["SIM_SCENARIO_MODE"] == "load"
+    assert seen["env"]["SIM_SCENARIO_MODE"] == "high-load"
     assert seen["env"]["SIM_BACKGROUND_FLOWS"] == "3"
     assert seen["env"]["SIM_BACKGROUND_RATE_KBPS"] == "512.0"
     assert seen["env"]["SIM_SOURCE_ID"] == "2"
     assert seen["env"]["SIM_DEST_ID"] == "5"
+
+
+def _write_resume_artifacts(
+    job: Any,
+    raw_root: Path,
+    graph_root: Path,
+    *,
+    metadata: dict[str, object] | None = None,
+    include_traffic: bool = True,
+    background_flow_indices: list[int] | None = None,
+) -> None:
+    raw_dir = raw_root / job.run_name
+    graph_dir = graph_root / job.run_name / "graph_dataset"
+    raw_dir.mkdir(parents=True)
+    graph_dir.mkdir(parents=True)
+    scenario = metadata or {
+        "scenario_mode": job.scenario_mode,
+        "num_uavs": 4,
+        "time_steps": 12,
+        "partition_start_step": 3,
+        "partition_end_step": 8,
+        "reconnect_step": 10,
+        "partition_groups": {"group_a": [0, 1], "group_b": [2, 3]},
+        "background_flows": job.background_flows,
+    }
+    (raw_dir / "scenario.json").write_text(json.dumps(scenario), encoding="utf-8")
+    (raw_dir / "nodes.csv").write_text("time,node_id\n0,0\n", encoding="utf-8")
+    (raw_dir / "edges.csv").write_text("time,src,dst,connected\n0,0,1,1\n", encoding="utf-8")
+    if include_traffic:
+        (raw_dir / "traffic_log.csv").write_text("time,reachable\n0,1\n", encoding="utf-8")
+    if background_flow_indices is not None:
+        pd.DataFrame({"flow_index": background_flow_indices}).to_csv(
+            raw_dir / "background_flow_metrics.csv", index=False
+        )
+    for split in ("train", "val", "test"):
+        (graph_dir / f"{split}.pt").write_bytes(b"complete")
+
+
+def test_resume_requires_traffic_log_for_standard_job(tmp_path: Path) -> None:
+    from scripts.dataset.run_controlled_scenarios import _complete, build_jobs
+
+    job = build_jobs(1, 1)[0]
+    _write_resume_artifacts(job, tmp_path / "raw", tmp_path / "graph", include_traffic=False)
+
+    assert _complete(job, tmp_path / "raw", tmp_path / "graph") is False
+
+
+def test_resume_requires_exact_configured_high_load_flow_count(tmp_path: Path) -> None:
+    from scripts.dataset.run_controlled_scenarios import _complete, build_extension_jobs
+
+    job = next(job for job in build_extension_jobs(1) if job.scenario == "load")
+    raw_root = tmp_path / "raw"
+    graph_root = tmp_path / "graph"
+    _write_resume_artifacts(job, raw_root, graph_root, background_flow_indices=list(range(7)))
+
+    assert _complete(job, raw_root, graph_root) is False
+
+    pd.DataFrame({"flow_index": list(range(8))}).to_csv(
+        raw_root / job.run_name / "background_flow_metrics.csv", index=False
+    )
+    assert _complete(job, raw_root, graph_root) is True
+
+    metadata = json.loads((raw_root / job.run_name / "scenario.json").read_text(encoding="utf-8"))
+    metadata["background_flows"] = 7
+    (raw_root / job.run_name / "scenario.json").write_text(json.dumps(metadata), encoding="utf-8")
+    assert _complete(job, raw_root, graph_root) is False
+
+
+@pytest.mark.parametrize(
+    "metadata",
+    [
+        {
+            "scenario_mode": "standard",
+            "num_uavs": 4,
+            "time_steps": 12,
+            "partition_start_step": 3,
+            "partition_end_step": 8,
+            "reconnect_step": 10,
+            "partition_groups": {"group_a": [0, 1], "group_b": [2, 3]},
+        },
+        {
+            "scenario_mode": "partition-reconnect",
+            "num_uavs": 4,
+            "time_steps": 12,
+            "partition_start_step": 3,
+            "partition_end_step": 8,
+            "partition_groups": {"group_a": [0, 1], "group_b": [2, 3]},
+        },
+        {
+            "scenario_mode": "partition-reconnect",
+            "num_uavs": 4,
+            "time_steps": 12,
+            "partition_start_step": 3,
+            "partition_end_step": 8,
+            "reconnect_step": 10,
+            "partition_groups": {"group_a": [0, 1], "group_b": [1, 2, 3]},
+        },
+    ],
+)
+def test_resume_rejects_stale_partition_metadata(tmp_path: Path, metadata: dict[str, object]) -> None:
+    from scripts.dataset.run_controlled_scenarios import _complete, build_extension_jobs
+
+    job = next(job for job in build_extension_jobs(1) if job.scenario == "ctrl")
+    _write_resume_artifacts(job, tmp_path / "raw", tmp_path / "graph", metadata=metadata)
+
+    assert _complete(job, tmp_path / "raw", tmp_path / "graph") is False
 
 
 def _write_synthetic_run(
@@ -276,6 +387,51 @@ def _write_extension_run(
     )
 
 
+def _edge_rows(
+    time: int,
+    links: list[tuple[int, int]],
+    *,
+    delay: float = 5.0,
+    loss: float = 0.02,
+    throughput: float = 6.0,
+) -> list[dict[str, object]]:
+    return [
+        {
+            "time": time,
+            "src": src,
+            "dst": dst,
+            "distance": 100.0,
+            "connected": 1,
+            "relative_speed": 0.0,
+            "rssi": -55.0,
+            "snr": 20.0,
+            "delay": delay,
+            "packet_loss": loss,
+            "throughput": throughput,
+            "p_stable": 0.95,
+            "weight": 0.05,
+        }
+        for src, dst in links
+    ]
+
+
+def _traffic_rows(times: range, reachable_times: set[int]) -> list[dict[str, object]]:
+    return [
+        {
+            "time": time,
+            "source": 0,
+            "destination": 3,
+            "reachable": int(time in reachable_times),
+            "route_path": "0-1-2-3" if time in reachable_times else "",
+            "num_edges": 3 if time in reachable_times else 0,
+            "routing_protocol": "OLSR",
+            "olsr_mpr_nodes": 2,
+            "olsr_avg_rt_size": 3.0,
+        }
+        for time in times
+    ]
+
+
 def test_extension_report_validates_partition_and_load_interventions(tmp_path: Path) -> None:
     from scripts.analysis.summarize_extension_scenarios import generate_extension_report
 
@@ -285,59 +441,26 @@ def test_extension_report_validates_partition_and_load_interventions(tmp_path: P
     mid_edges = [(0, 1), (2, 3)]
     post_edges = pre_edges
 
-    def edge_rows(time: int, links: list[tuple[int, int]], *, delay: float, loss: float) -> list[dict[str, object]]:
-        return [
-            {
-                "time": time,
-                "src": src,
-                "dst": dst,
-                "distance": 100.0,
-                "connected": 1,
-                "relative_speed": 0.0,
-                "rssi": -55.0,
-                "snr": 20.0,
-                "delay": delay,
-                "packet_loss": loss,
-                "throughput": 6.0,
-                "p_stable": 0.95,
-                "weight": 0.05,
-            }
-            for src, dst in links
-        ]
-
     ctrl_edges: list[dict[str, object]] = []
     for time in range(12):
         if time < 4:
-            ctrl_edges.extend(edge_rows(time, pre_edges, delay=5.0, loss=0.02))
+            ctrl_edges.extend(_edge_rows(time, pre_edges, delay=5.0, loss=0.02))
         elif time <= 8:
-            ctrl_edges.extend(edge_rows(time, mid_edges, delay=7.0, loss=0.10))
+            ctrl_edges.extend(_edge_rows(time, mid_edges, delay=7.0, loss=0.10))
         else:
-            ctrl_edges.extend(edge_rows(time, post_edges, delay=5.0, loss=0.02))
+            ctrl_edges.extend(_edge_rows(time, post_edges, delay=5.0, loss=0.02))
 
     baseline_edges = [
         row
         for time in range(12)
-        for row in edge_rows(time, pre_edges, delay=5.0, loss=0.02)
+        for row in _edge_rows(time, pre_edges, delay=5.0, loss=0.02)
     ]
     load_edges = [
         row
         for time in range(12)
-        for row in edge_rows(time, pre_edges, delay=8.0, loss=0.07)
+        for row in _edge_rows(time, pre_edges, delay=8.0, loss=0.07)
     ]
-    traffic_rows = [
-        {
-            "time": time,
-            "source": 0,
-            "destination": 3,
-            "reachable": int(time < 4 or time >= 11),
-            "route_path": "0-1-2-3" if time < 4 or time >= 11 else "",
-            "num_edges": 3 if time < 4 or time >= 11 else 0,
-            "routing_protocol": "OLSR",
-            "olsr_mpr_nodes": 2,
-            "olsr_avg_rt_size": 3.0,
-        }
-        for time in range(12)
-    ]
+    traffic_rows = _traffic_rows(range(12), {*range(4), 11})
 
     def background_rows(offered: tuple[float, float], throughput: tuple[float, float]) -> list[dict[str, object]]:
         return [
@@ -443,13 +566,154 @@ def test_extension_report_validates_partition_and_load_interventions(tmp_path: P
     assert status_by_check["load_multiple_flows"] == "PASS"
     assert status_by_check["load_channel_effect"] == "PASS"
     recovery = checks.set_index("check").loc["partition_recovery", "observed"]
-    assert float(recovery) == 1.0
+    assert float(recovery) == 2.0
+    ctrl = inventory[inventory["scenario"] == "ctrl"].set_index("seed")
+    assert ctrl["physical_reconnect_step"].to_dict() == {60001: 9.0, 60002: 9.0}
+    assert ctrl["route_recovery_step"].to_dict() == {60001: 11.0, 60002: 11.0}
+    assert ctrl["recovery_delay_steps"].to_dict() == {60001: 2.0, 60002: 2.0}
+    assert ctrl["recovery_steps"].equals(ctrl["recovery_delay_steps"])
     assert (tmp_path / "reports/run_inventory.csv").exists()
     assert (tmp_path / "reports/scenario_summary.csv").exists()
     assert (tmp_path / "reports/manipulation_checks.csv").exists()
     assert (tmp_path / "reports/REPORT.md").exists()
     assert (tmp_path / "reports/figures/extension_manipulation_checks.png").exists()
     assert (tmp_path / "reports/figures/extension_manipulation_checks.pdf").exists()
+
+
+def test_partition_recovery_starts_at_observed_cross_group_reconnection(tmp_path: Path) -> None:
+    from scripts.analysis.summarize_extension_scenarios import generate_extension_report
+
+    raw_root = tmp_path / "raw"
+    groups = {"group_a": [0, 1], "group_b": [2, 3]}
+    connected_links = [(0, 1), (1, 2), (2, 3)]
+    partition_links = [(0, 1), (2, 3)]
+    edges = [
+        row
+        for time in range(12)
+        for row in _edge_rows(
+            time, partition_links if 4 <= time <= 8 else connected_links
+        )
+    ]
+    traffic = _traffic_rows(range(12), {*range(4), *range(9, 12)})
+    _write_extension_run(
+        raw_root,
+        "stress_ctrl_rwp_s60001",
+        scenario_mode="partition-reconnect",
+        seed=60001,
+        mobility_model="random-waypoint",
+        edges=edges,
+        traffic=traffic,
+        partition_start_step=4,
+        partition_end_step=8,
+        reconnect_step=10,
+        partition_groups=groups,
+    )
+
+    inventory, _, checks = generate_extension_report(
+        raw_root, tmp_path / "reports", expected_per_scenario=1
+    )
+
+    row = inventory.iloc[0]
+    assert row["physical_reconnect_step"] == 9.0
+    assert row["route_recovery_step"] == 9.0
+    assert row["recovery_delay_steps"] == 0.0
+    assert row["recovery_steps"] == 0.0
+    assert checks.set_index("check").loc["partition_recovery", "status"] == "PASS"
+
+
+def test_extension_inventory_accepts_canonical_partition_identity(tmp_path: Path) -> None:
+    from scripts.analysis.summarize_extension_scenarios import collect_inventory
+
+    raw_root = tmp_path / "raw"
+    edges = [
+        row
+        for time in range(12)
+        for row in _edge_rows(time, [(0, 1), (1, 2), (2, 3)])
+    ]
+    traffic = _traffic_rows(range(12), set(range(12)))
+    _write_extension_run(
+        raw_root,
+        "stress_partition_ctrl_s60001",
+        scenario_mode="partition-reconnect",
+        seed=60001,
+        mobility_model="event-controlled-waypoint",
+        edges=edges,
+        traffic=traffic,
+        partition_start_step=4,
+        partition_end_step=8,
+        reconnect_step=10,
+        partition_groups={"group_a": [0, 1], "group_b": [2, 3]},
+    )
+    _write_extension_run(
+        raw_root,
+        "stress_ctrl_rwp_s60001",
+        scenario_mode="partition-reconnect",
+        seed=60001,
+        mobility_model="random-waypoint",
+        edges=edges,
+        traffic=traffic,
+        partition_start_step=4,
+        partition_end_step=8,
+        reconnect_step=10,
+        partition_groups={"group_a": [0, 1], "group_b": [2, 3]},
+    )
+
+    inventory = collect_inventory(raw_root)
+    assert inventory["run_name"].tolist() == ["stress_partition_ctrl_s60001"]
+    row = inventory.iloc[0]
+    assert row["scenario"] == "ctrl"
+    assert row["mobility"] == "event-controlled-waypoint"
+
+
+def test_extension_report_rejects_complete_channel_collapse(tmp_path: Path) -> None:
+    from scripts.analysis.summarize_extension_scenarios import generate_extension_report
+
+    raw_root = tmp_path / "raw"
+    edges = _edge_rows(0, [(0, 1)], delay=8.0, loss=1.0, throughput=0.0)
+    traffic = _traffic_rows(range(1), set())
+    collapsed = [
+        {
+            "flow_index": flow,
+            "source": flow,
+            "destination": flow + 10,
+            "port": 9100 + flow,
+            "configured_offered_rate_kbps": 600.0,
+            "observed_offered_rate_kbps": 600.0,
+            "tx_packets": 100,
+            "rx_packets": 0,
+            "lost_packets": 100,
+            "pdr": 0.0,
+            "mean_delay_ms": 0.0,
+            "throughput_mbps": 0.0,
+            "aggregate_throughput_mbps": 0.0,
+            "jain_fairness": 0.0,
+        }
+        for flow in range(8)
+    ]
+    _write_extension_run(
+        raw_root,
+        "stress_load_rwp_s60001",
+        scenario_mode="high-load",
+        seed=60001,
+        mobility_model="random-waypoint",
+        edges=edges,
+        traffic=traffic,
+        background_flows=8,
+        background_rate_kbps=600.0,
+        background_rows=collapsed,
+    )
+
+    inventory, _, checks = generate_extension_report(
+        raw_root, tmp_path / "reports", expected_per_scenario=1
+    )
+
+    row = inventory.iloc[0]
+    assert bool(row["raw_complete"]) is True
+    assert bool(row["load_metrics_valid"]) is False
+    assert bool(row["complete"]) is False
+    statuses = checks.set_index("check")["status"].to_dict()
+    assert statuses["load_complete_runs"] == "FAIL"
+    assert statuses["load_multiple_flows"] == "FAIL"
 
 
 def test_extension_report_fails_ctrl_run_with_missing_partition_groups(tmp_path: Path) -> None:

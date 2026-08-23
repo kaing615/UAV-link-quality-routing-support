@@ -68,6 +68,8 @@ def test_background_throughput_uses_one_observation_duration(tmp_path: Path) -> 
     ]
     assert len(receiving) >= 2
     assert max(throughput_per_packet) - min(throughput_per_packet) < 1e-9
+    metadata = json.loads((tmp_path / "scenario.json").read_text(encoding="utf-8"))
+    assert metadata["mobility_model"] == "random-waypoint"
 
 
 def test_zero_background_rerun_removes_only_stale_background_metrics(tmp_path: Path) -> None:
@@ -110,6 +112,7 @@ def test_partition_metadata_marks_divergence_window_start(tmp_path: Path) -> Non
     )
 
     metadata = json.loads((tmp_path / "scenario.json").read_text(encoding="utf-8"))
+    assert metadata["mobility_model"] == "event-controlled-waypoint"
     assert metadata["partition_start_step"] == 3
     assert metadata["partition_end_step"] == 8
     assert metadata["reconnect_step"] == 10

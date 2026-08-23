@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import subprocess
 import time
@@ -81,12 +82,12 @@ def build_extension_jobs(count: int = 10, seed_base: int = 60_000) -> list[Scena
                 scenario="ctrl",
                 index=index,
                 seed=seed,
-                mobility=mobility,
-                mobility_tag=tag,
+                mobility="event-controlled-waypoint",
+                mobility_tag="ctrl",
                 comm_range=comm_range,
                 speed_min=speed_min,
                 speed_max=speed_max,
-                run_name=f"stress_ctrl_{tag}_s{seed}",
+                run_name=f"stress_partition_ctrl_s{seed}",
                 scenario_mode="partition-reconnect",
             )
         )
@@ -114,11 +115,57 @@ def _complete(job: ScenarioJob, raw_root: Path, graph_root: Path) -> bool:
         raw_root / job.run_name / "scenario.json",
         raw_root / job.run_name / "nodes.csv",
         raw_root / job.run_name / "edges.csv",
+        raw_root / job.run_name / "traffic_log.csv",
         graph_root / job.run_name / "graph_dataset" / "train.pt",
         graph_root / job.run_name / "graph_dataset" / "val.pt",
         graph_root / job.run_name / "graph_dataset" / "test.pt",
     ]
-    return all(path.exists() and path.stat().st_size > 0 for path in required)
+    if not all(path.exists() and path.stat().st_size > 0 for path in required):
+        return False
+
+    raw_dir = raw_root / job.run_name
+    if job.scenario_mode == "high-load":
+        metrics_path = raw_dir / "background_flow_metrics.csv"
+        if not metrics_path.exists() or metrics_path.stat().st_size == 0:
+            return False
+        try:
+            metrics = pd.read_csv(metrics_path, usecols=["flow_index"])
+            metadata = json.loads((raw_dir / "scenario.json").read_text(encoding="utf-8"))
+            configured_flows = int(metadata["background_flows"])
+        except (KeyError, OSError, TypeError, ValueError, json.JSONDecodeError, pd.errors.EmptyDataError):
+            return False
+        if (
+            metadata.get("scenario_mode") != job.scenario_mode
+            or configured_flows != job.background_flows
+            or len(metrics) != configured_flows
+            or metrics["flow_index"].nunique() != configured_flows
+        ):
+            return False
+
+    if job.scenario_mode == "partition-reconnect":
+        try:
+            metadata = json.loads((raw_dir / "scenario.json").read_text(encoding="utf-8"))
+            start = metadata["partition_start_step"]
+            end = metadata["partition_end_step"]
+            reconnect = metadata["reconnect_step"]
+            num_uavs = int(metadata["num_uavs"])
+            time_steps = int(metadata["time_steps"])
+            groups = metadata["partition_groups"]
+            group_a = {int(node) for node in groups["group_a"]}
+            group_b = {int(node) for node in groups["group_b"]}
+        except (KeyError, OSError, TypeError, ValueError, json.JSONDecodeError):
+            return False
+        if (
+            metadata.get("scenario_mode") != job.scenario_mode
+            or not all(isinstance(step, int) and not isinstance(step, bool) for step in (start, end, reconnect))
+            or not 0 <= start < end < reconnect < time_steps
+            or not group_a
+            or not group_b
+            or group_a & group_b
+            or group_a | group_b != set(range(num_uavs))
+        ):
+            return False
+    return True
 
 
 def run_jobs(

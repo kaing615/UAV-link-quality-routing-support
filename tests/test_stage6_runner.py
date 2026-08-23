@@ -7,6 +7,7 @@ from pathlib import Path
 import pandas as pd
 import torch
 from scripts.train.run_stage6_benchmark import (
+    _mobility_groups,
     collect_protocol_metrics,
     discover_coordinates,
     with_full_ablation_reference,
@@ -80,3 +81,25 @@ def test_ablation_report_includes_existing_full_edge_sage_reference():
 
     result = with_full_ablation_reference(ablation, benchmark)
     assert set(result["model_id"]) == {"edge-sage", "edge-sage-noedge"}
+
+
+def test_cross_mobility_excludes_partition_and_load_run_identities(tmp_path: Path):
+    mobility_by_run = {
+        "stress_baseline_rwp_s60001": "random-waypoint",
+        "stress_fast_gm_s60002": "gauss-markov",
+        "stress_sparse_rwp_s60001": "random-waypoint",
+        "stress_dense_gm_s60002": "gauss-markov",
+        "stress_partition_ctrl_s60001": "event-controlled-waypoint",
+        "stress_load_rwp_s60001": "random-waypoint",
+    }
+    for run_name, mobility in mobility_by_run.items():
+        run_dir = tmp_path / run_name
+        run_dir.mkdir()
+        (run_dir / "scenario.json").write_text(
+            '{"mobility_model": "' + mobility + '"}', encoding="utf-8"
+        )
+
+    assert _mobility_groups(tmp_path, list(mobility_by_run)) == {
+        "gauss-markov": ["stress_fast_gm_s60002", "stress_dense_gm_s60002"],
+        "random-waypoint": ["stress_baseline_rwp_s60001", "stress_sparse_rwp_s60001"],
+    }
