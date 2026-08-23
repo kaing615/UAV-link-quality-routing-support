@@ -10,6 +10,7 @@ from scripts.analysis.generate_stage7_artifacts import (
     paired_ablation_effects,
     write_tables,
 )
+from scripts.analysis.generate_temporal_artifacts import generate_temporal_artifacts, temporal_effects
 
 
 def test_combine_protocol_aggregates_keeps_only_test_rows():
@@ -191,3 +192,45 @@ def test_combine_paired_effects_recomputes_pairs_from_complete_detail():
 
     assert set(edge_vs_logreg["protocol"]) == {"Within-run", "LORO", "Cross-mobility"}
     assert set(edge_vs_logreg["n_pairs"]) == {2}
+
+
+def test_temporal_effects_requires_exact_static_coordinates_and_uses_paired_deltas():
+    static = pd.DataFrame(
+        [
+            {"target": "survival", "horizon": 3, "run_name": "r1", "split": "test", "macro_f1": 0.6, "pr_auc": 0.7},
+            {"target": "survival", "horizon": 3, "run_name": "r2", "split": "test", "macro_f1": 0.7, "pr_auc": 0.8},
+        ]
+    )
+    temporal = static.copy()
+    temporal["macro_f1"] += 0.1
+    temporal["pr_auc"] += 0.05
+
+    result = temporal_effects(static, temporal, n_resamples=100)
+
+    assert set(result["metric"]) == {"macro_f1", "pr_auc"}
+    assert set(result["n_pairs"]) == {2}
+    assert result.set_index("metric").loc["macro_f1", "mean_delta"] == pytest.approx(0.1)
+
+    with pytest.raises(ValueError, match="missing temporal coordinates"):
+        temporal_effects(static, temporal.iloc[:1], n_resamples=100)
+
+
+def test_temporal_artifacts_select_the_static_edge_sage_counterpart(tmp_path):
+    static = pd.DataFrame(
+        [
+            {"model_id": "logreg", "target": "survival", "horizon": 3, "run_name": "r1", "split": "test", "macro_f1": 0.4, "pr_auc": 0.5},
+            {"model_id": "edge-sage", "target": "survival", "horizon": 3, "run_name": "r1", "split": "test", "macro_f1": 0.6, "pr_auc": 0.7},
+        ]
+    )
+    temporal = pd.DataFrame(
+        [{"model_id": "edge-sage-gru", "target": "survival", "horizon": 3, "run_name": "r1", "split": "test", "macro_f1": 0.7, "pr_auc": 0.8}]
+    )
+
+    detailed, _ = generate_temporal_artifacts(static, temporal, tmp_path, n_resamples=100)
+
+    assert detailed["macro_f1_static"].tolist() == [0.6]
+    assert (tmp_path / "temporal_static_detailed.csv").exists()
+    assert (tmp_path / "temporal_static_aggregate.csv").exists()
+    assert (tmp_path / "tables" / "temporal_static_effects.tex").exists()
+    assert (tmp_path / "figures" / "temporal_static_comparison.png").exists()
+    assert (tmp_path / "figures" / "temporal_static_comparison.pdf").exists()

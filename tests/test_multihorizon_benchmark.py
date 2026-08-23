@@ -12,6 +12,7 @@ from scripts.train.run_multihorizon_benchmark import (
     discover_datasets,
     select_representative_runs,
 )
+from scripts.train.run_temporal_benchmark import run_temporal_benchmark
 
 from src.training.baselines.loro_baselines import load_run_rows
 
@@ -108,3 +109,39 @@ def test_loro_baseline_loader_accepts_multihorizon_data_root(tmp_path: Path):
     result = load_run_rows(tmp_path, "run-a", ["train"])
     assert len(result) == 1
     assert result.iloc[0]["label"] == 1
+
+
+def test_temporal_benchmark_dispatches_selected_runs_and_resumes_complete_metrics(tmp_path: Path, monkeypatch):
+    data_root = tmp_path / "data"
+    run_root = data_root / "survival" / "k3" / "stress_fast_rwp_s60001"
+    (run_root / "graph_dataset").mkdir(parents=True)
+    for split in ("train", "val", "test"):
+        (run_root / "graph_dataset" / f"{split}.pt").touch()
+    output_root = tmp_path / "outputs"
+    commands = []
+
+    def fake_run(command):
+        commands.append(command)
+        output_dir = Path(command[command.index("--output-dir") + 1])
+        output_dir.mkdir(parents=True)
+        pd.DataFrame(
+            [
+                {"model_id": "edge-sage-gru", "split": "val", "macro_f1": 0.7, "pr_auc": 0.8},
+                {"model_id": "edge-sage-gru", "split": "test", "macro_f1": 0.8, "pr_auc": 0.9},
+            ]
+        ).to_csv(output_dir / "metrics.csv", index=False)
+
+    monkeypatch.setattr("scripts.train.run_temporal_benchmark._run", fake_run)
+    summary = run_temporal_benchmark(data_root, output_root, tmp_path / "summary.csv")
+
+    assert len(commands) == 1
+    assert commands[0][1:3] == ["-m", "src.training.gnn.train_temporal_gnn"]
+    assert commands[0][commands[0].index("--epochs") + 1] == "100"
+    assert commands[0][commands[0].index("--patience") + 1] == "10"
+    assert set(summary["split"]) == {"val", "test"}
+
+    monkeypatch.setattr(
+        "scripts.train.run_temporal_benchmark._run",
+        lambda command: pytest.fail(f"complete metrics should resume, got {command}"),
+    )
+    run_temporal_benchmark(data_root, output_root, tmp_path / "resumed.csv")
