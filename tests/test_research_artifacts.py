@@ -9,6 +9,18 @@ import torch
 from sklearn.linear_model import LogisticRegression
 
 
+def test_ns3_runner_still_guards_missing_run_name() -> None:
+    script = Path("scripts/dataset/run_one_dataset_ns3.sh").read_text(encoding="utf-8")
+
+    assert "if [[ $# -lt 1 ]]; then" in script
+
+
+def test_train_gnn_metadata_keeps_legacy_use_edge_features_flag() -> None:
+    source = Path("src/training/gnn/train_gnn.py").read_text(encoding="utf-8")
+
+    assert source.count('"use_edge_features": use_message_edges and use_decoder_edges,') >= 2
+
+
 def test_closed_loop_generator_writes_figures_and_tables(tmp_path: Path) -> None:
     from scripts.analysis.generate_closed_loop_artifacts import generate_artifacts
 
