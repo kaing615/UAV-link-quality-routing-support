@@ -63,6 +63,7 @@ def run_pilot(raw_root: Path, run_names: list[str], output_root: Path, summary_c
                     "train_pt": destination / "graph_dataset" / "train.pt",
                     "val_pt": destination / "graph_dataset" / "val.pt",
                     "test_pt": destination / "graph_dataset" / "test.pt",
+                    "purged_pt": destination / "graph_dataset" / "purged.pt",
                 }
                 complete = all(path.is_file() and path.stat().st_size > 0 for path in outputs.values())
                 if complete:
