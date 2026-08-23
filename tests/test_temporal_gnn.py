@@ -1,13 +1,16 @@
 from __future__ import annotations
 
 import copy
+import json
 
+import pandas as pd
 import pytest
 import torch
 from torch_geometric.data import Data
 
 from src.models.gnn.edge_gnn import EdgeAwareSAGEGRUEdgeClassifier
 from src.training.gnn.temporal_data import build_temporal_windows
+from src.training.gnn.train_temporal_gnn import main as train_temporal_main
 
 
 def _record(time: int | None, node_ids: list[int] | None = None) -> dict:
@@ -108,3 +111,80 @@ def test_edge_aware_sage_gru_ignores_historical_labels():
     actual = model.forward_window(changed_labels)
 
     torch.testing.assert_close(actual, expected)
+
+
+def _trainer_record(time: int) -> dict:
+    label = torch.tensor([time % 2, 1 - time % 2])
+    return {
+        "time": time,
+        "node_ids": [10, 20, 30],
+        "x": torch.tensor(
+            [[float(time), 0, 0, 0, 0, 0, 1, 1], [0, float(time), 0, 0, 0, 0, 1, 1], [0, 0, float(time), 0, 0, 0, 1, 1]]
+        ),
+        "edge_index": torch.tensor([[0, 1, 1, 2], [1, 0, 2, 1]]),
+        "edge_attr": torch.full((4, 7), float(time + 1)),
+        "edge_label_index": torch.tensor([[0, 1], [1, 2]]),
+        "edge_label": label,
+    }
+
+
+def test_temporal_trainer_writes_auditable_endpoint_artifacts(tmp_path, monkeypatch):
+    run_root = tmp_path / "data" / "synthetic"
+    run_root.mkdir(parents=True)
+    _write_graph_splits(
+        run_root,
+        {
+            "train": [_trainer_record(time) for time in range(5)],
+            "val": [_trainer_record(time) for time in range(5, 7)],
+            "test": [_trainer_record(time) for time in range(7, 9)],
+        },
+    )
+    output_dir = tmp_path / "output"
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "train_temporal_gnn.py",
+            "--run-name",
+            "synthetic",
+            "--data-root",
+            str(tmp_path / "data"),
+            "--output-dir",
+            str(output_dir),
+            "--epochs",
+            "2",
+            "--patience",
+            "2",
+            "--hidden",
+            "8",
+            "--num-layers",
+            "1",
+            "--dropout",
+            "0",
+            "--seed",
+            "7",
+        ],
+    )
+
+    train_temporal_main()
+
+    assert {path.name for path in output_dir.iterdir()} >= {
+        "best_model.pt",
+        "metadata.json",
+        "metrics.csv",
+        "val_predictions.csv",
+        "test_predictions.csv",
+    }
+    metadata = json.loads((output_dir / "metadata.json").read_text(encoding="utf-8"))
+    assert metadata["model_id"] == "edge-sage-gru"
+    assert metadata["window_size"] == 4
+    assert metadata["feature_flags"]["historical_labels_used"] is False
+    assert metadata["resume_marker"] == {"seed": 7, "window_size": 4}
+
+    for split, times in (("val", [5, 6]), ("test", [7, 8])):
+        predictions = pd.read_csv(output_dir / f"{split}_predictions.csv")
+        assert list(predictions.columns[:3]) == ["time", "src", "dst"]
+        assert predictions["time"].tolist() == [time for time in times for _ in range(2)]
+        assert predictions[["src", "dst"]].values.tolist() == [[10, 20], [20, 30]] * len(times)
+
+    metrics = pd.read_csv(output_dir / "metrics.csv")
+    assert metrics["split"].tolist() == ["val", "test"]
