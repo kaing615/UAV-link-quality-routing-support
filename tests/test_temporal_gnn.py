@@ -140,29 +140,30 @@ def test_temporal_trainer_writes_auditable_endpoint_artifacts(tmp_path, monkeypa
         },
     )
     output_dir = tmp_path / "output"
+    args = [
+        "train_temporal_gnn.py",
+        "--run-name",
+        "synthetic",
+        "--data-root",
+        str(tmp_path / "data"),
+        "--output-dir",
+        str(output_dir),
+        "--epochs",
+        "2",
+        "--patience",
+        "2",
+        "--hidden",
+        "8",
+        "--num-layers",
+        "1",
+        "--dropout",
+        "0",
+        "--seed",
+        "7",
+    ]
     monkeypatch.setattr(
         "sys.argv",
-        [
-            "train_temporal_gnn.py",
-            "--run-name",
-            "synthetic",
-            "--data-root",
-            str(tmp_path / "data"),
-            "--output-dir",
-            str(output_dir),
-            "--epochs",
-            "2",
-            "--patience",
-            "2",
-            "--hidden",
-            "8",
-            "--num-layers",
-            "1",
-            "--dropout",
-            "0",
-            "--seed",
-            "7",
-        ],
+        args,
     )
 
     train_temporal_main()
@@ -188,3 +189,41 @@ def test_temporal_trainer_writes_auditable_endpoint_artifacts(tmp_path, monkeypa
 
     metrics = pd.read_csv(output_dir / "metrics.csv")
     assert metrics["split"].tolist() == ["val", "test"]
+
+    resumed_output_dir = tmp_path / "resumed-output"
+    args[args.index(str(output_dir))] = str(resumed_output_dir)
+    monkeypatch.setattr("sys.argv", args)
+    train_temporal_main()
+
+    metadata_fields = (
+        "model_id",
+        "model_name",
+        "run_name",
+        "window_size",
+        "hidden_channels",
+        "num_layers",
+        "dropout",
+        "lr",
+        "weight_decay",
+        "batch_size",
+        "seed",
+        "threshold",
+        "best_epoch",
+        "best_val_macro_f1",
+        "feature_flags",
+        "resume_marker",
+    )
+    resumed_metadata = json.loads((resumed_output_dir / "metadata.json").read_text(encoding="utf-8"))
+    assert {field: metadata[field] for field in metadata_fields} == {
+        field: resumed_metadata[field] for field in metadata_fields
+    }
+    for split in ("val", "test"):
+        pd.testing.assert_frame_equal(
+            pd.read_csv(output_dir / f"{split}_predictions.csv"),
+            pd.read_csv(resumed_output_dir / f"{split}_predictions.csv"),
+        )
+    checkpoint = torch.load(output_dir / "best_model.pt", weights_only=True)
+    resumed_checkpoint = torch.load(resumed_output_dir / "best_model.pt", weights_only=True)
+    assert checkpoint.keys() == resumed_checkpoint.keys()
+    for name, tensor in checkpoint.items():
+        torch.testing.assert_close(tensor, resumed_checkpoint[name], rtol=0, atol=0)
