@@ -99,6 +99,36 @@ def test_extension_jobs_add_ten_ctrl_load_pairs_by_default() -> None:
     }
 
 
+def test_dockerignore_excludes_generated_ns3_build_dirs_after_ns3_reinclude() -> None:
+    lines = Path(".dockerignore").read_text(encoding="utf-8").splitlines()
+    dockerfile = Path("Dockerfile").read_text(encoding="utf-8")
+
+    assert "!requirements-serve.txt" in lines
+    assert "!simulation/ns3/**" in lines
+    assert "simulation/ns3/build/" in lines
+    assert "simulation/ns3/build-current/" in lines
+    assert lines.index("simulation/ns3/build/") > lines.index("!simulation/ns3/**")
+    assert "COPY requirements.txt requirements-serve.txt ./" in dockerfile
+
+
+def test_generated_controlled_scenario_outputs_are_git_ignored() -> None:
+    completed = subprocess.run(
+        [
+            "git",
+            "check-ignore",
+            "reports/controlled_scenarios/extensions_seed60001/REPORT.md",
+            "reports/controlled_scenarios/extensions_seed60001/figures/extension_manipulation_checks.pdf",
+            "reports/controlled_scenarios/workers/worker_001_001.csv",
+            "simulation/ns3/build-current/CMakeCache.txt",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+
+
 def test_run_jobs_passes_extension_env_fields(monkeypatch, tmp_path: Path) -> None:
     from scripts.dataset import run_controlled_scenarios as module
 

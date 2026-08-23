@@ -26,7 +26,7 @@ COPY --from=ns3-build /src/ns3/build/uav-olsr-dataset /app/simulation/ns3/build/
 ENV LD_LIBRARY_PATH=/opt/ns3/lib
 
 WORKDIR /app
-COPY requirements.txt .
+COPY requirements.txt requirements-serve.txt ./
 RUN python3.12 -m venv /venv && /venv/bin/pip install --no-cache-dir \
     torch==2.11.0 --index-url https://download.pytorch.org/whl/cpu \
     && /venv/bin/pip install --no-cache-dir -r requirements.txt
