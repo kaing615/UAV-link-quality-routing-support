@@ -18,6 +18,7 @@ from scripts.train.run_multihorizon_benchmark import (
 
 MODEL_ID = "edge-sage-gru"
 _PREDICTION_COLUMNS = {"time", "src", "dst", "y_true", "y_pred", "pred_score"}
+_METRICS_COLUMNS = {"model_id", "split", "macro_f1", "pr_auc"}
 
 
 def _run(command: list[str]) -> None:
@@ -29,7 +30,7 @@ def _benchmark_config(window_size: int, epochs: int, patience: int) -> dict[str,
     return {"model_id": MODEL_ID, "window_size": window_size, "epochs": epochs, "patience": patience}
 
 
-def _resume_ready(output_dir: Path, config: dict[str, int | str]) -> bool:
+def _resume_ready(output_dir: Path, run_name: str, config: dict[str, int | str]) -> bool:
     required = [
         output_dir / "best_model.pt",
         output_dir / "metadata.json",
@@ -49,9 +50,13 @@ def _resume_ready(output_dir: Path, config: dict[str, int | str]) -> bool:
         return False
     return (
         metadata.get("model_id") == MODEL_ID
+        and metadata.get("run_name") == run_name
         and metadata.get("window_size") == config["window_size"]
         and marker == config
-        and set(metrics.get("split", ())) == {"val", "test"}
+        and len(metrics) == 2
+        and _METRICS_COLUMNS.issubset(metrics.columns)
+        and set(metrics["split"]) == {"val", "test"}
+        and metrics["model_id"].eq(MODEL_ID).all()
         and all(not frame.empty and _PREDICTION_COLUMNS.issubset(frame.columns) for frame in predictions)
     )
 
@@ -91,7 +96,7 @@ def run_temporal_benchmark(
 
     for target, horizon, run_root in datasets:
         output_dir = output_root / MODEL_ID / target / f"k{horizon}" / run_root.name
-        if not force and _resume_ready(output_dir, config):
+        if not force and _resume_ready(output_dir, run_root.name, config):
             print(f"[SKIP] {MODEL_ID}/{target}/k{horizon}/{run_root.name}")
             continue
         _run(

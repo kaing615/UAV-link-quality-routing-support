@@ -141,6 +141,7 @@ def test_temporal_benchmark_dispatches_selected_runs_and_resumes_complete_metric
             json.dumps(
                 {
                     "model_id": "edge-sage-gru",
+                    "run_name": command[command.index("--run-name") + 1],
                     "window_size": int(command[command.index("--window-size") + 1]),
                 }
             ),
@@ -180,3 +181,15 @@ def test_temporal_benchmark_dispatches_selected_runs_and_resumes_complete_metric
     )
     run_temporal_benchmark(data_root, output_root, tmp_path / "stale.csv")
     assert len(commands) == 3
+
+    (output_dir / "metadata.json").write_text(
+        json.dumps({"model_id": "edge-sage-gru", "run_name": "foreign", "window_size": 4}),
+        encoding="utf-8",
+    )
+    run_temporal_benchmark(data_root, output_root, tmp_path / "foreign.csv")
+    assert len(commands) == 4
+
+    metrics = pd.read_csv(output_dir / "metrics.csv")
+    pd.concat([metrics, metrics.iloc[[0]]], ignore_index=True).to_csv(output_dir / "metrics.csv", index=False)
+    run_temporal_benchmark(data_root, output_root, tmp_path / "duplicate.csv")
+    assert len(commands) == 5
