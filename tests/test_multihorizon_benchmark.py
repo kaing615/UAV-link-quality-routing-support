@@ -193,3 +193,19 @@ def test_temporal_benchmark_dispatches_selected_runs_and_resumes_complete_metric
     pd.concat([metrics, metrics.iloc[[0]]], ignore_index=True).to_csv(output_dir / "metrics.csv", index=False)
     run_temporal_benchmark(data_root, output_root, tmp_path / "duplicate.csv")
     assert len(commands) == 5
+
+    malformed_cases = [
+        ("blank-macro", "", 0.9),
+        ("nan-pr", 0.8, float("nan")),
+        ("inf-macro", float("inf"), 0.9),
+    ]
+    for suffix, macro_f1, pr_auc in malformed_cases:
+        pd.DataFrame(
+            [
+                {"model_id": "edge-sage-gru", "split": "val", "macro_f1": 0.7, "pr_auc": 0.8},
+                {"model_id": "edge-sage-gru", "split": "test", "macro_f1": macro_f1, "pr_auc": pr_auc},
+            ]
+        ).to_csv(output_dir / "metrics.csv", index=False)
+        run_temporal_benchmark(data_root, output_root, tmp_path / f"{suffix}.csv")
+
+    assert len(commands) == 8

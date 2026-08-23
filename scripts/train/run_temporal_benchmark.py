@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import subprocess
 import sys
 from pathlib import Path
@@ -48,6 +49,7 @@ def _resume_ready(output_dir: Path, run_name: str, config: dict[str, int | str])
         predictions = [pd.read_csv(output_dir / f"{split}_predictions.csv") for split in ("val", "test")]
     except (OSError, ValueError, pd.errors.ParserError):
         return False
+    metric_values = metrics[["macro_f1", "pr_auc"]].apply(pd.to_numeric, errors="coerce")
     return (
         metadata.get("model_id") == MODEL_ID
         and metadata.get("run_name") == run_name
@@ -57,6 +59,7 @@ def _resume_ready(output_dir: Path, run_name: str, config: dict[str, int | str])
         and _METRICS_COLUMNS.issubset(metrics.columns)
         and set(metrics["split"]) == {"val", "test"}
         and metrics["model_id"].eq(MODEL_ID).all()
+        and metric_values.apply(lambda column: column.map(math.isfinite)).all().all()
         and all(not frame.empty and _PREDICTION_COLUMNS.issubset(frame.columns) for frame in predictions)
     )
 
