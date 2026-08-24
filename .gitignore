@@ -52,6 +52,10 @@ data/processed/
 
 memory/claude_summary.md
 simulation/ns3/build/
+simulation/ns3/build-current/
+reports/controlled_scenarios/extensions/
+reports/controlled_scenarios/extensions_*/
+reports/controlled_scenarios/workers/
 
 # Claude Code personal config
 .claude/

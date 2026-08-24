@@ -65,6 +65,7 @@ def run_pipeline(
         "train_pt": graph_dir / "train.pt",
         "val_pt": graph_dir / "val.pt",
         "test_pt": graph_dir / "test.pt",
+        "purged_pt": graph_dir / "purged.pt",
         "summary": summary_json,
     }
 

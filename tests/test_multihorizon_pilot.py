@@ -6,6 +6,7 @@ import json
 
 import pandas as pd
 import scripts.dataset.build_multihorizon_pilot as multihorizon_pilot
+import torch
 from scripts.dataset.build_multihorizon_pilot import run_pilot, select_pilot_runs
 
 
@@ -96,6 +97,17 @@ def test_run_pilot_writes_all_targets_horizons_and_summary(tmp_path):
     for row in summary.itertuples(index=False):
         assert (tmp_path / "multihorizon" / row.target / f"k{row.horizon}" / row.run_name).is_dir()
 
+    purged_root = tmp_path / "multihorizon" / "qos" / "k2" / "run_001_rwp"
+    purged_times = (
+        pd.read_csv(purged_root / "splits" / "time_splits.csv")
+        .loc[lambda frame: frame["split"] == "purged", "time"]
+        .tolist()
+    )
+    purged_graphs = torch.load(purged_root / "graph_dataset" / "purged.pt", weights_only=False)
+    assert [graph["time"] for graph in purged_graphs] == purged_times
+    assert {graph["split"] for graph in purged_graphs} == {"purged"}
+    assert {tuple(graph["node_ids"]) for graph in purged_graphs} == {(0, 1)}
+
 
 def test_run_pilot_resumes_complete_outputs(tmp_path, monkeypatch):
     raw_root = tmp_path / "raw"
@@ -111,3 +123,28 @@ def test_run_pilot_resumes_complete_outputs(tmp_path, monkeypatch):
     resumed = run_pilot(raw_root, ["run_001_rwp"], output_root, summary_csv)
 
     assert len(resumed) == 8
+
+
+def test_run_pilot_rebuilds_when_purged_graphs_are_missing(tmp_path, monkeypatch):
+    raw_root = tmp_path / "raw"
+    output_root = tmp_path / "multihorizon"
+    summary_csv = tmp_path / "reports" / "summary.csv"
+    _write_raw_run(raw_root, "run_001_rwp", "random-waypoint")
+    run_pilot(raw_root, ["run_001_rwp"], output_root, summary_csv)
+
+    missing_purged = output_root / "qos" / "k1" / "run_001_rwp" / "graph_dataset" / "purged.pt"
+    missing_purged.unlink()
+
+    original_run_pipeline = multihorizon_pilot.run_pipeline
+    rebuilt: list[tuple[str, int]] = []
+
+    def track_rebuild(**kwargs):
+        rebuilt.append((kwargs["target"], kwargs["horizon"]))
+        return original_run_pipeline(**kwargs)
+
+    monkeypatch.setattr(multihorizon_pilot, "run_pipeline", track_rebuild)
+
+    run_pilot(raw_root, ["run_001_rwp"], output_root, summary_csv)
+
+    assert rebuilt == [("qos", 1)]
+    assert missing_purged.exists()

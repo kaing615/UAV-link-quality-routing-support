@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pandas as pd
@@ -10,10 +11,34 @@ from scripts.train.run_multihorizon_benchmark import (
     aggregate_metrics,
     collect_metrics,
     discover_datasets,
+    run_benchmark,
     select_representative_runs,
 )
+from scripts.train.run_temporal_benchmark import _resume_ready, run_temporal_benchmark
 
 from src.training.baselines.loro_baselines import load_run_rows
+
+
+def _write_temporal_resume_artifacts(output_dir: Path, run_name: str, metrics: pd.DataFrame) -> dict[str, int | str]:
+    config: dict[str, int | str] = {
+        "model_id": "edge-sage-gru",
+        "window_size": 4,
+        "epochs": 100,
+        "patience": 10,
+    }
+    output_dir.mkdir(parents=True)
+    (output_dir / "best_model.pt").touch()
+    (output_dir / "metadata.json").write_text(
+        json.dumps({"model_id": "edge-sage-gru", "run_name": run_name, "window_size": 4}),
+        encoding="utf-8",
+    )
+    metrics.to_csv(output_dir / "metrics.csv", index=False)
+    for split in ("val", "test"):
+        pd.DataFrame([{"time": 1, "src": 1, "dst": 2, "y_true": 1, "y_pred": 1, "pred_score": 0.9}]).to_csv(
+            output_dir / f"{split}_predictions.csv", index=False
+        )
+    (output_dir / "temporal_benchmark_config.json").write_text(json.dumps(config), encoding="utf-8")
+    return config
 
 
 def test_discovery_and_collection_preserve_benchmark_coordinates(tmp_path: Path):
@@ -37,6 +62,37 @@ def test_discovery_and_collection_preserve_benchmark_coordinates(tmp_path: Path)
         2,
         "run-a",
     )
+
+
+def test_static_bounded_benchmark_excludes_unselected_stale_metrics(tmp_path: Path, monkeypatch) -> None:
+    data_root = tmp_path / "data"
+    selected_run = "stress_fast_rwp_s60001"
+    graph_dir = data_root / "survival" / "k3" / selected_run / "graph_dataset"
+    graph_dir.mkdir(parents=True)
+    for split in ("train", "val", "test"):
+        (graph_dir / f"{split}.pt").touch()
+
+    output_root = tmp_path / "outputs"
+    for run_name, macro_f1 in ((selected_run, 0.8), ("stale-unselected", 0.1)):
+        metrics_path = output_root / "edge-sage" / "survival" / "k3" / run_name / "metrics.csv"
+        metrics_path.parent.mkdir(parents=True)
+        pd.DataFrame([{"split": "test", "macro_f1": macro_f1}]).to_csv(metrics_path, index=False)
+    monkeypatch.setattr(
+        "scripts.train.run_multihorizon_benchmark._run",
+        lambda command: pytest.fail(f"complete selected metrics should resume, got {command}"),
+    )
+
+    result = run_benchmark(
+        data_root,
+        output_root,
+        tmp_path / "summary.csv",
+        ["edge-sage"],
+        targets={"survival"},
+        horizons={3},
+        runs_per_scenario=1,
+    )
+
+    assert set(result["run_name"]) == {selected_run}
 
 
 def test_representative_runs_are_deterministic_and_balanced_by_controlled_scenario():
@@ -108,3 +164,177 @@ def test_loro_baseline_loader_accepts_multihorizon_data_root(tmp_path: Path):
     result = load_run_rows(tmp_path, "run-a", ["train"])
     assert len(result) == 1
     assert result.iloc[0]["label"] == 1
+
+
+def test_temporal_resume_accepts_undefined_pr_auc_for_single_class_split(tmp_path: Path) -> None:
+    run_name = "stress_fast_rwp_s60001"
+    output_dir = tmp_path / run_name
+    config = _write_temporal_resume_artifacts(
+        output_dir,
+        run_name,
+        pd.DataFrame(
+            [
+                {
+                    "model_id": "edge-sage-gru",
+                    "split": "val",
+                    "has_both_classes": True,
+                    "macro_f1": 0.7,
+                    "pr_auc": 0.8,
+                },
+                {
+                    "model_id": "edge-sage-gru",
+                    "split": "test",
+                    "has_both_classes": False,
+                    "macro_f1": 0.5,
+                    "pr_auc": None,
+                },
+            ]
+        ),
+    )
+
+    assert _resume_ready(output_dir, run_name, config) is True
+
+
+def test_temporal_resume_rejects_missing_metric_column_without_raising(tmp_path: Path) -> None:
+    run_name = "stress_fast_rwp_s60001"
+    output_dir = tmp_path / run_name
+    config = _write_temporal_resume_artifacts(
+        output_dir,
+        run_name,
+        pd.DataFrame(
+            [
+                {
+                    "model_id": "edge-sage-gru",
+                    "split": split,
+                    "has_both_classes": True,
+                    "macro_f1": 0.7,
+                }
+                for split in ("val", "test")
+            ]
+        ),
+    )
+
+    assert _resume_ready(output_dir, run_name, config) is False
+
+
+def test_temporal_benchmark_dispatches_selected_runs_and_resumes_complete_metrics(tmp_path: Path, monkeypatch):
+    data_root = tmp_path / "data"
+    run_root = data_root / "survival" / "k3" / "stress_fast_rwp_s60001"
+    (run_root / "graph_dataset").mkdir(parents=True)
+    for split in ("train", "val", "test"):
+        (run_root / "graph_dataset" / f"{split}.pt").touch()
+    output_root = tmp_path / "outputs"
+    stale_metrics = output_root / "edge-sage-gru" / "survival" / "k3" / "unselected" / "metrics.csv"
+    stale_metrics.parent.mkdir(parents=True)
+    pd.DataFrame([{"model_id": "edge-sage-gru", "split": "test", "macro_f1": 0.1, "pr_auc": 0.1}]).to_csv(
+        stale_metrics, index=False
+    )
+    commands = []
+
+    def fake_run(command):
+        commands.append(command)
+        output_dir = Path(command[command.index("--output-dir") + 1])
+        output_dir.mkdir(parents=True, exist_ok=True)
+        pd.DataFrame(
+            [
+                {
+                    "model_id": "edge-sage-gru",
+                    "split": "val",
+                    "has_both_classes": True,
+                    "macro_f1": 0.7,
+                    "pr_auc": 0.8,
+                },
+                {
+                    "model_id": "edge-sage-gru",
+                    "split": "test",
+                    "has_both_classes": True,
+                    "macro_f1": 0.8,
+                    "pr_auc": 0.9,
+                },
+            ]
+        ).to_csv(output_dir / "metrics.csv", index=False)
+        (output_dir / "best_model.pt").touch()
+        (output_dir / "metadata.json").write_text(
+            json.dumps(
+                {
+                    "model_id": "edge-sage-gru",
+                    "run_name": command[command.index("--run-name") + 1],
+                    "window_size": int(command[command.index("--window-size") + 1]),
+                }
+            ),
+            encoding="utf-8",
+        )
+        for split in ("val", "test"):
+            pd.DataFrame([{"time": 1, "src": 1, "dst": 2, "y_true": 1, "y_pred": 1, "pred_score": 0.9}]).to_csv(
+                output_dir / f"{split}_predictions.csv", index=False
+            )
+
+    monkeypatch.setattr("scripts.train.run_temporal_benchmark._run", fake_run)
+    summary = run_temporal_benchmark(data_root, output_root, tmp_path / "summary.csv")
+
+    assert len(commands) == 1
+    assert commands[0][1:3] == ["-m", "src.training.gnn.train_temporal_gnn"]
+    assert commands[0][commands[0].index("--epochs") + 1] == "100"
+    assert commands[0][commands[0].index("--patience") + 1] == "10"
+    assert set(summary["split"]) == {"val", "test"}
+    assert set(summary["run_name"]) == {run_root.name}
+
+    monkeypatch.setattr(
+        "scripts.train.run_temporal_benchmark._run",
+        lambda command: pytest.fail(f"complete metrics should resume, got {command}"),
+    )
+    run_temporal_benchmark(data_root, output_root, tmp_path / "resumed.csv")
+
+    output_dir = output_root / "edge-sage-gru" / "survival" / "k3" / run_root.name
+    (output_dir / "test_predictions.csv").unlink()
+    monkeypatch.setattr("scripts.train.run_temporal_benchmark._run", fake_run)
+    run_temporal_benchmark(data_root, output_root, tmp_path / "incomplete.csv")
+    assert len(commands) == 2
+
+    marker = output_dir / "temporal_benchmark_config.json"
+    marker.write_text(
+        json.dumps({"model_id": "edge-sage-gru", "window_size": 9, "epochs": 100, "patience": 10}),
+        encoding="utf-8",
+    )
+    run_temporal_benchmark(data_root, output_root, tmp_path / "stale.csv")
+    assert len(commands) == 3
+
+    (output_dir / "metadata.json").write_text(
+        json.dumps({"model_id": "edge-sage-gru", "run_name": "foreign", "window_size": 4}),
+        encoding="utf-8",
+    )
+    run_temporal_benchmark(data_root, output_root, tmp_path / "foreign.csv")
+    assert len(commands) == 4
+
+    metrics = pd.read_csv(output_dir / "metrics.csv")
+    pd.concat([metrics, metrics.iloc[[0]]], ignore_index=True).to_csv(output_dir / "metrics.csv", index=False)
+    run_temporal_benchmark(data_root, output_root, tmp_path / "duplicate.csv")
+    assert len(commands) == 5
+
+    malformed_cases = [
+        ("blank-macro", "", 0.9),
+        ("nan-pr", 0.8, float("nan")),
+        ("inf-macro", float("inf"), 0.9),
+    ]
+    for suffix, macro_f1, pr_auc in malformed_cases:
+        pd.DataFrame(
+            [
+                {
+                    "model_id": "edge-sage-gru",
+                    "split": "val",
+                    "has_both_classes": True,
+                    "macro_f1": 0.7,
+                    "pr_auc": 0.8,
+                },
+                {
+                    "model_id": "edge-sage-gru",
+                    "split": "test",
+                    "has_both_classes": True,
+                    "macro_f1": macro_f1,
+                    "pr_auc": pr_auc,
+                },
+            ]
+        ).to_csv(output_dir / "metrics.csv", index=False)
+        run_temporal_benchmark(data_root, output_root, tmp_path / f"{suffix}.csv")
+
+    assert len(commands) == 8

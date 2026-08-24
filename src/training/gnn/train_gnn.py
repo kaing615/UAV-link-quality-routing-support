@@ -240,6 +240,7 @@ def main() -> None:
         "weight_decay": args.weight_decay,
         "lr_scheduler": args.lr_scheduler,
         "edge_mode": edge_mode,
+        "use_edge_features": use_message_edges and use_decoder_edges,
         "use_message_edge_features": use_message_edges,
         "use_decoder_edge_features": use_decoder_edges,
         "threshold": threshold,

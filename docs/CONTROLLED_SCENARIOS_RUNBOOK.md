@@ -438,16 +438,24 @@ Sau khi kiểm tra thành công, người viết paper chỉ cần clone đúng 
 
 ## 15. Chạy toàn bộ flow nghiên cứu trên máy tổng hợp
 
-Chỉ một máy có đủ 400 run mới chạy mục này. Launcher thực hiện tuần tự:
+Chỉ một máy có đủ **420 accepted run** mới chạy mục này: 400 core
+(`baseline`, `fast`, `sparse`, `dense`, mỗi scenario 100) và 20 extension
+(10 `partition-reconnect` + 10 `high-load`). Extension partition dùng metadata
+nhóm/pha reconnect; high-load dùng 8 background flow × 600 kbps. Launcher tạo
+lại extension còn thiếu, chạy `summarize_extension_scenarios --fail-on-check`
+và dừng **trước mọi model training** nếu calibration/check không đạt.
+
+Launcher thực hiện tuần tự:
 
 ```text
-controlled ns-3 → data quality → multi-horizon QoS/survival
-→ persistence/logreg/XGBoost/Edge-SAGE → LORO/cross-mobility/ablation
-→ routing replay → inference benchmark → closed-loop ns-3
-→ hình và bảng cho paper
+controlled ns-3 (400 + 20) → core/extension checks → data quality
+→ multi-horizon QoS/survival (420) → persistence/logreg/XGBoost/Edge-SAGE
+→ temporal Edge-SAGE--GRU survival k=3,5 → paired temporal artifacts
+→ LORO/cross-mobility/ablation → routing replay → inference benchmark
+→ closed-loop ns-3 → hình và bảng cho paper
 ```
 
-Xem trước tám pha mà không chạy tính toán:
+Xem trước chín pha mà không chạy tính toán:
 
 ```bash
 docker run --rm -v "$PWD:/workspace" -w /workspace \
@@ -465,14 +473,16 @@ docker run --rm -v "$PWD:/workspace" -w /workspace \
 ```
 
 Launcher dùng riêng `data/multihorizon_controlled/`,
-`outputs/multihorizon_controlled/` và `reports/controlled_paper/`, vì vậy không
-trộn kết quả với pilot `ns3big_*`. Dữ liệu vẫn gồm đủ 100 seed cho mỗi scenario
-(400 run) tại từng mốc `t+1`, `t+2`, `t+3`, `t+5`. Để tránh hàng nghìn lần
-huấn luyện GNN không cần thiết, mặc định within-run dùng 10 run/scenario, LORO
-giữ ra 5 fold/scenario, ablation dùng 10 run/scenario và closed-loop dùng 10
-run baseline. Các fold LORO vẫn huấn luyện trên toàn bộ run còn lại. GNN chạy
-200 epoch với patience 20. Run đại diện được chọn theo seed tăng dần; seed
-lẻ/chẵn của bộ controlled xen kẽ Random Waypoint và Gauss–Markov.
+`outputs/multihorizon_controlled/`, `outputs/temporal_controlled/` và
+`reports/controlled_paper/`, vì vậy không trộn kết quả với pilot `ns3big_*`.
+Dữ liệu multi-horizon chứa toàn bộ 420 run tại `t+1`, `t+2`, `t+3`, `t+5`.
+Mặc định within-run dùng 10 run/scenario, LORO giữ ra 5 fold/scenario, ablation
+dùng 10 run/scenario, temporal dùng 10 run/scenario với 100 epoch/patience 10,
+và closed-loop dùng 10 baseline run. LORO vẫn train trên toàn bộ run còn lại.
+Partition/load được giữ trong within-run, LORO và ablation sampling; chúng bị
+loại khỏi cross-mobility, chỉ so mobility của bốn core scenario. GNN tĩnh chạy
+200 epoch/patience 20. Run đại diện được chọn theo seed tăng dần; core seed
+lẻ/chẵn xen kẽ Random Waypoint và Gauss–Markov.
 
 Có thể tăng hoặc giảm khối lượng huấn luyện mà không sinh lại dữ liệu:
 
@@ -482,20 +492,27 @@ export LORO_FOLDS_PER_SCENARIO=5
 export ABLATION_RUNS_PER_SCENARIO=10
 export CLOSED_LOOP_RUNS=10
 export GNN_EPOCHS=200 GNN_PATIENCE=20
+export EXTENSION_RUNS=10
+export TEMPORAL_RUNS_PER_SCENARIO=10
+export TEMPORAL_EPOCHS=100 TEMPORAL_PATIENCE=10
 set -o pipefail
 docker run --rm \
   -e WITHIN_RUNS_PER_SCENARIO \
   -e LORO_FOLDS_PER_SCENARIO \
   -e ABLATION_RUNS_PER_SCENARIO \
   -e CLOSED_LOOP_RUNS -e GNN_EPOCHS -e GNN_PATIENCE \
+  -e EXTENSION_RUNS -e TEMPORAL_RUNS_PER_SCENARIO \
+  -e TEMPORAL_EPOCHS -e TEMPORAL_PATIENCE \
   -v "$PWD:/workspace" -w /workspace \
   uav-ns3-runner bash scripts/run_controlled_paper_pipeline.sh \
   2>&1 | tee reports/controlled_paper/pipeline.log
 ```
 
-Nếu bị ngắt, chạy lại đúng lệnh. Các bước sinh controlled data, dựng
-multi-horizon, huấn luyện, routing, inference và closed-loop đều nhận diện output
-đã hoàn chỉnh để tiếp tục; các bước tổng hợp nhẹ có thể chạy lại. Hoàn tất khi
+Nếu bị ngắt, chạy lại đúng lệnh với cùng các biến môi trường. Core/extension
+generator, multi-horizon và temporal benchmark bỏ qua output hoàn chỉnh; các
+bước tổng hợp có thể chạy lại. Không giảm `EXTENSION_RUNS` sau khi đã có một
+bộ 10+10 được kiểm tra: sửa dữ liệu/calibration và chạy lại cho đến khi
+`reports/controlled_scenarios/extensions/REPORT.md` là PASS. Hoàn tất khi
 launcher in:
 
 ```text
@@ -518,8 +535,24 @@ Model chạy API      → promote_model.sh tự dvc add + dvc push model
 
 ### 16.1. Publish dữ liệu và kết quả paper
 
-Sau khi launcher in `[OK]`, đóng gói data, outputs và reports thành
-`deliverables/controlled_paper_full.tar.gz`, rồi chạy:
+Sau khi launcher in `[OK]`, đóng gói đúng 420 raw/graph run cùng multi-horizon,
+outputs và reports; tạo checksum trước khi đưa archive vào DVC:
+
+```bash
+mkdir -p deliverables
+tar -czf deliverables/controlled_paper_full.tar.gz \
+  data/raw_snapshots/stress_* data/graph_dataset/stress_* \
+  data/multihorizon_controlled outputs/multihorizon_controlled \
+  outputs/temporal_controlled outputs/controlled_stage6 \
+  outputs/routing_multihorizon_controlled outputs/closed_loop_controlled \
+  reports/controlled_scenarios reports/controlled_paper
+sha256sum deliverables/controlled_paper_full.tar.gz \
+  > deliverables/controlled_paper_full_SHA256SUMS.txt
+tar -tzf deliverables/controlled_paper_full.tar.gz \
+  > deliverables/controlled_paper_full_files.txt
+```
+
+Đưa archive đã kiểm tra vào DVC rồi commit metadata (không commit archive):
 
 ```bash
 dvc add deliverables/controlled_paper_full.tar.gz
@@ -533,8 +566,15 @@ git commit -m "data: publish controlled paper experiment"
 git push origin main
 ```
 
-Đây là bước bàn giao kết quả paper. Không chạy `promote_model.sh` chỉ để upload
-data.
+Người nhận lấy đúng commit metadata, rồi pull/verify/extract:
+
+```bash
+dvc pull deliverables/controlled_paper_full.tar.gz.dvc
+sha256sum -c deliverables/controlled_paper_full_SHA256SUMS.txt
+tar -xzf deliverables/controlled_paper_full.tar.gz
+```
+
+Đây là bước bàn giao kết quả paper. Không chạy `promote_model.sh` chỉ để upload data.
 
 ### 16.2. Promote model serving (không bắt buộc cho paper)
 
@@ -555,10 +595,13 @@ model thêm lần nữa. Nếu chỉ viết paper, bỏ qua toàn bộ Mục 16.
 
 Chỉ xem là hoàn tất khi:
 
-- `baseline`, `fast`, `sparse`, `dense` đều có `raw=100/100` và
-  `graph=100/100`;
+- `baseline`, `fast`, `sparse`, `dense` đều có `raw=100/100` và `graph=100/100`,
+  đồng thời extension có `ctrl=10/10` và `load=10/10` (tổng 420 run);
 - `REPORT.md` có `Overall status: PASS`;
+- `reports/controlled_scenarios/extensions/REPORT.md` có `Overall status: PASS`;
 - data-quality có `total_errors = 0`;
+- temporal artifacts có `temporal_static_detailed.csv` và
+  `temporal_static_aggregate.csv` tại `reports/controlled_paper/temporal/`;
 - archive giải nén được và checksum hợp lệ;
 - manifest không có trạng thái `FAILED` hoặc `INCOMPLETE`;
 - `dvc push -r storage deliverables/*.dvc` hoàn tất trên máy tổng hợp;
