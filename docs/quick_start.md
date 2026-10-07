@@ -631,7 +631,7 @@ bash scripts/mlops/stage_serving_model.sh
 docker build -f Dockerfile.serve -t uav-gnn-serve:latest .
 
 # Chạy container
-docker run -p 8000:8000 uav-gnn-serve:latest
+docker run -p 8000:8080 uav-gnn-serve:latest
 ```
 
 ### Promote một model mới

@@ -213,6 +213,7 @@ def main() -> None:
         "best_epoch": best_epoch,
         "best_val_macro_f1": best_macro_f1,
         "edge_mode": args.edge_mode,
+        "use_edge_features": use_message_edges and use_decoder_edges,
         "use_message_edge_features": use_message_edges,
         "use_decoder_edge_features": use_decoder_edges,
     }

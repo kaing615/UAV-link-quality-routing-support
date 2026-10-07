@@ -147,7 +147,7 @@ def main() -> None:
     val_metrics["run_name"] = "__validation__"
     metric_rows = [val_metrics]
     for test_run in test_runs:
-        test_df = load_run_rows(args.data_root, test_run, None)
+        test_df = load_run_rows(args.data_root, test_run, ["train", "val", "test"])
         test_metrics, test_preds = evaluate_split(model, model_id, model_name, test_df, "test", threshold=threshold)
         test_metrics["run_name"] = test_run
         metric_rows.append(test_metrics)

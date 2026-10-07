@@ -7,7 +7,7 @@ PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 NS3_SRC_DIR="${PROJECT_ROOT}/simulation/ns3"
 NS3_BIN="${NS3_SRC_DIR}/build/uav-olsr-dataset"
 
-if [[ $
+if [[ $# -lt 1 ]]; then
   echo "Usage: $0 RUN_NAME [SEED] [MOBILITY_MODEL]"
   echo "Example: $0 ns3_seed_42_rwp 42 random-waypoint"
   exit 1
@@ -39,12 +39,8 @@ echo "[INFO] seed=${SEED}"
 echo "[INFO] mobility_model=${MOBILITY_MODEL}"
 echo "[INFO] num_uavs=${NUM_UAVS} comm_range=${COMM_RANGE} time_steps=${TIME_STEPS} area=${X_MAX}x${Y_MAX}"
 
-if [[ ! -x "${NS3_BIN}" ]]; then
-  echo
-  echo "[0/4] Building ns-3 scenario (first run)"
-  cmake -B "${NS3_SRC_DIR}/build" -S "${NS3_SRC_DIR}" -DCMAKE_BUILD_TYPE=Release
-  cmake --build "${NS3_SRC_DIR}/build"
-fi
+echo "[0/4] Checking/building ns-3 scenario"
+bash "${PROJECT_ROOT}/scripts/utils/ensure_ns3_binary.sh"
 
 cd "${PROJECT_ROOT}"
 
@@ -66,6 +62,7 @@ echo "[1/4] Running ns-3 simulation"
   --yMax="${Y_MAX}" \
   --outputDir="${OUTPUT_DIR}" \
   --enableAnim=false
+cp "${NS3_SRC_DIR}/build/source.sha256" "${OUTPUT_DIR}/ns3_source.sha256"
 
 echo
 echo "[2/4] Running graph preprocessing"

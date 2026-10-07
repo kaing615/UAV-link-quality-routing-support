@@ -1,5 +1,7 @@
 """Test GNN model forward pass shapes and output validity."""
 
+import json
+
 import pytest
 import torch
 
@@ -9,6 +11,7 @@ from src.models.gnn.edge_gnn import (
     GATEdgeClassifier,
     GraphSAGEEdgeClassifier,
 )
+from src.routing.predict_edges import predict_edges
 from src.training.gnn.train_gnn import resolve_edge_mode
 
 
@@ -98,6 +101,42 @@ def test_edge_sage_supports_separate_message_and_decoder_ablation(
 )
 def test_resolve_edge_mode_maps_ablation_to_model_identity(mode, expected):
     assert resolve_edge_mode(mode) == expected
+
+
+@pytest.mark.parametrize("mode", ["full", "decoder-only", "message-only", "noedge"])
+def test_trained_edge_mode_artifact_loads_for_routing(mode, tmp_path, monkeypatch, sample_graph):
+    monkeypatch.chdir(tmp_path)
+    message, decoder, model_id = resolve_edge_mode(mode)
+    run = "run-a"
+    model_dir = tmp_path / "outputs" / "gnn" / model_id / run
+    model_dir.mkdir(parents=True)
+    model = EdgeAwareSAGEEdgeClassifier(
+        node_in_channels=8,
+        edge_in_channels=7,
+        hidden_channels=32,
+        use_message_edge_features=message,
+        use_decoder_edge_features=decoder,
+    )
+    torch.save(model.state_dict(), model_dir / "best_model.pt")
+    (model_dir / "metadata.json").write_text(
+        json.dumps(
+            {
+                "model_id": model_id,
+                "hidden_channels": 32,
+                "num_layers": 2,
+                "dropout": 0.3,
+                "use_message_edge_features": message,
+                "use_decoder_edge_features": decoder,
+            }
+        ),
+        encoding="utf-8",
+    )
+    graph_dir = tmp_path / "data" / "graph_dataset" / run / "graph_dataset"
+    graph_dir.mkdir(parents=True)
+    graph = {**sample_graph, "time": 0, "node_ids": list(range(sample_graph["x"].shape[0]))}
+    torch.save([graph], graph_dir / "test.pt")
+    output = predict_edges(run, model_id)
+    assert len(__import__("pandas").read_csv(output)) == graph["edge_label"].numel()
 
 
 def test_dvclive_tracking_does_not_modify_pipeline_file(tmp_path, monkeypatch):

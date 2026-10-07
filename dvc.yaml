@@ -1,7 +1,13 @@
 stages:
   generate:
     cmd: python scripts/dataset/generate_batch.py
-    deps: [scripts/dataset/generate_batch.py, simulation/ns3/uav-olsr-dataset.cc, src/preprocessing/]
+    deps:
+      - scripts/dataset/generate_batch.py
+      - scripts/dataset/run_one_dataset_ns3.sh
+      - scripts/utils/ensure_ns3_binary.sh
+      - simulation/ns3/uav-olsr-dataset.cc
+      - simulation/ns3/CMakeLists.txt
+      - src/preprocessing/
     params: [generate]
     outs: [data/raw_snapshots/, data/graph_dataset/]
   validate:

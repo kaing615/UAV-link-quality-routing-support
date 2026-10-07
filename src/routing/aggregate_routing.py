@@ -9,7 +9,8 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from src.evaluation.paired_statistics import bootstrap_mean_ci, paired_comparisons
+from src.evaluation.paired_statistics import bootstrap_mean_ci, independent_values, paired_comparisons
+from src.utils.experiment import seed_group
 
 STRATEGY_LABELS = {
     "olsr": "OLSR (actual, ns-3)",
@@ -55,41 +56,27 @@ def aggregate(
     if not frames:
         raise FileNotFoundError(f"No usable {filename} under {routing_root}/{pattern}/")
     detailed = pd.concat(frames, ignore_index=True)
-    grouped = (
-        detailed.groupby("strategy")
-        .agg(
-            n_runs=("run_name", "nunique"),
-            n_sessions=("n_sessions", "sum"),
-            **{
-                f"{col}_{stat}": (col, stat)
-                for col in [
-                    "route_found_rate",
-                    "mean_hops",
-                    "mean_e2e_delay_ms",
-                    "mean_est_pdr",
-                    "mean_route_lifetime",
-                    "survival_at_1",
-                    "mean_realized_pdr_t1",
-                    "mean_route_changes",
-                    "disconnected_rate",
-                ]
-                for stat in ["mean", "std"]
-            },
-        )
-        .reset_index()
-    )
-
-    # Confidence intervals are clustered at run level; retain mean/std for
-    # compatibility with existing consumers.
-    for metric in ROUTING_METRICS:
-        ci = detailed.groupby("strategy")[metric].apply(
-            lambda values: pd.Series(
-                bootstrap_mean_ci(values.to_numpy(), seed=42),
-                index=[f"{metric}_ci95_low", f"{metric}_ci95_high"],
+    rows = []
+    for strategy, group in detailed.groupby("strategy", sort=True):
+        row = {
+            "strategy": strategy,
+            "n_runs": group["run_name"].nunique(),
+            "n_independent_runs": group["run_name"].map(seed_group).nunique(),
+            "n_sessions": group["n_sessions"].sum(),
+        }
+        for metric in ROUTING_METRICS:
+            values = independent_values(group, metric)
+            low, high = bootstrap_mean_ci(values.to_numpy())
+            row.update(
+                {
+                    f"{metric}_mean": values.mean(),
+                    f"{metric}_std": values.std(),
+                    f"{metric}_ci95_low": low,
+                    f"{metric}_ci95_high": high,
+                }
             )
-        )
-        ci = ci.unstack()
-        grouped = grouped.merge(ci, left_on="strategy", right_index=True, how="left")
+        rows.append(row)
+    grouped = pd.DataFrame(rows)
 
     output_dir.mkdir(parents=True, exist_ok=True)
     detailed.to_csv(output_dir / f"detailed_by_run{out_suffix}.csv", index=False)

@@ -16,7 +16,7 @@ spec:
         - name: serve
           image: uav-gnn-serve  # kustomize edit will update this tag
           ports:
-            - containerPort: 8000
+            - containerPort: 8080
               name: http
           envFrom:
             - configMapRef:

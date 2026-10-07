@@ -21,10 +21,17 @@ PANELS = [
 
 
 def collect(routing_root: Path, pattern: str) -> pd.DataFrame:
-    files = sorted(routing_root.glob(f"{pattern}/summary*.csv"))
+    files = sorted(
+        f
+        for f in routing_root.glob(f"{pattern}/summary*.csv")
+        if f.name == "summary.csv" or f.name.startswith("summary_pth")
+    )
     if not files:
         raise FileNotFoundError(f"No summary*.csv under {routing_root}/{pattern}/")
-    return pd.concat([pd.read_csv(f) for f in files], ignore_index=True)
+    result = pd.concat([pd.read_csv(f) for f in files], ignore_index=True)
+    if result.duplicated(["run_name", "strategy", "p_th"]).any():
+        raise ValueError("Duplicate run/strategy/p_th in routing summaries")
+    return result
 
 
 def plot(df: pd.DataFrame, output_dir: Path, title: str) -> Path:

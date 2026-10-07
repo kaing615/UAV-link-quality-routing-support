@@ -37,7 +37,11 @@ with open(sys.argv[1], "w") as f:
     f.write("\n")
 PY
 git add "$POINTER" "${ARTIFACT}.dvc" deploy/.gitignore
-git commit -m "${MSG}" || echo "[INFO] pointer unchanged, skipping commit"
+if git diff --cached --quiet; then
+  echo "[INFO] pointer unchanged, skipping commit"
+else
+  git commit -m "${MSG}"
+fi
 
 git tag -a "${TAG}" -m "${MSG}"
 git push origin HEAD

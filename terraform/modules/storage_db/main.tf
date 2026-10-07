@@ -35,7 +35,7 @@ resource "aws_security_group" "rds_sg" {
     from_port   = 5432
     to_port     = 5432
     protocol    = "tcp"
-    cidr_blocks = ["10.0.0.0/16"] # Allow from within VPC
+    security_groups = [var.eks_node_security_group_id]
   }
 }
 
@@ -48,7 +48,7 @@ resource "aws_db_instance" "mlflow_db" {
   instance_class       = "db.t3.micro"
   db_name              = "mlflowdb"
   username             = "mlflow_user"
-  password             = "SuperSecretPassword123!" # In real life, use AWS Secrets Manager
+  manage_master_user_password = true
   parameter_group_name = "default.postgres15"
   skip_final_snapshot  = true
   

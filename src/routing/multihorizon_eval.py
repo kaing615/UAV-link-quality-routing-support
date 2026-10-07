@@ -8,9 +8,10 @@ from pathlib import Path
 import pandas as pd
 from scripts.train.run_multihorizon_benchmark import select_representative_runs
 
-from src.evaluation.paired_statistics import bootstrap_mean_ci, paired_comparisons
+from src.evaluation.paired_statistics import bootstrap_mean_ci, independent_values, paired_comparisons
 from src.routing.predict_edges import attach_prediction_identity
 from src.routing.replay_eval import evaluate_run
+from src.utils.experiment import cache_matches, fingerprint, save_manifest, seed_group
 
 MODELS = ("persistence", "logreg", "xgb", "edge-sage")
 TARGETS = ("qos", "survival")
@@ -76,8 +77,7 @@ def _prediction_paths(
             raise FileNotFoundError(f"Missing {model} predictions: {source}")
         if model == "edge-sage":
             identified = routing_run_dir / "predictions_edge-sage.csv"
-            if force or not identified.exists():
-                attach_prediction_identity(source, run_root / "graph_dataset" / "test.pt", identified)
+            attach_prediction_identity(source, run_root / "graph_dataset" / "test.pt", identified, force)
             paths[model] = identified
         else:
             paths[model] = source
@@ -118,14 +118,32 @@ def run_multihorizon_routing(
         raise FileNotFoundError(f"No multi-horizon datasets found under {data_root}")
 
     expected_strategies = {"hop", "delay", *models}
+    selected_paths = []
     for target, horizon, run_root in coordinates:
         for cost_mode in cost_modes or list(COST_MODES):
             routing_run_dir = routing_root / target / f"k{horizon}" / cost_mode / run_root.name
             summary_csv = routing_run_dir / "summary.csv"
-            if not force and _completed(summary_csv, expected_strategies):
+            selected_paths.append(summary_csv)
+            predictions = _prediction_paths(model_root, run_root, routing_run_dir, models, force)
+            manifest = fingerprint(
+                {"target": target, "horizon": horizon, "cost_mode": cost_mode, "models": models},
+                [
+                    *predictions.values(),
+                    run_root / "splits",
+                    raw_root / run_root.name,
+                    Path("src/routing"),
+                    Path("src/preprocessing/gnn/build_labels.py"),
+                    Path("src/utils"),
+                ],
+            )
+            manifest_path = routing_run_dir / "experiment.json"
+            if (
+                not force
+                and _completed(summary_csv, expected_strategies)
+                and cache_matches(manifest_path, manifest, [summary_csv, routing_run_dir / "details.csv"])
+            ):
                 print(f"[SKIP] routing {target}/k{horizon}/{cost_mode}/{run_root.name}")
                 continue
-            predictions = _prediction_paths(model_root, run_root, routing_run_dir, models, force)
             print(f"[RUN] routing {target}/k{horizon}/{cost_mode}/{run_root.name}")
             evaluate_run(
                 run_root.name,
@@ -140,16 +158,18 @@ def run_multihorizon_routing(
                 target=target,
                 prediction_horizon=horizon,
             )
+            save_manifest(manifest_path, manifest)
 
-    return aggregate_multihorizon_results(routing_root, reports_root)
+    return aggregate_multihorizon_results(routing_root, reports_root, selected_paths)
 
 
 def aggregate_multihorizon_results(
     routing_root: Path,
     reports_root: Path,
+    paths: list[Path] | None = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     frames = []
-    for summary_csv in sorted(routing_root.glob("*/k*/*/*/summary.csv")):
+    for summary_csv in sorted(paths if paths is not None else routing_root.glob("*/k*/*/*/summary.csv")):
         try:
             frame = pd.read_csv(summary_csv)
         except pd.errors.EmptyDataError:
@@ -165,6 +185,8 @@ def aggregate_multihorizon_results(
     missing = required.difference(detailed.columns)
     if missing:
         raise ValueError(f"Routing summaries are missing columns: {sorted(missing)}")
+    if detailed.duplicated([*coordinates, "run_name", "strategy"]).any():
+        raise ValueError("Duplicate routing coordinate/run/strategy")
     session_counts = detailed.groupby([*coordinates, "run_name"])["n_sessions"].nunique()
     if (session_counts > 1).any():
         raise ValueError("Strategies were not evaluated on the same number of sessions")
@@ -178,13 +200,14 @@ def aggregate_multihorizon_results(
                 **context,
                 "strategy": strategy,
                 "n_runs": int(strategy_group["run_name"].nunique()),
+                "n_independent_runs": int(strategy_group["run_name"].map(seed_group).nunique()),
                 "n_sessions": int(strategy_group["n_sessions"].sum()),
             }
             for metric in ROUTING_METRICS:
-                values = strategy_group[metric].to_numpy(dtype=float)
-                ci_low, ci_high = bootstrap_mean_ci(values, seed=42)
-                row[f"{metric}_mean"] = float(strategy_group[metric].mean())
-                row[f"{metric}_std"] = float(strategy_group[metric].std())
+                values = independent_values(strategy_group, metric)
+                ci_low, ci_high = bootstrap_mean_ci(values.to_numpy(), seed=42)
+                row[f"{metric}_mean"] = float(values.mean())
+                row[f"{metric}_std"] = float(values.std())
                 row[f"{metric}_ci95_low"] = ci_low
                 row[f"{metric}_ci95_high"] = ci_high
             aggregate_rows.append(row)

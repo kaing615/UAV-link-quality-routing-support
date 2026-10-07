@@ -11,6 +11,8 @@ from pathlib import Path
 
 import pandas as pd
 
+from src.utils.experiment import cache_matches, fingerprint, save_manifest
+
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 PIPELINE_SCRIPT = PROJECT_ROOT / "scripts" / "dataset" / "run_one_dataset_ns3.sh"
 SCENARIOS = {
@@ -80,9 +82,26 @@ def run_jobs(
 ) -> pd.DataFrame:
     rows: list[dict[str, object]] = []
     manifest_path.parent.mkdir(parents=True, exist_ok=True)
+    subprocess.run(["bash", str(PROJECT_ROOT / "scripts/utils/ensure_ns3_binary.sh")], check=True, cwd=PROJECT_ROOT)
     for number, job in enumerate(jobs, start=1):
         started = time.perf_counter()
-        status = "SKIPPED" if _complete(job, raw_root, graph_root) else "RUNNING"
+        expected = fingerprint(
+            asdict(job),
+            [
+                PROJECT_ROOT / "simulation/ns3/build/uav-olsr-dataset",
+                PIPELINE_SCRIPT,
+                PROJECT_ROOT / "scripts/utils/ensure_ns3_binary.sh",
+                Path(__file__),
+                PROJECT_ROOT / "src/preprocessing",
+                PROJECT_ROOT / "src/utils",
+            ],
+        )
+        experiment_path = raw_root / job.run_name / "experiment.json"
+        status = (
+            "SKIPPED"
+            if (_complete(job, raw_root, graph_root) and cache_matches(experiment_path, expected, []))
+            else "RUNNING"
+        )
         print(f"[{number}/{len(jobs)}] {status} {job.run_name}", flush=True)
         if status == "RUNNING":
             env = {
@@ -103,6 +122,8 @@ def run_jobs(
                     env=env,
                 )
                 status = "COMPLETED" if _complete(job, raw_root, graph_root) else "INCOMPLETE"
+                if status == "COMPLETED":
+                    save_manifest(experiment_path, expected)
             except subprocess.CalledProcessError:
                 status = "FAILED"
         row = {

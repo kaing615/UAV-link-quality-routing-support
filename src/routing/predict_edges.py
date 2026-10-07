@@ -8,6 +8,7 @@ import pandas as pd
 import torch
 
 from src.models.gnn.edge_gnn import EdgeAwareSAGEEdgeClassifier, GATEdgeClassifier, GraphSAGEEdgeClassifier
+from src.utils.experiment import cache_matches, fingerprint, save_manifest
 
 _MODELS = {"graphsage": GraphSAGEEdgeClassifier, "gat": GATEdgeClassifier, "edge-sage": EdgeAwareSAGEEdgeClassifier}
 NODE_IN = 8
@@ -18,8 +19,13 @@ def attach_prediction_identity(
     predictions_csv: Path,
     test_pt: Path,
     output_csv: Path,
+    force: bool = False,
 ) -> Path:
     """Attach ``time/src/dst`` to saved GNN scores using test graph order."""
+    manifest = fingerprint({}, [predictions_csv, test_pt, Path(__file__)])
+    manifest_path = output_csv.with_suffix(".experiment.json")
+    if not force and cache_matches(manifest_path, manifest, [output_csv]):
+        return output_csv
     predictions = pd.read_csv(predictions_csv)
     graphs = torch.load(test_pt, weights_only=False)
     identity_rows = []
@@ -48,6 +54,7 @@ def attach_prediction_identity(
     identified = pd.concat([pd.DataFrame(identity_rows), predictions.reset_index(drop=True)], axis=1)
     output_csv.parent.mkdir(parents=True, exist_ok=True)
     identified.to_csv(output_csv, index=False)
+    save_manifest(manifest_path, manifest)
     return output_csv
 
 
@@ -58,7 +65,7 @@ def predict_edges(
 ) -> Path:
     model_dir = Path("outputs/gnn") / model_id / run_name
     metadata = json.loads((model_dir / "metadata.json").read_text(encoding="utf-8"))
-    base_id = model_id.replace("-noedge", "")
+    base_id = "edge-sage" if model_id.startswith("edge-sage-") else model_id.removesuffix("-noedge")
     model_cls = _MODELS[base_id]
     model = model_cls(
         node_in_channels=NODE_IN,
@@ -66,7 +73,15 @@ def predict_edges(
         hidden_channels=metadata["hidden_channels"],
         num_layers=metadata["num_layers"],
         dropout=metadata["dropout"],
-        use_edge_features=metadata["use_edge_features"],
+        use_edge_features=metadata.get("use_edge_features", True),
+        **(
+            {
+                "use_message_edge_features": metadata["use_message_edge_features"],
+                "use_decoder_edge_features": metadata["use_decoder_edge_features"],
+            }
+            if base_id == "edge-sage" and "use_message_edge_features" in metadata
+            else {}
+        ),
     )
     model.load_state_dict(torch.load(model_dir / "best_model.pt", weights_only=True))
     model.eval()

@@ -3,11 +3,29 @@ from __future__ import annotations
 import unittest
 from unittest.mock import patch
 
+import pytest
 import torch
 
 from src.serving import app as serving_app
 from src.serving.schemas import PredictionRequest
 from src.validation.data_quality import NODE_FEATURE_RANGES, check_tensor_quality
+
+
+@pytest.mark.parametrize("changes", [{"query_edges": [(999, 2)]}, {"nodes": [{"node_id": 1}, {"node_id": 1}]}])
+def test_serving_rejects_unknown_or_duplicate_nodes(changes):
+    payload = {
+        "nodes": [
+            {"node_id": node_id, "x": 0, "y": 0, "z": 0, "vx": 0, "vy": 0, "vz": 0, "degree": 1, "load": 0}
+            for node_id in (1, 2)
+        ],
+        "edges": [],
+    }
+    if "nodes" in changes:
+        payload["nodes"][1]["node_id"] = 1
+    else:
+        payload.update(changes)
+    with pytest.raises(ValueError):
+        PredictionRequest(**payload)
 
 
 class _CapturingModel:

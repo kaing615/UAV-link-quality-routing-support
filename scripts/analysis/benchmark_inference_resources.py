@@ -17,8 +17,9 @@ import numpy as np
 import pandas as pd
 import psutil
 
-from src.evaluation.paired_statistics import bootstrap_mean_ci
+from src.evaluation.paired_statistics import bootstrap_mean_ci, independent_values
 from src.training.baselines.common import FEATURE_COLUMNS
+from src.utils.experiment import cache_matches, fingerprint, save_manifest, seed_group
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
@@ -50,7 +51,9 @@ def model_complexity(model: object, model_id: str) -> tuple[int, str]:
 
         if not isinstance(model, torch.nn.Module):
             raise TypeError("edge-sage complexity requires a torch module")
-        return sum(parameter.numel() for parameter in model.parameters() if parameter.requires_grad), "trainable_parameters"
+        return sum(
+            parameter.numel() for parameter in model.parameters() if parameter.requires_grad
+        ), "trainable_parameters"
     if model_id == "logreg" and hasattr(model, "coef_"):
         return int(model.coef_.size + model.intercept_.size), "coefficients_plus_intercept"
     if model_id == "xgb" and hasattr(model, "get_booster"):
@@ -68,9 +71,10 @@ def aggregate_benchmarks(detailed: pd.DataFrame) -> pd.DataFrame:
         row: dict[str, object] = {
             "model_id": model_id,
             "n_runs": int(group["run_name"].nunique()),
+            "n_independent_runs": int(group["run_name"].map(seed_group).nunique()),
         }
         for metric in SUMMARY_METRICS:
-            values = group[metric].to_numpy(dtype=float)
+            values = independent_values(group, metric).to_numpy(dtype=float)
             low, high = bootstrap_mean_ci(values, seed=42)
             row[f"{metric}_mean"] = round(float(values.mean()), 12)
             row[f"{metric}_std"] = round(float(values.std(ddof=1)), 12) if len(values) > 1 else 0.0
@@ -126,7 +130,9 @@ def _load_model_and_predictor(
         hidden_channels=int(metadata["hidden_channels"]),
         num_layers=int(metadata["num_layers"]),
         dropout=float(metadata["dropout"]),
-        use_edge_features=bool(metadata["use_edge_features"]),
+        use_edge_features=bool(metadata.get("use_edge_features", True)),
+        use_message_edge_features=metadata.get("use_message_edge_features"),
+        use_decoder_edge_features=metadata.get("use_decoder_edge_features"),
     )
     model.load_state_dict(torch.load(artifact, map_location="cpu", weights_only=True))
     model.eval()
@@ -219,21 +225,23 @@ def _write_outputs(detailed: pd.DataFrame, output_dir: Path) -> None:
     tables.mkdir(exist_ok=True)
     figures.mkdir(exist_ok=True)
     summary.to_csv(tables / "inference_resources.csv", index=False)
-    printable = summary[[
-        "model_id",
-        "n_runs",
-        "latency_ms_per_sample_median_mean",
-        "latency_ms_per_snapshot_median_mean",
-        "peak_rss_mb_mean",
-        "checkpoint_mb_mean",
-        "complexity_count_mean",
-    ]].copy()
+    printable = summary[
+        [
+            "model_id",
+            "n_runs",
+            "latency_ms_per_sample_median_mean",
+            "latency_ms_per_snapshot_median_mean",
+            "peak_rss_mb_mean",
+            "checkpoint_mb_mean",
+            "complexity_count_mean",
+        ]
+    ].copy()
     printable["Model"] = printable["model_id"].map(MODEL_LABELS)
     printable = printable.drop(columns="model_id")
     latex = printable.to_latex(
         index=False,
         escape=True,
-        caption="CPU inference resource benchmark on ten runs (one thread).",
+        caption="CPU inference resource benchmark for the selected cohort.",
         label="tab:inference-resources",
         position="tb",
     )
@@ -259,7 +267,7 @@ def _write_outputs(detailed: pd.DataFrame, output_dir: Path) -> None:
         ax.set_ylabel(ylabel)
         ax.tick_params(axis="x", rotation=25)
         ax.grid(axis="y", alpha=0.25)
-    fig.suptitle("CPU inference cost (survival, k=3, one thread)")
+    fig.suptitle("CPU inference cost")
     fig.tight_layout()
     fig.savefig(figures / "inference_resources.png", dpi=220, bbox_inches="tight")
     fig.savefig(figures / "inference_resources.pdf", bbox_inches="tight")
@@ -268,14 +276,36 @@ def _write_outputs(detailed: pd.DataFrame, output_dir: Path) -> None:
 
 def run_benchmark(args: argparse.Namespace) -> None:
     runs = args.runs or sorted(
-        path.name for path in (args.output_root / "edge-sage" / args.target / f"k{args.horizon}").iterdir() if path.is_dir()
+        path.name
+        for path in (args.output_root / "edge-sage" / args.target / f"k{args.horizon}").iterdir()
+        if path.is_dir()
     )
     detail_dir = args.report_dir / "details"
     detail_dir.mkdir(parents=True, exist_ok=True)
     for model_id in args.models:
         for run_name in runs:
             result_json = detail_dir / f"{model_id}__{run_name}.json"
-            if result_json.exists() and not args.force:
+            model_dir = args.output_root / model_id / args.target / f"k{args.horizon}" / run_name
+            run_root = args.data_root / args.target / f"k{args.horizon}" / run_name
+            artifacts = (
+                [model_dir / "best_model.pt", model_dir / "metadata.json", run_root / "graph_dataset" / "test.pt"]
+                if model_id == "edge-sage"
+                else [model_dir / "model.pkl", run_root / "baseline_standardized" / "test_scaled.csv"]
+            )
+            manifest = fingerprint(
+                {
+                    "model_id": model_id,
+                    "run_name": run_name,
+                    "target": args.target,
+                    "horizon": args.horizon,
+                    "threads": args.threads,
+                    "warmups": args.warmups,
+                    "repeats": args.repeats,
+                },
+                [*artifacts, Path(__file__), Path("src/models"), Path("src/training"), Path("src/utils")],
+            )
+            manifest_path = result_json.with_suffix(".experiment.json")
+            if not args.force and cache_matches(manifest_path, manifest, [result_json]):
                 print(f"[SKIP] {model_id}/{run_name}")
                 continue
             command = [
@@ -305,7 +335,13 @@ def run_benchmark(args: argparse.Namespace) -> None:
             print(f"[RUN] {model_id}/{run_name}")
             completed = subprocess.run(command, check=True, capture_output=True, text=True)
             result_json.write_text(completed.stdout.strip().splitlines()[-1], encoding="utf-8")
-    rows = [json.loads(path.read_text(encoding="utf-8")) for path in sorted(detail_dir.glob("*.json"))]
+            save_manifest(manifest_path, manifest)
+    selected = {f"{model}__{run}.json" for model in args.models for run in runs}
+    rows = [
+        json.loads(path.read_text(encoding="utf-8"))
+        for path in sorted(detail_dir.glob("*.json"))
+        if path.name in selected
+    ]
     _write_outputs(pd.DataFrame(rows), args.report_dir)
     print(f"[OK] wrote {len(rows)} run/model resource measurements to {args.report_dir}")
 

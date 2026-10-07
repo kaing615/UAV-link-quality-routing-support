@@ -23,6 +23,8 @@ jobs:
         run: ruff check src/ simulation/ tests/
       - name: Format check
         run: ruff format --check src/ simulation/ tests/
+      - name: Bash syntax
+        run: find scripts -name '*.sh' -print0 | xargs -0 -n1 bash -n
 
   test:
     runs-on: ubuntu-latest
@@ -38,6 +40,7 @@ jobs:
           pip install torch==2.11.0 --index-url https://download.pytorch.org/whl/cpu
           pip install -r requirements.txt
           pip install pytest pytest-cov
+          python -c "import pydrive2.auth"
       - name: Run tests
         run: pytest tests/ -v --tb=short --cov=src --cov-report=xml
       - name: Upload coverage

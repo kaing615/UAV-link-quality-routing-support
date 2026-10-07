@@ -9,6 +9,10 @@ networkx==3.6.1
 tqdm==4.68.2
 torch-geometric==2.8.0
 dvc[gdrive]==3.67.1
+PyDrive2==1.21.3
+cryptography==43.0.3
+pyOpenSSL==24.2.1
+asyncssh==2.21.0
 dvclive>=3.0.0
 streamlit>=1.30.0
 httpx>=0.25.0

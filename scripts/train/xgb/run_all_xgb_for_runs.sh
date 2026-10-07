@@ -31,7 +31,7 @@ while IFS= read -r run_dir; do
   matching_runs+=("${run_dir}")
 done < <(find "${RUNS_ROOT}" -mindepth 1 -maxdepth 1 -type d -name "${RUN_PATTERN}" | sort)
 
-if [[ ${
+if [[ ${#matching_runs[@]} -eq 0 ]]; then
   echo "No run directories matched pattern '${RUN_PATTERN}' under ${RUNS_ROOT}"
   exit 1
 fi
@@ -40,7 +40,7 @@ echo "[INFO] project_root=${PROJECT_ROOT}"
 echo "[INFO] python=${PYTHON_BIN}"
 echo "[INFO] runs_root=${RUNS_ROOT}"
 echo "[INFO] run_pattern=${RUN_PATTERN}"
-echo "[INFO] matched_runs=${
+echo "[INFO] matched_runs=${#matching_runs[@]}"
 
 failures=0
 
@@ -64,7 +64,7 @@ echo
 echo "============================================================"
 echo "[SUMMARY]"
 echo "============================================================"
-echo "- matched_runs : ${
+echo "- matched_runs : ${#matching_runs[@]}"
 echo "- failures     : ${failures}"
 
 if [[ ${failures} -gt 0 ]]; then

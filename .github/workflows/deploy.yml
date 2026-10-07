@@ -61,8 +61,8 @@ jobs:
           fi
           echo "Using DVC remote: $DVC_REMOTE"
           dvc remote modify --local "$DVC_REMOTE" gdrive_use_service_account true
-          echo "$GDRIVE_CREDENTIALS_DATA" > dvc_creds.json
-          dvc remote modify --local "$DVC_REMOTE" gdrive_service_account_json_file_path dvc_creds.json
+          echo "$GDRIVE_CREDENTIALS_DATA" > "$RUNNER_TEMP/dvc_creds.json"
+          dvc remote modify --local "$DVC_REMOTE" gdrive_service_account_json_file_path "$RUNNER_TEMP/dvc_creds.json"
       - name: Stage serving model from DVC remote
         env:
           GDRIVE_CREDENTIALS_DATA: ${{ secrets.GDRIVE_CREDENTIALS_DATA }}

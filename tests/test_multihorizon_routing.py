@@ -9,7 +9,37 @@ import torch
 
 from src.routing.multihorizon_eval import aggregate_multihorizon_results, discover_coordinates
 from src.routing.predict_edges import attach_prediction_identity
-from src.routing.replay_eval import evaluate_run
+from src.routing.replay_eval import evaluate_run, load_raw_edges
+
+
+def test_replay_retains_disconnected_tail_and_training_qos_boundary(tmp_path: Path) -> None:
+    run_root = tmp_path / "raw" / "run-a"
+    run_root.mkdir(parents=True)
+    pd.DataFrame(
+        [
+            {"time": t, "src": 0, "dst": 1, "connected": connected, "snr": 18.0, "packet_loss": 0.1, "delay": 10.0}
+            for t, connected in ((0, 1), (1, 1), (2, 0))
+        ]
+    ).to_csv(run_root / "edges.csv", index=False)
+    raw = load_raw_edges("run-a", tmp_path / "raw")
+    assert raw[0][(0, 1)]["valid"]
+    assert raw[2] == {}
+    split = tmp_path / "split.csv"
+    pd.DataFrame({"time": [0], "split": ["test"]}).to_csv(split, index=False)
+    prediction = tmp_path / "prediction.csv"
+    pd.DataFrame({"time": [0], "src": [0], "dst": [1], "pred_score": [0.9]}).to_csv(prediction, index=False)
+    _, details = evaluate_run(
+        "run-a",
+        prediction,
+        horizon=2,
+        split_csv=split,
+        raw_root=tmp_path / "raw",
+        output_dir=tmp_path / "out",
+        include_olsr=False,
+    )
+    session = pd.read_csv(details).query("strategy == 'gnn'").iloc[0]
+    assert session["horizon"] == 2
+    assert session["survival_at_horizon"] == 0
 
 
 def test_routing_coordinates_can_use_the_same_balanced_controlled_subset(tmp_path: Path) -> None:

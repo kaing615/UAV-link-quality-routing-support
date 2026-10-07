@@ -35,14 +35,12 @@ if [[ "${1:-}" == "--dry-run" ]]; then
 fi
 
 mkdir -p "$(dirname "$NS3_BINARY")" "$REPORT_ROOT"
-if [[ -x /app/simulation/ns3/build/uav-olsr-dataset ]]; then
+if [[ -x /app/simulation/ns3/build/uav-olsr-dataset && "$PWD" != /app ]]; then
   cp /app/simulation/ns3/build/uav-olsr-dataset "$NS3_BINARY"
+  cp /app/simulation/ns3/build/source.sha256 "$(dirname "$NS3_BINARY")/source.sha256"
   chmod +x "$NS3_BINARY"
 fi
-[[ -x "$NS3_BINARY" ]] || {
-  echo "Missing ns-3 binary: $NS3_BINARY" >&2
-  exit 1
-}
+bash scripts/utils/ensure_ns3_binary.sh
 
 python -m scripts.dataset.run_controlled_scenarios --start-index 1 --end-index 100
 python -m scripts.analysis.summarize_controlled_scenarios --fail-on-check
@@ -56,10 +54,6 @@ python -m scripts.dataset.build_multihorizon_pilot \
 python -m scripts.dataset.analyze_threshold_sensitivity \
   --pilot-root "$MULTIHORIZON_DATA" \
   --output-dir "$REPORT_ROOT/threshold_sensitivity"
-python -m src.training.baselines.persistence_baseline \
-  --data-root "$MULTIHORIZON_DATA" \
-  --output-root "$MULTIHORIZON_OUTPUT/persistence" \
-  --summary "$REPORT_ROOT/persistence_summary.csv"
 python -m scripts.train.run_multihorizon_benchmark \
   --data-root "$MULTIHORIZON_DATA" \
   --output-root "$MULTIHORIZON_OUTPUT" \
@@ -105,6 +99,7 @@ for run_name in "${sample_runs[@]}"; do
   python -m src.routing.closed_loop \
     --binary "$NS3_BINARY" \
     --baseline-run "$run_name" \
+    --cohort-runs "${sample_runs[@]}" \
     --data-root "$MULTIHORIZON_DATA" \
     --model-root "$MULTIHORIZON_OUTPUT" \
     --output-root "$CLOSED_LOOP_OUTPUT" \

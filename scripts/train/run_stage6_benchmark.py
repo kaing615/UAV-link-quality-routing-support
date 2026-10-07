@@ -15,6 +15,8 @@ from scripts.train.run_multihorizon_benchmark import (
     select_representative_runs,
 )
 
+from src.utils.experiment import cache_matches, fingerprint, save_manifest, seed_group, validate_test_predictions
+
 MODELS = ("logreg", "xgb", "edge-sage")
 ABLATION_MODES = ("decoder-only", "message-only", "noedge")
 
@@ -31,9 +33,9 @@ def discover_coordinates(
     return [(target, horizon, sorted(runs)) for (target, horizon), runs in sorted(grouped.items())]
 
 
-def collect_protocol_metrics(protocol_root: Path, protocol: str) -> pd.DataFrame:
+def collect_protocol_metrics(protocol_root: Path, protocol: str, paths: list[Path] | None = None) -> pd.DataFrame:
     frames = []
-    for path in sorted(protocol_root.glob("*/*/k*/*/metrics.csv")):
+    for path in sorted(paths if paths is not None else protocol_root.glob("*/*/k*/*/metrics.csv")):
         frame = pd.read_csv(path)
         frame["protocol"] = protocol
         frame["model_id"] = frame.get("model_id", path.parents[3].name)
@@ -51,9 +53,12 @@ def collect_protocol_metrics(protocol_root: Path, protocol: str) -> pd.DataFrame
 def with_full_ablation_reference(ablation: pd.DataFrame, benchmark: pd.DataFrame) -> pd.DataFrame:
     reference = benchmark[(benchmark["model_id"] == "edge-sage") & (benchmark["split"] == "test")].copy()
     if not ablation.empty:
-        coordinates = set(zip(ablation["target"], ablation["horizon"], strict=True))
+        coordinates = set(zip(ablation["target"], ablation["horizon"], ablation["run_name"], strict=True))
         reference = reference[
-            [coordinate in coordinates for coordinate in zip(reference["target"], reference["horizon"], strict=True)]
+            [
+                coordinate in coordinates
+                for coordinate in zip(reference["target"], reference["horizon"], reference["run_name"], strict=True)
+            ]
         ]
     reference["protocol"] = "ablation"
     return pd.concat([reference, ablation], ignore_index=True)
@@ -62,6 +67,39 @@ def with_full_ablation_reference(ablation: pd.DataFrame, benchmark: pd.DataFrame
 def _run(command: list[str]) -> None:
     print("[RUN]", " ".join(command))
     subprocess.run(command, check=True)
+
+
+def _run_cached(command: list[str], data_paths: list[Path], output_dir: Path, force: bool) -> None:
+    cross_run = "--test-runs" in command
+    test_runs = command[command.index("--test-runs" if cross_run else "--run-name") + 1].split(",")
+    train_runs = command[command.index("--train-runs") + 1].split(",") if cross_run else test_runs
+    predictions = [
+        output_dir / (f"test_predictions_{run}.csv" if cross_run else "test_predictions.csv") for run in test_runs
+    ]
+    manifest = fingerprint(
+        {
+            "command": command,
+            "train_runs": train_runs,
+            "test_runs": test_runs,
+            "train_seed_groups": sorted({seed_group(run) for run in train_runs}),
+            "test_seed_groups": sorted({seed_group(run) for run in test_runs}),
+        },
+        [
+            *data_paths,
+            Path(__file__),
+            Path("src/training"),
+            Path("src/models"),
+            Path("src/preprocessing"),
+            Path("src/utils"),
+        ],
+    )
+    manifest_path = output_dir / "experiment.json"
+    if force or not cache_matches(manifest_path, manifest, [output_dir / "metrics.csv", *predictions]):
+        _run(command)
+    data_root = Path(command[command.index("--data-root") + 1])
+    for run, prediction in zip(test_runs, predictions, strict=True):
+        validate_test_predictions(data_root / run, prediction)
+    save_manifest(manifest_path, manifest)
 
 
 def _mobility_groups(raw_root: Path, runs: list[str]) -> dict[str, list[str]]:
@@ -138,6 +176,7 @@ def run_stage6(
     coordinates = discover_coordinates(data_root, targets, horizons)
     if not coordinates:
         raise FileNotFoundError(f"No multi-horizon datasets found under {data_root}")
+    selected_paths = {protocol: [] for protocol in protocols}
 
     for target, horizon, runs in coordinates:
         coordinate_root = data_root / target / f"k{horizon}"
@@ -151,9 +190,8 @@ def run_stage6(
                 model_id = f"edge-sage-{edge_mode}"
                 for run in ablation_runs:
                     output_dir = output_root / "ablation" / model_id / target / f"k{horizon}" / run
-                    if (output_dir / "metrics.csv").exists() and not force:
-                        continue
-                    _run(
+                    selected_paths["ablation"].append(output_dir / "metrics.csv")
+                    _run_cached(
                         [
                             sys.executable,
                             "-m",
@@ -177,7 +215,14 @@ def run_stage6(
                             str(gnn_epochs),
                             "--patience",
                             str(gnn_patience),
-                        ]
+                        ],
+                        [
+                            coordinate_root / run / "features",
+                            coordinate_root / run / "splits",
+                            coordinate_root / run / "graph_dataset",
+                        ],
+                        output_dir,
+                        force,
                     )
 
         if "loro" in protocols:
@@ -185,12 +230,13 @@ def run_stage6(
                 select_representative_runs(runs, loro_runs_per_scenario) if loro_runs_per_scenario is not None else runs
             )
             for test_run in test_runs:
-                train_runs = [run for run in runs if run != test_run]
+                train_runs = [run for run in runs if seed_group(run) != seed_group(test_run)]
+                if not train_runs:
+                    raise ValueError(f"No independent training seeds remain for {test_run}")
                 for model in models:
                     output_dir = output_root / "loro" / model / target / f"k{horizon}" / test_run
-                    if (output_dir / "metrics.csv").exists() and not force:
-                        continue
-                    _run(
+                    selected_paths["loro"].append(output_dir / "metrics.csv")
+                    _run_cached(
                         _training_command(
                             model,
                             coordinate_root,
@@ -199,19 +245,29 @@ def run_stage6(
                             output_dir,
                             gnn_epochs,
                             gnn_patience,
-                        )
+                        ),
+                        [
+                            coordinate_root / run / part
+                            for run in [*train_runs, test_run]
+                            for part in ("features", "splits", "graph_dataset")
+                        ],
+                        output_dir,
+                        force,
                     )
 
         if "cross-mobility" in protocols:
             mobility = _mobility_groups(raw_root, runs)
             for source, train_runs in sorted(mobility.items()):
                 test_runs = [run for name, group in mobility.items() if name != source for run in group]
+                test_seeds = {seed_group(run) for run in test_runs}
+                train_runs = [run for run in train_runs if seed_group(run) not in test_seeds]
+                if not train_runs or not test_runs:
+                    raise ValueError(f"Cross-mobility {source} requires independent training and test seeds")
                 direction = f"{source}-to-other"
                 for model in models:
                     output_dir = output_root / "cross-mobility" / model / target / f"k{horizon}" / direction
-                    if (output_dir / "metrics.csv").exists() and not force:
-                        continue
-                    _run(
+                    selected_paths["cross-mobility"].append(output_dir / "metrics.csv")
+                    _run_cached(
                         _training_command(
                             model,
                             coordinate_root,
@@ -220,12 +276,19 @@ def run_stage6(
                             output_dir,
                             gnn_epochs,
                             gnn_patience,
-                        )
+                        ),
+                        [
+                            coordinate_root / run / part
+                            for run in [*train_runs, *test_runs]
+                            for part in ("features", "splits", "graph_dataset")
+                        ],
+                        output_dir,
+                        force,
                     )
 
     reports_root.mkdir(parents=True, exist_ok=True)
     for protocol in protocols:
-        detailed = collect_protocol_metrics(output_root / protocol, protocol)
+        detailed = collect_protocol_metrics(output_root / protocol, protocol, selected_paths[protocol])
         if protocol == "ablation":
             benchmark = pd.read_csv(benchmark_summary)
             detailed = with_full_ablation_reference(detailed, benchmark)

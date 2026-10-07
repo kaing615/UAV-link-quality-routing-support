@@ -355,6 +355,7 @@ LoadRoutePlan(const std::string &path)
         uint32_t destination = static_cast<uint32_t>(std::stoul(fields[2]));
         bool found = std::stoul(fields[3]) == 1;
         std::vector<uint32_t> nodes = ParseRoutePath(fields[4]);
+        NS_ABORT_MSG_IF(step >= g_timeSteps, "Route-plan time exceeds simulation duration");
         NS_ABORT_MSG_IF(source != g_sourceId || destination != g_destId,
                         "Route-plan source/destination does not match CLI arguments");
         NS_ABORT_MSG_IF(g_routePlan.count(step) != 0, "Duplicate route-plan time " << step);
@@ -376,6 +377,84 @@ GetStaticRouting(uint32_t nodeId)
     Ipv4StaticRoutingHelper helper;
     return helper.GetStaticRouting(g_nodes.Get(nodeId)->GetObject<Ipv4>());
 }
+
+// Own the routing decision for measured unicast; broadcasts still use OLSR/static.
+class PlannedRouting : public Ipv4ListRouting
+{
+  public:
+    static TypeId GetTypeId()
+    {
+        static TypeId tid = TypeId("ns3::UavPlannedRouting")
+                                .SetParent<Ipv4ListRouting>()
+                                .AddConstructor<PlannedRouting>();
+        return tid;
+    }
+
+    uint32_t nodeId = 0;
+
+    bool IsPlannedDestination(const Ipv4Header &header) const
+    {
+        return g_ifaces.GetN() > g_destId && header.GetDestination() == g_ifaces.GetAddress(g_destId)
+               && nodeId != g_destId;
+    }
+
+    bool HasPlannedNextHop() const
+    {
+        auto current = std::find(g_currentPath.begin(), g_currentPath.end(), nodeId);
+        return current != g_currentPath.end() && current + 1 != g_currentPath.end();
+    }
+
+    Ptr<Ipv4Route> RouteOutput(Ptr<Packet> packet, const Ipv4Header &header,
+                              Ptr<NetDevice> oif, Socket::SocketErrno &error) override
+    {
+        if (!IsPlannedDestination(header))
+        {
+            return Ipv4ListRouting::RouteOutput(packet, header, oif, error);
+        }
+        if (HasPlannedNextHop())
+        {
+            return GetStaticRouting(nodeId)->RouteOutput(packet, header, oif, error);
+        }
+        error = Socket::ERROR_NOROUTETOHOST;
+        return nullptr;
+    }
+
+    bool RouteInput(Ptr<const Packet> packet, const Ipv4Header &header, Ptr<const NetDevice> idev,
+                    const UnicastForwardCallback &ucb, const MulticastForwardCallback &mcb,
+                    const LocalDeliverCallback &lcb, const ErrorCallback &ecb) override
+    {
+        if (!IsPlannedDestination(header))
+        {
+            return Ipv4ListRouting::RouteInput(packet, header, idev, ucb, mcb, lcb, ecb);
+        }
+        if (HasPlannedNextHop() && GetStaticRouting(nodeId)->RouteInput(packet, header, idev, ucb, mcb, lcb, ecb))
+        {
+            return true;
+        }
+        ecb(packet, header, Socket::ERROR_NOROUTETOHOST);
+        return true;
+    }
+};
+
+class PlannedRoutingHelper : public Ipv4RoutingHelper
+{
+  public:
+    PlannedRoutingHelper *Copy() const override
+    {
+        return new PlannedRoutingHelper(*this);
+    }
+
+    Ptr<Ipv4RoutingProtocol> Create(Ptr<Node> node) const override
+    {
+        Ptr<PlannedRouting> routing = CreateObject<PlannedRouting>();
+        routing->nodeId = node->GetId();
+        Ipv4StaticRoutingHelper staticHelper;
+        OlsrHelper olsrHelper;
+        routing->AddRoutingProtocol(staticHelper.Create(node), 20);
+        routing->AddRoutingProtocol(olsrHelper.Create(node), 10);
+        return routing;
+    }
+};
 
 static void
 RemovePlannedRoutes()
@@ -409,16 +488,10 @@ ApplyRoutePlan(uint32_t step)
     }
     g_planSteps += 1;
     g_planFound += entry.found ? 1 : 0;
-    g_currentPath = entry.path;
+    g_currentPath = entry.found ? entry.path : std::vector<uint32_t>{};
     RemovePlannedRoutes();
     if (!entry.found)
     {
-        Ptr<Ipv4> sourceIpv4 = g_nodes.Get(g_sourceId)->GetObject<Ipv4>();
-        int32_t sourceInterface =
-            sourceIpv4->GetInterfaceForDevice(g_nodes.Get(g_sourceId)->GetDevice(0));
-        NS_ABORT_MSG_IF(sourceInterface < 0, "No IPv4 interface on source node");
-        GetStaticRouting(g_sourceId)->AddHostRouteTo(
-            g_ifaces.GetAddress(g_destId), static_cast<uint32_t>(sourceInterface));
         return;
     }
 
@@ -617,9 +690,8 @@ WriteClosedLoopMetrics(Ptr<FlowMonitor> monitor, FlowMonitorHelper &helper)
     uint64_t rxPackets = 0;
     uint64_t lostPackets = 0;
     uint64_t rxBytes = 0;
+    uint64_t forwardedPackets = 0;
     double delaySumSeconds = 0.0;
-    double firstTxSeconds = std::numeric_limits<double>::infinity();
-    double lastRxSeconds = 0.0;
 
     for (const auto &[flowId, stats] : monitor->GetFlowStats())
     {
@@ -633,34 +705,29 @@ WriteClosedLoopMetrics(Ptr<FlowMonitor> monitor, FlowMonitorHelper &helper)
         rxPackets += stats.rxPackets;
         lostPackets += stats.lostPackets;
         rxBytes += stats.rxBytes;
+        forwardedPackets += stats.timesForwarded;
         delaySumSeconds += stats.delaySum.GetSeconds();
-        if (stats.txPackets > 0)
-        {
-            firstTxSeconds = std::min(firstTxSeconds, stats.timeFirstTxPacket.GetSeconds());
-        }
-        if (stats.rxPackets > 0)
-        {
-            lastRxSeconds = std::max(lastRxSeconds, stats.timeLastRxPacket.GetSeconds());
-        }
     }
 
-    double pdr = txPackets > 0 ? static_cast<double>(rxPackets) / txPackets : 0.0;
-    double meanDelayMs = rxPackets > 0 ? delaySumSeconds * 1000.0 / rxPackets : 0.0;
-    double duration = std::isfinite(firstTxSeconds) && lastRxSeconds > firstTxSeconds
-                          ? lastRxSeconds - firstTxSeconds
-                          : 0.0;
+    double meanDelayMs = rxPackets > 0 ? delaySumSeconds * 1000.0 / rxPackets
+                                       : std::numeric_limits<double>::quiet_NaN();
+    double duration = g_routePlan.rbegin()->first - g_routePlan.begin()->first + 0.99;
+    double intervalSeconds = g_appPacketSize * 8.0 / (g_appRateKbps * 1000.0);
+    uint64_t offeredPackets = static_cast<uint64_t>(std::ceil(duration / intervalSeconds));
+    double pdr = offeredPackets > 0 ? static_cast<double>(rxPackets) / offeredPackets : 0.0;
     double throughputMbps = duration > 0.0 ? rxBytes * 8.0 / duration / 1.0e6 : 0.0;
     double foundRate = g_planSteps > 0 ? static_cast<double>(g_planFound) / g_planSteps : 0.0;
 
     std::ofstream output(g_outputDir + "/closed_loop_metrics.csv");
     output << std::fixed << std::setprecision(6)
            << "strategy,target,horizon,cost_mode,seed,source,destination,app_rate_kbps,"
-              "packet_size,tx_packets,rx_packets,"
+              "packet_size,tx_packets,rx_packets,offered_packets,forwarded_packets,"
               "lost_packets,pdr,mean_delay_ms,throughput_mbps,route_changes,plan_steps,"
               "route_found_rate\n"
            << g_routingStrategy << ',' << g_predictionTarget << ',' << g_predictionHorizon << ','
            << g_costMode << ',' << g_seed << ',' << g_sourceId << ',' << g_destId << ','
            << g_appRateKbps << ',' << g_appPacketSize << ',' << txPackets << ',' << rxPackets << ','
+           << offeredPackets << ',' << forwardedPackets << ','
            << lostPackets << ',' << pdr << ','
            << meanDelayMs << ',' << throughputMbps << ',' << g_routeChanges << ',' << g_planSteps
            << ',' << foundRate << '\n';
@@ -872,11 +939,19 @@ int main(int argc, char *argv[])
     OlsrHelper olsrHelper;
     Ipv4StaticRoutingHelper staticRouting;
     Ipv4ListRoutingHelper listRouting;
-    listRouting.Add(staticRouting, 20);
-    listRouting.Add(olsrHelper, 10);
+    listRouting.Add(staticRouting, g_routingStrategy == "olsr" ? 10 : 20);
+    listRouting.Add(olsrHelper, g_routingStrategy == "olsr" ? 20 : 10);
 
     InternetStackHelper stack;
-    stack.SetRoutingHelper(listRouting);
+    PlannedRoutingHelper plannedRouting;
+    if (g_enableDataFlow && g_routingStrategy != "olsr")
+    {
+        stack.SetRoutingHelper(plannedRouting);
+    }
+    else
+    {
+        stack.SetRoutingHelper(listRouting);
+    }
     stack.Install(g_nodes);
 
     Ipv4AddressHelper addr;

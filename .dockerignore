@@ -1,14 +1,11 @@
 .git
 .github
 .gitignore
-.dvc
-.dvcignore
 data/
 outputs/
 reports/
 simulation/
 tests/
-scripts/
 notebooks/
 __pycache__
 *.pyc
@@ -16,15 +13,15 @@ __pycache__
 *.pyd
 .pytest_cache
 .ruff_cache
-dvc.yaml
-dvc.lock
 pyproject.toml
 README.md
 
 # Dockerfile build inputs required even though generated simulator artifacts
 # and the rest of the simulation tree stay outside the build context.
 !requirements.txt
+!requirements-serve.txt
 !simulation/
 simulation/*
 !simulation/ns3/
 !simulation/ns3/**
+simulation/ns3/build/

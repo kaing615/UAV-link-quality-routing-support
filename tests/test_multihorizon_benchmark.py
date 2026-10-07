@@ -102,9 +102,12 @@ def test_loro_baseline_loader_accepts_multihorizon_data_root(tmp_path: Path):
         "throughput": 10.0,
         "label": 1,
     }
-    pd.DataFrame([row]).to_csv(run_root / "features" / "edges_labeled.csv", index=False)
-    pd.DataFrame([{"time": 0, "split": "train"}]).to_csv(run_root / "splits" / "time_splits.csv", index=False)
+    pd.DataFrame([row, {**row, "time": 1}]).to_csv(run_root / "features" / "edges_labeled.csv", index=False)
+    pd.DataFrame([{"time": 0, "split": "train"}, {"time": 1, "split": "purged"}]).to_csv(
+        run_root / "splits" / "time_splits.csv", index=False
+    )
 
     result = load_run_rows(tmp_path, "run-a", ["train"])
     assert len(result) == 1
     assert result.iloc[0]["label"] == 1
+    assert len(load_run_rows(tmp_path, "run-a", ["train", "val", "test"])) == 1

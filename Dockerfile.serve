@@ -10,10 +10,9 @@ RUN pip install --no-cache-dir \
 ENV PYTHONPATH=/app
 COPY src/ /app/src/
 COPY models/ /app/models/
-RUN python -c "import sys; sys.path.insert(0, '/app'); from src.models.gnn.edge_gnn import EdgeAwareSAGEEdgeClassifier; print('GNN import OK')"
+RUN python -c "from src.serving.app import load_model; load_model()"
 
 ENV MODEL_DIR=/app/models
-ENV MODEL_ID=edge-sage
 ENV HIDDEN_CHANNELS=128
 ENV NUM_LAYERS=2
 

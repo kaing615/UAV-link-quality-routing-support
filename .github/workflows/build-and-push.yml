@@ -18,6 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       image_tag: ${{ steps.meta.outputs.version }}
+      image_name: ${{ steps.image.outputs.name }}
     steps:
       - uses: actions/checkout@v6
 
@@ -61,8 +62,8 @@ jobs:
           fi
           echo "Using DVC remote: $DVC_REMOTE"
           dvc remote modify --local "$DVC_REMOTE" gdrive_use_service_account true
-          echo "$GDRIVE_CREDENTIALS_DATA" > dvc_creds.json
-          dvc remote modify --local "$DVC_REMOTE" gdrive_service_account_json_file_path dvc_creds.json
+          echo "$GDRIVE_CREDENTIALS_DATA" > "$RUNNER_TEMP/dvc_creds.json"
+          dvc remote modify --local "$DVC_REMOTE" gdrive_service_account_json_file_path "$RUNNER_TEMP/dvc_creds.json"
       - name: Stage serving model from DVC remote
         env:
           GDRIVE_CREDENTIALS_DATA: ${{ secrets.GDRIVE_CREDENTIALS_DATA }}
@@ -88,6 +89,12 @@ jobs:
             type=sha,prefix=
             type=ref,event=tag
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+
+      - name: Capture canonical image name
+        id: image
+        env:
+          IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        run: echo "name=${IMAGE,,}" >> "$GITHUB_OUTPUT"
 
       - name: Build and push inference image
         uses: docker/build-push-action@v6
@@ -119,7 +126,7 @@ jobs:
         working-directory: deploy/kustomize/overlays/staging
         run: |
           kustomize edit set image \
-            uav-gnn-serve=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.build-push.outputs.image_tag }}
+            uav-gnn-serve=${{ needs.build-push.outputs.image_name }}:${{ needs.build-push.outputs.image_tag }}
 
       - name: Commit updated manifests
         run: |

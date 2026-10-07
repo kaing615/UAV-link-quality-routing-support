@@ -25,5 +25,5 @@ patches:
 
 images:
 - name: uav-gnn-serve
-  newName: ghcr.io/kaing615/UAV-link-quality-routing-support/uav-gnn-serve
+  newName: ghcr.io/kaing615/uav-link-quality-routing-support/uav-gnn-serve
   newTag: latest

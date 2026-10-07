@@ -80,8 +80,11 @@ def collect_detail_rows(roots: list[tuple[str, Path]], model_pattern: str, run_p
                 df = pd.read_csv(metrics_path)
                 df["group"] = group_name
                 df["model_dir"] = model_dir.name
-                df["run_name"] = run_dir.name
-                df["scenario"] = infer_scenario(run_dir.name)
+                if "run_name" not in df:
+                    df["run_name"] = run_dir.name
+                else:
+                    df["run_name"] = df["run_name"].fillna(run_dir.name)
+                df["scenario"] = df["run_name"].map(infer_scenario)
                 frames.append(df)
     if not frames:
         raise FileNotFoundError(

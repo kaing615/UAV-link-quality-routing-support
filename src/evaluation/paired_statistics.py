@@ -8,6 +8,13 @@ from itertools import product
 import numpy as np
 import pandas as pd
 
+from src.utils.experiment import seed_group
+
+
+def independent_values(frame: pd.DataFrame, metric: str, run_column: str = "run_name") -> pd.Series:
+    """Average paired scenarios within each seed before statistical inference."""
+    return frame.groupby(frame[run_column].map(seed_group), sort=True)[metric].mean()
+
 
 def bootstrap_mean_ci(
     values: np.ndarray,
@@ -89,7 +96,8 @@ def paired_comparisons(
             if reference not in pivot or comparator not in pivot:
                 delta = np.array([], dtype=float)
             else:
-                paired = pivot[[reference, comparator]].dropna()
+                paired_runs = pivot[[reference, comparator]].dropna()
+                paired = paired_runs.groupby(paired_runs.index.map(seed_group), sort=True).mean()
                 delta = (paired[comparator] - paired[reference]).to_numpy(dtype=float)
             if delta.size:
                 reference_values = paired[reference].to_numpy(dtype=float)
@@ -97,7 +105,8 @@ def paired_comparisons(
                 ci_low, ci_high = bootstrap_mean_ci(delta, n_resamples=n_resamples, seed=seed)
                 p_raw = _paired_sign_flip_pvalue(delta)
                 values = {
-                    "n_pairs": int(delta.size),
+                    "n_pairs": int(len(paired_runs)),
+                    "n_independent_pairs": int(delta.size),
                     "reference_mean": float(reference_values.mean()),
                     "comparator_mean": float(comparator_values.mean()),
                     "mean_delta": float(delta.mean()),
@@ -109,6 +118,7 @@ def paired_comparisons(
             else:
                 values = {
                     "n_pairs": 0,
+                    "n_independent_pairs": 0,
                     "reference_mean": float("nan"),
                     "comparator_mean": float("nan"),
                     "mean_delta": float("nan"),

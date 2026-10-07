@@ -30,6 +30,7 @@ def load_run_metadata(raw_root: Path, run_names: list[str]) -> pd.DataFrame:
         rows.append(
             {
                 "run_name": run_name,
+                "scenario": run_name.split("_")[1] if run_name.startswith("stress_") else "other",
                 "mobility": scenario.get("mobility_model", "unknown"),
                 "num_uavs": int(scenario["num_uavs"]),
                 "comm_range": float(scenario["comm_range"]),
@@ -43,6 +44,7 @@ def load_run_metadata(raw_root: Path, run_names: list[str]) -> pd.DataFrame:
         "sparse",
         "dense",
     )
+    result.loc[result["scenario"].isin(("dense", "sparse")), "density_group"] = result["scenario"]
     return result
 
 
@@ -78,7 +80,10 @@ def worst_group_metrics(
     merged = detailed.merge(metadata, on="run_name", how="left", validate="many_to_one")
     coordinates = ["model_id", "target", "horizon", "split"]
     rows = []
-    for group_type, column in (("mobility", "mobility"), ("density", "density_group")):
+    groups = [("mobility", "mobility"), ("density", "density_group")]
+    if "scenario" in merged:
+        groups.append(("scenario", "scenario"))
+    for group_type, column in groups:
         for metric in metrics:
             grouped = (
                 merged.groupby([*coordinates, column], dropna=False)[metric]

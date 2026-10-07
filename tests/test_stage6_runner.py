@@ -74,9 +74,11 @@ def test_ablation_report_includes_existing_full_edge_sage_reference():
     benchmark = pd.DataFrame(
         [
             {"model_id": "edge-sage", "target": "qos", "horizon": 1, "split": "test", "run_name": "r1"},
+            {"model_id": "edge-sage", "target": "qos", "horizon": 1, "split": "test", "run_name": "r2"},
             {"model_id": "logreg", "target": "qos", "horizon": 1, "split": "test", "run_name": "r1"},
         ]
     )
 
     result = with_full_ablation_reference(ablation, benchmark)
     assert set(result["model_id"]) == {"edge-sage", "edge-sage-noedge"}
+    assert set(result["run_name"]) == {"r1"}

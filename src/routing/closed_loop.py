@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from src.evaluation.paired_statistics import bootstrap_mean_ci, paired_comparisons
+from src.evaluation.paired_statistics import bootstrap_mean_ci, independent_values, paired_comparisons
 from src.routing.predict_edges import attach_prediction_identity
 from src.routing.replay_eval import (
     build_strategy_graph,
@@ -19,6 +19,7 @@ from src.routing.replay_eval import (
     path_edges,
     shortest_path,
 )
+from src.utils.experiment import cache_matches, fingerprint, save_manifest, seed_group, validate_ns3_binary
 
 CLOSED_LOOP_METRICS = {
     "pdr": True,
@@ -116,12 +117,13 @@ def build_route_plan(
     raw = load_raw_edges(run_name, raw_root)
     if not raw:
         raise ValueError(f"No connected raw edges found for {run_name}")
-    max_time = max(raw)
+    if horizon < 1:
+        raise ValueError("horizon must be positive")
     scores = {strategy: load_prediction_scores(predictions_csv)} if predictions_csv is not None else {}
 
     rows = []
     for time in load_test_times(run_name, split_csv):
-        if time + horizon > max_time:
+        if not all(time + offset in raw for offset in range(horizon + 1)):
             continue
         graph = build_strategy_graph(raw.get(time, {}), strategy, time, scores, 0.0, weight_mode)
         path = shortest_path(graph, source, destination)
@@ -150,10 +152,11 @@ def build_route_plan(
 def aggregate_closed_loop_results(
     output_root: Path,
     reports_root: Path,
+    paths: list[Path] | None = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """Aggregate measured ns-3 flow metrics and pair strategies by seed/run."""
     frames = []
-    for metrics_csv in sorted(output_root.glob("*/*/k*/*/*/closed_loop_metrics.csv")):
+    for metrics_csv in sorted(paths if paths is not None else output_root.glob("*/*/k*/*/*/closed_loop_metrics.csv")):
         frame = pd.read_csv(metrics_csv)
         if frame.empty:
             continue
@@ -176,6 +179,8 @@ def aggregate_closed_loop_results(
     missing = required.difference(detailed.columns)
     if missing:
         raise ValueError(f"Closed-loop metrics are missing columns: {sorted(missing)}")
+    if detailed.duplicated([*coordinates, "baseline_run", "strategy"]).any():
+        raise ValueError("Duplicate closed-loop coordinate/run/strategy")
 
     summary_rows = []
     paired_frames = []
@@ -186,12 +191,14 @@ def aggregate_closed_loop_results(
                 **context,
                 "strategy": strategy,
                 "n_runs": int(strategy_group["baseline_run"].nunique()),
+                "n_independent_runs": int(strategy_group["baseline_run"].map(seed_group).nunique()),
             }
             for metric in CLOSED_LOOP_METRICS:
-                values = strategy_group[metric].to_numpy(dtype=float)
-                ci_low, ci_high = bootstrap_mean_ci(values, seed=42)
-                row[f"{metric}_mean"] = float(strategy_group[metric].mean())
-                row[f"{metric}_std"] = float(strategy_group[metric].std())
+                values = independent_values(strategy_group, metric, "baseline_run")
+                ci_low, ci_high = bootstrap_mean_ci(values.to_numpy(), seed=42)
+                row[f"{metric}_n_runs"] = int(strategy_group[metric].notna().sum())
+                row[f"{metric}_mean"] = float(values.mean())
+                row[f"{metric}_std"] = float(values.std())
                 row[f"{metric}_ci95_low"] = ci_low
                 row[f"{metric}_ci95_high"] = ci_high
             summary_rows.append(row)
@@ -244,8 +251,7 @@ def _prediction_csv(
     if strategy != "edge-sage":
         return source
     identified = output_dir / "predictions_edge-sage.csv"
-    if force or not identified.exists():
-        attach_prediction_identity(source, run_root / "graph_dataset" / "test.pt", identified)
+    attach_prediction_identity(source, run_root / "graph_dataset" / "test.pt", identified, force)
     return identified
 
 
@@ -268,6 +274,7 @@ def run_closed_loop_experiment(
     packet_size: int,
     plan_only: bool,
     force: bool,
+    cohort_runs: list[str] | None = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame] | None:
     scenario_path = raw_root / baseline_run / "scenario.json"
     if not scenario_path.exists():
@@ -281,13 +288,12 @@ def run_closed_loop_experiment(
         raise FileNotFoundError(f"Missing multi-horizon split: {split_csv}")
     if not plan_only and not binary.exists():
         raise FileNotFoundError(f"ns-3 binary not found: {binary}")
+    if not plan_only:
+        validate_ns3_binary(binary)
 
     for strategy in strategies:
         output_dir = output_root / baseline_run / target / f"k{horizon}" / cost_mode / strategy
         metrics_csv = output_dir / "closed_loop_metrics.csv"
-        if metrics_csv.exists() and not force and not plan_only:
-            print(f"[SKIP] closed loop {baseline_run}/{target}/k{horizon}/{cost_mode}/{strategy}")
-            continue
         output_dir.mkdir(parents=True, exist_ok=True)
         predictions_csv = _prediction_csv(
             strategy,
@@ -298,6 +304,37 @@ def run_closed_loop_experiment(
             horizon=horizon,
             force=force,
         )
+        manifest = fingerprint(
+            {
+                "strategy": strategy,
+                "target": target,
+                "horizon": horizon,
+                "cost_mode": cost_mode,
+                "source": source,
+                "destination": destination,
+                "app_rate_kbps": app_rate_kbps,
+                "packet_size": packet_size,
+            },
+            [
+                scenario_path,
+                split_csv,
+                raw_root / baseline_run / "edges.csv",
+                *([predictions_csv] if predictions_csv is not None else []),
+                *([binary] if not plan_only else []),
+                Path("src/routing"),
+                Path("src/utils"),
+                Path("src/preprocessing/gnn/build_labels.py"),
+                Path("simulation/ns3/uav-olsr-dataset.cc"),
+            ],
+        )
+        manifest_path = output_dir / "experiment.json"
+        if (
+            not force
+            and not plan_only
+            and cache_matches(manifest_path, manifest, [metrics_csv, output_dir / "route_plan.csv"])
+        ):
+            print(f"[SKIP] closed loop {baseline_run}/{target}/k{horizon}/{cost_mode}/{strategy}")
+            continue
         plan_strategy = "hop" if strategy == "olsr" else strategy
         plan_csv = build_route_plan(
             baseline_run,
@@ -332,15 +369,22 @@ def run_closed_loop_experiment(
         subprocess.run(command, check=True)
         if not metrics_csv.exists():
             raise RuntimeError(f"ns-3 did not write expected metrics: {metrics_csv}")
+        save_manifest(manifest_path, manifest)
 
     if plan_only:
         return None
-    return aggregate_closed_loop_results(output_root, reports_root)
+    paths = [
+        output_root / run / target / f"k{horizon}" / cost_mode / strategy / "closed_loop_metrics.csv"
+        for run in cohort_runs or [baseline_run]
+        for strategy in strategies
+    ]
+    return aggregate_closed_loop_results(output_root, reports_root, [path for path in paths if path.exists()])
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--baseline-run", required=True)
+    parser.add_argument("--cohort-runs", nargs="+", default=None)
     parser.add_argument(
         "--binary",
         type=Path,
@@ -384,6 +428,7 @@ def main() -> None:
         packet_size=args.packet_size,
         plan_only=args.plan_only,
         force=args.force,
+        cohort_runs=args.cohort_runs,
     )
     if result is not None:
         detailed, summary, paired = result

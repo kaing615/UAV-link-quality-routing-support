@@ -62,9 +62,7 @@ def generate_artifacts(summary_csv: Path, paired_csv: Path, output_dir: Path) ->
     paired = pd.read_csv(paired_csv)
     required = {"strategy", "n_runs"}
     for metric, _, _ in METRICS:
-        required.update(
-            {f"{metric}_mean", f"{metric}_ci95_low", f"{metric}_ci95_high"}
-        )
+        required.update({f"{metric}_mean", f"{metric}_ci95_low", f"{metric}_ci95_high"})
     _require(summary, required, "closed-loop summary")
     _require(
         paired,
@@ -111,22 +109,22 @@ def generate_artifacts(summary_csv: Path, paired_csv: Path, output_dir: Path) ->
 
     summary_out = tables / "closed_loop_summary.csv"
     ordered.to_csv(summary_out, index=False)
-    summary_print = ordered[["strategy", "n_runs"]].copy()
+    count_columns = [name for name in ("n_runs", "n_independent_runs") if name in ordered]
+    summary_print = ordered[["strategy", *count_columns]].copy()
     summary_print["Strategy"] = summary_print["strategy"].astype(str).map(STRATEGY_LABELS)
     for metric, label, _ in METRICS:
         summary_print[label] = ordered.apply(
             lambda row, name=metric: (
-                f"{row[f'{name}_mean']:.3f} "
-                f"[{row[f'{name}_ci95_low']:.3f}, {row[f'{name}_ci95_high']:.3f}]"
+                f"{row[f'{name}_mean']:.3f} [{row[f'{name}_ci95_low']:.3f}, {row[f'{name}_ci95_high']:.3f}]"
             ),
             axis=1,
         )
-    summary_print = summary_print[["Strategy", "n_runs", *[item[1] for item in METRICS]]]
+    summary_print = summary_print[["Strategy", *count_columns, *[item[1] for item in METRICS]]]
     summary_tex = tables / "closed_loop_summary.tex"
     _write_latex(
         summary_print,
         summary_tex,
-        "Trace-driven closed-loop ns-3 results with run-level bootstrap 95% confidence intervals.",
+        "Trace-driven closed-loop ns-3 results with seed-cluster bootstrap 95% confidence intervals.",
         "tab:closed-loop-summary",
     )
 
@@ -142,14 +140,21 @@ def generate_artifacts(summary_csv: Path, paired_csv: Path, output_dir: Path) ->
         lambda row: f"{row['mean_delta']:.3f} [{row['ci95_low']:.3f}, {row['ci95_high']:.3f}]",
         axis=1,
     )
+    if "n_independent_pairs" not in paired_print:
+        paired_print["n_independent_pairs"] = paired_print["n_pairs"]
     paired_print = paired_print.rename(
-        columns={"metric": "Metric", "n_pairs": "Runs", "p_holm": "Holm p"}
-    )[["Metric", "Comparison", "Runs", "Effect [95% CI]", "Holm p"]]
+        columns={
+            "metric": "Metric",
+            "n_pairs": "Conditions",
+            "n_independent_pairs": "Independent units",
+            "p_holm": "Holm p",
+        }
+    )[["Metric", "Comparison", "Conditions", "Independent units", "Effect [95% CI]", "Holm p"]]
     paired_tex = tables / "closed_loop_paired.tex"
     _write_latex(
         paired_print,
         paired_tex,
-        "Run-paired closed-loop effects (comparator minus reference) and Holm-adjusted p-values.",
+        "Paired closed-loop effects with seed clustering and Holm-adjusted p-values.",
         "tab:closed-loop-paired",
     )
     return [figure_png, figure_pdf, summary_out, summary_tex, paired_out, paired_tex]
@@ -158,12 +163,8 @@ def generate_artifacts(summary_csv: Path, paired_csv: Path, output_dir: Path) ->
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--summary", type=Path, default=Path("reports/closed_loop/summary.csv"))
-    parser.add_argument(
-        "--paired", type=Path, default=Path("reports/closed_loop/paired_comparisons.csv")
-    )
-    parser.add_argument(
-        "--output-dir", type=Path, default=Path("reports/closed_loop/artifacts")
-    )
+    parser.add_argument("--paired", type=Path, default=Path("reports/closed_loop/paired_comparisons.csv"))
+    parser.add_argument("--output-dir", type=Path, default=Path("reports/closed_loop/artifacts"))
     args = parser.parse_args()
     paths = generate_artifacts(args.summary, args.paired, args.output_dir)
     print(f"[OK] wrote {len(paths)} closed-loop artifacts to {args.output_dir}")

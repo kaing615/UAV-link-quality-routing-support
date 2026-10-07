@@ -19,14 +19,22 @@ EDGE_IN = 7
 def refresh_run(model_dir: Path, run_dir: Path, device: torch.device) -> None:
     metadata = json.loads((run_dir / "metadata.json").read_text(encoding="utf-8"))
     model_id = metadata["model_id"]
-    base_id = model_id.replace("-noedge", "")
+    base_id = "edge-sage" if model_id.startswith("edge-sage-") else model_id.removesuffix("-noedge")
     model = _MODELS[base_id](
         node_in_channels=NODE_IN,
         edge_in_channels=EDGE_IN,
         hidden_channels=metadata["hidden_channels"],
         num_layers=metadata["num_layers"],
         dropout=metadata["dropout"],
-        use_edge_features=metadata["use_edge_features"],
+        use_edge_features=metadata.get("use_edge_features", True),
+        **(
+            {
+                "use_message_edge_features": metadata["use_message_edge_features"],
+                "use_decoder_edge_features": metadata["use_decoder_edge_features"],
+            }
+            if base_id == "edge-sage" and "use_message_edge_features" in metadata
+            else {}
+        ),
     ).to(device)
     model.load_state_dict(torch.load(run_dir / "best_model.pt", weights_only=True))
     graph_root = Path("data/graph_dataset") / run_dir.name / "graph_dataset"

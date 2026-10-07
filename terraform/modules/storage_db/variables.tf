@@ -13,3 +13,7 @@ variable "vpc_id" {
 variable "subnet_ids" {
   type = list(string)
 }
+
+variable "eks_node_security_group_id" {
+  type = string
+}

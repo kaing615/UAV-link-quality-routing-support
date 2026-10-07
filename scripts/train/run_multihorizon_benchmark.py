@@ -10,9 +10,11 @@ from pathlib import Path
 
 import pandas as pd
 
-from src.evaluation.paired_statistics import bootstrap_mean_ci
+from src.evaluation.paired_statistics import bootstrap_mean_ci, independent_values
+from src.training.baselines.persistence_baseline import evaluate_run as evaluate_persistence
+from src.utils.experiment import cache_matches, fingerprint, save_manifest, seed_group, validate_test_predictions
 
-MODELS = ("logreg", "xgb", "edge-sage")
+MODELS = ("persistence", "logreg", "xgb", "edge-sage")
 BASELINE_MODULES = {
     "logreg": "src.training.baselines.Logistic_Regression_Baseline",
     "xgb": "src.training.baselines.xgb_baseline",
@@ -57,6 +59,12 @@ def collect_metrics(output_root: Path) -> pd.DataFrame:
 
 
 def aggregate_metrics(detailed: pd.DataFrame) -> pd.DataFrame:
+    if detailed.duplicated(["model_id", "target", "horizon", "split", "run_name"]).any():
+        raise ValueError("Duplicate model/target/horizon/split/run metrics")
+    if "n_samples" in detailed:
+        counts = detailed.groupby(["target", "horizon", "split", "run_name"])["n_samples"].nunique()
+        if counts.gt(1).any():
+            raise ValueError("Models were evaluated on different sample counts; rerun affected experiments")
     metrics = [
         name
         for name in (
@@ -72,24 +80,24 @@ def aggregate_metrics(detailed: pd.DataFrame) -> pd.DataFrame:
         if name in detailed.columns
     ]
     group_columns = ["model_id", "target", "horizon", "split"]
-    result = (
-        detailed.groupby(group_columns)
-        .agg(
-            n_runs=("run_name", "nunique"),
-            **{f"{metric}_{stat}": (metric, stat) for metric in metrics for stat in ("mean", "std")},
-        )
-        .reset_index()
-    )
-    for metric in metrics:
-        intervals = (
-            detailed.groupby(group_columns)[metric]
-            .apply(lambda values: bootstrap_mean_ci(values.to_numpy()))
-            .apply(pd.Series)
-            .rename(columns={0: f"{metric}_ci95_low", 1: f"{metric}_ci95_high"})
-            .reset_index()
-        )
-        result = result.merge(intervals, on=group_columns, validate="one_to_one")
-    return result
+    rows = []
+    for coordinate, group in detailed.groupby(group_columns, sort=True):
+        row = dict(zip(group_columns, coordinate, strict=True))
+        row["n_runs"] = group["run_name"].nunique()
+        row["n_independent_runs"] = group["run_name"].map(seed_group).nunique()
+        for metric in metrics:
+            values = independent_values(group, metric)
+            low, high = bootstrap_mean_ci(values.to_numpy())
+            row.update(
+                {
+                    f"{metric}_mean": values.mean(),
+                    f"{metric}_std": values.std(),
+                    f"{metric}_ci95_low": low,
+                    f"{metric}_ci95_high": high,
+                }
+            )
+        rows.append(row)
+    return pd.DataFrame(rows)
 
 
 def _run(command: list[str]) -> None:
@@ -106,7 +114,16 @@ def _ensure_tabular_data(run_root: Path) -> Path:
         imbalance_root / "train_weighted.csv",
         imbalance_root / "train_oversampled.csv",
     ]
-    if all(path.exists() for path in required):
+    manifest = fingerprint(
+        {},
+        [
+            run_root / "features" / "edges_labeled.csv",
+            run_root / "splits" / "time_splits.csv",
+            Path("src/preprocessing/non-gnn"),
+        ],
+    )
+    manifest_path = baseline_root / "experiment.json"
+    if cache_matches(manifest_path, manifest, required):
         return baseline_root
 
     _run(
@@ -131,6 +148,7 @@ def _ensure_tabular_data(run_root: Path) -> Path:
             str(imbalance_root),
         ]
     )
+    save_manifest(manifest_path, manifest)
     return baseline_root
 
 
@@ -173,10 +191,29 @@ def run_benchmark(
         combination_root = data_root / target / f"k{horizon}"
         for model in models:
             output_dir = output_root / model / target / f"k{horizon}" / run_root.name
-            if (output_dir / "metrics.csv").exists() and not force:
+            manifest = fingerprint(
+                {"model": model, "target": target, "horizon": horizon, "epochs": gnn_epochs, "patience": gnn_patience},
+                [
+                    run_root / "features",
+                    run_root / "splits",
+                    run_root / "graph_dataset",
+                    Path("src/training"),
+                    Path("src/models"),
+                    Path("src/preprocessing"),
+                    Path("src/utils"),
+                    Path(__file__),
+                ],
+            )
+            manifest_path = output_dir / "experiment.json"
+            if not force and cache_matches(
+                manifest_path, manifest, [output_dir / "metrics.csv", output_dir / "test_predictions.csv"]
+            ):
                 print(f"[SKIP] {model}/{target}/k{horizon}/{run_root.name}")
+                validate_test_predictions(run_root, output_dir / "test_predictions.csv")
                 continue
-            if model in BASELINE_MODULES:
+            if model == "persistence":
+                evaluate_persistence(run_root, output_dir)
+            elif model in BASELINE_MODULES:
                 baseline_root = _ensure_tabular_data(run_root)
                 _run(
                     [
@@ -222,8 +259,18 @@ def run_benchmark(
                 )
             else:
                 raise ValueError(f"Unknown model: {model}")
+            validate_test_predictions(run_root, output_dir / "test_predictions.csv")
+            save_manifest(manifest_path, manifest)
 
+    selected = {(target, horizon, run_root.name) for target, horizon, run_root in datasets}
     summary = collect_metrics(output_root)
+    summary = summary[
+        summary["model_id"].isin(models)
+        & pd.Series(
+            [(row.target, row.horizon, row.run_name) in selected for row in summary.itertuples()],
+            index=summary.index,
+        )
+    ]
     summary_csv.parent.mkdir(parents=True, exist_ok=True)
     summary.to_csv(summary_csv, index=False)
     aggregate_path = summary_csv.with_name(f"{summary_csv.stem}_aggregate.csv")

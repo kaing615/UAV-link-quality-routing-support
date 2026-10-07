@@ -15,7 +15,8 @@ RUN cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
 
 COPY simulation/ns3/ /src/ns3/
 RUN cmake -B /src/ns3/build -S /src/ns3 -G Ninja -DCMAKE_BUILD_TYPE=Release -DNS3_PREFIX=/opt/ns3 \
-    && cmake --build /src/ns3/build
+    && cmake --build /src/ns3/build \
+    && cd /src/ns3 && sha256sum uav-olsr-dataset.cc CMakeLists.txt build/uav-olsr-dataset > build/source.sha256
 
 FROM ubuntu:24.04
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -23,10 +24,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 COPY --from=ns3-build /opt/ns3/lib /opt/ns3/lib
 COPY --from=ns3-build /src/ns3/build/uav-olsr-dataset /app/simulation/ns3/build/uav-olsr-dataset
+COPY --from=ns3-build /src/ns3/build/source.sha256 /app/simulation/ns3/build/source.sha256
 ENV LD_LIBRARY_PATH=/opt/ns3/lib
 
 WORKDIR /app
-COPY requirements.txt .
+COPY requirements.txt requirements-serve.txt ./
 RUN python3.12 -m venv /venv && /venv/bin/pip install --no-cache-dir \
     torch==2.11.0 --index-url https://download.pytorch.org/whl/cpu \
     && /venv/bin/pip install --no-cache-dir -r requirements.txt

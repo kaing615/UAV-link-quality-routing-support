@@ -8,6 +8,8 @@ from typing import Any, cast
 import networkx as nx
 import pandas as pd
 
+from src.preprocessing.gnn.build_labels import assign_label
+
 TAU_SNR = 18.0
 TAU_LOSS = 0.1
 TAU_DELAY = 10.0
@@ -23,15 +25,16 @@ def load_raw_edges(
     run_name: str,
     raw_root: Path = Path("data/raw_snapshots"),
 ) -> dict[int, dict[tuple[int, int], dict]]:
-    """time -> {(u, v) -> row dict} for connected edges; includes validity flag."""
+    """time -> {(u, v) -> row dict} for connected edges; retain empty snapshots."""
     edges = pd.read_csv(raw_root / run_name / "edges.csv")
     by_time: dict[int, dict[tuple[int, int], dict]] = {}
     for r in edges.itertuples(index=False):
         row: Any = r
+        by_time.setdefault(int(row.time), {})
         if int(row.connected) != 1:
             continue
-        valid = row.snr > TAU_SNR and row.packet_loss < TAU_LOSS and (row.delay < TAU_DELAY)
-        by_time.setdefault(int(row.time), {})[canonical(int(row.src), int(row.dst))] = {
+        valid = assign_label(1, row.snr, row.packet_loss, row.delay, TAU_SNR, TAU_LOSS, TAU_DELAY)
+        by_time[int(row.time)][canonical(int(row.src), int(row.dst))] = {
             "delay": float(row.delay),
             "packet_loss": float(row.packet_loss),
             "valid": bool(valid),
@@ -152,8 +155,13 @@ def evaluate_run(
     raw = load_raw_edges(run_name, raw_root)
     if not raw:
         raise ValueError(f"No connected raw edges found for {run_name}")
-    max_time = max(raw.keys())
-    test_times = [t for t in load_test_times(run_name, split_csv) if t + 1 <= max_time]
+    if horizon < 1:
+        raise ValueError("horizon must be positive")
+    test_times = [
+        t for t in load_test_times(run_name, split_csv) if all(t + offset in raw for offset in range(horizon + 1))
+    ]
+    if not test_times:
+        raise ValueError(f"No complete test windows for {run_name} at horizon={horizon}")
 
     if prediction_csvs is None:
         if gnn_predictions_csv is None:
@@ -182,7 +190,7 @@ def evaluate_run(
         edges_t = raw.get(t, {})
         if not edges_t:
             continue
-        h_t = min(horizon, max_time - t)
+        h_t = horizon
         base_graph = nx.Graph(list(edges_t.keys()))
         nodes = sorted(base_graph.nodes())
         pairs = [(s, d) for i, s in enumerate(nodes) for d in nodes[i + 1 :] if nx.has_path(base_graph, s, d)]
@@ -225,6 +233,8 @@ def evaluate_run(
                         continue
                     changes += 1
                     new_path = shortest_path(build_strategy_graph(edges_tk, st, tk, scores, p_th, weight_mode), s, d)
+                    if new_path is None and st in prediction_strategies and p_th > 0.0 and not strict:
+                        new_path = shortest_path(build_strategy_graph(edges_tk, st, tk, scores, 0.0, weight_mode), s, d)
                     if new_path is None:
                         disconnected = 1
                         break
@@ -261,7 +271,7 @@ def evaluate_run(
             edges_t = raw.get(t, {})
             if not edges_t:
                 continue
-            h_t = min(horizon, max_time - t)
+            h_t = horizon
             path = olsr_routes.get(t)
             if not path:
                 records.append(

@@ -4,6 +4,7 @@
 .gitignore
 .dvc
 .dvcignore
+dvc_creds.json
 __pycache__/
 *.pyc
 *.pyo

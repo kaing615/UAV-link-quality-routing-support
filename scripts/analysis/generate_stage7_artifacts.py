@@ -224,7 +224,17 @@ def plot_ablation(ablation: pd.DataFrame, output_stem: Path) -> None:
 def worst_group_summary(worst_group: pd.DataFrame) -> pd.DataFrame:
     _require(
         worst_group,
-        {"model_id", "target", "horizon", "split", "group_type", "group_value", "metric", "metric_mean", "is_worst_group"},
+        {
+            "model_id",
+            "target",
+            "horizon",
+            "split",
+            "group_type",
+            "group_value",
+            "metric",
+            "metric_mean",
+            "is_worst_group",
+        },
         "worst-group report",
     )
     result = worst_group[
@@ -253,10 +263,7 @@ def plot_worst_group(worst_group: pd.DataFrame, output_stem: Path) -> None:
 
 
 def _ci_text(row: pd.Series) -> str:
-    return (
-        f"{row['macro_f1_mean']:.3f} "
-        f"[{row['macro_f1_ci95_low']:.3f}, {row['macro_f1_ci95_high']:.3f}]"
-    )
+    return f"{row['macro_f1_mean']:.3f} [{row['macro_f1_ci95_low']:.3f}, {row['macro_f1_ci95_high']:.3f}]"
 
 
 def _write_latex(frame: pd.DataFrame, path: Path, caption: str, label: str) -> None:
@@ -285,6 +292,7 @@ def write_tables(
         "target",
         "horizon",
         "n_runs",
+        "n_independent_runs",
         "macro_f1_mean",
         "macro_f1_ci95_low",
         "macro_f1_ci95_high",
@@ -293,14 +301,12 @@ def write_tables(
     protocol_table = protocols[[column for column in columns if column in protocols]].copy()
     protocol_table.to_csv(output_dir / "protocol_summary.csv", index=False)
     printable = protocol_table[
-        protocol_table["model_id"].isin(["logreg", "xgb", "edge-sage"])
+        protocol_table["model_id"].isin(["persistence", "logreg", "xgb", "edge-sage"])
         & protocol_table["horizon"].isin([1, 5])
     ].copy()
     printable["Model"] = printable["model_id"].map(MODEL_LABELS)
     printable["value"] = printable.apply(_ci_text, axis=1)
-    printable = printable.pivot(
-        index=["protocol", "target", "Model"], columns="horizon", values="value"
-    ).reset_index()
+    printable = printable.pivot(index=["protocol", "target", "Model"], columns="horizon", values="value").reset_index()
     printable = printable.rename(columns={"protocol": "Protocol", "target": "Target", 1: "k=1", 5: "k=5"})
     _write_latex(
         printable,
@@ -324,7 +330,11 @@ def write_tables(
 
     paired.to_csv(output_dir / "paired_effects.csv", index=False)
     paired_print = paired[
-        ((paired["protocol"] != "Ablation") & (paired["reference_strategy"] == "logreg") & (paired["comparator_strategy"] == "edge-sage"))
+        (
+            (paired["protocol"] != "Ablation")
+            & (paired["reference_strategy"] == "logreg")
+            & (paired["comparator_strategy"] == "edge-sage")
+        )
         | (paired["protocol"] == "Ablation")
     ].copy()
     paired_print["Comparison"] = (
@@ -336,24 +346,29 @@ def write_tables(
         lambda row: f"{row['mean_delta']:.3f} [{row['ci95_low']:.3f}, {row['ci95_high']:.3f}]",
         axis=1,
     )
+    if "n_independent_pairs" not in paired_print:
+        paired_print["n_independent_pairs"] = paired_print["n_pairs"]
     paired_print = paired_print.rename(
-        columns={"protocol": "Protocol", "target": "Target", "horizon": "k", "n_pairs": "Runs", "p_holm": "Holm p"}
-    )[
-        ["Protocol", "Target", "k", "Comparison", "Runs", "Delta Macro-F1 [95% CI]", "Holm p"]
-    ]
+        columns={
+            "protocol": "Protocol",
+            "target": "Target",
+            "horizon": "k",
+            "n_pairs": "Conditions",
+            "n_independent_pairs": "Independent units",
+            "p_holm": "Holm p",
+        }
+    )[["Protocol", "Target", "k", "Comparison", "Conditions", "Independent units", "Delta Macro-F1 [95% CI]", "Holm p"]]
     _write_latex(
         paired_print,
         output_dir / "paired_effects.tex",
-        "Run-paired Macro-F1 effects (comparator minus reference), bootstrap 95% CI and Holm-adjusted p-value.",
+        "Paired Macro-F1 effects, seed-cluster bootstrap 95% CI and Holm-adjusted p-value.",
         "tab:stage7-paired",
     )
 
     worst_group.to_csv(output_dir / "worst_group_summary.csv", index=False)
     worst_print = worst_group.copy()
     worst_print["Model"] = worst_print["model_id"].map(MODEL_LABELS)
-    worst_print["value"] = worst_print.apply(
-        lambda row: f"{row['metric_mean']:.3f} ({row['group_value']})", axis=1
-    )
+    worst_print["value"] = worst_print.apply(lambda row: f"{row['metric_mean']:.3f} ({row['group_value']})", axis=1)
     worst_print = worst_print.pivot(
         index=["group_type", "target", "Model"], columns="horizon", values="value"
     ).reset_index()

@@ -1,11 +1,12 @@
 import json
+import os
 
 import httpx
 import matplotlib.pyplot as plt
 import networkx as nx
 import streamlit as st
 
-API_URL = "http://localhost:8000"
+API_URL = os.environ.get("API_URL", "http://localhost:8000")
 st.set_page_config(page_title="UAV-GNN Routing Dashboard", layout="wide")
 st.title("UAV-GNN Link Quality & Routing Dashboard")
 st.sidebar.header("Configuration")
@@ -19,9 +20,9 @@ st.markdown("### 1. Input Network Data")
 st.write("Input JSON network definition (nodes and edges) or use the sample below.")
 sample_data = {
     "nodes": [
-        {"node_id": 0, "x": 0, "y": 0, "z": 50, "vx": 5, "vy": 0, "vz": 0, "speed": 5, "degree": 2},
-        {"node_id": 1, "x": 100, "y": 0, "z": 50, "vx": -5, "vy": 0, "vz": 0, "speed": 5, "degree": 2},
-        {"node_id": 2, "x": 50, "y": 50, "z": 60, "vx": 0, "vy": 5, "vz": 0, "speed": 5, "degree": 2},
+        {"node_id": 0, "x": 0, "y": 0, "z": 50, "vx": 5, "vy": 0, "vz": 0, "degree": 2, "load": 0.2},
+        {"node_id": 1, "x": 100, "y": 0, "z": 50, "vx": -5, "vy": 0, "vz": 0, "degree": 2, "load": 0.3},
+        {"node_id": 2, "x": 50, "y": 50, "z": 60, "vx": 0, "vy": 5, "vz": 0, "degree": 2, "load": 0.1},
     ],
     "edges": [
         {

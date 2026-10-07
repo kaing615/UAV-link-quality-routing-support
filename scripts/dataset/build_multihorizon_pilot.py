@@ -11,6 +11,7 @@ import pandas as pd
 
 from src.preprocessing.gnn.build_labels import HORIZONS, TARGETS
 from src.preprocessing.run_preprocessing import run_pipeline
+from src.utils.experiment import cache_matches, fingerprint, save_manifest
 
 
 def _scenario(run_dir: Path) -> dict:
@@ -64,7 +65,19 @@ def run_pilot(raw_root: Path, run_names: list[str], output_root: Path, summary_c
                     "val_pt": destination / "graph_dataset" / "val.pt",
                     "test_pt": destination / "graph_dataset" / "test.pt",
                 }
-                complete = all(path.is_file() and path.stat().st_size > 0 for path in outputs.values())
+                manifest = fingerprint(
+                    {"target": target, "horizon": horizon, "common_max_horizon": support_horizon},
+                    [
+                        nodes_csv,
+                        edges_csv,
+                        run_dir / "scenario.json",
+                        Path(__file__),
+                        Path("src/preprocessing"),
+                        Path("src/utils"),
+                    ],
+                )
+                manifest_path = destination / "experiment.json"
+                complete = cache_matches(manifest_path, manifest, list(outputs.values()))
                 if complete:
                     print(f"[SKIP] {run_name}: target={target}, horizon={horizon}")
                 else:
@@ -77,6 +90,7 @@ def run_pilot(raw_root: Path, run_names: list[str], output_root: Path, summary_c
                         horizon=horizon,
                         common_max_horizon=support_horizon,
                     )
+                    save_manifest(manifest_path, manifest)
 
                 labels = pd.read_csv(outputs["edges_labeled"])
                 splits = pd.read_csv(outputs["splits"])

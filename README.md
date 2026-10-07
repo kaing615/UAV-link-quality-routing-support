@@ -156,7 +156,7 @@ Môi trường đầy đủ (ns-3 đã build + Python) có sẵn trong [Dockerfi
 
 ```bash
 docker build -t uav-gnn .
-docker run -it uav-gnn dvc repro
+docker run -it -v "$(pwd):/app" -w /app uav-gnn dvc repro
 ```
 
 ---

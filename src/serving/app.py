@@ -34,16 +34,21 @@ def load_model() -> None:
     hidden = int(os.environ.get("HIDDEN_CHANNELS", "128"))
     num_layers = int(os.environ.get("NUM_LAYERS", "2"))
     _threshold = float(os.environ.get("THRESHOLD", "0.5"))
-    base_id = _model_id.replace("-noedge", "")
-    if base_id not in _MODELS:
-        raise ValueError(f"Unknown model_id: {_model_id}")
     metadata_path = model_dir / "metadata.json"
     if metadata_path.exists():
         metadata = json.loads(metadata_path.read_text())
+        if "MODEL_ID" in os.environ and _model_id != metadata["model_id"]:
+            raise ValueError(f"MODEL_ID={_model_id} disagrees with artifact {metadata['model_id']}")
+        _model_id = metadata["model_id"]
         hidden = metadata.get("hidden_channels", hidden)
         num_layers = metadata.get("num_layers", num_layers)
         if "THRESHOLD" not in os.environ:
             _threshold = metadata.get("threshold", _threshold)
+    else:
+        metadata = {}
+    base_id = "edge-sage" if _model_id.startswith("edge-sage-") else _model_id.removesuffix("-noedge")
+    if base_id not in _MODELS:
+        raise ValueError(f"Unknown model_id: {_model_id}")
     weights_path = model_dir / "best_model.pt"
     if not weights_path.exists():
         raise RuntimeError(
@@ -56,7 +61,15 @@ def load_model() -> None:
         hidden_channels=hidden,
         num_layers=num_layers,
         dropout=0.0,
-        use_edge_features="-noedge" not in _model_id,
+        use_edge_features=metadata.get("use_edge_features", "-noedge" not in _model_id),
+        **(
+            {
+                "use_message_edge_features": metadata["use_message_edge_features"],
+                "use_decoder_edge_features": metadata["use_decoder_edge_features"],
+            }
+            if base_id == "edge-sage" and "use_message_edge_features" in metadata
+            else {}
+        ),
     )
     model.load_state_dict(torch.load(weights_path, weights_only=True, map_location="cpu"))
     model.eval()
