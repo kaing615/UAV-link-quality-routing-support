@@ -28,6 +28,15 @@ Da sua ma nguon cho 11 phat hien. Bang va figure nghien cuu cu chua duoc sinh la
 
 ## Chay lai
 
+### Kiem tra sau khi gop origin/main d07db1f
+
+- Giu controlled scenario extensions va temporal GNN benchmark; nhom seed nhan dien them `partition_ctrl`.
+- Closed-loop chuyen tiep scenario mode va background traffic tu metadata goc.
+- 143 pytest pass tren Windows; 3 Bash test va 3 ns-3 binary test chay rieng tren Linux deu pass (`check_merged_pipeline.py`). Hai test serving lifecycle cung pass tren Linux.
+- Rebuild scenario ns-3 3.48; route/drop/relay/PDR checks, checksum/incremental build va 22 Bash syntax checks pass.
+- Test throughput dung gioi han sai so tu do chinh xac 6 chu so thap phan cua CSV.
+- Ruff check va format cho cac file sua khi gop pass. Chua sinh lai artifact nghien cuu.
+
 Tu repo root, voi ns-3 local da cai hoac research image vua rebuild:
 
 ```bash

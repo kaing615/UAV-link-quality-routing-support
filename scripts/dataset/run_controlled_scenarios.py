@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import argparse
+import json
+import math
 import os
 import subprocess
 import time
@@ -34,6 +36,16 @@ class ScenarioJob:
     speed_min: int
     speed_max: int
     run_name: str
+    scenario_mode: str = "standard"
+    background_flows: int = 0
+    background_rate_kbps: float = 0.0
+    source_id: int = 0
+    dest_id: int = 4
+
+
+def _mobility_for_index(index: int) -> tuple[str, str]:
+    mobility = "gauss-markov" if index % 2 == 0 else "random-waypoint"
+    return mobility, ("gm" if mobility == "gauss-markov" else "rwp")
 
 
 def build_jobs(start_index: int, end_index: int, seed_base: int = 60_000) -> list[ScenarioJob]:
@@ -42,8 +54,7 @@ def build_jobs(start_index: int, end_index: int, seed_base: int = 60_000) -> lis
     jobs = []
     for index in range(start_index, end_index + 1):
         seed = seed_base + index
-        mobility = "gauss-markov" if index % 2 == 0 else "random-waypoint"
-        tag = "gm" if mobility == "gauss-markov" else "rwp"
+        mobility, tag = _mobility_for_index(index)
         for scenario, (comm_range, speed_min, speed_max) in SCENARIOS.items():
             jobs.append(
                 ScenarioJob(
@@ -61,16 +72,123 @@ def build_jobs(start_index: int, end_index: int, seed_base: int = 60_000) -> lis
     return jobs
 
 
+def build_extension_jobs(count: int = 10, seed_base: int = 60_000) -> list[ScenarioJob]:
+    if not 1 <= count <= 100:
+        raise ValueError("Expected 1 <= count <= 100")
+    jobs = []
+    comm_range, speed_min, speed_max = SCENARIOS["baseline"]
+    for index in range(1, count + 1):
+        seed = seed_base + index
+        mobility, tag = _mobility_for_index(index)
+        jobs.append(
+            ScenarioJob(
+                scenario="ctrl",
+                index=index,
+                seed=seed,
+                mobility="event-controlled-waypoint",
+                mobility_tag="ctrl",
+                comm_range=comm_range,
+                speed_min=speed_min,
+                speed_max=speed_max,
+                run_name=f"stress_partition_ctrl_s{seed}",
+                scenario_mode="partition-reconnect",
+            )
+        )
+        jobs.append(
+            ScenarioJob(
+                scenario="load",
+                index=index,
+                seed=seed,
+                mobility=mobility,
+                mobility_tag=tag,
+                comm_range=comm_range,
+                speed_min=speed_min,
+                speed_max=speed_max,
+                run_name=f"stress_load_{tag}_s{seed}",
+                scenario_mode="high-load",
+                background_flows=8,
+                background_rate_kbps=600.0,
+            )
+        )
+    return jobs
+
+
 def _complete(job: ScenarioJob, raw_root: Path, graph_root: Path) -> bool:
     required = [
         raw_root / job.run_name / "scenario.json",
         raw_root / job.run_name / "nodes.csv",
         raw_root / job.run_name / "edges.csv",
+        raw_root / job.run_name / "traffic_log.csv",
         graph_root / job.run_name / "graph_dataset" / "train.pt",
         graph_root / job.run_name / "graph_dataset" / "val.pt",
         graph_root / job.run_name / "graph_dataset" / "test.pt",
     ]
-    return all(path.exists() and path.stat().st_size > 0 for path in required)
+    if not all(path.exists() and path.stat().st_size > 0 for path in required):
+        return False
+
+    raw_dir = raw_root / job.run_name
+    try:
+        metadata = json.loads((raw_dir / "scenario.json").read_text(encoding="utf-8"))
+        speed_range = metadata["rwp_speed_range"]
+        if not isinstance(speed_range, list) or len(speed_range) != 2:
+            return False
+        numbers_match = all(
+            math.isclose(float(actual), float(expected), rel_tol=1e-9, abs_tol=1e-4)
+            for actual, expected in (
+                (metadata["comm_range"], job.comm_range),
+                (speed_range[0], job.speed_min),
+                (speed_range[1], job.speed_max),
+                (metadata["background_rate_kbps"], job.background_rate_kbps),
+            )
+        )
+    except (KeyError, OSError, TypeError, ValueError, json.JSONDecodeError):
+        return False
+    if (
+        metadata.get("run_name") != job.run_name
+        or metadata.get("seed") != job.seed
+        or metadata.get("mobility_model") != job.mobility
+        or metadata.get("scenario_mode") != job.scenario_mode
+        or metadata.get("background_flows") != job.background_flows
+        or metadata.get("source_id") != job.source_id
+        or metadata.get("dest_id") != job.dest_id
+        or not numbers_match
+    ):
+        return False
+
+    if job.scenario_mode == "high-load":
+        metrics_path = raw_dir / "background_flow_metrics.csv"
+        if not metrics_path.exists() or metrics_path.stat().st_size == 0:
+            return False
+        try:
+            metrics = pd.read_csv(metrics_path, usecols=["flow_index"])
+        except (OSError, TypeError, ValueError, pd.errors.EmptyDataError):
+            return False
+        if len(metrics) != job.background_flows or metrics["flow_index"].nunique() != job.background_flows:
+            return False
+
+    if job.scenario_mode == "partition-reconnect":
+        try:
+            start = metadata["partition_start_step"]
+            end = metadata["partition_end_step"]
+            reconnect = metadata["reconnect_step"]
+            num_uavs = int(metadata["num_uavs"])
+            time_steps = int(metadata["time_steps"])
+            groups = metadata["partition_groups"]
+            group_a = {int(node) for node in groups["group_a"]}
+            group_b = {int(node) for node in groups["group_b"]}
+        except (KeyError, OSError, TypeError, ValueError, json.JSONDecodeError):
+            return False
+        if (
+            metadata.get("scenario_mode") != job.scenario_mode
+            or not all(isinstance(step, int) and not isinstance(step, bool) for step in (start, end, reconnect))
+            or not 0 <= start < end < reconnect < time_steps
+            or not group_a
+            or not group_b
+            or group_a & group_b
+            or group_a | group_b != set(range(num_uavs))
+        ):
+            return False
+    return True
 
 
 def run_jobs(
@@ -113,6 +231,11 @@ def run_jobs(
                 "SIM_RWP_SPEED_MAX": str(job.speed_max),
                 "SIM_X_MAX": "800",
                 "SIM_Y_MAX": "800",
+                "SIM_SCENARIO_MODE": job.scenario_mode,
+                "SIM_BACKGROUND_FLOWS": str(job.background_flows),
+                "SIM_BACKGROUND_RATE_KBPS": str(job.background_rate_kbps),
+                "SIM_SOURCE_ID": str(job.source_id),
+                "SIM_DEST_ID": str(job.dest_id),
             }
             try:
                 subprocess.run(
@@ -147,8 +270,12 @@ def main() -> None:
     parser.add_argument("--graph-root", type=Path, default=Path("data/graph_dataset"))
     parser.add_argument("--manifest", type=Path, default=None)
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--include-extensions", action="store_true")
+    parser.add_argument("--extension-count", type=int, default=10)
     args = parser.parse_args()
     jobs = build_jobs(args.start_index, args.end_index, args.seed_base)
+    if args.include_extensions:
+        jobs.extend(build_extension_jobs(args.extension_count, args.seed_base))
     counts = pd.Series([job.scenario for job in jobs]).value_counts().sort_index()
     print(f"[PLAN] indices={args.start_index}..{args.end_index}; total_jobs={len(jobs)}")
     print(counts.to_string())

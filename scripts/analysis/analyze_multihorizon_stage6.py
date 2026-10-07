@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 from pathlib import Path
 
 import numpy as np
@@ -18,19 +19,29 @@ DEFAULT_COMPARISONS = [
     ("xgb", "persistence"),
 ]
 DEFAULT_METRICS = {"macro_f1": True, "pr_auc": True}
+CONTROLLED_SCENARIO_PATTERN = re.compile(r"^stress_(baseline|fast|sparse|dense)_(rwp|gm)_s\d+$")
+
+
+def infer_controlled_scenario(run_name: str, scenario: dict[str, object]) -> str | None:
+    value = scenario.get("scenario")
+    if isinstance(value, str) and value in {"baseline", "fast", "sparse", "dense"}:
+        return value
+    match = CONTROLLED_SCENARIO_PATTERN.match(run_name)
+    return match.group(1) if match else None
 
 
 def load_run_metadata(raw_root: Path, run_names: list[str]) -> pd.DataFrame:
     rows = []
     for run_name in sorted(set(run_names)):
         scenario = json.loads((raw_root / run_name / "scenario.json").read_text(encoding="utf-8"))
+        controlled_scenario = infer_controlled_scenario(run_name, scenario)
         x_span = float(scenario["x_limit"][1]) - float(scenario["x_limit"][0])
         y_span = float(scenario["y_limit"][1]) - float(scenario["y_limit"][0])
         area_km2 = x_span * y_span / 1_000_000
         rows.append(
             {
                 "run_name": run_name,
-                "scenario": run_name.split("_")[1] if run_name.startswith("stress_") else "other",
+                "scenario": controlled_scenario or "default",
                 "mobility": scenario.get("mobility_model", "unknown"),
                 "num_uavs": int(scenario["num_uavs"]),
                 "comm_range": float(scenario["comm_range"]),
@@ -44,7 +55,8 @@ def load_run_metadata(raw_root: Path, run_names: list[str]) -> pd.DataFrame:
         "sparse",
         "dense",
     )
-    result.loc[result["scenario"].isin(("dense", "sparse")), "density_group"] = result["scenario"]
+    controlled = result["scenario"].isin(["sparse", "dense"])
+    result.loc[controlled, "density_group"] = result.loc[controlled, "scenario"]
     return result
 
 

@@ -10,7 +10,7 @@ from pathlib import Path
 
 
 def seed_group(run_name: str) -> str:
-    match = re.fullmatch(r"stress_.+_(?:rwp|gm)_s(\d+)", run_name)
+    match = re.fullmatch(r"stress_.+_(?:rwp|gm|ctrl)_s(\d+)", run_name)
     return f"controlled-seed-{int(match[1])}" if match else run_name
 
 

@@ -22,12 +22,14 @@ from src.utils.experiment import (
     cache_matches,
     fingerprint,
     save_manifest,
+    seed_group,
     validate_ns3_binary,
     validate_test_predictions,
 )
 
 
 def test_controlled_statistics_average_scenarios_before_resampling():
+    assert seed_group("stress_partition_ctrl_s60001") == seed_group("stress_baseline_rwp_s60001")
     runs = ["stress_baseline_rwp_s60001", "stress_dense_rwp_s60001", "stress_baseline_gm_s60002"]
     detailed = pd.DataFrame(
         [

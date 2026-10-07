@@ -100,6 +100,9 @@ def test_ns3_command_replays_original_scenario_with_measured_data_flow(tmp_path:
         "path_loss_exponent": 2.2,
         "noise_floor_dbm": -90.0,
         "warmup_s": 10.0,
+        "scenario_mode": "high-load",
+        "background_flows": 8,
+        "background_rate_kbps": 600.0,
     }
 
     command = build_ns3_command(
@@ -119,6 +122,9 @@ def test_ns3_command_replays_original_scenario_with_measured_data_flow(tmp_path:
 
     assert "--seed=17" in command
     assert "--mobility=gauss-markov" in command
+    assert "--scenarioMode=high-load" in command
+    assert "--backgroundFlows=8" in command
+    assert "--backgroundRateKbps=600.0" in command
     assert "--routingStrategy=edge-sage" in command
     assert "--predictionTarget=survival" in command
     assert "--predictionHorizon=3" in command

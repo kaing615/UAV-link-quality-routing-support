@@ -3,6 +3,7 @@ from __future__ import annotations
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch_geometric.data import Data
 from torch_geometric.nn import GATConv, MessagePassing, SAGEConv
 
 
@@ -234,3 +235,38 @@ class EdgeAwareSAGEEdgeClassifier(nn.Module):
     ) -> torch.Tensor:
         h = self.encode(x, edge_index, edge_attr)
         return self.decode(h, edge_label_index, labeled_edge_attr)
+
+
+class EdgeAwareSAGEGRUEdgeClassifier(EdgeAwareSAGEEdgeClassifier):
+    def __init__(
+        self,
+        node_in_channels: int = 8,
+        edge_in_channels: int = 7,
+        hidden_channels: int = 128,
+        num_layers: int = 2,
+        dropout: float = 0.3,
+        use_edge_features: bool = True,
+        use_message_edge_features: bool | None = None,
+        use_decoder_edge_features: bool | None = None,
+    ):
+        super().__init__(
+            node_in_channels=node_in_channels,
+            edge_in_channels=edge_in_channels,
+            hidden_channels=hidden_channels,
+            num_layers=num_layers,
+            dropout=dropout,
+            use_edge_features=use_edge_features,
+            use_message_edge_features=use_message_edge_features,
+            use_decoder_edge_features=use_decoder_edge_features,
+        )
+        self.gru = nn.GRU(hidden_channels, hidden_channels, batch_first=True)
+
+    def forward_window(self, graphs: list[Data]) -> torch.Tensor:
+        if not graphs:
+            raise ValueError("graphs must not be empty")
+        embeddings = [self.encode(graph.x, graph.edge_index, graph.edge_attr) for graph in graphs]
+        if any(embedding.shape != embeddings[0].shape for embedding in embeddings[1:]):
+            raise ValueError("graphs must have matching node counts")
+        h, _ = self.gru(torch.stack(embeddings, dim=1))
+        endpoint = graphs[-1]
+        return self.decode(h[:, -1], endpoint.edge_label_index, endpoint.labeled_edge_attr)

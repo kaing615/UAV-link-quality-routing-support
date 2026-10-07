@@ -72,6 +72,9 @@ def test_pipeline_builds_survival_target_on_common_support_without_split_leakage
 
     splits = pd.read_csv(outputs["splits"])
     retained = {name: splits.loc[splits["split"] == name, "time"].tolist() for name in ("train", "val", "test")}
+    purged_times = splits.loc[splits["split"] == "purged", "time"].tolist()
+    assert outputs["purged_pt"] == tmp_path / "processed" / "graph_dataset" / "purged.pt"
+    assert outputs["purged_pt"].exists()
     assert max(retained["train"]) + 2 < min(retained["val"])
     assert max(retained["val"]) + 2 < min(retained["test"])
 
@@ -81,3 +84,8 @@ def test_pipeline_builds_survival_target_on_common_support_without_split_leakage
         assert {(graph["target"], graph["horizon"], graph["support_horizon"]) for graph in graphs} == {
             ("survival", 2, 5)
         }
+
+    purged_graphs = torch.load(outputs["purged_pt"], weights_only=False)
+    assert purged_graphs
+    assert [graph["time"] for graph in purged_graphs] == purged_times
+    assert {tuple(graph["node_ids"]) for graph in purged_graphs} == {(0, 1)}

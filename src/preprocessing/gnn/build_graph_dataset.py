@@ -28,15 +28,13 @@ def build_graph_records(nodes_csv: Path, edges_labeled_csv: Path, split_csv: Pat
     edges = pd.read_csv(edges_labeled_csv)
     splits = pd.read_csv(split_csv)
     output_dir.mkdir(parents=True, exist_ok=True)
-    graphs_by_split: dict[str, list[dict]] = {"train": [], "val": [], "test": []}
+    graphs_by_split: dict[str, list[dict]] = {"train": [], "val": [], "test": [], "purged": []}
     summary = {"feature_names": {"node": NODE_FEATURES, "edge": EDGE_FEATURES}, "splits": {}}
     split_map = dict(zip(splits["time"], splits["split"]))
     for time in sorted(edges["time"].unique().tolist()):
         split = split_map.get(int(time))
         if split is None:
             raise ValueError(f"Missing split assignment for time {time}")
-        if split == "purged":
-            continue
         if split not in graphs_by_split:
             raise ValueError(f"Unknown split {split!r} for time {time}")
 

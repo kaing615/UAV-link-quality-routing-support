@@ -64,6 +64,7 @@ def run_pilot(raw_root: Path, run_names: list[str], output_root: Path, summary_c
                     "train_pt": destination / "graph_dataset" / "train.pt",
                     "val_pt": destination / "graph_dataset" / "val.pt",
                     "test_pt": destination / "graph_dataset" / "test.pt",
+                    "purged_pt": destination / "graph_dataset" / "purged.pt",
                 }
                 manifest = fingerprint(
                     {"target": target, "horizon": horizon, "common_max_horizon": support_horizon},

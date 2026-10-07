@@ -26,7 +26,7 @@ def select_representative_runs(runs: list[str], runs_per_scenario: int) -> list[
         raise ValueError("runs_per_scenario must be positive")
     grouped: dict[str, list[str]] = {}
     for run in runs:
-        match = re.match(r"^stress_(.+)_(?:rwp|gm)_s\d+$", run)
+        match = re.match(r"^stress_(.+)_(?:rwp|gm|ctrl)_s\d+$", run)
         grouped.setdefault(match.group(1) if match else "other", []).append(run)
     for group in grouped.values():
         group.sort(
@@ -186,6 +186,7 @@ def run_benchmark(
         datasets = datasets[:limit]
     if not datasets:
         raise FileNotFoundError(f"No multi-horizon graph datasets found under {data_root}")
+    selected_coordinates = {(target, horizon, run_root.name) for target, horizon, run_root in datasets}
 
     for target, horizon, run_root in datasets:
         combination_root = data_root / target / f"k{horizon}"
@@ -262,15 +263,19 @@ def run_benchmark(
             validate_test_predictions(run_root, output_dir / "test_predictions.csv")
             save_manifest(manifest_path, manifest)
 
-    selected = {(target, horizon, run_root.name) for target, horizon, run_root in datasets}
     summary = collect_metrics(output_root)
     summary = summary[
         summary["model_id"].isin(models)
         & pd.Series(
-            [(row.target, row.horizon, row.run_name) in selected for row in summary.itertuples()],
+            [
+                (target, horizon, run_name) in selected_coordinates
+                for target, horizon, run_name in zip(
+                    summary["target"], summary["horizon"], summary["run_name"], strict=True
+                )
+            ],
             index=summary.index,
         )
-    ]
+    ].copy()
     summary_csv.parent.mkdir(parents=True, exist_ok=True)
     summary.to_csv(summary_csv, index=False)
     aggregate_path = summary_csv.with_name(f"{summary_csv.stem}_aggregate.csv")

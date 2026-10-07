@@ -35,6 +35,35 @@ def test_load_run_metadata_derives_spatial_density(tmp_path: Path):
     assert row["spatial_density_per_km2"] == 40.0
 
 
+def test_load_run_metadata_keeps_controlled_sparse_and_dense_separate(tmp_path: Path):
+    for run_name, comm_range in (
+        ("stress_sparse_rwp_s60001", 160),
+        ("stress_dense_rwp_s60001", 300),
+    ):
+        run_dir = tmp_path / run_name
+        run_dir.mkdir()
+        (run_dir / "scenario.json").write_text(
+            json.dumps(
+                {
+                    "run_name": run_name,
+                    "mobility_model": "random-waypoint",
+                    "num_uavs": 20,
+                    "x_limit": [0, 800],
+                    "y_limit": [0, 800],
+                    "comm_range": comm_range,
+                }
+            ),
+            encoding="utf-8",
+        )
+
+    metadata = load_run_metadata(tmp_path, ["stress_sparse_rwp_s60001", "stress_dense_rwp_s60001"])
+
+    assert metadata.set_index("run_name")["density_group"].to_dict() == {
+        "stress_sparse_rwp_s60001": "sparse",
+        "stress_dense_rwp_s60001": "dense",
+    }
+
+
 def test_paired_model_comparisons_stays_within_target_and_horizon():
     detailed = pd.DataFrame(
         [
