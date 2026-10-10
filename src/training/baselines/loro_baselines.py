@@ -108,8 +108,11 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--model", type=str, default="xgb", choices=list(_MODEL_NAMES.keys()))
     p.add_argument("--output-dir", type=Path, default=None)
     p.add_argument("--random-state", type=int, default=42)
-    p.add_argument("--include-purged-test", action="store_true",
-                   help="Evaluate all eligible times of wholly held-out seeds, including purge boundaries")
+    p.add_argument(
+        "--include-purged-test",
+        action="store_true",
+        help="Evaluate all eligible times of wholly held-out seeds, including purge boundaries",
+    )
     return p.parse_args()
 
 

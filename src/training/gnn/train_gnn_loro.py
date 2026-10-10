@@ -53,8 +53,11 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--batch-size", type=int, default=16)
     p.add_argument("--patience", type=int, default=20)
     p.add_argument("--seed", type=int, default=42)
-    p.add_argument("--include-purged-test", action="store_true",
-                   help="Evaluate all eligible times of wholly held-out seeds, including purge boundaries")
+    p.add_argument(
+        "--include-purged-test",
+        action="store_true",
+        help="Evaluate all eligible times of wholly held-out seeds, including purge boundaries",
+    )
     return p.parse_args()
 
 
@@ -91,8 +94,7 @@ def main() -> None:
         val_graphs.extend(load_run_split(args.data_root, run, "val"))
     test_splits = ("train", "val", "test", "purged") if args.include_purged_test else ("train", "val", "test")
     test_graphs = {
-        run: [g for split in test_splits for g in load_run_split(args.data_root, run, split)]
-        for run in test_runs
+        run: [g for split in test_splits for g in load_run_split(args.data_root, run, split)] for run in test_runs
     }
 
     print(f"       graphs: train={len(train_graphs)} val={len(val_graphs)} test={sum(map(len, test_graphs.values()))}")

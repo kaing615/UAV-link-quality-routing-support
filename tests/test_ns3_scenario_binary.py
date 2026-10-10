@@ -32,7 +32,7 @@ def _run_ns3(output_dir: Path, *arguments: str) -> None:
             "simulation/ns3/build/uav-olsr-dataset",
         ]
         output_argument = "--outputDir=/output"
-        command[-1:-1] = ['timeout', '50']
+        command[-1:-1] = ["timeout", "50"]
     else:
         command = [str(NS3_BINARY)]
         output_argument = f"--outputDir={output_dir}"
@@ -49,19 +49,19 @@ def _run_ns3(output_dir: Path, *arguments: str) -> None:
 def test_bursty_background_finishes_across_on_off_boundaries(tmp_path: Path) -> None:
     _run_ns3(
         tmp_path,
-        '--runName=bursty_boundaries',
-        '--numUavs=4',
-        '--timeSteps=7',
-        '--scenarioMode=high-load',
-        '--backgroundFlows=1',
-        '--backgroundRateKbps=300',
-        '--backgroundPattern=bursty',
+        "--runName=bursty_boundaries",
+        "--numUavs=4",
+        "--timeSteps=7",
+        "--scenarioMode=high-load",
+        "--backgroundFlows=1",
+        "--backgroundRateKbps=300",
+        "--backgroundPattern=bursty",
     )
-    metadata = json.loads((tmp_path / 'scenario.json').read_text(encoding='utf-8'))
-    assert metadata['background_pattern'] == 'bursty'
-    with (tmp_path / 'background_flow_metrics.csv').open(newline='', encoding='utf-8') as stream:
+    metadata = json.loads((tmp_path / "scenario.json").read_text(encoding="utf-8"))
+    assert metadata["background_pattern"] == "bursty"
+    with (tmp_path / "background_flow_metrics.csv").open(newline="", encoding="utf-8") as stream:
         row = next(csv.DictReader(stream))
-    assert abs(float(row['observed_offered_rate_kbps']) / 300 - 1) < .05
+    assert abs(float(row["observed_offered_rate_kbps"]) / 300 - 1) < 0.05
 
 
 def test_background_throughput_uses_one_observation_duration(tmp_path: Path) -> None:
