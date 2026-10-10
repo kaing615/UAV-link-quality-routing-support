@@ -49,11 +49,11 @@ def test_controlled_launcher_runs_temporal_artifacts_before_stage6(tmp_path: Pat
 
     ns3_binary = project_root / "simulation" / "ns3" / "build" / "uav-olsr-dataset"
     ns3_binary.parent.mkdir(parents=True)
-    ns3_binary.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
+    ns3_binary.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8", newline="\n")
     ns3_binary.chmod(0o755)
     helper = project_root / "scripts" / "utils" / "ensure_ns3_binary.sh"
     helper.parent.mkdir()
-    helper.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
+    helper.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8", newline="\n")
     for seed in range(60001, 60011):
         (project_root / f"data/multihorizon_controlled/survival/k3/stress_baseline_rwp_s{seed}").mkdir(parents=True)
 

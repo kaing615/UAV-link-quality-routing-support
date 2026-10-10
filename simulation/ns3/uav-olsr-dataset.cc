@@ -95,6 +95,13 @@ static uint32_t g_appPacketSize = 512;
 static std::string g_scenarioMode = "standard";
 static uint32_t g_backgroundFlows = 0;
 static double g_backgroundRateKbps = 0.0;
+static std::string g_backgroundPattern = "cbr";
+static double g_groupSeparationM = 0.0;
+static int32_t g_departureOverride = -1;
+static int32_t g_separationOverride = -1;
+static int32_t g_returnOverride = -1;
+static int32_t g_reconnectOverride = -1;
+static uint32_t g_separationStep = 0;
 static uint32_t g_partitionStartStep = 0;
 static uint32_t g_partitionEndStep = 0;
 static uint32_t g_reconnectStep = 0;
@@ -149,9 +156,76 @@ struct BackgroundFlow
     uint32_t source;
     uint32_t destination;
     uint16_t port;
+    Ptr<Socket> socket;
+    uint64_t offeredPackets = 0;
+    double firstOffered = 0.0;
+    double lastOffered = 0.0;
+    double queueDelaySeconds = 0.0;
+    uint64_t queueSamples = 0;
 };
 
 static std::vector<BackgroundFlow> g_backgroundFlowDefinitions;
+
+// Preserve the flow identity through IP and MAC packet copies.
+class BackgroundFlowTag : public Tag
+{
+  public:
+    static TypeId GetTypeId()
+    {
+        static TypeId tid = TypeId("ns3::UavBackgroundFlowTag")
+            .SetParent<Tag>().AddConstructor<BackgroundFlowTag>();
+        return tid;
+    }
+    TypeId GetInstanceTypeId() const override { return GetTypeId(); }
+    uint32_t GetSerializedSize() const override { return 4; }
+    void Serialize(TagBuffer buffer) const override { buffer.WriteU32(index); }
+    void Deserialize(TagBuffer buffer) override { index = buffer.ReadU32(); }
+    void Print(std::ostream &output) const override { output << index; }
+    uint32_t index = 0;
+};
+
+static void
+RecordBackgroundQueue(Ptr<const WifiMpdu> mpdu)
+{
+    BackgroundFlowTag tag;
+    if (mpdu->GetPacket()->PeekPacketTag(tag) && tag.index < g_backgroundFlowDefinitions.size())
+    {
+        auto &flow = g_backgroundFlowDefinitions[tag.index];
+        // Queue residence includes MAC backoff, retransmissions and service.
+        flow.queueDelaySeconds += (Simulator::Now() - mpdu->GetTimestamp()).GetSeconds();
+        ++flow.queueSamples;
+    }
+}
+
+static void
+SendBackgroundPacket(uint32_t index)
+{
+    const double elapsed = Simulator::Now().GetSeconds() - g_warmup;
+    const double stop = g_timeSteps + BACKGROUND_STOP_OFFSET;
+    if (elapsed >= stop) { return; }
+    const bool burst = g_backgroundPattern == "bursty";
+    const int64_t period = Seconds(2).GetTimeStep();
+    const int64_t phase = (Simulator::Now() - Seconds(g_warmup) -
+                           Seconds(BACKGROUND_START_OFFSET)).GetTimeStep() % period;
+    if (burst && phase >= Seconds(1).GetTimeStep())
+    {
+        // Integer ticks prevent zero-delay loops at burst boundaries.
+        Simulator::Schedule(TimeStep(period - phase), &SendBackgroundPacket, index);
+        return;
+    }
+    auto &flow = g_backgroundFlowDefinitions[index];
+    auto packet = Create<Packet>(BACKGROUND_PACKET_SIZE);
+    BackgroundFlowTag tag;
+    tag.index = index;
+    packet->AddPacketTag(tag);
+    if (flow.offeredPackets == 0) { flow.firstOffered = Simulator::Now().GetSeconds(); }
+    flow.lastOffered = Simulator::Now().GetSeconds();
+    ++flow.offeredPackets;
+    flow.socket->Send(packet);
+    double interval = BACKGROUND_PACKET_SIZE * 8.0 /
+                      (g_backgroundRateKbps * 1000.0 * (burst ? 2.0 : 1.0));
+    Simulator::Schedule(Seconds(interval), &SendBackgroundPacket, index);
+}
 
 static void
 ConfigurePartitionMobility()
@@ -177,11 +251,15 @@ ConfigurePartitionMobility()
         }
     }
 
-    const uint32_t departureStep = g_timeSteps / 4;
-    const uint32_t separationStep = g_timeSteps / 3;
+    const uint32_t departureStep = g_departureOverride < 0 ? g_timeSteps / 4 : g_departureOverride;
+    const uint32_t separationStep = g_separationOverride < 0 ? g_timeSteps / 3 : g_separationOverride;
+    g_separationStep = separationStep;
     g_partitionStartStep = departureStep;
-    g_partitionEndStep = 2 * g_timeSteps / 3;
-    g_reconnectStep = 5 * g_timeSteps / 6;
+    g_partitionEndStep = g_returnOverride < 0 ? 2 * g_timeSteps / 3 : g_returnOverride;
+    g_reconnectStep = g_reconnectOverride < 0 ? 5 * g_timeSteps / 6 : g_reconnectOverride;
+    NS_ABORT_MSG_IF(!(departureStep < separationStep && separationStep < g_partitionEndStep &&
+                      g_partitionEndStep < g_reconnectStep && g_reconnectStep < g_timeSteps),
+                    "Group event steps must be ordered within the run");
     const double spacing = std::min(10.0, g_commRange / (2.0 * std::ceil(std::sqrt(g_numUavs))));
     const uint32_t groupColumns = static_cast<uint32_t>(std::ceil(std::sqrt(groupSize)));
     const double groupWidth = (groupColumns - 1) * spacing;
@@ -202,8 +280,12 @@ ConfigurePartitionMobility()
     mobility.Install(g_nodes);
     const double centerX = g_xMax / 2.0;
     const double centerY = g_yMax / 2.0;
-    const double leftCenterX = groupWidth / 2.0 + spacing;
-    const double rightCenterX = g_xMax - groupWidth / 2.0 - spacing;
+    const double separation = g_groupSeparationM > 0.0 ? g_groupSeparationM :
+                              g_xMax - groupWidth - 2.0 * spacing;
+    NS_ABORT_MSG_IF(separation - groupWidth <= g_commRange ||
+                    separation + groupWidth > g_xMax, "Invalid minimum group separation");
+    const double leftCenterX = centerX - separation / 2.0;
+    const double rightCenterX = centerX + separation / 2.0;
     std::vector<uint32_t> rank(g_numUavs);
     for (uint32_t index = 0; index < g_partitionGroupA.size(); ++index)
     {
@@ -221,11 +303,26 @@ ConfigurePartitionMobility()
         Vector separated = gridPosition(rank[nodeId], group.size(),
                                         groupA ? leftCenterX : rightCenterX, centerY);
         Ptr<WaypointMobilityModel> model = g_nodes.Get(nodeId)->GetObject<WaypointMobilityModel>();
-        model->AddWaypoint(Waypoint(Seconds(0.0), initial));
-        model->AddWaypoint(Waypoint(Seconds(g_warmup + departureStep + 1.0), initial));
-        model->AddWaypoint(Waypoint(Seconds(g_warmup + separationStep + 1.0), separated));
-        model->AddWaypoint(Waypoint(Seconds(g_warmup + g_partitionEndStep + 1.0), separated));
-        model->AddWaypoint(Waypoint(Seconds(g_warmup + g_reconnectStep + 1.0), initial));
+        if (g_scenarioMode == "group-control")
+        {
+            model->AddWaypoint(Waypoint(Seconds(0.0), initial));
+        }
+        else if (g_scenarioMode == "crossing-swarms")
+        {
+            Vector opposite = separated;
+            opposite.x = g_xMax - separated.x;
+            model->AddWaypoint(Waypoint(Seconds(0.0), separated));
+            model->AddWaypoint(Waypoint(Seconds(g_warmup + separationStep + 1.0), separated));
+            model->AddWaypoint(Waypoint(Seconds(g_warmup + g_reconnectStep + 1.0), opposite));
+        }
+        else
+        {
+            model->AddWaypoint(Waypoint(Seconds(0.0), initial));
+            model->AddWaypoint(Waypoint(Seconds(g_warmup + departureStep + 1.0), initial));
+            model->AddWaypoint(Waypoint(Seconds(g_warmup + separationStep + 1.0), separated));
+            model->AddWaypoint(Waypoint(Seconds(g_warmup + g_partitionEndStep + 1.0), separated));
+            model->AddWaypoint(Waypoint(Seconds(g_warmup + g_reconnectStep + 1.0), initial));
+        }
     }
 }
 
@@ -895,27 +992,26 @@ WriteBackgroundFlowMetrics(Ptr<FlowMonitor> monitor, FlowMonitorHelper &helper)
     output << std::fixed << std::setprecision(6)
            << "flow_index,source,destination,port,configured_offered_rate_kbps,"
               "observed_offered_rate_kbps,tx_packets,rx_packets,lost_packets,pdr,"
-              "mean_delay_ms,throughput_mbps,aggregate_throughput_mbps,jain_fairness\n";
+              "mean_delay_ms,throughput_mbps,aggregate_throughput_mbps,jain_fairness,"
+              "network_tx_packets,queue_delay_ms,queue_samples,traffic_pattern\n";
     for (uint32_t index = 0; index < metrics.size(); ++index)
     {
         const BackgroundFlow &flow = g_backgroundFlowDefinitions[index];
         const Metrics &row = metrics[index];
-        double txDuration = std::isfinite(row.firstTxSeconds) && row.lastTxSeconds > row.firstTxSeconds
-                                ? row.lastTxSeconds - row.firstTxSeconds
-                                : 0.0;
-        double observedRateKbps = txDuration > 0.0
-                                      ? row.txPackets * BACKGROUND_PACKET_SIZE * 8.0 /
-                                            txDuration / 1000.0
-                                      : 0.0;
-        double pdr = row.txPackets > 0 ? static_cast<double>(row.rxPackets) / row.txPackets : 0.0;
+        double observedRateKbps = flow.offeredPackets * BACKGROUND_PACKET_SIZE * 8.0 /
+                                  observationDuration / 1000.0;
+        double pdr = flow.offeredPackets > 0 ? static_cast<double>(row.rxPackets) / flow.offeredPackets : 0.0;
         double meanDelayMs = row.rxPackets > 0
                                  ? row.delaySumSeconds * 1000.0 / row.rxPackets
                                  : 0.0;
-        uint64_t lostPackets = row.txPackets - row.rxPackets;
+        uint64_t lostPackets = flow.offeredPackets - row.rxPackets;
         output << index << ',' << flow.source << ',' << flow.destination << ',' << flow.port << ','
-               << g_backgroundRateKbps << ',' << observedRateKbps << ',' << row.txPackets << ','
+               << g_backgroundRateKbps << ',' << observedRateKbps << ',' << flow.offeredPackets << ','
                << row.rxPackets << ',' << lostPackets << ',' << pdr << ',' << meanDelayMs << ','
-               << throughputMbps[index] << ',' << aggregateThroughputMbps << ',' << fairness << '\n';
+               << throughputMbps[index] << ',' << aggregateThroughputMbps << ',' << fairness << ','
+               << row.txPackets << ',';
+        if (flow.queueSamples > 0) { output << flow.queueDelaySeconds * 1000.0 / flow.queueSamples; }
+        output << ',' << flow.queueSamples << ',' << g_backgroundPattern << '\n';
     }
 }
 
@@ -934,7 +1030,9 @@ static void
 WriteScenarioJson(const std::string &runName)
 {
     std::ofstream f(g_outputDir + "/scenario.json");
-    const std::string mobilityIdentity = g_scenarioMode == "partition-reconnect"
+    const std::string mobilityIdentity = (g_scenarioMode == "partition-reconnect" ||
+                                          g_scenarioMode == "crossing-swarms" ||
+                                          g_scenarioMode == "group-control")
                                              ? "event-controlled-waypoint"
                                              : g_mobility;
     f << std::fixed << std::setprecision(4);
@@ -955,7 +1053,7 @@ WriteScenarioJson(const std::string &runName)
       << "  \"dest_id\": " << g_destId << ",\n"
       << "  \"scenario_mode\": \"" << g_scenarioMode << "\",\n"
       << "  \"partition_start_step\": ";
-    if (g_scenarioMode == "partition-reconnect")
+    if (g_scenarioMode == "partition-reconnect" || g_scenarioMode == "crossing-swarms")
     {
         f << g_partitionStartStep;
     }
@@ -964,7 +1062,7 @@ WriteScenarioJson(const std::string &runName)
         f << "null";
     }
     f << ",\n  \"partition_end_step\": ";
-    if (g_scenarioMode == "partition-reconnect")
+    if (g_scenarioMode == "partition-reconnect" || g_scenarioMode == "crossing-swarms")
     {
         f << g_partitionEndStep;
     }
@@ -973,7 +1071,7 @@ WriteScenarioJson(const std::string &runName)
         f << "null";
     }
     f << ",\n  \"reconnect_step\": ";
-    if (g_scenarioMode == "partition-reconnect")
+    if (g_scenarioMode == "partition-reconnect" || g_scenarioMode == "crossing-swarms")
     {
         f << g_reconnectStep;
     }
@@ -986,6 +1084,13 @@ WriteScenarioJson(const std::string &runName)
     f << ", \"group_b\": ";
     WriteNodeList(f, g_partitionGroupB);
     f << "},\n"
+      << "  \"group_separation_step\": " << g_separationStep << ",\n"
+      << "  \"group_separation_m\": " << g_groupSeparationM << ",\n"
+      << "  \"group_heading_axis\": \"x\",\n"
+      << "  \"background_pattern\": \"" << g_backgroundPattern << "\",\n"
+      << "  \"background_duty_cycle\": " << (g_backgroundPattern == "bursty" ? 0.5 : 1.0) << ",\n"
+      << "  \"wifi_phy_rate_mbps\": 6.0,\n"
+      << "  \"queue_delay_semantics\": \"MAC queue residence including backoff/retry/service\",\n"
       << "  \"background_flows\": " << g_backgroundFlows << ",\n"
       << "  \"background_rate_kbps\": " << g_backgroundRateKbps << ",\n"
       << "  \"configured_total_offered_load_kbps\": "
@@ -1055,7 +1160,21 @@ int main(int argc, char *argv[])
     cmd.AddValue("backgroundFlows", "Number of measured background UDP flows", g_backgroundFlows);
     cmd.AddValue("backgroundRateKbps", "Offered rate per background flow (kbps)",
                  g_backgroundRateKbps);
+    cmd.AddValue("backgroundPattern", "cbr | bursty (1s on/1s off, same mean offered rate)", g_backgroundPattern);
+    cmd.AddValue("groupSeparation", "Distance between group centers (m); 0 uses area", g_groupSeparationM);
+    cmd.AddValue("groupDepartureStep", "Start separation movement", g_departureOverride);
+    cmd.AddValue("groupSeparationStep", "Groups fully separated", g_separationOverride);
+    cmd.AddValue("groupReturnStep", "Start reconnect movement", g_returnOverride);
+    cmd.AddValue("groupReconnectStep", "Groups reunited or crossed", g_reconnectOverride);
     cmd.Parse(argc, argv);
+    NS_ABORT_MSG_IF(g_backgroundPattern != "cbr" && g_backgroundPattern != "bursty", "Invalid backgroundPattern");
+    NS_ABORT_MSG_IF(!std::isfinite(g_backgroundRateKbps) || !std::isfinite(g_groupSeparationM) ||
+                    g_backgroundRateKbps < 0 || g_groupSeparationM < 0, "Invalid traffic or separation");
+    NS_ABORT_MSG_IF(!std::isfinite(g_gmAlpha) || g_gmAlpha < 0 || g_gmAlpha > 1 ||
+                    !std::isfinite(g_rwpSpeedMin) || !std::isfinite(g_rwpSpeedMax) ||
+                    !std::isfinite(g_zMin) || !std::isfinite(g_zMax) ||
+                    g_rwpSpeedMin <= 0 || g_rwpSpeedMax < g_rwpSpeedMin ||
+                    g_zMax <= g_zMin, "Invalid mobility bounds");
 
     NS_ABORT_MSG_IF(g_numUavs < 2, "numUavs must be at least 2");
     if (g_destId >= g_numUavs)
@@ -1070,7 +1189,9 @@ int main(int argc, char *argv[])
                              g_routingStrategy == "edge-sage";
     bool supportedScenario = g_scenarioMode == "standard" ||
                              g_scenarioMode == "partition-reconnect" ||
-                             g_scenarioMode == "high-load";
+                             g_scenarioMode == "high-load" ||
+                             g_scenarioMode == "crossing-swarms" ||
+                             g_scenarioMode == "group-control";
     NS_ABORT_MSG_IF(!supportedStrategy, "Unsupported routing strategy: " << g_routingStrategy);
     NS_ABORT_MSG_IF(!supportedScenario, "Unsupported scenario mode: " << g_scenarioMode);
     bool validBackground = (g_backgroundFlows == 0 && g_backgroundRateKbps == 0.0) ||
@@ -1098,7 +1219,8 @@ int main(int argc, char *argv[])
     g_nodes.Create(g_numUavs);
     g_prevDegree.assign(g_numUavs, 0);
 
-    if (g_scenarioMode == "partition-reconnect")
+    if (g_scenarioMode == "partition-reconnect" || g_scenarioMode == "crossing-swarms" ||
+        g_scenarioMode == "group-control")
     {
         ConfigurePartitionMobility();
     }
@@ -1198,6 +1320,8 @@ int main(int argc, char *argv[])
     {
         Ptr<WifiNetDevice> dev = DynamicCast<WifiNetDevice>(devices.Get(i));
         g_macToNode[Mac48Address::ConvertFrom(dev->GetAddress())] = i;
+        dev->GetMac()->GetTxop()->GetWifiMacQueue()->TraceConnectWithoutContext(
+            "Dequeue", MakeCallback(&RecordBackgroundQueue));
     }
 
     OlsrHelper olsrHelper;
@@ -1282,29 +1406,23 @@ int main(int argc, char *argv[])
     {
         double appStart = g_warmup + BACKGROUND_START_OFFSET;
         double appStop = g_warmup + g_timeSteps + BACKGROUND_STOP_OFFSET;
-        double intervalSeconds = BACKGROUND_PACKET_SIZE * 8.0 /
-                                 (g_backgroundRateKbps * 1000.0);
         for (uint32_t index = 0; index < g_backgroundFlows; ++index)
         {
             uint32_t source = index % g_numUavs;
             uint32_t destination = (source + std::max<uint32_t>(1, g_numUavs / 2)) % g_numUavs;
             uint16_t port = static_cast<uint16_t>(BACKGROUND_PORT_BASE + index);
-            g_backgroundFlowDefinitions.push_back({source, destination, port});
-
-            UdpServerHelper server(port);
-            ApplicationContainer serverApp = server.Install(g_nodes.Get(destination));
+            PacketSinkHelper sink("ns3::UdpSocketFactory", InetSocketAddress(Ipv4Address::GetAny(), port));
+            auto serverApp = sink.Install(g_nodes.Get(destination));
             serverApp.Start(Seconds(appStart - 0.1));
             serverApp.Stop(Seconds(appStop + 0.1));
-
-            UdpClientHelper client(g_ifaces.GetAddress(destination), port);
-            client.SetAttribute("MaxPackets", UintegerValue(std::numeric_limits<uint32_t>::max()));
-            client.SetAttribute("Interval", TimeValue(Seconds(intervalSeconds)));
-            client.SetAttribute("PacketSize", UintegerValue(BACKGROUND_PACKET_SIZE));
-            ApplicationContainer clientApp = client.Install(g_nodes.Get(source));
-            clientApp.Start(Seconds(appStart));
-            clientApp.Stop(Seconds(appStop));
+            auto socket = Socket::CreateSocket(g_nodes.Get(source), udpTid);
+            socket->Bind();
+            socket->Connect(InetSocketAddress(g_ifaces.GetAddress(destination), port));
+            g_backgroundFlowDefinitions.push_back({source, destination, port, socket});
+            Simulator::Schedule(Seconds(appStart), &SendBackgroundPacket, index);
         }
     }
+
     if (g_enableDataFlow || g_backgroundFlows > 0)
     {
         flowMonitor = flowMonitorHelper.InstallAll();

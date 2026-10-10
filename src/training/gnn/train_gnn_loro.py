@@ -53,6 +53,8 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--batch-size", type=int, default=16)
     p.add_argument("--patience", type=int, default=20)
     p.add_argument("--seed", type=int, default=42)
+    p.add_argument("--include-purged-test", action="store_true",
+                   help="Evaluate all eligible times of wholly held-out seeds, including purge boundaries")
     return p.parse_args()
 
 
@@ -72,6 +74,11 @@ def main() -> None:
     train_runs = [r.strip() for r in args.train_runs.split(",") if r.strip()]
     test_runs = [r.strip() for r in (args.test_runs or args.test_run).split(",") if r.strip()]
 
+    from src.utils.experiment import seed_group
+
+    if {seed_group(run) for run in train_runs} & {seed_group(run) for run in test_runs}:
+        raise ValueError("Training and test runs must have disjoint seed groups")
+
     output_dir = args.output_dir or (Path("outputs/loro") / model_id / "_".join(test_runs))
     output_dir.mkdir(parents=True, exist_ok=True)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -82,8 +89,9 @@ def main() -> None:
     for run in train_runs:
         train_graphs.extend(load_run_split(args.data_root, run, "train"))
         val_graphs.extend(load_run_split(args.data_root, run, "val"))
+    test_splits = ("train", "val", "test", "purged") if args.include_purged_test else ("train", "val", "test")
     test_graphs = {
-        run: [g for split in ("train", "val", "test") for g in load_run_split(args.data_root, run, split)]
+        run: [g for split in test_splits for g in load_run_split(args.data_root, run, split)]
         for run in test_runs
     }
 

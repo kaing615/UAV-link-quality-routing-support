@@ -108,6 +108,8 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--model", type=str, default="xgb", choices=list(_MODEL_NAMES.keys()))
     p.add_argument("--output-dir", type=Path, default=None)
     p.add_argument("--random-state", type=int, default=42)
+    p.add_argument("--include-purged-test", action="store_true",
+                   help="Evaluate all eligible times of wholly held-out seeds, including purge boundaries")
     return p.parse_args()
 
 
@@ -117,6 +119,11 @@ def main() -> None:
     model_name = _MODEL_NAMES[model_id]
     train_runs = [r.strip() for r in args.train_runs.split(",") if r.strip()]
     test_runs = [r.strip() for r in (args.test_runs or args.test_run).split(",") if r.strip()]
+
+    from src.utils.experiment import seed_group
+
+    if {seed_group(run) for run in train_runs} & {seed_group(run) for run in test_runs}:
+        raise ValueError("Training and test runs must have disjoint seed groups")
 
     output_dir = args.output_dir or (Path("outputs/loro") / model_id / "_".join(test_runs))
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -147,7 +154,8 @@ def main() -> None:
     val_metrics["run_name"] = "__validation__"
     metric_rows = [val_metrics]
     for test_run in test_runs:
-        test_df = load_run_rows(args.data_root, test_run, ["train", "val", "test"])
+        test_splits = ["train", "val", "test", "purged"] if args.include_purged_test else ["train", "val", "test"]
+        test_df = load_run_rows(args.data_root, test_run, test_splits)
         test_metrics, test_preds = evaluate_split(model, model_id, model_name, test_df, "test", threshold=threshold)
         test_metrics["run_name"] = test_run
         metric_rows.append(test_metrics)

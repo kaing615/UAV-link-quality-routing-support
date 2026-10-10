@@ -71,13 +71,15 @@ def validate_ns3_binary(binary: Path, source_root: Path = Path("simulation/ns3")
         raise ValueError("ns-3 binary/source mismatch; rebuild before running experiments")
 
 
-def validate_test_predictions(run_root: Path, predictions_csv: Path) -> None:
+def validate_test_predictions(
+    run_root: Path, predictions_csv: Path, *, test_splits: tuple[str, ...] = ("test",)
+) -> None:
     """Require the exact held-out edge identities and labels for every model."""
     import pandas as pd
 
     expected = pd.read_csv(run_root / "features" / "edges_labeled.csv")
     splits = pd.read_csv(run_root / "splits" / "time_splits.csv")
-    expected = expected[expected["time"].isin(splits.loc[splits["split"] == "test", "time"])]
+    expected = expected[expected["time"].isin(splits.loc[splits["split"].isin(test_splits), "time"])]
     actual = pd.read_csv(predictions_csv)
     identity = ["time", "src", "dst"]
     if not set(identity) <= set(actual):
