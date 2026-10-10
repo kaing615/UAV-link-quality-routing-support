@@ -205,3 +205,15 @@ UAV-link-quality-routing-support
 ├── outputs/                  # (DVC-managed) Run outputs, models, plots, aggregates
 └── scripts/                  # Dataset, training, routing, and utility scripts
 ```
+
+## License
+
+Copyright 2026 UAV-link-quality-routing-support contributors.
+
+Project-authored source code is licensed under the [Apache License 2.0](LICENSE).
+Third-party libraries and components, including ns-3, retain their own licenses.
+
+## Security
+
+See the [security policy](SECURITY.md) for private vulnerability reporting and
+supported versions. Do not disclose vulnerabilities or credentials in public issues.

@@ -239,3 +239,16 @@ UAV-link-quality-routing-support
 ├── outputs/                  # (DVC quản lý) Kết quả chạy, models, plots, aggregates
 └── scripts/                  # Script chạy dataset, train, routing và tiện ích
 ```
+
+## Giấy phép
+
+Copyright 2026 UAV-link-quality-routing-support contributors.
+
+Mã nguồn do dự án cung cấp được phát hành theo [Apache License 2.0](LICENSE).
+Thư viện và thành phần bên thứ ba, bao gồm ns-3, giữ giấy phép riêng của chúng.
+
+## Bảo mật
+
+Xem [chính sách bảo mật](SECURITY.md) để báo cáo lỗ hổng riêng tư và biết phạm vi
+phiên bản được hỗ trợ. Không đăng thông tin lỗ hổng hoặc thông tin đăng nhập trong
+issue công khai.

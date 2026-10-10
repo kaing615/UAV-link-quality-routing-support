@@ -3,6 +3,8 @@ name = "uav-gnn"
 version = "1.0.0"
 description = "UAV Link Quality Prediction with Graph Neural Networks"
 requires-python = ">=3.12"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
 
 [tool.ruff]
 target-version = "py312"
