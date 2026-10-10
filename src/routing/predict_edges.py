@@ -17,17 +17,21 @@ EDGE_IN = 7
 
 def attach_prediction_identity(
     predictions_csv: Path,
-    test_pt: Path,
+    test_pt: Path | list[Path],
     output_csv: Path,
     force: bool = False,
 ) -> Path:
-    """Attach ``time/src/dst`` to saved GNN scores using test graph order."""
-    manifest = fingerprint({}, [predictions_csv, test_pt, Path(__file__)])
+    """Attach ``time/src/dst`` to saved GNN scores in the supplied graph file order."""
+    graph_paths = [test_pt] if isinstance(test_pt, Path) else test_pt
+    manifest = fingerprint(
+        {"graph_order": [str(path.resolve()) for path in graph_paths]},
+        [predictions_csv, *graph_paths, Path(__file__)],
+    )
     manifest_path = output_csv.with_suffix(".experiment.json")
     if not force and cache_matches(manifest_path, manifest, [output_csv]):
         return output_csv
     predictions = pd.read_csv(predictions_csv)
-    graphs = torch.load(test_pt, weights_only=False)
+    graphs = [graph for path in graph_paths for graph in torch.load(path, weights_only=False)]
     identity_rows = []
     labels = []
     for graph in graphs:

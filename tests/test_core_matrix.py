@@ -8,6 +8,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest
+import torch
 from scripts.analysis.analyze_core_matrix import (
     aggregate_runs,
     event_metrics,
@@ -18,6 +19,133 @@ from scripts.analysis.analyze_core_matrix import (
 from scripts.dataset.run_core_matrix import build_core_jobs, held_seed_groups, ns3_command
 
 from src.utils.experiment import validate_test_predictions
+
+
+def _write_held_seed_run(root):
+    for part in ("features", "splits", "graph_dataset"):
+        (root / part).mkdir(parents=True, exist_ok=True)
+    times = {"train": 0, "val": 2, "test": 4, "purged": 1}
+    labels = pd.DataFrame(
+        [
+            {
+                "time": time,
+                "src": 10,
+                "dst": 20,
+                "label": time % 2,
+                "distance": 100.0,
+                "rssi": -60.0,
+                "snr": 30.0,
+                "delay": 2.0,
+                "packet_loss": 0.0,
+                "relative_speed": 1.0,
+                "throughput": 10.0,
+            }
+            for time in sorted(times.values())
+        ]
+    )
+    labels.to_csv(root / "features/edges_labeled.csv", index=False)
+    pd.DataFrame([{"time": time, "split": split} for split, time in times.items()]).to_csv(
+        root / "splits/time_splits.csv", index=False
+    )
+    for split, time in times.items():
+        torch.save(
+            [
+                {
+                    "time": time,
+                    "node_ids": [10, 20],
+                    "edge_label_index": torch.tensor([[0], [1]]),
+                    "edge_label": torch.tensor([time % 2]),
+                }
+            ],
+            root / "graph_dataset" / f"{split}.pt",
+        )
+    return labels, times
+
+
+def test_loro_baseline_predictions_keep_full_run_edge_identity(tmp_path):
+    from src.training.baselines.common import evaluate_split
+    from src.training.baselines.loro_baselines import load_run_rows
+    from src.training.baselines.persistence_baseline import PersistenceModel
+
+    root = tmp_path / "run"
+    labels, times = _write_held_seed_run(root)
+    rows = load_run_rows(tmp_path, "run", list(times))
+    _, predictions = evaluate_split(PersistenceModel("qos", 20, 0.1, 5), "persistence", "Persistence", rows, "test")
+    assert predictions[["time", "src", "dst", "label"]].equals(labels[["time", "src", "dst", "label"]])
+    path = tmp_path / "predictions.csv"
+    predictions.to_csv(path, index=False)
+    assert validate_test_predictions(root, path, test_splits=tuple(times)) == path
+
+
+def test_full_run_gnn_identity_uses_all_splits_in_loader_order(tmp_path):
+    root = tmp_path / "run"
+    _, times = _write_held_seed_run(root)
+    path = tmp_path / "predictions.csv"
+    pd.DataFrame(
+        {"y_true": [time % 2 for time in times.values()], "y_pred": [0, 0, 0, 1], "pred_score": [0.1, 0.2, 0.3, 0.9]}
+    ).to_csv(path, index=False)
+    identified = validate_test_predictions(root, path, test_splits=tuple(times))
+    result = pd.read_csv(identified)
+    assert result["time"].tolist() == list(times.values())
+    assert result["pred_score"].tolist() == [0.1, 0.2, 0.3, 0.9]
+    # Row counts alone cannot detect a changed graph/CSV order.
+    bad = pd.read_csv(path)
+    bad.loc[0, "y_true"] = 1
+    bad.to_csv(path, index=False)
+    with pytest.raises(ValueError, match="edge order"):
+        validate_test_predictions(root, path, test_splits=tuple(times))
+
+
+def test_core_report_handles_baseline_and_unidentified_gnn_exports(tmp_path, monkeypatch):
+    from types import SimpleNamespace
+
+    from scripts.analysis import analyze_core_matrix as analysis
+
+    job = SimpleNamespace(run_name="stress_test_gm_s70001", seed=70001, family="density", condition="control")
+    raw, data, outputs, reports = [tmp_path / name for name in ("raw", "data", "outputs", "reports")]
+    directory = raw / job.run_name
+    directory.mkdir(parents=True)
+    reports.mkdir()
+    (directory / "scenario.json").write_text(
+        json.dumps({"num_uavs": 2, "source_id": 10, "dest_id": 20, "scenario_mode": "standard"})
+    )
+    pd.DataFrame([{"time": time, "src": 10, "dst": 20, "connected": 1} for time in range(10)]).to_csv(
+        directory / "edges.csv", index=False
+    )
+    monkeypatch.setattr(
+        analysis,
+        "manipulation_report",
+        lambda *args: pd.DataFrame(
+            [{"run_name": job.run_name, "seed": job.seed, "family": job.family, "condition": job.condition}]
+        ),
+    )
+    monkeypatch.setattr(
+        analysis,
+        "load_raw_edges",
+        lambda *args: {time: {(10, 20): {"delay": 2, "packet_loss": 0, "valid": True}} for time in range(10)},
+    )
+    for target in ("qos", "survival"):
+        for horizon in (1, 2, 3, 5):
+            labels, times = _write_held_seed_run(data / target / f"k{horizon}" / job.run_name)
+            for model in ("logreg", "edge-sage"):
+                fold = outputs / model / target / f"k{horizon}" / f"seed{job.seed}"
+                fold.mkdir(parents=True)
+                (fold / "metadata.json").write_text(json.dumps({"train_runs": ["stress_train_gm_s79999"]}))
+                if model == "logreg":
+                    predictions = labels.assign(pred_label=labels["label"], pred_score=labels["label"] * 0.8 + 0.1)
+                else:
+                    truth = [time % 2 for time in times.values()]
+                    predictions = pd.DataFrame(
+                        {"y_true": truth, "y_pred": truth, "pred_score": [value * 0.8 + 0.1 for value in truth]}
+                    )
+                predictions.to_csv(fold / f"test_predictions_{job.run_name}.csv", index=False)
+    # One seed intentionally falls short of the final coverage gate, after scoring every export.
+    with pytest.raises(ValueError, match="Incomplete experimental seed coverage"):
+        analysis.generate_report([job], raw, data, outputs, reports, ["logreg", "edge-sage"])
+    result = pd.read_csv(reports / "metrics_runs.csv")
+    assert len(result) == 16
+    assert result["n_samples"].eq(4).all()
+    assert result["macro_f1"].eq(1).all()
 
 
 @pytest.mark.parametrize(

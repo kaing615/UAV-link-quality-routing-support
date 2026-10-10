@@ -33,7 +33,7 @@ def load_run_rows(data_root: Path, run_name: str, splits: list[str] | None) -> p
         time_splits = pd.read_csv(run_root / "splits" / "time_splits.csv")
         keep_times = set(time_splits[time_splits["split"].isin(splits)]["time"])
         df = df[df["time"].isin(keep_times)]
-    return df[FEATURE_COLUMNS + ["label"]].reset_index(drop=True)
+    return df.reset_index(drop=True)
 
 
 def build_model(model_id: str, pos_weight: float, random_state: int):

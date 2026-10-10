@@ -251,8 +251,8 @@ def generate_report(jobs, raw_root: Path, data_root: Path, output_root: Path, re
                         from src.utils.experiment import seed_group
                         if any(seed_group(run) == seed_group(job.run_name) for run in model_metadata["train_runs"]):
                             raise ValueError(f"Seed leakage in {fold}")
-                        predictions = pd.read_csv(path)
-                    validate_test_predictions(run_root, path, test_splits=("train", "val", "test", "purged"))
+                    path = validate_test_predictions(run_root, path, test_splits=("train", "val", "test", "purged"))
+                    predictions = pd.read_csv(path).rename(columns={"label": "y_true", "pred_label": "y_pred"})
                     predictions["horizon"] = horizon
                     rows.append({"family": job.family, "condition": job.condition, "seed": job.seed,
                                  "run_name": job.run_name, "model_id": model_id, "target": target,

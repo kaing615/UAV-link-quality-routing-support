@@ -73,8 +73,8 @@ def validate_ns3_binary(binary: Path, source_root: Path = Path("simulation/ns3")
 
 def validate_test_predictions(
     run_root: Path, predictions_csv: Path, *, test_splits: tuple[str, ...] = ("test",)
-) -> None:
-    """Require the exact held-out edge identities and labels for every model."""
+) -> Path:
+    """Require the exact held-out edge cohort and return its identified predictions."""
     import pandas as pd
 
     expected = pd.read_csv(run_root / "features" / "edges_labeled.csv")
@@ -86,8 +86,10 @@ def validate_test_predictions(
         from src.routing.predict_edges import attach_prediction_identity
 
         identified = predictions_csv.with_name(f"{predictions_csv.stem}_identified.csv")
-        attach_prediction_identity(predictions_csv, run_root / "graph_dataset" / "test.pt", identified)
+        graph_paths = [run_root / "graph_dataset" / f"{split}.pt" for split in test_splits]
+        attach_prediction_identity(predictions_csv, graph_paths, identified)
         actual = pd.read_csv(identified)
+        predictions_csv = identified
     if "y_true" in actual:
         actual = actual.rename(columns={"y_true": "label"})
     columns = [*identity, "label"]
@@ -100,3 +102,4 @@ def validate_test_predictions(
         pd.testing.assert_frame_equal(expected, actual, check_dtype=False)
     except AssertionError as error:
         raise ValueError(f"Test prediction cohort differs from labeled test edges: {predictions_csv}") from error
+    return predictions_csv
