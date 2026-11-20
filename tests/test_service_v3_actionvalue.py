@@ -132,3 +132,10 @@ def test_build_selection_records_every_choice():
     assert s['horizon'] == 20 and s['risk_off'] == s['risk_on'] / 2 and s['labelled_bursts'] == 18
     assert s['lambda_per_m'] in av.LAMBDA_GRID and s['gate']['motion_cost_weight'] == s['lambda_per_m']
     assert len(s['loso']['predictions']) == 18 and av.Ridge.from_dict(s['ridge'])
+
+
+def test_spearman_matches_scipy_with_ties():
+    scipy_stats = pytest.importorskip('scipy.stats')
+    a, b = [1, 2, 2, 3, 5, 4, 7], [2, 1, 3, 3, 6, 5, 9]
+    assert av.spearman(a, b) == pytest.approx(scipy_stats.spearmanr(a, b).statistic)
+    assert av.spearman([1, 1, 1], [1, 2, 3]) is None

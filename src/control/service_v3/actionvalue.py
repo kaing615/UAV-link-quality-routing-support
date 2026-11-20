@@ -89,11 +89,18 @@ class Ridge:
         return cls(value['mean'], value['scale'], value['coef'], value['intercept'], value['alpha'])
 
 
+def _ranks(values):
+    v = np.asarray(values, float); ranks = np.empty(len(v)); ranks[v.argsort(kind='mergesort')] = np.arange(len(v))
+    for value in np.unique(v):  # average rank for ties
+        ranks[v == value] = ranks[v == value].mean()
+    return ranks
+
+
 def spearman(a, b):
-    from scipy.stats import spearmanr
+    """Spearman rho (Pearson on average ranks); numpy only so the server venv needs no scipy."""
     if len(a) < 3 or len(set(a)) < 2 or len(set(b)) < 2:
         return None
-    return float(spearmanr(a, b).statistic)
+    return float(np.corrcoef(_ranks(a), _ranks(b))[0, 1])
 
 
 def loso_predictions(rows):
