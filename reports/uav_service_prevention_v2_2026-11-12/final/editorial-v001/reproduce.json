@@ -1,0 +1,159 @@
+{
+  "schema": "service-v2-editorial-reproduce-v1",
+  "automatic_simulation": false,
+  "fitting": false,
+  "metric_recomputation": false,
+  "original_roots": {
+    "study": "/home/sac/uav-service/2026-11-12-service-prevention-v2",
+    "runtime": "/home/sac/uav-service/2026-11-11-path-control/.venv",
+    "ns3_libraries": "/home/sac/uav-service/2026-11-11-path-control/runtime/lib"
+  },
+  "relative_mapping": [
+    {
+      "original_root": "/home/sac/uav-service/2026-11-12-service-prevention-v2",
+      "repo_relative": ".",
+      "scope": "formal raw/analysis/queue/frozen and corrected pilot snapshots: archive members preserve repository-relative paths"
+    },
+    {
+      "original_root": "/home/sac/uav-service/2026-11-12-service-prevention-v2",
+      "repo_relative": "reports/uav_service_prevention_v2_2026-11-12/remote-evidence/development-v003/2026-11-12-service-prevention-v2",
+      "scope": "full 176-episode development chronology, frozen phase packages, source and retained simulator binaries"
+    },
+    {
+      "original_root": "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/engineering/development-diagnostic-v001",
+      "repo_relative": "reports/uav_service_prevention_v2_2026-11-12/remote-evidence/development-diagnostic-v001/development-diagnostic-v001",
+      "scope": "development diagnostics"
+    },
+    {
+      "original_root": "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/engineering/pilot-engineering-v003",
+      "repo_relative": "reports/uav_service_prevention_v2_2026-11-12/remote-evidence/pilot-engineering-v003",
+      "scope": "corrected engineering audit"
+    },
+    {
+      "original_root": "/home/sac/uav-service/2026-11-12-service-prevention-v2",
+      "repo_relative": "reports/uav_service_prevention_v2_2026-11-12/remote-evidence/pilot-failure-v001",
+      "scope": "failed first pilot chronology"
+    },
+    {
+      "original_root": "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12",
+      "repo_relative": "reports/uav_service_prevention_v2_2026-11-12/remote-evidence/pilot-engineering-v002-complete",
+      "scope": "retained v002 comparator audit"
+    }
+  ],
+  "retained_input_inventory": "tables/retained-inventory.json",
+  "exact_revalidation_reanalysis_argv": {
+    "validate": {
+      "recorded_argv": [
+        "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+        "-m",
+        "src.control.service_v2.cli",
+        "validate",
+        "--protocol",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/formal/protocol.json",
+        "--run-root",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/runs/formal",
+        "--output",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/validation/formal.json"
+      ],
+      "fresh_output_argv": [
+        "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+        "-m",
+        "src.control.service_v2.cli",
+        "validate",
+        "--protocol",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/formal/protocol.json",
+        "--run-root",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/runs/formal",
+        "--output",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/reproduction-fresh-v001/formal-validation.json"
+      ],
+      "cwd": "/home/sac/uav-service/2026-11-12-service-prevention-v2/source-runtime-v003",
+      "environment": {
+        "LD_LIBRARY_PATH": "/home/sac/uav-service/2026-11-11-path-control/runtime/lib",
+        "MKL_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1"
+      },
+      "recorded_direct_exit": 0,
+      "destination_rule": "Create fresh parent only if absent; refuse an existing output. No launch, fitting or collection.",
+      "local_relocation_rule": "On Linux with matching retained runtime, map protocol/run-root via relative_mapping and retain original frozen bytes. Original remote cwd/runtime/environment above are authoritative."
+    },
+    "analyze": {
+      "recorded_argv": [
+        "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+        "-m",
+        "src.control.service_v2.cli",
+        "analyze",
+        "--protocol",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/formal/protocol.json",
+        "--run-root",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/runs/formal",
+        "--output",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/formal-analysis"
+      ],
+      "fresh_output_argv": [
+        "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+        "-m",
+        "src.control.service_v2.cli",
+        "analyze",
+        "--protocol",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/formal/protocol.json",
+        "--run-root",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/runs/formal",
+        "--output",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/reproduction-fresh-v001/formal-analysis"
+      ],
+      "cwd": "/home/sac/uav-service/2026-11-12-service-prevention-v2/source-runtime-v003",
+      "environment": {
+        "LD_LIBRARY_PATH": "/home/sac/uav-service/2026-11-11-path-control/runtime/lib",
+        "MKL_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1"
+      },
+      "recorded_direct_exit": 0,
+      "destination_rule": "Create fresh parent only if absent; refuse an existing output. No launch, fitting or collection.",
+      "local_relocation_rule": "On Linux with matching retained runtime, map protocol/run-root via relative_mapping and retain original frozen bytes. Original remote cwd/runtime/environment above are authoritative."
+    }
+  },
+  "initial_frozen_render": {
+    "repo_relative": "reports/uav_service_prevention_v2_2026-11-12/final/frozen-render-v001",
+    "report_sha256": "e35622f1045f56ae8e50f26bf71a938c92b56a54e096fdac0afc79e2d1c1be26",
+    "inventory_sha256": "ef488fe8f348568b270afe92925d7f67d2f69adfca41bd4e1a1826c83e09e187"
+  },
+  "input_hashes": {
+    "analysis_manifest": "e3d2a0ae2784db187311f3f65b16cd7573ad5adc052071e11628448ac17d4832",
+    "engineering_manifest": "5e79055b30657764c78fc3dff07e0eebde2304fee5054c888e3c7fe353a01874",
+    "document": "ec729a57f09d9176d98931ff8b314cf954618f56a4d173bd73fb931d314e5565",
+    "retention": "058cf814de6974820ac4fc3bf0d8cafb416a7823ce1363dcb09ff7e2ab1900a4"
+  },
+  "renderer": {
+    "argv": [
+      "tmp/service_v2_editorial_v001.py",
+      "--repo",
+      "C:/Study/DACN/UAV-link-quality-routing-support",
+      "--analysis",
+      "reports/uav_service_prevention_v2_2026-11-12/formal-analysis",
+      "--engineering",
+      "reports/uav_service_prevention_v2_2026-11-12/engineering/report-input-v002",
+      "--frozen-render",
+      "reports/uav_service_prevention_v2_2026-11-12/final/frozen-render-v001",
+      "--document",
+      "reports/uav_service_prevention_v2_2026-11-12/engineering/editorial-document-v001.json",
+      "--retention",
+      "reports/uav_service_prevention_v2_2026-11-12/engineering/report-retention-v002.json",
+      "--output",
+      "reports/uav_service_prevention_v2_2026-11-12/final/editorial-v001"
+    ],
+    "executable": "C:\\Users\\kaing\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+    "python": "3.12.14 (main, Aug 25 2026, 14:01:42) [MSC v.1944 64 bit (AMD64)]",
+    "platform": "Windows-11-10.0.26300-SP0",
+    "source_sha256": "165d990d31916921f08877f3c075fb68d8bada5082ca39029d17b8f0445b6ae2",
+    "reportlab": "4.4.9",
+    "font_sha256": "edfbd22a3d088fc2f5d7c79b8c9c732df6dc878a60f0a80be0f92a3c7a634404",
+    "bold_font_sha256": "4d59199834e7439c67ea4949407639961060b21b173833f566eb60ac6fd8f5af"
+  },
+  "bootstrap_rng_seed": 20261112,
+  "complete_self_contained_raw_package": false,
+  "retained_files_verified": true,
+  "missing_files": []
+}

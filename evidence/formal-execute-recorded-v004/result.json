@@ -1,0 +1,19 @@
+{
+  "argv": [
+    "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+    "/home/sac/uav-service/2026-11-12-service-prevention-v2/orchestration/service_v2_parent_phase_v004.py",
+    "formal",
+    "execute"
+  ],
+  "cwd": "/home/sac/uav-service/2026-11-12-service-prevention-v2/source-runtime-v003",
+  "direct_exit": 0,
+  "wall_seconds": 5319.752376079559,
+  "finished_unix": 1794507444.5070806,
+  "recorder_sha256": "8292397aed8c0212b09e519d5b1de4196e9c5e47086d00b1dc84fdaba0459808",
+  "environment": {
+    "LD_LIBRARY_PATH": "/home/sac/uav-service/2026-11-11-path-control/runtime/lib",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+  }
+}

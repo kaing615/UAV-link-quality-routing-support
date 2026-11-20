@@ -1,0 +1,200 @@
+{
+  "schema": "service-v2-retained-dependency-inventory-v1",
+  "ldd_argv": [
+    "/usr/bin/ldd",
+    "/home/sac/uav-service/2026-11-12-service-prevention-v2/source/build/recovery/uav-olsr-dataset"
+  ],
+  "direct_exit": 0,
+  "stdout": "\tlinux-vdso.so.1 (0x00007ffe12c77000)\n\tlibns3.45-applications-default.so => /home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-applications-default.so (0x00007a0551b3c000)\n\tlibns3.45-core-default.so => /home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-core-default.so (0x00007a055199d000)\n\tlibns3.45-flow-monitor-default.so => /home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-flow-monitor-default.so (0x00007a0551945000)\n\tlibns3.45-internet-default.so => /home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-internet-default.so (0x00007a0551200000)\n\tlibns3.45-mobility-default.so => /home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-mobility-default.so (0x00007a055189c000)\n\tlibns3.45-netanim-default.so => /home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-netanim-default.so (0x00007a055181d000)\n\tlibns3.45-network-default.so => /home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-network-default.so (0x00007a0551007000)\n\tlibns3.45-olsr-default.so => /home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-olsr-default.so (0x00007a05517af000)\n\tlibns3.45-wifi-default.so => /home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-wifi-default.so (0x00007a0550600000)\n\tlibstdc++.so.6 => /lib/x86_64-linux-gnu/libstdc++.so.6 (0x00007a0550200000)\n\tlibm.so.6 => /lib/x86_64-linux-gnu/libm.so.6 (0x00007a0550517000)\n\tlibgcc_s.so.1 => /lib/x86_64-linux-gnu/libgcc_s.so.1 (0x00007a05504e9000)\n\tlibc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007a054fe00000)\n\tlibns3.45-stats-default.so => /home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-stats-default.so (0x00007a0550153000)\n\tlibns3.45-bridge-default.so => /home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-bridge-default.so (0x00007a0550fe1000)\n\tlibns3.45-traffic-control-default.so => /home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-traffic-control-default.so (0x00007a055004b000)\n\tlibns3.45-antenna-default.so => /home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-antenna-default.so (0x00007a05504b2000)\n\tlibns3.45-wimax-default.so => /home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-wimax-default.so (0x00007a054fc6e000)\n\tlibns3.45-lte-default.so => /home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-lte-default.so (0x00007a054f400000)\n\tlibns3.45-uan-default.so => /home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-uan-default.so (0x00007a054fb54000)\n\tlibns3.45-lr-wpan-default.so => /home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-lr-wpan-default.so (0x00007a054f300000)\n\tlibns3.45-energy-default.so => /home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-energy-default.so (0x00007a054f281000)\n\tlibns3.45-spectrum-default.so => /home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-spectrum-default.so (0x00007a054f133000)\n\tlibns3.45-propagation-default.so => /home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-propagation-default.so (0x00007a054f08e000)\n\t/lib64/ld-linux-x86-64.so.2 (0x00007a0551d0b000)\n\tlibsqlite3.so.0 => /lib/x86_64-linux-gnu/libsqlite3.so.0 (0x00007a054ef26000)\n\tlibns3.45-fd-net-device-default.so => /home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-fd-net-device-default.so (0x00007a054fb04000)\n\tlibns3.45-buildings-default.so => /home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-buildings-default.so (0x00007a054eea1000)\n\tlibns3.45-virtual-net-device-default.so => /home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-virtual-net-device-default.so (0x00007a055049b000)\n\tlibns3.45-point-to-point-default.so => /home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-point-to-point-default.so (0x00007a054ee43000)\n\tlibns3.45-csma-default.so => /home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-csma-default.so (0x00007a054edde000)\n\tlibns3.45-config-store-default.so => /home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-config-store-default.so (0x00007a055001f000)\n\tlibxml2.so.2 => /lib/x86_64-linux-gnu/libxml2.so.2 (0x00007a054ebfc000)\n\tlibicuuc.so.74 => /lib/x86_64-linux-gnu/libicuuc.so.74 (0x00007a054e800000)\n\tlibz.so.1 => /lib/x86_64-linux-gnu/libz.so.1 (0x00007a054ebe0000)\n\tliblzma.so.5 => /lib/x86_64-linux-gnu/liblzma.so.5 (0x00007a054ebae000)\n\tlibicudata.so.74 => /lib/x86_64-linux-gnu/libicudata.so.74 (0x00007a054ca00000)\n",
+  "stderr": "",
+  "ld_library_path": "/home/sac/uav-service/2026-11-11-path-control/runtime/lib",
+  "retained_files": {
+    "/home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-applications-default.so": {
+      "sha256": "65fd05baebc263b46fb6476e294c34fcba399989f0bcd1bfa33d8b188fe75fad",
+      "bytes": 12794112,
+      "resolved": "/home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-applications-default.so"
+    },
+    "/home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-core-default.so": {
+      "sha256": "50d75b6efbbc327c0ee0e8065cc801c9aac50be86fd97c6d0213d13e6c0fa657",
+      "bytes": 16588056,
+      "resolved": "/home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-core-default.so"
+    },
+    "/home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-flow-monitor-default.so": {
+      "sha256": "f4ea2b327cfc04d0a11316c5932733425fb8a14f013f05b1d4a377e67a598a3c",
+      "bytes": 3918088,
+      "resolved": "/home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-flow-monitor-default.so"
+    },
+    "/home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-internet-default.so": {
+      "sha256": "734ff8f6b5bc082352b74a178d816f6ba70ba63d80c88a44da2bf4a9670a1301",
+      "bytes": 54580312,
+      "resolved": "/home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-internet-default.so"
+    },
+    "/home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-mobility-default.so": {
+      "sha256": "c9f991d21952a7ae113a49f21988d5893ba28d0db981dd5bd38884f59d2ef9e7",
+      "bytes": 5590992,
+      "resolved": "/home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-mobility-default.so"
+    },
+    "/home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-netanim-default.so": {
+      "sha256": "5b21b06dc50aae2e7cd069598a0a9db1d25692a6ec621a795d2130381923b490",
+      "bytes": 4662744,
+      "resolved": "/home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-netanim-default.so"
+    },
+    "/home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-network-default.so": {
+      "sha256": "879b9f3aadbd50737104d8c232760ddc4a52a63c7e159879b69d87de4589b869",
+      "bytes": 17988600,
+      "resolved": "/home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-network-default.so"
+    },
+    "/home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-olsr-default.so": {
+      "sha256": "2404f57cb67d0394d33a89f4963b92dca3d1c0dfb5126e15c93662dfa45823df",
+      "bytes": 4093384,
+      "resolved": "/home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-olsr-default.so"
+    },
+    "/home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-wifi-default.so": {
+      "sha256": "c52cde3d12983d7c965853cdc62679a178152b69c3679bb4e0ab4bf2c009fc1b",
+      "bytes": 116621736,
+      "resolved": "/home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-wifi-default.so"
+    },
+    "/lib/x86_64-linux-gnu/libstdc++.so.6": {
+      "sha256": "1fd75fe70354a416d75aef22bcae68c47bd25d20e2d0568c30b1a9838cf62f11",
+      "bytes": 2592224,
+      "resolved": "/usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.33"
+    },
+    "/lib/x86_64-linux-gnu/libm.so.6": {
+      "sha256": "fce00b6f25f459cf4ae0b7fae4257909a1a8a86f9149e7c029a5d617baf1ccd0",
+      "bytes": 952616,
+      "resolved": "/usr/lib/x86_64-linux-gnu/libm.so.6"
+    },
+    "/lib/x86_64-linux-gnu/libgcc_s.so.1": {
+      "sha256": "d93224d2b0dab4247598be683adca02f5cf00586f99c187579cd7e92058fb7cb",
+      "bytes": 183024,
+      "resolved": "/usr/lib/x86_64-linux-gnu/libgcc_s.so.1"
+    },
+    "/lib/x86_64-linux-gnu/libc.so.6": {
+      "sha256": "3a15d66867d83762c7f2f1e37359cb8f6c5743edb369c65285cb0b1c4f7498bf",
+      "bytes": 2129424,
+      "resolved": "/usr/lib/x86_64-linux-gnu/libc.so.6"
+    },
+    "/home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-stats-default.so": {
+      "sha256": "447fb4d5ab0179e252fbfb0f0189991ced67bbcbc1c8c976a194e5a06a0bdb88",
+      "bytes": 8015440,
+      "resolved": "/home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-stats-default.so"
+    },
+    "/home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-bridge-default.so": {
+      "sha256": "325c3e5bb3acdc99ea735045d38d41a81a9ffc98766336b6536bccfb16670e03",
+      "bytes": 1210264,
+      "resolved": "/home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-bridge-default.so"
+    },
+    "/home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-traffic-control-default.so": {
+      "sha256": "db25bc2e88f5864ce86508e0d4ca238d9c5d419a7540c1cf363add0201c34428",
+      "bytes": 9248896,
+      "resolved": "/home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-traffic-control-default.so"
+    },
+    "/home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-antenna-default.so": {
+      "sha256": "812e420b73f95e8c67675126fa46e8c1a374eac35abb830471f6d1f0385f657d",
+      "bytes": 1632088,
+      "resolved": "/home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-antenna-default.so"
+    },
+    "/home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-wimax-default.so": {
+      "sha256": "06c342ac8fa1cbb2427a7c122ee6d59abc804d9549ed1d1523de9c753c04dae4",
+      "bytes": 14467376,
+      "resolved": "/home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-wimax-default.so"
+    },
+    "/home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-lte-default.so": {
+      "sha256": "30459ed9727bf32032bcba679375ab37c757f577e1ea389e2df2b77100963164",
+      "bytes": 78843848,
+      "resolved": "/home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-lte-default.so"
+    },
+    "/home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-uan-default.so": {
+      "sha256": "92eb7df5e76ac5ff487d37cc61dfcfe4de7c6cee39d0bc381629b51e51c8fa2b",
+      "bytes": 10694496,
+      "resolved": "/home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-uan-default.so"
+    },
+    "/home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-lr-wpan-default.so": {
+      "sha256": "a35d985e7e45c971eece073bb0f18b19b7318bc3a99f2c6ed89c894a578a21eb",
+      "bytes": 8360000,
+      "resolved": "/home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-lr-wpan-default.so"
+    },
+    "/home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-energy-default.so": {
+      "sha256": "8cda8b338ebca9fc5297bbdb2cc65c37e0b82160a5017489718deb99d774e6f0",
+      "bytes": 5070016,
+      "resolved": "/home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-energy-default.so"
+    },
+    "/home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-spectrum-default.so": {
+      "sha256": "369ded49946cce2d5ffbc8a1d0d7da054b50e53aada713ead8be3c7c2297a09f",
+      "bytes": 13316928,
+      "resolved": "/home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-spectrum-default.so"
+    },
+    "/home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-propagation-default.so": {
+      "sha256": "f79250e044ab42b5b14e96d2d08ebbb8eeb3b7834a959eaa6f9d2cf7535f8e88",
+      "bytes": 4889536,
+      "resolved": "/home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-propagation-default.so"
+    },
+    "/lib64/ld-linux-x86-64.so.2": {
+      "sha256": "c20a2dc8917c755f02b94049356320fe1f62ac7d9f8994731f807d9df39302da",
+      "bytes": 236616,
+      "resolved": "/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2"
+    },
+    "/lib/x86_64-linux-gnu/libsqlite3.so.0": {
+      "sha256": "85265a9d4afca6f4b325ceb078b669c754fb881abed4cafe91ccebe9d625d975",
+      "bytes": 1468440,
+      "resolved": "/usr/lib/x86_64-linux-gnu/libsqlite3.so.0.8.6"
+    },
+    "/home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-fd-net-device-default.so": {
+      "sha256": "febda399bb3f1e71e11ad03eead8fabaddbbc7b16fb098dc17e9f7f1d8370969",
+      "bytes": 2787504,
+      "resolved": "/home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-fd-net-device-default.so"
+    },
+    "/home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-buildings-default.so": {
+      "sha256": "c4c8ec4269ed014c6be8ac54f3c79a29a5490803fc5bcbfdbbae20c07e71e152",
+      "bytes": 4349240,
+      "resolved": "/home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-buildings-default.so"
+    },
+    "/home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-virtual-net-device-default.so": {
+      "sha256": "406e6e31b31ab95d2260794104431e371704762b11342e361c0393463717c719",
+      "bytes": 696184,
+      "resolved": "/home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-virtual-net-device-default.so"
+    },
+    "/home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-point-to-point-default.so": {
+      "sha256": "8eb1b5aa32040ca8329d17c887ee6abdbe924dfd2c303ea6797cc577692e5e37",
+      "bytes": 3085128,
+      "resolved": "/home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-point-to-point-default.so"
+    },
+    "/home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-csma-default.so": {
+      "sha256": "4256c83c6155272fa3393d12032f7c408d35a9837254c5a763cc2e75e50fc505",
+      "bytes": 3195272,
+      "resolved": "/home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-csma-default.so"
+    },
+    "/home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-config-store-default.so": {
+      "sha256": "cadfb42e0006173a3b0de177be8f79166dd69f086ffc927f5adbed2b80f08423",
+      "bytes": 1450544,
+      "resolved": "/home/sac/uav-service/2026-11-11-path-control/runtime/lib/libns3.45-config-store-default.so"
+    },
+    "/lib/x86_64-linux-gnu/libxml2.so.2": {
+      "sha256": "209e941be9eb2eb9ab36caaa0b81d1c6b36c8f5d7268c24f19e81039137e6485",
+      "bytes": 1967424,
+      "resolved": "/usr/lib/x86_64-linux-gnu/libxml2.so.2.9.14"
+    },
+    "/lib/x86_64-linux-gnu/libicuuc.so.74": {
+      "sha256": "7560aadde38e5f4237a47a1ddd5891f9b36768a77a60faae30beee003ac01901",
+      "bytes": 2140336,
+      "resolved": "/usr/lib/x86_64-linux-gnu/libicuuc.so.74.2"
+    },
+    "/lib/x86_64-linux-gnu/libz.so.1": {
+      "sha256": "f61677c7bdb7c2aa2a243ea781bfd16afcb361cede7b4ef76127a9d8eb9a5242",
+      "bytes": 113000,
+      "resolved": "/usr/lib/x86_64-linux-gnu/libz.so.1.3"
+    },
+    "/lib/x86_64-linux-gnu/liblzma.so.5": {
+      "sha256": "26b37d25f7ca2a2d348de8ecabacda12e921cd933b21fa069a179760db77219d",
+      "bytes": 202904,
+      "resolved": "/usr/lib/x86_64-linux-gnu/liblzma.so.5.4.5"
+    },
+    "/lib/x86_64-linux-gnu/libicudata.so.74": {
+      "sha256": "ddbb3718b8bd9cbd780e5ab08b4503c30a6c4fa0706ebe5d074ed6b596c1714e",
+      "bytes": 30795392,
+      "resolved": "/usr/lib/x86_64-linux-gnu/libicudata.so.74.2"
+    }
+  },
+  "copied_into_study": false,
+  "note": "Read-only retained dependency identities on original host; no install or modification."
+}

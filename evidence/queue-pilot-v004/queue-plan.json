@@ -1,0 +1,837 @@
+{
+  "schema": "service-v2-parent-queue-v1",
+  "protocol": "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/pilot-integration-v003/protocol.json",
+  "protocol_sha256": "4c6fd1f6c91d06f68b43d2fb8929bffa8ca9d30ade5cd9708fee5f088c4cab0c",
+  "queue_source_sha256": "2e0a4542d309872121d6665dc8e9201945457b1f5b7e355967923f88a44dca51",
+  "working_directory": "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/pilot-integration-v003/source",
+  "run_root": "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/runs/pilot-integration-v003",
+  "max_workers": 4,
+  "attempt": 0,
+  "automatic_retry": false,
+  "stop_pending_on_wrapper_error": true,
+  "dry_run": false,
+  "environment": {
+    "LD_LIBRARY_PATH": "/home/sac/uav-service/2026-11-11-path-control/runtime/lib",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+  },
+  "commands": [
+    {
+      "cell_id": "pilot-n4-static-01__hold",
+      "argv": [
+        "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+        "-m",
+        "src.control.service_v2.cli",
+        "run-case",
+        "--protocol",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/pilot-integration-v003/protocol.json",
+        "--cell-id",
+        "pilot-n4-static-01__hold",
+        "--attempt",
+        "0",
+        "--output",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/runs/pilot-integration-v003/pilot-n4-static-01__hold/attempt-0"
+      ]
+    },
+    {
+      "cell_id": "pilot-n4-static-01__reactive",
+      "argv": [
+        "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+        "-m",
+        "src.control.service_v2.cli",
+        "run-case",
+        "--protocol",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/pilot-integration-v003/protocol.json",
+        "--cell-id",
+        "pilot-n4-static-01__reactive",
+        "--attempt",
+        "0",
+        "--output",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/runs/pilot-integration-v003/pilot-n4-static-01__reactive/attempt-0"
+      ]
+    },
+    {
+      "cell_id": "pilot-n4-static-01__geometry",
+      "argv": [
+        "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+        "-m",
+        "src.control.service_v2.cli",
+        "run-case",
+        "--protocol",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/pilot-integration-v003/protocol.json",
+        "--cell-id",
+        "pilot-n4-static-01__geometry",
+        "--attempt",
+        "0",
+        "--output",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/runs/pilot-integration-v003/pilot-n4-static-01__geometry/attempt-0"
+      ]
+    },
+    {
+      "cell_id": "pilot-n4-static-01__path-service-v1-reference",
+      "argv": [
+        "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+        "-m",
+        "src.control.service_v2.cli",
+        "run-case",
+        "--protocol",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/pilot-integration-v003/protocol.json",
+        "--cell-id",
+        "pilot-n4-static-01__path-service-v1-reference",
+        "--attempt",
+        "0",
+        "--output",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/runs/pilot-integration-v003/pilot-n4-static-01__path-service-v1-reference/attempt-0"
+      ]
+    },
+    {
+      "cell_id": "pilot-n4-static-01__service-v2",
+      "argv": [
+        "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+        "-m",
+        "src.control.service_v2.cli",
+        "run-case",
+        "--protocol",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/pilot-integration-v003/protocol.json",
+        "--cell-id",
+        "pilot-n4-static-01__service-v2",
+        "--attempt",
+        "0",
+        "--output",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/runs/pilot-integration-v003/pilot-n4-static-01__service-v2/attempt-0"
+      ]
+    },
+    {
+      "cell_id": "pilot-n4-static-01__service-v2-no-forecast",
+      "argv": [
+        "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+        "-m",
+        "src.control.service_v2.cli",
+        "run-case",
+        "--protocol",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/pilot-integration-v003/protocol.json",
+        "--cell-id",
+        "pilot-n4-static-01__service-v2-no-forecast",
+        "--attempt",
+        "0",
+        "--output",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/runs/pilot-integration-v003/pilot-n4-static-01__service-v2-no-forecast/attempt-0"
+      ]
+    },
+    {
+      "cell_id": "pilot-n4-static-01__service-v2-no-online-service-state",
+      "argv": [
+        "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+        "-m",
+        "src.control.service_v2.cli",
+        "run-case",
+        "--protocol",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/pilot-integration-v003/protocol.json",
+        "--cell-id",
+        "pilot-n4-static-01__service-v2-no-online-service-state",
+        "--attempt",
+        "0",
+        "--output",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/runs/pilot-integration-v003/pilot-n4-static-01__service-v2-no-online-service-state/attempt-0"
+      ]
+    },
+    {
+      "cell_id": "pilot-n4-static-01__service-v2-no-motion-gate",
+      "argv": [
+        "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+        "-m",
+        "src.control.service_v2.cli",
+        "run-case",
+        "--protocol",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/pilot-integration-v003/protocol.json",
+        "--cell-id",
+        "pilot-n4-static-01__service-v2-no-motion-gate",
+        "--attempt",
+        "0",
+        "--output",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/runs/pilot-integration-v003/pilot-n4-static-01__service-v2-no-motion-gate/attempt-0"
+      ]
+    },
+    {
+      "cell_id": "pilot-n4-gradual-01__hold",
+      "argv": [
+        "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+        "-m",
+        "src.control.service_v2.cli",
+        "run-case",
+        "--protocol",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/pilot-integration-v003/protocol.json",
+        "--cell-id",
+        "pilot-n4-gradual-01__hold",
+        "--attempt",
+        "0",
+        "--output",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/runs/pilot-integration-v003/pilot-n4-gradual-01__hold/attempt-0"
+      ]
+    },
+    {
+      "cell_id": "pilot-n4-gradual-01__reactive",
+      "argv": [
+        "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+        "-m",
+        "src.control.service_v2.cli",
+        "run-case",
+        "--protocol",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/pilot-integration-v003/protocol.json",
+        "--cell-id",
+        "pilot-n4-gradual-01__reactive",
+        "--attempt",
+        "0",
+        "--output",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/runs/pilot-integration-v003/pilot-n4-gradual-01__reactive/attempt-0"
+      ]
+    },
+    {
+      "cell_id": "pilot-n4-gradual-01__geometry",
+      "argv": [
+        "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+        "-m",
+        "src.control.service_v2.cli",
+        "run-case",
+        "--protocol",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/pilot-integration-v003/protocol.json",
+        "--cell-id",
+        "pilot-n4-gradual-01__geometry",
+        "--attempt",
+        "0",
+        "--output",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/runs/pilot-integration-v003/pilot-n4-gradual-01__geometry/attempt-0"
+      ]
+    },
+    {
+      "cell_id": "pilot-n4-gradual-01__path-service-v1-reference",
+      "argv": [
+        "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+        "-m",
+        "src.control.service_v2.cli",
+        "run-case",
+        "--protocol",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/pilot-integration-v003/protocol.json",
+        "--cell-id",
+        "pilot-n4-gradual-01__path-service-v1-reference",
+        "--attempt",
+        "0",
+        "--output",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/runs/pilot-integration-v003/pilot-n4-gradual-01__path-service-v1-reference/attempt-0"
+      ]
+    },
+    {
+      "cell_id": "pilot-n4-gradual-01__service-v2",
+      "argv": [
+        "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+        "-m",
+        "src.control.service_v2.cli",
+        "run-case",
+        "--protocol",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/pilot-integration-v003/protocol.json",
+        "--cell-id",
+        "pilot-n4-gradual-01__service-v2",
+        "--attempt",
+        "0",
+        "--output",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/runs/pilot-integration-v003/pilot-n4-gradual-01__service-v2/attempt-0"
+      ]
+    },
+    {
+      "cell_id": "pilot-n4-gradual-01__service-v2-no-forecast",
+      "argv": [
+        "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+        "-m",
+        "src.control.service_v2.cli",
+        "run-case",
+        "--protocol",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/pilot-integration-v003/protocol.json",
+        "--cell-id",
+        "pilot-n4-gradual-01__service-v2-no-forecast",
+        "--attempt",
+        "0",
+        "--output",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/runs/pilot-integration-v003/pilot-n4-gradual-01__service-v2-no-forecast/attempt-0"
+      ]
+    },
+    {
+      "cell_id": "pilot-n4-gradual-01__service-v2-no-online-service-state",
+      "argv": [
+        "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+        "-m",
+        "src.control.service_v2.cli",
+        "run-case",
+        "--protocol",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/pilot-integration-v003/protocol.json",
+        "--cell-id",
+        "pilot-n4-gradual-01__service-v2-no-online-service-state",
+        "--attempt",
+        "0",
+        "--output",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/runs/pilot-integration-v003/pilot-n4-gradual-01__service-v2-no-online-service-state/attempt-0"
+      ]
+    },
+    {
+      "cell_id": "pilot-n4-gradual-01__service-v2-no-motion-gate",
+      "argv": [
+        "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+        "-m",
+        "src.control.service_v2.cli",
+        "run-case",
+        "--protocol",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/pilot-integration-v003/protocol.json",
+        "--cell-id",
+        "pilot-n4-gradual-01__service-v2-no-motion-gate",
+        "--attempt",
+        "0",
+        "--output",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/runs/pilot-integration-v003/pilot-n4-gradual-01__service-v2-no-motion-gate/attempt-0"
+      ]
+    },
+    {
+      "cell_id": "pilot-n4-gradual-02__hold",
+      "argv": [
+        "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+        "-m",
+        "src.control.service_v2.cli",
+        "run-case",
+        "--protocol",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/pilot-integration-v003/protocol.json",
+        "--cell-id",
+        "pilot-n4-gradual-02__hold",
+        "--attempt",
+        "0",
+        "--output",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/runs/pilot-integration-v003/pilot-n4-gradual-02__hold/attempt-0"
+      ]
+    },
+    {
+      "cell_id": "pilot-n4-gradual-02__reactive",
+      "argv": [
+        "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+        "-m",
+        "src.control.service_v2.cli",
+        "run-case",
+        "--protocol",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/pilot-integration-v003/protocol.json",
+        "--cell-id",
+        "pilot-n4-gradual-02__reactive",
+        "--attempt",
+        "0",
+        "--output",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/runs/pilot-integration-v003/pilot-n4-gradual-02__reactive/attempt-0"
+      ]
+    },
+    {
+      "cell_id": "pilot-n4-gradual-02__geometry",
+      "argv": [
+        "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+        "-m",
+        "src.control.service_v2.cli",
+        "run-case",
+        "--protocol",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/pilot-integration-v003/protocol.json",
+        "--cell-id",
+        "pilot-n4-gradual-02__geometry",
+        "--attempt",
+        "0",
+        "--output",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/runs/pilot-integration-v003/pilot-n4-gradual-02__geometry/attempt-0"
+      ]
+    },
+    {
+      "cell_id": "pilot-n4-gradual-02__path-service-v1-reference",
+      "argv": [
+        "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+        "-m",
+        "src.control.service_v2.cli",
+        "run-case",
+        "--protocol",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/pilot-integration-v003/protocol.json",
+        "--cell-id",
+        "pilot-n4-gradual-02__path-service-v1-reference",
+        "--attempt",
+        "0",
+        "--output",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/runs/pilot-integration-v003/pilot-n4-gradual-02__path-service-v1-reference/attempt-0"
+      ]
+    },
+    {
+      "cell_id": "pilot-n4-gradual-02__service-v2",
+      "argv": [
+        "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+        "-m",
+        "src.control.service_v2.cli",
+        "run-case",
+        "--protocol",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/pilot-integration-v003/protocol.json",
+        "--cell-id",
+        "pilot-n4-gradual-02__service-v2",
+        "--attempt",
+        "0",
+        "--output",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/runs/pilot-integration-v003/pilot-n4-gradual-02__service-v2/attempt-0"
+      ]
+    },
+    {
+      "cell_id": "pilot-n4-gradual-02__service-v2-no-forecast",
+      "argv": [
+        "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+        "-m",
+        "src.control.service_v2.cli",
+        "run-case",
+        "--protocol",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/pilot-integration-v003/protocol.json",
+        "--cell-id",
+        "pilot-n4-gradual-02__service-v2-no-forecast",
+        "--attempt",
+        "0",
+        "--output",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/runs/pilot-integration-v003/pilot-n4-gradual-02__service-v2-no-forecast/attempt-0"
+      ]
+    },
+    {
+      "cell_id": "pilot-n4-gradual-02__service-v2-no-online-service-state",
+      "argv": [
+        "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+        "-m",
+        "src.control.service_v2.cli",
+        "run-case",
+        "--protocol",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/pilot-integration-v003/protocol.json",
+        "--cell-id",
+        "pilot-n4-gradual-02__service-v2-no-online-service-state",
+        "--attempt",
+        "0",
+        "--output",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/runs/pilot-integration-v003/pilot-n4-gradual-02__service-v2-no-online-service-state/attempt-0"
+      ]
+    },
+    {
+      "cell_id": "pilot-n4-gradual-02__service-v2-no-motion-gate",
+      "argv": [
+        "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+        "-m",
+        "src.control.service_v2.cli",
+        "run-case",
+        "--protocol",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/pilot-integration-v003/protocol.json",
+        "--cell-id",
+        "pilot-n4-gradual-02__service-v2-no-motion-gate",
+        "--attempt",
+        "0",
+        "--output",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/runs/pilot-integration-v003/pilot-n4-gradual-02__service-v2-no-motion-gate/attempt-0"
+      ]
+    },
+    {
+      "cell_id": "pilot-n5-static-01__hold",
+      "argv": [
+        "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+        "-m",
+        "src.control.service_v2.cli",
+        "run-case",
+        "--protocol",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/pilot-integration-v003/protocol.json",
+        "--cell-id",
+        "pilot-n5-static-01__hold",
+        "--attempt",
+        "0",
+        "--output",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/runs/pilot-integration-v003/pilot-n5-static-01__hold/attempt-0"
+      ]
+    },
+    {
+      "cell_id": "pilot-n5-static-01__reactive",
+      "argv": [
+        "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+        "-m",
+        "src.control.service_v2.cli",
+        "run-case",
+        "--protocol",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/pilot-integration-v003/protocol.json",
+        "--cell-id",
+        "pilot-n5-static-01__reactive",
+        "--attempt",
+        "0",
+        "--output",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/runs/pilot-integration-v003/pilot-n5-static-01__reactive/attempt-0"
+      ]
+    },
+    {
+      "cell_id": "pilot-n5-static-01__geometry",
+      "argv": [
+        "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+        "-m",
+        "src.control.service_v2.cli",
+        "run-case",
+        "--protocol",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/pilot-integration-v003/protocol.json",
+        "--cell-id",
+        "pilot-n5-static-01__geometry",
+        "--attempt",
+        "0",
+        "--output",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/runs/pilot-integration-v003/pilot-n5-static-01__geometry/attempt-0"
+      ]
+    },
+    {
+      "cell_id": "pilot-n5-static-01__path-service-v1-reference",
+      "argv": [
+        "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+        "-m",
+        "src.control.service_v2.cli",
+        "run-case",
+        "--protocol",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/pilot-integration-v003/protocol.json",
+        "--cell-id",
+        "pilot-n5-static-01__path-service-v1-reference",
+        "--attempt",
+        "0",
+        "--output",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/runs/pilot-integration-v003/pilot-n5-static-01__path-service-v1-reference/attempt-0"
+      ]
+    },
+    {
+      "cell_id": "pilot-n5-static-01__service-v2",
+      "argv": [
+        "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+        "-m",
+        "src.control.service_v2.cli",
+        "run-case",
+        "--protocol",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/pilot-integration-v003/protocol.json",
+        "--cell-id",
+        "pilot-n5-static-01__service-v2",
+        "--attempt",
+        "0",
+        "--output",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/runs/pilot-integration-v003/pilot-n5-static-01__service-v2/attempt-0"
+      ]
+    },
+    {
+      "cell_id": "pilot-n5-static-01__service-v2-no-forecast",
+      "argv": [
+        "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+        "-m",
+        "src.control.service_v2.cli",
+        "run-case",
+        "--protocol",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/pilot-integration-v003/protocol.json",
+        "--cell-id",
+        "pilot-n5-static-01__service-v2-no-forecast",
+        "--attempt",
+        "0",
+        "--output",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/runs/pilot-integration-v003/pilot-n5-static-01__service-v2-no-forecast/attempt-0"
+      ]
+    },
+    {
+      "cell_id": "pilot-n5-static-01__service-v2-no-online-service-state",
+      "argv": [
+        "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+        "-m",
+        "src.control.service_v2.cli",
+        "run-case",
+        "--protocol",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/pilot-integration-v003/protocol.json",
+        "--cell-id",
+        "pilot-n5-static-01__service-v2-no-online-service-state",
+        "--attempt",
+        "0",
+        "--output",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/runs/pilot-integration-v003/pilot-n5-static-01__service-v2-no-online-service-state/attempt-0"
+      ]
+    },
+    {
+      "cell_id": "pilot-n5-static-01__service-v2-no-motion-gate",
+      "argv": [
+        "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+        "-m",
+        "src.control.service_v2.cli",
+        "run-case",
+        "--protocol",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/pilot-integration-v003/protocol.json",
+        "--cell-id",
+        "pilot-n5-static-01__service-v2-no-motion-gate",
+        "--attempt",
+        "0",
+        "--output",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/runs/pilot-integration-v003/pilot-n5-static-01__service-v2-no-motion-gate/attempt-0"
+      ]
+    },
+    {
+      "cell_id": "pilot-n5-gradual-01__hold",
+      "argv": [
+        "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+        "-m",
+        "src.control.service_v2.cli",
+        "run-case",
+        "--protocol",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/pilot-integration-v003/protocol.json",
+        "--cell-id",
+        "pilot-n5-gradual-01__hold",
+        "--attempt",
+        "0",
+        "--output",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/runs/pilot-integration-v003/pilot-n5-gradual-01__hold/attempt-0"
+      ]
+    },
+    {
+      "cell_id": "pilot-n5-gradual-01__reactive",
+      "argv": [
+        "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+        "-m",
+        "src.control.service_v2.cli",
+        "run-case",
+        "--protocol",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/pilot-integration-v003/protocol.json",
+        "--cell-id",
+        "pilot-n5-gradual-01__reactive",
+        "--attempt",
+        "0",
+        "--output",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/runs/pilot-integration-v003/pilot-n5-gradual-01__reactive/attempt-0"
+      ]
+    },
+    {
+      "cell_id": "pilot-n5-gradual-01__geometry",
+      "argv": [
+        "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+        "-m",
+        "src.control.service_v2.cli",
+        "run-case",
+        "--protocol",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/pilot-integration-v003/protocol.json",
+        "--cell-id",
+        "pilot-n5-gradual-01__geometry",
+        "--attempt",
+        "0",
+        "--output",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/runs/pilot-integration-v003/pilot-n5-gradual-01__geometry/attempt-0"
+      ]
+    },
+    {
+      "cell_id": "pilot-n5-gradual-01__path-service-v1-reference",
+      "argv": [
+        "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+        "-m",
+        "src.control.service_v2.cli",
+        "run-case",
+        "--protocol",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/pilot-integration-v003/protocol.json",
+        "--cell-id",
+        "pilot-n5-gradual-01__path-service-v1-reference",
+        "--attempt",
+        "0",
+        "--output",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/runs/pilot-integration-v003/pilot-n5-gradual-01__path-service-v1-reference/attempt-0"
+      ]
+    },
+    {
+      "cell_id": "pilot-n5-gradual-01__service-v2",
+      "argv": [
+        "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+        "-m",
+        "src.control.service_v2.cli",
+        "run-case",
+        "--protocol",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/pilot-integration-v003/protocol.json",
+        "--cell-id",
+        "pilot-n5-gradual-01__service-v2",
+        "--attempt",
+        "0",
+        "--output",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/runs/pilot-integration-v003/pilot-n5-gradual-01__service-v2/attempt-0"
+      ]
+    },
+    {
+      "cell_id": "pilot-n5-gradual-01__service-v2-no-forecast",
+      "argv": [
+        "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+        "-m",
+        "src.control.service_v2.cli",
+        "run-case",
+        "--protocol",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/pilot-integration-v003/protocol.json",
+        "--cell-id",
+        "pilot-n5-gradual-01__service-v2-no-forecast",
+        "--attempt",
+        "0",
+        "--output",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/runs/pilot-integration-v003/pilot-n5-gradual-01__service-v2-no-forecast/attempt-0"
+      ]
+    },
+    {
+      "cell_id": "pilot-n5-gradual-01__service-v2-no-online-service-state",
+      "argv": [
+        "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+        "-m",
+        "src.control.service_v2.cli",
+        "run-case",
+        "--protocol",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/pilot-integration-v003/protocol.json",
+        "--cell-id",
+        "pilot-n5-gradual-01__service-v2-no-online-service-state",
+        "--attempt",
+        "0",
+        "--output",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/runs/pilot-integration-v003/pilot-n5-gradual-01__service-v2-no-online-service-state/attempt-0"
+      ]
+    },
+    {
+      "cell_id": "pilot-n5-gradual-01__service-v2-no-motion-gate",
+      "argv": [
+        "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+        "-m",
+        "src.control.service_v2.cli",
+        "run-case",
+        "--protocol",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/pilot-integration-v003/protocol.json",
+        "--cell-id",
+        "pilot-n5-gradual-01__service-v2-no-motion-gate",
+        "--attempt",
+        "0",
+        "--output",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/runs/pilot-integration-v003/pilot-n5-gradual-01__service-v2-no-motion-gate/attempt-0"
+      ]
+    },
+    {
+      "cell_id": "pilot-n5-gradual-02__hold",
+      "argv": [
+        "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+        "-m",
+        "src.control.service_v2.cli",
+        "run-case",
+        "--protocol",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/pilot-integration-v003/protocol.json",
+        "--cell-id",
+        "pilot-n5-gradual-02__hold",
+        "--attempt",
+        "0",
+        "--output",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/runs/pilot-integration-v003/pilot-n5-gradual-02__hold/attempt-0"
+      ]
+    },
+    {
+      "cell_id": "pilot-n5-gradual-02__reactive",
+      "argv": [
+        "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+        "-m",
+        "src.control.service_v2.cli",
+        "run-case",
+        "--protocol",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/pilot-integration-v003/protocol.json",
+        "--cell-id",
+        "pilot-n5-gradual-02__reactive",
+        "--attempt",
+        "0",
+        "--output",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/runs/pilot-integration-v003/pilot-n5-gradual-02__reactive/attempt-0"
+      ]
+    },
+    {
+      "cell_id": "pilot-n5-gradual-02__geometry",
+      "argv": [
+        "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+        "-m",
+        "src.control.service_v2.cli",
+        "run-case",
+        "--protocol",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/pilot-integration-v003/protocol.json",
+        "--cell-id",
+        "pilot-n5-gradual-02__geometry",
+        "--attempt",
+        "0",
+        "--output",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/runs/pilot-integration-v003/pilot-n5-gradual-02__geometry/attempt-0"
+      ]
+    },
+    {
+      "cell_id": "pilot-n5-gradual-02__path-service-v1-reference",
+      "argv": [
+        "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+        "-m",
+        "src.control.service_v2.cli",
+        "run-case",
+        "--protocol",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/pilot-integration-v003/protocol.json",
+        "--cell-id",
+        "pilot-n5-gradual-02__path-service-v1-reference",
+        "--attempt",
+        "0",
+        "--output",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/runs/pilot-integration-v003/pilot-n5-gradual-02__path-service-v1-reference/attempt-0"
+      ]
+    },
+    {
+      "cell_id": "pilot-n5-gradual-02__service-v2",
+      "argv": [
+        "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+        "-m",
+        "src.control.service_v2.cli",
+        "run-case",
+        "--protocol",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/pilot-integration-v003/protocol.json",
+        "--cell-id",
+        "pilot-n5-gradual-02__service-v2",
+        "--attempt",
+        "0",
+        "--output",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/runs/pilot-integration-v003/pilot-n5-gradual-02__service-v2/attempt-0"
+      ]
+    },
+    {
+      "cell_id": "pilot-n5-gradual-02__service-v2-no-forecast",
+      "argv": [
+        "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+        "-m",
+        "src.control.service_v2.cli",
+        "run-case",
+        "--protocol",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/pilot-integration-v003/protocol.json",
+        "--cell-id",
+        "pilot-n5-gradual-02__service-v2-no-forecast",
+        "--attempt",
+        "0",
+        "--output",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/runs/pilot-integration-v003/pilot-n5-gradual-02__service-v2-no-forecast/attempt-0"
+      ]
+    },
+    {
+      "cell_id": "pilot-n5-gradual-02__service-v2-no-online-service-state",
+      "argv": [
+        "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+        "-m",
+        "src.control.service_v2.cli",
+        "run-case",
+        "--protocol",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/pilot-integration-v003/protocol.json",
+        "--cell-id",
+        "pilot-n5-gradual-02__service-v2-no-online-service-state",
+        "--attempt",
+        "0",
+        "--output",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/runs/pilot-integration-v003/pilot-n5-gradual-02__service-v2-no-online-service-state/attempt-0"
+      ]
+    },
+    {
+      "cell_id": "pilot-n5-gradual-02__service-v2-no-motion-gate",
+      "argv": [
+        "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+        "-m",
+        "src.control.service_v2.cli",
+        "run-case",
+        "--protocol",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/pilot-integration-v003/protocol.json",
+        "--cell-id",
+        "pilot-n5-gradual-02__service-v2-no-motion-gate",
+        "--attempt",
+        "0",
+        "--output",
+        "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/runs/pilot-integration-v003/pilot-n5-gradual-02__service-v2-no-motion-gate/attempt-0"
+      ]
+    }
+  ]
+}

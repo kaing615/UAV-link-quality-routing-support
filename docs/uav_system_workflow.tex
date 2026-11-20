@@ -1,0 +1,397 @@
+% !TeX program = xelatex
+\documentclass[12pt,a4paper]{article}
+
+\usepackage{fontspec}
+\usepackage{babel}
+\babelprovide[main,import]{vietnamese}
+\usepackage{geometry}
+\usepackage{microtype}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{amsmath,amssymb}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{xurl}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning}
+\usepackage{placeins}
+
+\geometry{top=2.4cm,bottom=2.4cm,left=2.7cm,right=2.7cm}
+\IfFontExistsTF{TeX Gyre Termes}{\setmainfont{TeX Gyre Termes}}{\setmainfont{Times New Roman}}
+\IfFontExistsTF{TeX Gyre Heros}{\setsansfont{TeX Gyre Heros}}{\setsansfont{Arial}}
+\IfFontExistsTF{TeX Gyre Cursor}{\setmonofont{TeX Gyre Cursor}}{\setmonofont{Consolas}}
+\setlist{nosep,leftmargin=2em}
+\setlength{\parindent}{1.2em}
+\setlength{\parskip}{0.35em}
+\setlength{\emergencystretch}{2em}
+\widowpenalty=10000
+\clubpenalty=10000
+\displaywidowpenalty=10000
+\renewcommand{\UrlFont}{\small\ttfamily}
+\renewcommand{\arraystretch}{1.18}
+\tikzset{
+  block/.style={draw=blue!45!black,fill=blue!3,rounded corners=2pt,
+    align=center,text width=5.7cm,minimum height=1.15cm,inner sep=6pt,
+    font=\sffamily\small},
+  wideblock/.style={block,text width=12.8cm},
+  planned/.style={block,dashed,fill=gray!5},
+  flow/.style={-{Latex[length=2.2mm]},semithick,draw=blue!55!black}
+}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!55!black,
+  urlcolor=blue!65!black,
+  pdftitle={Kiến trúc và luồng hoạt động của hệ thống UAV Link Quality Routing Support},
+  pdfauthor={UAV Link Quality Routing Support}
+}
+
+\newcommand{\code}[1]{{\small\texttt{#1}}}
+
+\title{Kiến trúc và luồng hoạt động của hệ thống\\
+\textit{UAV Link Quality Routing Support}}
+\author{Tài liệu kỹ thuật dự án}
+\date{Bản hiệu chỉnh ngày 10/11/2026}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Tài liệu mô tả kiến trúc hiện có và các phần cần bổ sung của hệ thống dự đoán liên kết, hỗ trợ chọn tuyến trong mạng UAV. Nhánh nghiên cứu chính dùng ns-3 để sinh dữ liệu, chuyển snapshot thành đồ thị, huấn luyện mô hình và đánh giá dự đoán tại nhiều mốc tương lai. Routing chuyển điểm số dự đoán thành chi phí cạnh để tìm đường. Replay sử dụng chỉ số ước lượng từ trace; nhánh chạy gói tin trong ns-3 sử dụng kế hoạch tuyến tính trước từ trace gốc. FastAPI nạp checkpoint và nhận snapshot mới từ client; dashboard hiển thị dự đoán cạnh và topology. Tài liệu phân biệt mã đã có với kết quả đã xác minh, đồng thời chỉ rõ phần chưa tích hợp: thu thập trạng thái mạng thật, điều khiển tuyến trực tuyến và dự đoán lại theo trạng thái mạng sau khi thay tuyến.
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+\section{Mục tiêu và phạm vi}
+\label{sec:scope}
+
+Mạng UAV ad hoc có topology thay đổi nhanh vì các nút di chuyển trong không gian ba chiều. Một tuyến đang hoạt động có thể suy giảm chỉ sau vài time step do khoảng cách, vận tốc tương đối, nhiễu, suy hao vô tuyến hoặc thay đổi tải mạng. Nếu lớp routing chỉ phản ứng sau khi liên kết đã hỏng, gói tin có thể bị mất và tuyến phải hội tụ lại.
+
+Dự án học một hàm dự đoán trên các liên kết đang tồn tại tại thời điểm \(t\). Đầu vào gồm cấu trúc đồ thị, đặc trưng nút và đặc trưng cạnh. Hai mục tiêu là QoS tại đúng thời điểm \(t+k\), và survival trong toàn bộ khoảng \(t+1,\ldots,t+k\), với \(k\in\{1,2,3,5\}\). Routing sử dụng điểm số để điều chỉnh chi phí hoặc lọc cạnh trước khi tìm đường. Mốc \(k\) tính theo bước snapshot; khi chuyển sang giây phải ghi kèm độ dài bước và quy ước cửa sổ đo.
+
+GNN cung cấp tín hiệu dự báo, còn bộ chọn tuyến quyết định đường đi. Trong ns-3, OLSR thật là mô hình đối chứng. Nhánh chạy kế hoạch tuyến dùng cơ chế cài tuyến ưu tiên cao hơn OLSR cho luồng được đánh giá; đây chưa phải thay đổi metric bên trong OLSR. So sánh các chiến lược phải dùng cùng cặp nguồn--đích, cửa sổ đánh giá và điều kiện mô phỏng.
+
+\paragraph{Phạm vi kiểm chứng.} Tài liệu mô tả cấu trúc mã và ý nghĩa các luồng xử lý; không xác nhận mọi kết quả cũ đã hợp lệ hoặc hạ tầng cloud đang hoạt động. Kết luận thực nghiệm cần dữ liệu, cấu hình, checkpoint, phiên bản mã và biên bản xác minh tương ứng.
+
+\section{Kiến trúc tổng thể}
+\label{sec:architecture}
+
+Hình~\ref{fig:end-to-end-flow} tách huấn luyện khỏi suy luận và đánh giá. Nhãn tương lai phục vụ học hoặc chấm điểm; đầu vào suy luận là đồ thị tại thời điểm quan sát. Nhánh serving ở Hình~\ref{fig:serving-flow} cũng nhận checkpoint và snapshot mới, không nhận nhãn tương lai.
+
+\begin{figure}[htbp]
+  \centering
+  \begin{tikzpicture}
+    \node[wideblock] (raw) at (3.5,0) {Cấu hình và mô phỏng ns-3\\Snapshot nút, cạnh, tuyến OLSR và metadata};
+    \node[block] (dataset) at (0,-2.3) {Dữ liệu huấn luyện / đánh giá\\Đặc trưng, nhãn tương lai và phân chia dữ liệu};
+    \node[block] (graph) at (7,-2.3) {Đồ thị tại thời điểm quan sát\\Đặc trưng nút, cạnh và topology};
+    \node[block] (train) at (0,-5) {Huấn luyện GNN / baseline\\Chọn checkpoint và ngưỡng trên validation};
+    \node[block] (infer) at (7,-5) {Suy luận bằng checkpoint đã chọn\\Điểm số theo cạnh, mục tiêu và mốc dự báo};
+    \node[block] (truth) at (0,-7.7) {Ground truth của dữ liệu kiểm tra\\Chấm điểm dự đoán và đối chiếu tuyến};
+    \node[block] (route) at (7,-7.7) {Routing policy\\Chi phí cạnh, ngưỡng lọc và Dijkstra};
+    \node[wideblock] (eval) at (3.5,-10.3) {Đánh giá trên dữ liệu kiểm tra\\Replay: chỉ số từ trace; chạy ns-3: gói tin theo kế hoạch tuyến tính trước};
+    \draw[flow] (raw.south west) -- (dataset.north);
+    \draw[flow] (raw.south east) -- (graph.north);
+    \draw[flow] (dataset) -- (train);
+    \draw[flow] (graph) -- (infer);
+    \draw[flow] (train) -- node[above,font=\scriptsize] {model} (infer);
+    \draw[flow] (infer) -- (route);
+    \draw[flow] (dataset.west) -- ++(-.35,0) |- (truth.west);
+    \draw[flow] (truth.south) -- (eval.north west);
+    \draw[flow] (route.south) -- (eval.north east);
+  \end{tikzpicture}
+  \caption{Luồng nghiên cứu. Nhãn tương lai phục vụ học và đánh giá; suy luận chỉ sử dụng trạng thái quan sát.}
+  \label{fig:end-to-end-flow}
+\end{figure}
+\FloatBarrier
+
+Bảng~\ref{tab:architecture-layers} mô tả các nhóm chức năng xử lý chính. Kiểm thử, tiện ích, tài liệu và CI/CD hỗ trợ các nhóm này; chúng không phải các tầng xử lý nối tiếp của một request suy luận.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Các nhóm chức năng chính của hệ thống.}
+  \label{tab:architecture-layers}
+  \begin{tabularx}{\textwidth}{@{}p{0.27\textwidth}X@{}}
+    \toprule
+    \textbf{Nhóm chức năng} & \textbf{Trách nhiệm} \\
+    \midrule
+    Mô phỏng và topology & Sinh chuyển động UAV, topology, phép đo liên kết, trạng thái OLSR và trace đầu vào. \\
+    Pipeline dữ liệu & Tạo features, labels, graph records, tabular records, time split và kiểm định chất lượng. \\
+    Mô hình và huấn luyện & Định nghĩa baseline, MLP, XGBoost, GraphSAGE, GAT, Edge-Aware GraphSAGE và các giao thức huấn luyện. \\
+    Routing và đánh giá & Sinh prediction, replay routing, multi-horizon, closed-loop, thống kê và artifact nghiên cứu. \\
+    Serving và giao diện & Nạp checkpoint, cung cấp API dự đoán cạnh và hiển thị topology. Thu thập mạng thật và cài tuyến trực tuyến là phần cần tích hợp. \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+\FloatBarrier
+
+\subsection{Vị trí xử lý và phạm vi tích hợp}
+
+Pipeline nghiên cứu xử lý snapshot toàn mạng trên máy chạy thí nghiệm. API nhận một đồ thị do client gửi, phù hợp với cách xử lý tập trung ở mức ứng dụng. Chưa có cơ chế để từng UAV tự thu thập đồ thị, chạy GNN phân tán và đồng bộ quyết định tuyến. Vị trí bộ điều khiển khi triển khai thực tế, chẳng hạn trạm mặt đất, cần được xác định trong thiết kế tích hợp riêng.
+
+Trong nhánh đánh giá ns-3, Python tính route plan và mã C++ cài tuyến theo lịch. Trong nhánh serving, client gửi JSON và nhận dự đoán; API chưa tự thu thập telemetry hay cài bảng định tuyến cho UAV thật.
+
+\section{Luồng mô phỏng mạng UAV}
+\label{sec:simulation}
+
+\subsection{Nhánh ns-3 dùng cho thí nghiệm chính}
+
+Kịch bản chính nằm trong \path{simulation/ns3/uav-olsr-dataset.cc}, được biên dịch thành \path{simulation/ns3/build/uav-olsr-dataset}. Bộ dữ liệu nền được điều phối qua \path{scripts/dataset/generate_batch.py} và \path{scripts/dataset/run_one_dataset_ns3.sh}. Bộ core matrix dùng bộ điều phối riêng là \path{scripts/dataset/run_core_matrix.py}, gọi binary ns-3 theo từng cấu hình và seed.
+
+Kịch bản dùng mạng Wi-Fi ad hoc và OLSR của ns-3. RSSI lấy từ quan sát PHY khi có mẫu; SNR suy ra với noise floor cấu hình; delay và packet loss một hop lấy từ UDP probe. Throughput trong bảng cạnh là proxy dung lượng tính từ chỉ số liên kết, không phải thông lượng đầu cuối của luồng dữ liệu. Giá trị dự phòng khi thiếu mẫu đo phải được ghi rõ trong đặc tả dữ liệu.
+
+Snapshot ns-3 tổng hợp một cửa sổ probe một giây. Bước \(t\) là nhãn của cửa sổ đó; thông tin chỉ sẵn sàng sau khi cửa sổ kết thúc. Khi cài tuyến phải dùng mốc thời gian khả dụng này, tránh sử dụng số liệu chưa quan sát được.
+
+Mã C++ ghi các bảng node, edge, traffic và scenario metadata. Tuyến OLSR trong traffic log thuộc giao thức ns-3 và dùng làm đối chứng trên cùng cặp nguồn--đích. Cần lưu phiên bản nguồn cùng checksum binary để kiểm tra dữ liệu có tương ứng với mã đang xem xét hay không.
+
+\subsection{Bộ mô phỏng Python}
+
+Nhánh Python có điểm vào \path{simulation/main.py}; hàm \code{main()} điều phối vòng đời riêng của bộ mô phỏng này. Cấu hình được đọc từ \path{simulation/config.py} và kiểm tra bằng \code{validate\_config()} trong \path{simulation/config_utils.py}. Các tham số gồm seed, số UAV, miền không gian, thời lượng, time step, tầm truyền, mobility và tham số kênh. Nhánh này hỗ trợ thử nghiệm nhanh; kết quả của nó cần được phân biệt với mô phỏng gói tin ns-3.
+
+Hàm \code{initialize\_uavs()} trong \path{simulation/entities.py} tạo các thực thể \code{UAV}. Mỗi UAV giữ định danh, tọa độ ba chiều, vector vận tốc và trạng thái cần thiết cho mobility. Việc lưu seed và metadata kịch bản cho phép tái tạo cùng một run trong các lần chạy sau.
+
+\subsection{Vòng lặp của bộ mô phỏng Python}
+
+Tại mỗi time step, \code{update\_positions()} trong \path{simulation/mobility.py} cập nhật vị trí và vận tốc UAV. Hai họ mobility chính là Gauss--Markov và Random Waypoint. Gauss--Markov tạo chuyển động có tương quan theo thời gian; Random Waypoint chọn điểm đích, di chuyển đến đích và lấy waypoint mới. Hàm phản xạ biên giữ UAV trong miền mô phỏng.
+
+Sau bước mobility, \code{build\_topology()} trong \path{simulation/topology.py} xét các cặp UAV. Hàm này tính khoảng cách Euclid ba chiều, vận tốc tương đối và các điều kiện hình thành liên kết. Các phép ước lượng trong \path{simulation/metrics.py} tạo RSSI, SNR, delay, packet loss, throughput và xác suất ổn định \code{p\_stable}. Kết quả là một snapshot graph mô tả trạng thái vật lý và vô tuyến của mạng tại thời điểm hiện tại.
+
+\subsection{OLSR trong bộ mô phỏng Python}
+
+\code{OLSRProtocol} trong \path{simulation/olsr.py} mô phỏng HELLO/TC, lựa chọn Multi-Point Relay (MPR), xây routing table và truy vấn tuyến trong nhánh Python. Kết quả này cần ghi provenance riêng với tuyến \code{ns3::olsr} trong bộ dữ liệu ns-3.
+
+\subsection{Artifact và định danh dữ liệu}
+
+Trong nhánh Python, \code{save\_all\_outputs()} trong \path{simulation/pipeline_io.py} ghi dữ liệu; \code{save\_scenario\_metadata()} trong \path{simulation/main.py} lưu scenario và cấu hình. Nhánh ns-3 có writer riêng trong C++. Cả hai nhánh cần giữ nhất quán khóa run, thời điểm và cặp nút, đồng thời ghi simulator, seed, cấu hình và phiên bản nguồn. Việc dùng chung schema không bảo đảm các chỉ số của hai nguồn có cùng ý nghĩa phép đo.
+
+\section{Luồng tiền xử lý dữ liệu}
+\label{sec:preprocessing}
+
+\subsection{Orchestration}
+
+Hàm \code{run\_pipeline()} trong \path{src/preprocessing/run_preprocessing.py} là entry point của preprocessing. Nó xác thực đối số, phân giải đường dẫn và gọi các module tạo feature, label, split cùng graph record. Tài liệu \path{docs/dataset_spec.md} là hợp đồng mô tả schema được kỳ vọng giữa mô phỏng và mô hình.
+
+\subsection{Tạo feature}
+
+\code{build\_feature\_tables()} trong \path{src/preprocessing/gnn/build_features.py} tạo các bảng đặc trưng. Graph builder chọn tám đặc trưng nút: vị trí ba chiều, vận tốc ba chiều, degree và load proxy. Bảy đặc trưng cạnh là distance, RSSI, SNR, delay, packet loss, relative speed và throughput.
+
+\code{compute\_load\_proxy()} tính load của nút bằng degree chia cho số nút còn lại. Đây là độ kết nối chuẩn hóa, không phải phép đo lưu lượng hoặc hàng đợi. Các trường \code{p\_stable} và \code{weight} xuất hiện trong bảng trung gian nhưng không thuộc danh sách bảy đặc trưng cạnh của graph builder.
+
+Feature schema phải ổn định giữa huấn luyện và serving. Thứ tự cột, kiểu dữ liệu và quy tắc chuẩn hóa không được thay đổi âm thầm, vì checkpoint chỉ có ý nghĩa đối với schema mà nó được huấn luyện cùng.
+
+\subsection{Tạo nhãn tương lai}
+
+\code{build\_labeled\_edges()} trong \path{src/preprocessing/gnn/build_labels.py} chỉ lấy cạnh đang kết nối tại \(t\), rồi tạo nhãn theo một trong hai mục tiêu:
+\begin{align}
+ y^{\mathrm{QoS}}_{uv,t,k}
+ &= \mathbf{1}\!\left\{\begin{array}{l}
+ (u,v)\text{ kết nối tại }t+k,\\
+ \mathrm{SNR}_{t+k}\geq\tau_{\mathrm{snr}},\quad
+ \mathrm{loss}_{t+k}\leq\tau_{\mathrm{loss}},\\
+ \mathrm{delay}_{t+k}\leq\tau_{\mathrm{delay}}
+ \end{array}\right\},\label{eq:qos-label}\\
+ y^{\mathrm{surv}}_{uv,t,k}
+ &= \prod_{j=1}^{k}\mathbf{1}\{(u,v)\text{ kết nối tại }t+j\}.
+ \label{eq:survival-label}
+\end{align}
+QoS kiểm tra ngưỡng tại đúng mốc tương lai. Survival kiểm tra kết nối liên tục và không áp thêm bộ ngưỡng QoS. Hàm \code{assign\_label()} thực hiện quy tắc QoS. Ngưỡng và horizon phải đi cùng metadata để phân biệt hai sự kiện được dự đoán.
+
+Các mục tiêu được đánh giá riêng ở \(k\in\{1,2,3,5\}\). Dự báo nhiều mốc không mặc nhiên có nghĩa là một mô hình có bộ nhớ thời gian hoặc nhiều đầu ra dùng chung checkpoint. Độ khó phụ thuộc cả phân bố nhãn; không giả định mọi metric giảm khi tăng \(k\). Trạng thái tương lai chỉ dùng tạo nhãn và chấm điểm, không được đưa vào feature suy luận.
+
+\subsection{Time split và graph record}
+
+\code{build\_time\_split()} trong \path{src/preprocessing/common/split_dataset.py} chia train, validation và test theo thứ tự thời gian. Hàm loại \(k\) bước cuối của vùng train và validation khỏi các tập tương ứng, đánh dấu chúng là \code{purged}, nhằm tránh nhãn tương lai vượt ranh giới chia tập. Cách chia này giảm một nguồn rò rỉ nhưng chưa thay thế kiểm tra đặc trưng, phép chuẩn hóa và toàn bộ quy trình học.
+
+\code{build\_graph\_records()} trong \path{src/preprocessing/gnn/build_graph_dataset.py} tạo record dùng cho PyTorch Geometric, gồm node feature matrix, \code{edge\_index}, edge feature matrix, edge labels và metadata. \code{duplicate\_undirected\_edges()} biểu diễn một liên kết vô hướng bằng hai cạnh có hướng để phù hợp với message passing.
+
+\section{Luồng huấn luyện mô hình}
+\label{sec:training}
+
+\subsection{Kiến trúc GNN}
+
+Các mô hình nằm trong \path{src/models/gnn/edge_gnn.py}. \code{GraphSAGEEdgeClassifier} tổng hợp embedding từ node lân cận; \code{GATEdgeClassifier} học attention cho từng quan hệ; \code{EdgeAwareSAGEConv} đưa edge features trực tiếp vào message passing; và \code{EdgeAwareSAGEEdgeClassifier} kết hợp embedding node với đặc trưng cạnh để phân loại liên kết.
+
+Trong Edge-SAGE, mỗi thông điệp kết hợp embedding nút hàng xóm với đặc trưng cạnh nối đến nút đó. Phép tổng hợp lấy trung bình các thông điệp và cộng với biến đổi của chính nút. Bộ giải mã ghép embedding hai đầu mút cùng đặc trưng cạnh, rồi dùng MLP để tạo logit; sigmoid chuyển logit thành điểm số trong \([0,1]\).
+
+Cấu trúc này cho mô hình sử dụng ngữ cảnh vùng lân cận cùng chất lượng liên kết. Lợi ích cần được kiểm tra bằng baseline và ablation trên cùng dữ liệu. Số lớp message passing giới hạn phạm vi lân cận; không nên diễn giải rằng mỗi dự đoán đã sử dụng mọi nút trong mạng. Điểm sigmoid cũng chưa mặc nhiên là xác suất đã hiệu chuẩn.
+
+\subsection{Huấn luyện within-run}
+
+Hàm \code{main()} trong \path{src/training/gnn/train_gnn.py} nạp graph, tạo data loader, xác định chế độ edge feature và chạy \code{train\_one\_epoch()} qua nhiều epoch. Các helper trong \path{src/training/gnn/common.py} thực hiện nạp graph, tính \code{pos\_weight}, thu scores, tìm threshold tốt nhất và đánh giá từng split.
+
+\code{pos\_weight} điều chỉnh hàm mất mát khi hai lớp mất cân bằng. Ngưỡng phân loại có thể được chọn trên validation, rồi cố định khi đánh giá test. Checkpoint và metadata lưu kiến trúc, chế độ đặc trưng cạnh và threshold. Schema hiện còn được quy định trong mã; cần bổ sung phiên bản schema và kiểm tra tương thích để artifact tự mô tả đầy đủ.
+
+\subsection{Leave-One-Run-Out}
+
+\path{src/training/gnn/train_gnn_loro.py} hỗ trợ học trên nhóm run và giữ riêng một hoặc nhiều run làm test; mã kiểm tra seed của hai nhóm không chồng lấn. Within-run đánh giá phần thời gian giữ riêng trong cùng run; LORO hoặc held-run đánh giá run chưa dùng để học. Muốn đánh giá loại chuyển động hoặc scenario chưa thấy phải giữ riêng toàn bộ loại đó và ghi rõ tập học. Chỉ giữ một run chưa đủ cho kết luận này.
+
+\subsection{Held-seed của core matrix}
+
+\code{held\_seed\_groups()} trong \path{scripts/dataset/run_core_matrix.py} luân phiên giữ riêng từng seed. Với 21 điều kiện và 10 seed, mỗi lượt giữ 21 run của một seed, còn 189 run của chín seed phục vụ huấn luyện và validation theo pipeline. Quy trình lặp qua 10 seed, riêng cho từng target, horizon và mô hình. Đây là đánh giá luân phiên theo seed, không phải một lần chia cố định.
+
+Các run cùng seed được ghép nhóm khi suy luận thống kê. Danh sách run, seed giữ riêng, checkpoint và manifest của từng lượt cần được lưu để truy vết số liệu tổng hợp.
+
+\subsection{Nhánh baseline}
+
+Kho mã có Logistic Regression, Random Forest, XGBoost, MLP, Persistence và heuristic RSSI/SNR làm đối chứng. Bộ core matrix dùng Edge-SAGE, XGBoost, Logistic Regression và Persistence. Mỗi bảng phải ghi rõ mô hình thực sự tham gia. So sánh GNN với mô hình bảng đo lợi ích tổng thể của cách xây dựng mô hình; ablation có kiểm soát cần thiết để tách đóng góp của ngữ cảnh đồ thị, đặc trưng cạnh và các thành phần khác.
+
+\section{Từ prediction đến quyết định routing}
+\label{sec:routing}
+
+\subsection{Sinh xác suất cạnh}
+
+\code{predict\_edges()} trong \path{src/routing/predict_edges.py} nạp checkpoint và sinh điểm số cho từng cạnh. Với prediction đã lưu, \code{attach\_prediction\_identity()} bổ sung time, src và dst theo thứ tự cạnh trong graph; hàm kiểm tra số dòng và đối chiếu nhãn khi có. Nó không tự bổ sung đầy đủ run, target, horizon và định danh checkpoint thành các cột. Cần đối chiếu các thông tin này qua đường dẫn, metadata và manifest của từng thí nghiệm.
+
+Đầu ra có dạng khái niệm
+\[
+  p^{(a,k)}_{uv,t}=\sigma\!\left(f_{\theta_{a,k}}(G_t,u,v)\right),
+  \qquad a\in\{\mathrm{QoS},\mathrm{survival}\}.
+\]
+Sự kiện dự đoán phụ thuộc vào target \(a\), theo Công thức~\eqref{eq:qos-label} và \eqref{eq:survival-label}. Mỗi prediction phải gắn với đúng target, horizon và checkpoint trước khi routing sử dụng.
+
+\subsection{Chính sách chọn tuyến}
+
+Routing xây đồ thị trên các cạnh đang kết nối. Khi bật lọc cạnh, chỉ giữ các cạnh có \(p\geq\tau_{\mathrm{route}}\). Hai cách tính chi phí trong mã là
+\[
+ w_{uv}=-\log\!\left(\max(p_{uv},\varepsilon)\right)+\varepsilon,
+ \qquad\text{hoặc}\qquad
+ w_{uv}=1-p_{uv}+\varepsilon.
+\]
+Dijkstra tìm tuyến có tổng chi phí nhỏ nhất. Hai công thức có thể chọn đường khác nhau; cost mode phải đi cùng kết quả. Ngưỡng phân loại tối ưu theo Macro-F1 và ngưỡng lọc tuyến phục vụ hai mục tiêu khác nhau. Cần chọn chính sách routing trên validation theo tiêu chí mạng và ghi rõ ngưỡng của từng thí nghiệm. Khi không tìm được đường, phải ghi nhận phiên thất bại; nếu dùng fallback thì khai báo chính sách và thống kê riêng.
+
+\subsection{Replay ngoại tuyến}
+
+\code{evaluate\_run()} trong \path{src/routing/replay_eval.py} nạp raw edges, prediction scores, test time steps và tuyến OLSR. Mỗi chiến lược xây đồ thị trọng số, chọn đường rồi kiểm tra đường đó trên các snapshot tiếp theo. Đầu ra gồm thời gian tuyến còn hợp lệ, tỷ lệ tìm được đường và chỉ số suy ra từ trace.
+
+\code{path\_pdr()} tính proxy bằng tích \(\prod_{e\in\pi}(1-\mathrm{loss}_e)\) dọc tuyến \(\pi\). Đây là ước lượng từ chỉ số một hop, không phải PDR của luồng gói tin thực sự được gửi qua tuyến. Delay cộng dọc tuyến cũng cần ghi là chỉ số từ trace. Tiêu chí tuyến hợp lệ trong replay có thể yêu cầu cả ngưỡng QoS, còn nhãn survival chỉ kiểm tra kết nối; phải ghi tiêu chí đánh giá cùng mỗi metric.
+
+Các nhóm chiến lược gồm shortest-hop, delay-weighted và prediction-assisted; tuyến OLSR thật được lấy riêng từ traffic log. Cùng trace giúp kiểm soát biến thiên, nhưng so sánh còn cần cùng session, cặp nguồn--đích, horizon và quy tắc xử lý tuyến không tìm được. Quyết định routing trong replay không thay đổi tải hay diễn biến simulator ban đầu.
+
+\subsection{Đánh giá multi-horizon}
+
+\code{run\_multihorizon\_routing()} trong \path{src/routing/multihorizon_eval.py} lặp qua run, target, horizon và cost mode. \code{aggregate\_multihorizon\_results()} tổng hợp chỉ số theo các tọa độ đó. Luồng này phục vụ khảo sát mốc dự báo và chính sách chọn tuyến; chỉ kết luận về mức cải thiện sau khi kiểm tra tính hợp lệ và phân tích ghép cặp. Bảng routing của core matrix được tính qua \path{scripts/analysis/analyze_core_matrix.py}; không mặc định mọi bảng trong dự án đều đi qua cùng evaluator.
+
+\subsection{Chạy gói tin ns-3 với kế hoạch tuyến từ trace}
+
+Module \path{src/routing/closed_loop.py} dùng tên \emph{trace-driven closed-loop}. Hàm \code{run\_closed\_loop\_experiment()} đọc prediction và trace gốc, gọi \code{build\_route\_plan()} để tính trước đường đi theo snapshot, rồi gọi \code{build\_ns3\_command()} để chạy lại scenario. Mã ns-3 cài tuyến theo lịch cho luồng UDP được đánh giá; FlowMonitor đo số gói gửi, nhận, delay và throughput. \code{aggregate\_closed\_loop\_results()} tổng hợp các lần chạy.
+
+Đánh giá này đo gói tin trong simulator và có thể phản ánh tác động của tuyến lên tải, delay và mất gói. Tuy nhiên, prediction và kế hoạch tuyến đã được tạo từ trace gốc; chúng chưa được tính lại từ trạng thái mới do chính quyết định routing tạo ra. Vì vậy chưa có vòng phản hồi đầy đủ kiểu quan sát mới, suy luận lại và thay tuyến trực tuyến. Tên module không phải bằng chứng rằng một vòng điều khiển trực tuyến như vậy đã hoàn thành.
+
+Khi báo cáo, cần gọi rõ đây là \emph{đánh giá gói tin với kế hoạch tuyến tính trước từ trace}. Phải kiểm tra cùng scenario, seed, cửa sổ gửi gói, ưu tiên cài tuyến và nhiều run ghép cặp trước khi kết luận. Việc đã có module không xác nhận các kết quả cũ của module đã được xác minh.
+
+\section{Tổng hợp và kiểm định thống kê}
+\label{sec:evaluation}
+
+\path{src/routing/aggregate_routing.py} tổng hợp replay truyền thống; các module multi-horizon, core matrix và chạy gói tin có hàm tổng hợp riêng. Các phép so sánh phải ghép cặp trên cùng run và điều kiện. Với nhiều điều kiện dùng chung seed, cần tổng hợp theo seed trước khi suy luận thống kê, thay vì coi mọi cạnh, snapshot hoặc run cùng seed là mẫu độc lập.
+
+\code{paired\_comparisons()} trong \path{src/evaluation/paired_statistics.py} ghép kết quả theo run rồi nhóm chênh lệch theo seed. Hàm dùng \code{bootstrap\_mean\_ci()} để tạo khoảng tin cậy, \code{\_paired\_sign\_flip\_pvalue()} để kiểm định theo cặp và \code{holm\_adjust()} để hiệu chỉnh các p-value trong bảng so sánh được truyền vào. Số lần bootstrap và phạm vi nhóm phép kiểm định phải được ghi cùng báo cáo.
+
+Không mặc định mọi kết quả trong dự án đã gọi hàm này. Đặc biệt, việc mã có hỗ trợ Holm không chứng minh một bảng core matrix hoặc bảng cũ đã được hiệu chỉnh. Cần truy vết từng bảng về script, tham số và artifact thực sự sinh ra nó.
+
+Không nên diễn giải một mô hình là tốt hơn chỉ từ trung bình metric. Báo cáo cần kèm độ lớn hiệu ứng, khoảng tin cậy, số cặp hợp lệ và kết quả sau hiệu chỉnh multiple testing.
+
+\section{Luồng serving trực tuyến}
+\label{sec:serving}
+
+Hình~\ref{fig:serving-flow} mô tả đầu vào và đầu ra của API hiện có. Khối nét đứt là phần tích hợp cần bổ sung, không phải chức năng đã được nối với UAV thật.
+
+\begin{figure}[htbp]
+  \centering
+  \begin{tikzpicture}
+    \node[block] (artifact) at (0,0) {Checkpoint đã chọn\\Metadata kiến trúc và threshold};
+    \node[block] (client) at (7,0) {Client gửi snapshot mới\\Đặc trưng nút, cạnh và topology};
+    \node[block] (api) at (3.5,-2) {FastAPI\\Nạp model, kiểm tra request và suy luận};
+    \node[block] (prediction) at (3.5,-3.8) {Kết quả dự đoán cạnh\\Score, nhãn và routing weight};
+    \node[block] (dashboard) at (0,-5.8) {Streamlit hiện có\\Bảng dự đoán và topology 3D};
+    \node[planned] (integration) at (7,-5.8) {Phần cần tích hợp\\Chọn tuyến trực tuyến và cài tuyến trên UAV};
+    \draw[flow] (artifact.south) -- (api.north west);
+    \draw[flow] (client.south) -- (api.north east);
+    \draw[flow] (api) -- (prediction);
+    \draw[flow] (prediction.south west) -- (dashboard.north);
+    \draw[flow,dashed] (prediction.south east) -- (integration.north);
+  \end{tikzpicture}
+  \caption{Luồng serving. API nhận mô hình và đồ thị mới; dashboard sử dụng kết quả dự đoán.}
+  \label{fig:serving-flow}
+\end{figure}
+\FloatBarrier
+
+Luồng triển khai qua CI sử dụng các script promote và stage model. \path{scripts/mlops/stage_serving_model.sh} lấy artifact được trỏ tới qua DVC, kiểm tra model ID và run rồi đặt checkpoint cùng metadata vào thư mục model. Script promote đóng gói phiên bản được chọn; bản thân script chưa tự xác nhận mô hình đạt ngưỡng khoa học, hiệu chuẩn hay chất lượng routing. Các điều kiện phát hành cần được định nghĩa và kiểm tra riêng.
+
+\code{load\_model()} trong \path{src/serving/app.py} nạp checkpoint và metadata kiến trúc; thứ tự đặc trưng được quy định trong mã thay vì nạp từ một schema artifact độc lập. FastAPI gọi loader khi khởi động. Endpoint \path{/health} phản ánh model đã nạp; \path{/predict} nhận graph, tạo tensor, suy luận và trả kết quả cạnh. Mỗi tiến trình hiện phục vụ model đã nạp; request chưa chọn động target và horizon.
+
+\path{src/serving/schemas.py} định nghĩa schema Pydantic cho node, edge, request và response. Mã kiểm tra trường bắt buộc, giá trị hữu hạn, một số miền giá trị và tham chiếu node. Các kiểm tra đó bảo vệ cấu trúc request, nhưng chưa xác nhận đơn vị đo, độ mới của snapshot hay tính tương thích target/horizon với model. Cần bổ sung version schema, target, horizon và phiên bản checkpoint vào hợp đồng phục vụ nếu tích hợp hệ thống thực tế.
+
+API hiện trả \code{routing\_weight = 1 - stability\_score}. Trong khi đó, đánh giá đa thời điểm hỗ trợ cả \(-\log(p)\) và \(1-p\). Cần ghi rõ khác biệt này và thống nhất cost mode khi nối API với bộ chọn tuyến; không mặc định tuyến từ serving sẽ trùng với tuyến trong thí nghiệm. API cũng chưa trả toàn bộ đường đi hay tự cài routing table.
+
+\path{src/dashboard/app.py} nhận JSON do người dùng nhập, gọi API rồi hiển thị bảng dự đoán cạnh và topology UAV ba chiều. Dashboard hiện chưa thực hiện chọn nguồn--đích, tính tuyến hoặc cài tuyến. Nó là công cụ quan sát đầu ra dự đoán, không phải bộ điều khiển định tuyến hoặc nguồn ground truth.
+
+\section{Kiểm thử, tái lập và triển khai}
+\label{sec:operations}
+
+\subsection{Hàng rào kiểm thử}
+
+Pytest fixtures tạo graph mẫu và dữ liệu dùng chung. Các test bảo vệ feature schema, preprocessing, model forward pass, time split, multi-horizon routing, closed-loop, serving model lifecycle và artifact nghiên cứu. Test hợp đồng kiểm tra dữ liệu khi chuyển từ tiền xử lý sang huấn luyện, và từ huấn luyện sang serving.
+
+\subsection{Pipeline tái lập}
+
+\path{dvc.yaml} khai báo pipeline nền với các stage sinh dữ liệu, kiểm định, huấn luyện, tổng hợp, routing và LORO; tiền xử lý được gọi trong bước sinh dữ liệu. Core matrix có script điều phối riêng, không mặc định được bao phủ toàn bộ bởi pipeline DVC nền. DVC theo dõi dependency và output đã khai báo. Để truy vết đầy đủ, metadata còn cần seed, run, scenario, target, horizon, model ID, checksum và phiên bản mã.
+
+\subsection{Đóng gói và CI/CD}
+
+\path{Dockerfile.serve} đóng gói FastAPI; \path{Dockerfile.dashboard} đóng gói Streamlit. Việc tách image tránh đưa dependency trực quan hóa vào inference service và ngược lại.
+
+Kho mã có GitHub Actions cho CI, build image và triển khai. Việc có workflow không chứng minh lần chạy gần nhất đã thành công. Điều kiện phát hành cần kiểm tra riêng việc chạy kiểm thử, chọn đúng model và gắn image với commit cùng artifact đã promote.
+
+\subsection{Kubernetes và Infrastructure as Code}
+
+Kho mã có manifest Kustomize cho Deployment, Service và ConfigMap của inference, cấu hình Argo CD, và Terraform staging với các module VPC, EKS, storage/database. Đây là các cấu hình triển khai có sẵn, không phải xác nhận tài nguyên đã được tạo hoặc đang phục vụ. Ngoài ra, workflow triển khai hiện có nhánh Google Cloud Run. Cần chọn và ghi rõ môi trường sử dụng trong từng lần phát hành, tránh mô tả Cloud Run và Kubernetes trên AWS như một chuỗi bắt buộc duy nhất.
+
+Chuỗi triển khai khái niệm là
+\[
+  \text{commit}
+  \rightarrow \text{CI}
+  \rightarrow \text{container image}
+  \rightarrow \text{registry}
+  \rightarrow \text{Kubernetes/Argo CD}.
+\]
+Terraform quản lý hạ tầng nền, còn Kubernetes quản lý vòng đời workload. Hai lớp này cần giữ ranh giới rõ để tránh trộn thay đổi hạ tầng dài hạn với rollout ứng dụng thường xuyên.
+
+\section{Ranh giới thiết kế và điểm cần lưu ý}
+\label{sec:boundaries}
+
+\subsection{Dự đoán không đồng nghĩa với định tuyến}
+
+GNN tạo xác suất chất lượng cạnh; nó không tự thiết lập routing table. Quy tắc chuyển xác suất thành edge cost, threshold hoặc route plan nằm trong lớp routing. Tách hai phần giúp thay model mà không viết lại toàn bộ evaluator và giúp đánh giá routing với prediction từ nhiều mô hình.
+
+\subsection{Phân biệt replay, đo gói tin và phản hồi trực tuyến}
+
+Replay phù hợp để sàng lọc model và chính sách bằng trace. Chạy lưu lượng trong ns-3 đo gói tin theo tuyến đã chọn. Vòng phản hồi trực tuyến còn cần quan sát trạng thái sau tác động, suy luận lại và cập nhật tuyến trong khi chạy. Ba mức đánh giá này phải được mô tả riêng; kết quả mô phỏng cũng chưa thay thế kiểm chứng trên UAV thật.
+
+\subsection{Schema là hợp đồng xuyên suốt}
+
+Cùng một feature schema phải được dùng ở preprocessing, checkpoint và serving. Thay đổi thứ tự hoặc ý nghĩa feature mà không tăng version có thể tạo prediction hợp lệ về hình thức nhưng sai về ngữ nghĩa.
+
+\subsection{Nguy cơ leakage}
+
+Snapshot liền kề có tương quan mạnh; random split có thể làm metric quá lạc quan. Time split có purge kiểm soát giao thoa cửa sổ nhãn. Held-seed kiểm tra run có seed giữ riêng. Đánh giá scenario hoặc loại chuyển động chưa thấy cần chia nhóm theo đúng yếu tố đó. Tất cả vẫn cần kiểm tra feature, chuẩn hóa, chọn threshold và đường đi của artifact trước khi kết luận không có rò rỉ.
+
+\subsection{Hiệu chuẩn và điều kiện thực tế}
+
+Nhánh Python sử dụng các hàm ước lượng chỉ số; ns-3 kết hợp phép đo trong simulator với giá trị suy ra hoặc dự phòng. Cần phân biệt nguồn và đơn vị của từng đặc trưng. Khi chuyển sang phần cứng thật phải kiểm tra sai khác phân bố, độ trễ đo và hiệu chuẩn điểm số trước khi sử dụng ngưỡng routing.
+
+\subsection{Hợp đồng tích hợp và xử lý sự cố cần bổ sung}
+
+Thiết kế tích hợp thực tế cần xác định bên thu thập và ghép snapshot, vị trí chạy suy luận, chu kỳ cập nhật và bên được phép cài tuyến. Hợp đồng dữ liệu cần có thời điểm quan sát, đơn vị đo, schema version, target, horizon và model version. Ngân sách thời gian phải bao gồm thu thập, truyền snapshot, suy luận, chọn tuyến và cài tuyến; cần đo tổng thời gian này so với mốc dự báo.
+
+API chưa có chính sách tự động điều khiển tuyến khi snapshot quá cũ, request lỗi hoặc suy luận quá hạn. Trước khi tích hợp UAV, cần chọn timeout, điều kiện từ chối dữ liệu, chính sách khi không tìm được đường và cơ chế fallback. Có thể khảo sát giữ tuyến cũ hoặc dùng tuyến OLSR khi phù hợp, nhưng đây là phương án thiết kế cần đánh giá, không phải hành vi đã có. Fallback và phiên thất bại phải được ghi log để không làm lệch thống kê hiệu năng.
+
+\section{Kết luận}
+\label{sec:conclusion}
+
+Kiến trúc hiện có bao gồm mô phỏng, xử lý dữ liệu, học dự đoán cạnh, chọn tuyến và các nhánh đánh giá. Bộ core matrix dùng ns-3 và held-seed; GNN khai thác vùng lân cận đồ thị và đặc trưng liên kết để dự đoán QoS hoặc survival ở từng mốc tương lai. Routing chuyển điểm số thành chi phí và dùng Dijkstra để tìm đường.
+
+Replay cung cấp chỉ số từ trace; nhánh ns-3 chạy gói tin theo kế hoạch tuyến tính trước. API phục vụ dự đoán đồ thị do client gửi, còn dashboard hiển thị kết quả cạnh. Để chuyển thành hệ thống điều khiển mạng UAV trực tuyến, cần hoàn tất thu thập trạng thái, hợp đồng model và schema, chính sách chọn tuyến, cơ chế cài tuyến và vòng phản hồi theo trạng thái mới. Mọi kết luận về hiệu năng cần dựa trên artifact đã xác minh trong đúng phạm vi đánh giá đó.
+
+\end{document}

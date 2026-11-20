@@ -1,0 +1,24 @@
+{
+  "argv": [
+    "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+    "-m",
+    "src.control.service_v2.cli",
+    "validate",
+    "--protocol",
+    "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/formal/protocol.json",
+    "--run-root",
+    "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/runs/formal",
+    "--output",
+    "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/validation/formal.json"
+  ],
+  "cwd": "/home/sac/uav-service/2026-11-12-service-prevention-v2/source-runtime-v003",
+  "direct_exit": 0,
+  "environment": {
+    "LD_LIBRARY_PATH": "/home/sac/uav-service/2026-11-11-path-control/runtime/lib",
+    "MKL_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1"
+  },
+  "finished_unix": 1794505134.5353134,
+  "wall_seconds": 34.72874593734741
+}

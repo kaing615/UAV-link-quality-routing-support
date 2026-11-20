@@ -1,0 +1,16 @@
+{
+  "pid": 3608384,
+  "argv": [
+    "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+    "/home/sac/uav-service/2026-11-12-service-prevention-v2/orchestration/service_v2_parent_recorded_command.py",
+    "--evidence",
+    "/home/sac/uav-service/2026-11-12-service-prevention-v2/evidence/formal-execute-recorded-v004",
+    "--cwd",
+    "/home/sac/uav-service/2026-11-12-service-prevention-v2/source-runtime-v003",
+    "--",
+    "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+    "/home/sac/uav-service/2026-11-12-service-prevention-v2/orchestration/service_v2_parent_phase_v004.py",
+    "formal",
+    "execute"
+  ]
+}

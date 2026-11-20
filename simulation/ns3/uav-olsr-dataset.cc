@@ -44,6 +44,8 @@
 #include "ns3/olsr-helper.h"
 #include "ns3/olsr-routing-protocol.h"
 #include "ns3/wifi-module.h"
+#include "recovery-control.h"
+#include "recovery-protocol.h"
 
 #include <algorithm>
 #include <cmath>
@@ -53,6 +55,7 @@
 #include <iomanip>
 #include <limits>
 #include <map>
+#include <random>
 #include <sstream>
 #include <vector>
 
@@ -107,6 +110,85 @@ static uint32_t g_partitionEndStep = 0;
 static uint32_t g_reconnectStep = 0;
 static std::vector<uint32_t> g_partitionGroupA;
 static std::vector<uint32_t> g_partitionGroupB;
+
+// Dedicated post-partition experiment. The source and destination are mission
+// anchors; all other nodes may serve as relays. No scripted reunion is used.
+static std::string g_recoveryPolicy = "none";
+static double g_recoverySpeed = 8.0;
+static double g_recoveryBudget = 400.0; // travel budget per relay (m), not battery energy
+static double g_recoveryMinSeparation = 5.0;
+static double g_recoveryRangeFactor = 0.65; // planning margin, NOT measured connectivity
+static uint32_t g_recoveryTriggerWindows = 2;
+static uint32_t g_recoveryConfirmWindows = 3;
+static uint32_t g_recoveryDisconnectedWindows = 0;
+static uint32_t g_recoveryConnectedWindows = 0;
+static bool g_recoveryActive = false;
+static bool g_recoveryPlanned = false;
+static bool g_recoveryFeasible = false;
+static std::vector<Vector> g_recoveryTargets;
+static std::vector<Vector> g_recoveryPreviousPositions;
+static std::vector<double> g_recoveryTravel;
+static std::ofstream g_recoveryCsv;
+static std::ofstream g_recoveryActionsCsv;
+static uint32_t g_recoveryLayoutSeed = 1;
+static bool g_recoveryRandomLayout = false;
+static bool g_recoveryLastRejected = false;
+static std::vector<std::vector<double>> g_recoveryRxRatio, g_recoveryRssi;
+static bool g_enableServiceObservation = false;
+static std::vector<std::vector<bool>> g_recoveryRssiMask;
+
+static double g_preventionMissionSpeed = 3.0;
+static uint32_t g_preventionMissionStartStep = 10;
+static double g_preventionSpacingFraction = 0.55;
+static double g_preventionMissionMultiplier = 1.0;
+static double g_preventionJitter = 0.0;
+static std::vector<Vector> g_preventionInitialPositions;
+static std::string g_preventionOutputReservation;
+
+static void GuardPreventionOutput()
+{
+    if (g_scenarioMode!="relay-prevention") return;
+    const std::filesystem::path dir(g_outputDir);
+    std::error_code error;
+    const bool exists=std::filesystem::exists(dir,error);
+    NS_ABORT_MSG_IF(error,"Cannot inspect prevention output directory: " << error.message());
+    if (!exists)
+    {
+        std::filesystem::create_directories(dir,error);
+        NS_ABORT_MSG_IF(error,"Cannot create prevention output directory: " << error.message());
+    }
+    const bool directory=std::filesystem::is_directory(dir,error);
+    NS_ABORT_MSG_IF(error || !directory,"Prevention output path must be a directory");
+    const bool empty=std::filesystem::is_empty(dir,error);
+    NS_ABORT_MSG_IF(error,"Cannot inspect prevention output directory: " << error.message());
+    if (empty) return;
+
+    // The Python bridge reserves a fresh UUID directory before writing config
+    // and opening stderr. Only that single-use reservation can admit these
+    // prelaunch files; all prior simulator artifacts/unknown files are refused.
+    NS_ABORT_MSG_IF(g_preventionOutputReservation.empty(),
+                    "Prevention output directory must be empty/new");
+    for (const auto &entry:std::filesystem::directory_iterator(dir))
+    {
+        const auto name=entry.path().filename().string();
+        NS_ABORT_MSG_IF((name!=".prevention-reservation" && name!="config.json" && name!="simulator.stderr.log" &&
+                        !(g_enableServiceObservation && name=="simulator.stdout.log")) ||
+                        !entry.is_regular_file(),"Prevention output directory must be empty/new or freshly reserved");
+    }
+    std::ifstream marker(dir/".prevention-reservation");
+    std::string token;
+    std::getline(marker,token);
+    NS_ABORT_MSG_IF(!marker || token!=g_preventionOutputReservation,
+                    "Prevention output directory has no matching fresh reservation");
+    marker.close();
+    const bool consumed=std::filesystem::remove(dir/".prevention-reservation",error);
+    NS_ABORT_MSG_IF(error || !consumed,"Cannot consume prevention output reservation");
+}
+
+static bool IsLiveRelayScenario()
+{
+    return g_scenarioMode == "relay-recovery" || g_scenarioMode == "relay-prevention";
+}
 
 static constexpr double PROBE_INTERVAL = 0.05;
 static constexpr uint16_t PROBE_PORT = 9999;
@@ -333,6 +415,295 @@ Clamp01(double x)
 }
 
 static double
+VectorDistance(const Vector &a, const Vector &b)
+{
+    const double dx = a.x - b.x, dy = a.y - b.y, dz = a.z - b.z;
+    return std::sqrt(dx * dx + dy * dy + dz * dz);
+}
+
+static void
+ConfigureRecoveryMobility()
+{
+    MobilityHelper mobility;
+    mobility.SetMobilityModel("ns3::ConstantVelocityMobilityModel");
+    mobility.Install(g_nodes);
+    std::mt19937 rng(g_recoveryLayoutSeed);
+    std::uniform_real_distribution<double> uniform(0.0, 1.0);
+    const double separation = g_groupSeparationM > 0.0 ? g_groupSeparationM :
+                              g_commRange * (g_recoveryRandomLayout ? 1.65 + .85*uniform(rng) : 2.5);
+    g_groupSeparationM = separation;
+    // Put the anchors on the outer ends. The other UAVs form two compact
+    // stationary groups after a mission separation/failure, before recovery.
+    const double spacing = std::max(12.0, 2.0 * g_recoveryMinSeparation);
+    const uint32_t relayCount = g_numUavs - 2;
+    const uint32_t leftCount = (relayCount + 1) / 2;
+    const uint32_t rightCount = relayCount / 2;
+    NS_ABORT_MSG_IF(separation > g_xMax || separation <= 1.5 * g_commRange ||
+                    spacing * std::max(leftCount, rightCount) >= separation / 2.0 ||
+                    spacing * std::max(leftCount, rightCount) >= 0.3 * g_commRange,
+                    "Recovery layout needs separated compact groups within the area");
+    const double left = (g_xMax - separation) / 2.0;
+    const double right = left + separation;
+    const double y = g_yMax / 2.0, z = (g_zMin + g_zMax) / 2.0;
+    const double angle = g_recoveryRandomLayout ? 2*std::acos(-1.0)*uniform(rng) : 0;
+    auto rotate = [&](Vector p) {
+        double dx=p.x-g_xMax/2.0, dy=p.y-y;
+        return Vector(g_xMax/2.0+dx*std::cos(angle)-dy*std::sin(angle),
+                      y+dx*std::sin(angle)+dy*std::cos(angle),p.z);
+    };
+    std::vector<Vector> placed;
+    uint32_t relayRank = 0;
+    for (uint32_t i = 0; i < g_numUavs; ++i)
+    {
+        Vector position;
+        bool onLeft;
+        if (i == g_sourceId) { position = Vector(left, y, z); onLeft = true; }
+        else if (i == g_destId) { position = Vector(right, y, z); onLeft = false; }
+        else
+        {
+            onLeft = relayRank < leftCount;
+            const uint32_t rank = onLeft ? relayRank + 1 : relayRank - leftCount + 1;
+            position = Vector(onLeft ? left + rank * spacing : right - rank * spacing, y, z);
+            ++relayRank;
+        }
+        const Vector original=position;
+        bool valid=false;
+        for (uint32_t attempt=0; attempt<100 && !valid; ++attempt)
+        {
+            position=original;
+            if (g_recoveryRandomLayout && i!=g_sourceId && i!=g_destId)
+            {
+                position.x+=20*(uniform(rng)-.5);
+                position.y+=20*(uniform(rng)-.5);
+                position.z+=20*(uniform(rng)-.5);
+            }
+            position=rotate(position);
+            valid=position.x>=0 && position.x<=g_xMax && position.y>=0 && position.y<=g_yMax &&
+                  position.z>=g_zMin && position.z<=g_zMax;
+            for (const auto &other:placed)
+                valid=valid && VectorDistance(position,other)>=g_recoveryMinSeparation;
+        }
+        NS_ABORT_MSG_IF(!valid,"Cannot generate a safe recovery layout in 100 attempts");
+        placed.push_back(position);
+        g_nodes.Get(i)->GetObject<MobilityModel>()->SetPosition(position);
+        (onLeft ? g_partitionGroupA : g_partitionGroupB).push_back(i);
+        g_recoveryPreviousPositions.push_back(position);
+    }
+    g_recoveryTravel.assign(g_numUavs, 0.0);
+}
+
+static void
+ConfigurePreventionMobility()
+{
+    NS_ABORT_MSG_IF(g_numUavs < 3, "Prevention needs at least three UAVs");
+    const double spacing = g_preventionSpacingFraction * g_commRange;
+    g_preventionJitter = g_recoveryRandomLayout ? std::min(5.0, .03 * spacing) : 0.0;
+    NS_ABORT_MSG_IF(spacing*(g_numUavs-1)+2*g_preventionJitter > g_xMax ||
+                    spacing-2*std::sqrt(3.0)*g_preventionJitter < g_recoveryMinSeparation ||
+                    2*g_preventionJitter > std::min(g_yMax,g_zMax-g_zMin),
+                    "Initially connected prevention chain does not fit safe geometry");
+    MobilityHelper mobility;
+    mobility.SetMobilityModel("ns3::ConstantVelocityMobilityModel");
+    mobility.Install(g_nodes);
+    std::mt19937 rng(g_recoveryLayoutSeed);
+    std::uniform_real_distribution<double> uniform(0.0, 1.0);
+    g_preventionMissionMultiplier = g_recoveryRandomLayout ? .85+.30*uniform(rng) : 1.0;
+    std::vector<uint32_t> order{g_sourceId};
+    for (uint32_t i=0;i<g_numUavs;++i)
+        if (i!=g_sourceId && i!=g_destId) order.push_back(i);
+    order.push_back(g_destId);
+    g_preventionInitialPositions.resize(g_numUavs);
+    const double left = (g_xMax-spacing*(g_numUavs-1))/2.0;
+    for (uint32_t rank=0;rank<g_numUavs;++rank)
+    {
+        Vector p(left+rank*spacing,g_yMax/2.0,(g_zMin+g_zMax)/2.0);
+        if (g_recoveryRandomLayout)
+        {
+            p.x+=g_preventionJitter*(2*uniform(rng)-1);
+            p.y+=g_preventionJitter*(2*uniform(rng)-1);
+            p.z+=g_preventionJitter*(2*uniform(rng)-1);
+        }
+        const uint32_t i=order[rank];
+        g_preventionInitialPositions[i]=p;
+        g_nodes.Get(i)->GetObject<MobilityModel>()->SetPosition(p);
+    }
+    g_recoveryPreviousPositions=g_preventionInitialPositions;
+    g_recoveryTravel.assign(g_numUavs,0.0);
+}
+
+// Emit measured state before accepting the action for the following second.
+static void AppendServiceObservation(std::ostream& out);
+static void
+WriteRecoveryFrame(uint32_t step, const std::vector<Vector> &positions,
+                   uint32_t components, bool sourceDest, bool olsrUsable)
+{
+    std::ostringstream out;
+    out << std::setprecision(12) << "UAVRL {\"version\":1,\"step\":" << step;
+    auto vectors = [&](const char *name, const std::vector<Vector> &values) {
+        out << ",\"" << name << "\":[";
+        for (size_t i=0;i<values.size();++i)
+            out << (i ? "," : "") << '[' << values[i].x << ',' << values[i].y << ',' << values[i].z << ']';
+        out << ']';
+    };
+    vectors("positions",positions);
+    std::vector<Vector> velocities;
+    for (uint32_t i=0;i<g_numUavs;++i)
+        velocities.push_back(g_nodes.Get(i)->GetObject<MobilityModel>()->GetVelocity());
+    vectors("velocities",velocities);
+    out << ",\"travel\":[";
+    for (uint32_t i=0;i<g_numUavs;++i) out << (i ? "," : "") << g_recoveryTravel[i];
+    out << ']';
+    auto matrix = [&](const char *name, const auto &values) {
+        out << ",\"" << name << "\":[";
+        for (uint32_t i=0;i<g_numUavs;++i) {
+            out << (i ? "," : "") << '[';
+            for (uint32_t j=0;j<g_numUavs;++j) out << (j ? "," : "") << values[i][j];
+            out << ']';
+        }
+        out << ']';
+    };
+    matrix("rx_ratio",g_recoveryRxRatio);
+    matrix("rssi",g_recoveryRssi);
+    matrix("rssi_mask",g_recoveryRssiMask);
+    out << ",\"components\":" << components << ",\"source_dest_connected\":" << sourceDest
+        << ",\"olsr_route_usable\":" << olsrUsable
+        << ",\"connected_streak\":" << g_recoveryConnectedWindows
+        << ",\"safety_rejected\":" << g_recoveryLastRejected
+        << ",\"terminal\":" << (step+1==g_timeSteps);
+    AppendServiceObservation(out);
+    out << '}';
+    std::cout << out.str() << std::endl;
+}
+
+static void
+UpdateRecovery(uint32_t step, const std::vector<Vector> &positions,
+               const std::vector<std::vector<uint32_t>> &adjacency, bool olsrRouteUsable)
+{
+    if (!IsLiveRelayScenario()) return;
+    std::vector<int32_t> component(g_numUavs,-1);
+    uint32_t components=0;
+    for (uint32_t start=0;start<g_numUavs;++start) {
+        if (component[start]>=0) continue;
+        std::vector<uint32_t> queue{start}; component[start]=components;
+        for (size_t k=0;k<queue.size();++k) for (uint32_t neighbor:adjacency[queue[k]]) {
+            if (component[neighbor]<0) { component[neighbor]=components; queue.push_back(neighbor); }
+        }
+        ++components;
+    }
+    const bool connected=components==1;
+    const bool usable=connected && olsrRouteUsable;
+    g_recoveryDisconnectedWindows=connected ? 0 : g_recoveryDisconnectedWindows+1;
+    g_recoveryConnectedWindows=usable ? g_recoveryConnectedWindows+1 : 0;
+    const bool confirmed=g_recoveryConnectedWindows>=g_recoveryConfirmWindows;
+    double totalTravel=0;
+    for (uint32_t i=0;i<g_numUavs;++i) {
+        g_recoveryTravel[i]+=VectorDistance(positions[i],g_recoveryPreviousPositions[i]);
+        if (i!=g_sourceId && i!=g_destId) totalTravel+=g_recoveryTravel[i];
+        g_recoveryPreviousPositions[i]=positions[i];
+    }
+    bool quit=false;
+    std::vector<recovery::Vec> action(g_numUavs);
+    std::string status="disabled";
+    if (g_recoveryPolicy=="external") {
+        WriteRecoveryFrame(step,positions,components,component[g_sourceId]==component[g_destId],olsrRouteUsable);
+        // Wait even at the final frame for an explicit orderly close. Python
+        // acknowledges the terminal observation, then receives final metrics.
+        try {
+            auto received=recovery::ReadAction(std::cin,step,3*(g_numUavs-2));
+            quit=received.quit;
+            size_t k=0;
+            if (!quit) for (uint32_t i=0;i<g_numUavs;++i) {
+                if (i==g_sourceId || i==g_destId) continue;
+                action[i]={received.values[k],received.values[k+1],received.values[k+2]}; k+=3;
+            }
+        } catch (const std::exception &error) {
+            NS_FATAL_ERROR("Recovery protocol error: " << error.what());
+        }
+        status=quit ? "controller_close" : "external";
+        g_recoveryActive=!quit;
+    } else if (g_recoveryPolicy=="relay-chain") {
+        if (confirmed) g_recoveryActive=false;
+        if (g_recoveryDisconnectedWindows>=g_recoveryTriggerWindows) g_recoveryActive=true;
+        status=confirmed ? "connected_hold" : "observing";
+        if (g_recoveryActive && !g_recoveryPlanned) {
+            Vector source=positions[g_sourceId], dest=positions[g_destId];
+            Vector axis(dest.x-source.x,dest.y-source.y,dest.z-source.z);
+            std::vector<uint32_t> relays;
+            for (uint32_t i=0;i<g_numUavs;++i) if (i!=g_sourceId && i!=g_destId) relays.push_back(i);
+            auto projection=[&](uint32_t i) { return (positions[i].x-source.x)*axis.x+
+                (positions[i].y-source.y)*axis.y+(positions[i].z-source.z)*axis.z; };
+            std::stable_sort(relays.begin(),relays.end(),[&](uint32_t a,uint32_t b) { return projection(a)<projection(b); });
+            g_recoveryTargets=positions;
+            for (size_t rank=0;rank<relays.size();++rank) {
+                double fraction=(rank+1.0)/(g_numUavs-1.0);
+                g_recoveryTargets[relays[rank]]=Vector(source.x+fraction*axis.x,source.y+fraction*axis.y,source.z+fraction*axis.z);
+            }
+            double hop=VectorDistance(source,dest)/(g_numUavs-1.0);
+            g_recoveryFeasible=!relays.empty() && hop<=g_recoveryRangeFactor*g_commRange && hop>=g_recoveryMinSeparation;
+            g_recoveryPlanned=true;
+        }
+        if (g_recoveryActive) {
+            status=g_recoveryFeasible ? "moving" : "infeasible_chain";
+            if (g_recoveryFeasible) for (uint32_t i=0;i<g_numUavs;++i) {
+                const Vector target=g_recoveryTargets[i];
+                action[i]={(target.x-positions[i].x)/g_recoverySpeed,
+                           (target.y-positions[i].y)/g_recoverySpeed,
+                           (target.z-positions[i].z)/g_recoverySpeed};
+            }
+        }
+    }
+    std::vector<recovery::Vec> current;
+    std::vector<bool> fixed;
+    for (uint32_t i=0;i<g_numUavs;++i) {
+        current.push_back({positions[i].x,positions[i].y,positions[i].z});
+        fixed.push_back(i==g_sourceId || i==g_destId);
+    }
+    if (quit || step+1==g_timeSteps) {
+        action.assign(g_numUavs,{});
+        if (!quit) status="end_of_run";
+    }
+    auto motion=recovery::LimitMotion(current,action,fixed,g_recoveryTravel,
+        {0,g_xMax,0,g_yMax,g_zMin,g_zMax},g_recoverySpeed,g_recoveryBudget,g_recoveryMinSeparation);
+    if (g_scenarioMode=="relay-prevention" && !quit && step+1<g_timeSteps &&
+        step>=g_preventionMissionStartStep)
+    {
+        // Mission motion is exogenous: fixed[] applies only to relay commands,
+        // never to mission speed or travel. Stop exactly at the area boundary.
+        const double speed=g_preventionMissionSpeed*g_preventionMissionMultiplier;
+        motion.next[g_sourceId].y=std::min(g_yMax,current[g_sourceId].y+speed);
+        motion.next[g_destId].y=std::max(0.0,current[g_destId].y-speed);
+        auto safe=[&]() {
+            for (uint32_t i=0;i<g_numUavs;++i) for (uint32_t j=i+1;j<g_numUavs;++j)
+                if (recovery::SweptSeparation(current[i],motion.next[i],current[j],motion.next[j]) <
+                    g_recoveryMinSeparation-1e-8) return false;
+            return true;
+        };
+        if (!safe())
+        {
+            // Reject relay commands as one batch while preserving mission motion.
+            for (uint32_t i=0;i<g_numUavs;++i) if (!fixed[i]) motion.next[i]=current[i];
+            motion.rejected=true;
+            NS_ABORT_MSG_IF(!safe(), "Exogenous mission trajectory conflicts with stationary relay safety");
+        }
+    }
+    g_recoveryLastRejected=motion.rejected;
+    if (motion.rejected) status="safety_blocked";
+    for (uint32_t i=0;i<g_numUavs;++i) {
+        const auto next=motion.next[i];
+        Vector velocity(next.x-positions[i].x,next.y-positions[i].y,next.z-positions[i].z);
+        g_nodes.Get(i)->GetObject<ConstantVelocityMobilityModel>()->SetVelocity(velocity);
+        g_recoveryActionsCsv << step << ',' << i << ',' << action[i].x << ',' << action[i].y << ',' << action[i].z
+            << ',' << velocity.x << ',' << velocity.y << ',' << velocity.z << ','
+            << recovery::Distance(current[i],next) << ',' << g_recoveryTravel[i] << ',' << status << '\n';
+    }
+    g_recoveryCsv << step << ',' << Simulator::Now().GetSeconds() << ',' << components << ','
+        << (component[g_sourceId]==component[g_destId]) << ',' << olsrRouteUsable << ',' << connected << ','
+        << confirmed << ',' << g_recoveryActive << ',' << totalTravel << ',' << status << '\n';
+    if (quit) Simulator::Stop();
+}
+
+
+static double
 FormulaRssi(double distance)
 {
     double d = std::max(distance, 1.0);
@@ -455,6 +826,9 @@ GetOlsr(Ptr<Node> node)
     }
     return nullptr;
 }
+
+#include "routing-diagnostics.h"
+#include "service-observation.h"
 
 static bool
 WalkRoute(uint32_t src, uint32_t dst, std::vector<uint32_t> &path)
@@ -707,6 +1081,7 @@ ApplyRoutePlan(uint32_t step)
 static void
 TakeSnapshot(uint32_t step)
 {
+    SnapshotRoutingDiagnostics(step);
     const double expectedPerDir = 1.0 / PROBE_INTERVAL; // probes per window per direction
     const uint32_t n = g_numUavs;
 
@@ -720,6 +1095,7 @@ TakeSnapshot(uint32_t step)
     }
 
     std::vector<uint32_t> degree(n, 0);
+    std::vector<std::vector<uint32_t>> adjacency(n);
     uint32_t numConnectedEdges = 0;
 
     struct EdgeRow
@@ -755,6 +1131,14 @@ TakeSnapshot(uint32_t step)
             uint32_t rxTotal = fwd.rxCount + bwd.rxCount;
             double rxRatio = rxTotal / (2.0 * expectedPerDir);
             bool connected = rxRatio >= 0.5;
+            if (IsLiveRelayScenario())
+            {
+                g_recoveryRxRatio[i][j] = g_recoveryRxRatio[j][i] = Clamp01(rxRatio);
+                const uint32_t measuredCount=fwd.rssiCount+bwd.rssiCount;
+                g_recoveryRssiMask[i][j]=g_recoveryRssiMask[j][i]=measuredCount>0;
+                g_recoveryRssi[i][j]=g_recoveryRssi[j][i]=measuredCount>0 ?
+                    (fwd.rssiSumDbm+bwd.rssiSumDbm)/measuredCount : 0.0;
+            }
 
             double rssi;
             uint32_t rssiCount = fwd.rssiCount + bwd.rssiCount;
@@ -789,6 +1173,8 @@ TakeSnapshot(uint32_t step)
                 degree[i] += 1;
                 degree[j] += 1;
                 numConnectedEdges += 1;
+                adjacency[i].push_back(j);
+                adjacency[j].push_back(i);
             }
             rows.push_back({i, j, dist, connected ? 1 : 0, relSpeed, rssi, snr, delayMs, loss});
         }
@@ -871,6 +1257,14 @@ TakeSnapshot(uint32_t step)
                  << ",0,"
                  << rtSizeSum / n << '\n';
 
+    bool routeUsable = reachable && !path.empty();
+    for (size_t index = 1; index < path.size(); ++index)
+    {
+        const auto &neighbors = adjacency[path[index - 1]];
+        routeUsable = routeUsable && std::find(neighbors.begin(), neighbors.end(), path[index]) != neighbors.end();
+    }
+    UpdateRecovery(step, pos, adjacency, routeUsable);
+
     g_window.clear();
 }
 
@@ -907,6 +1301,14 @@ WriteClosedLoopMetrics(Ptr<FlowMonitor> monitor, FlowMonitorHelper &helper)
     double meanDelayMs = rxPackets > 0 ? delaySumSeconds * 1000.0 / rxPackets
                                        : std::numeric_limits<double>::quiet_NaN();
     double duration = g_routePlan.rbegin()->first - g_routePlan.begin()->first + 0.99;
+    if (IsLiveRelayScenario() || g_scenarioMode=="routing-sanity")
+    {
+        // External controllers may stop immediately after observing success.
+        // Count only the offered interval that actually elapsed, including at
+        // the final snapshot, not the original planned full-run duration.
+        const double offeredEnd=std::min(Simulator::Now().GetSeconds(),g_warmup+g_timeSteps);
+        duration=std::max(0.0,offeredEnd-(g_warmup+1.01));
+    }
     double intervalSeconds = g_appPacketSize * 8.0 / (g_appRateKbps * 1000.0);
     uint64_t offeredPackets = static_cast<uint64_t>(std::ceil(duration / intervalSeconds));
     double pdr = offeredPackets > 0 ? static_cast<double>(rxPackets) / offeredPackets : 0.0;
@@ -1034,7 +1436,10 @@ WriteScenarioJson(const std::string &runName)
                                           g_scenarioMode == "crossing-swarms" ||
                                           g_scenarioMode == "group-control")
                                              ? "event-controlled-waypoint"
-                                             : g_mobility;
+                                             : g_scenarioMode == "relay-recovery"
+                                                   ? "bounded-relay-recovery"
+                                                   : g_scenarioMode == "relay-prevention"
+                                                         ? "bounded-relay-prevention" : g_scenarioMode=="routing-sanity" ? "static-linear-chain" : g_mobility;
     f << std::fixed << std::setprecision(4);
     f << "{\n"
       << "  \"run_name\": \"" << runName << "\",\n"
@@ -1052,7 +1457,45 @@ WriteScenarioJson(const std::string &runName)
       << "  \"source_id\": " << g_sourceId << ",\n"
       << "  \"dest_id\": " << g_destId << ",\n"
       << "  \"scenario_mode\": \"" << g_scenarioMode << "\",\n"
-      << "  \"partition_start_step\": ";
+      << "  \"enable_routing_diagnostics\": " << (g_enableRoutingDiagnostics?"true":"false") << ",\n"
+      << "  \"routing_diagnostics_schema_version\": 1,\n"
+      << "  \"sanity_spacing_fraction\": " << g_sanitySpacingFraction << ",\n"
+      << "  \"diagnostic_scenario_kind\": \"" << (g_scenarioMode=="routing-sanity"?"static_diagnostic":"none") << "\",\n"
+      << "  \"diagnostic_drop_semantics\": \"trace observations; PHY_rx includes overhearing; layers overlap; never data-flow loss\",\n"
+      << "  \"diagnostic_drop_windows\": \"time=-1 warmup; time=t [warmup+t,warmup+t+1); final partial window retained\",\n"
+      << "  \"recovery_policy\": \"" << g_recoveryPolicy << "\",\n"
+      << "  \"recovery_layout_seed\": " << g_recoveryLayoutSeed << ",\n"
+      << "  \"recovery_random_layout\": " << (g_recoveryRandomLayout ? "true" : "false") << ",\n"
+      << "  \"recovery_speed_mps\": " << g_recoverySpeed << ",\n"
+      << "  \"recovery_budget_per_uav_m\": " << g_recoveryBudget << ",\n"
+      << "  \"recovery_min_separation_m\": " << g_recoveryMinSeparation << ",\n"
+      << "  \"recovery_range_factor\": " << g_recoveryRangeFactor << ",\n"
+      << "  \"recovery_trigger_windows\": " << g_recoveryTriggerWindows << ",\n"
+      << "  \"recovery_confirm_windows\": " << g_recoveryConfirmWindows << ",\n"
+      << "  \"recovery_control_channel\": \"" << (g_scenarioMode=="routing-sanity"?"none":"ideal centralized out-of-band") << "\",\n"
+      << "  \"recovery_connectivity\": \"all-node graph, probe ratio >= 0.5 over preceding 1s\",\n"
+      << "  \"recovery_fixed_nodes\": "
+      << (g_scenarioMode=="relay-prevention" ? "[]" : "["+std::to_string(g_sourceId)+", "+std::to_string(g_destId)+"]") << ",\n";
+    if (g_scenarioMode=="relay-prevention")
+    {
+        f << std::setprecision(12)
+          << "  \"prevention_mission_nodes\": [" << g_sourceId << ", " << g_destId << "],\n"
+          << "  \"prevention_mission_speed_mps\": " << g_preventionMissionSpeed << ",\n"
+          << "  \"prevention_mission_start_step\": " << g_preventionMissionStartStep << ",\n"
+          << "  \"prevention_spacing_fraction\": " << g_preventionSpacingFraction << ",\n"
+          << "  \"prevention_spacing_m\": " << g_preventionSpacingFraction*g_commRange << ",\n"
+          << "  \"prevention_mission_speed_multiplier\": " << g_preventionMissionMultiplier << ",\n"
+          << "  \"prevention_actual_mission_speed_mps\": " << g_preventionMissionSpeed*g_preventionMissionMultiplier << ",\n"
+          << "  \"prevention_jitter_max_m\": " << g_preventionJitter << ",\n"
+          << "  \"prevention_initial_positions\": [";
+        for (uint32_t i=0;i<g_numUavs;++i)
+        {
+            const auto &p=g_preventionInitialPositions[i];
+            f << (i ? "," : "") << '[' << p.x << ',' << p.y << ',' << p.z << ']';
+        }
+        f << "],\n" << std::setprecision(4);
+    }
+    f << "  \"partition_start_step\": ";
     if (g_scenarioMode == "partition-reconnect" || g_scenarioMode == "crossing-swarms")
     {
         f << g_partitionStartStep;
@@ -1148,6 +1591,9 @@ int main(int argc, char *argv[])
     cmd.AddValue("outputDir", "Directory for CSV output", g_outputDir);
     cmd.AddValue("enableAnim", "Generate NetAnim XML (true/false)", g_enableAnim);
     cmd.AddValue("enableDataFlow", "Send a measured unicast UDP flow", g_enableDataFlow);
+    cmd.AddValue("enableRoutingDiagnostics", "Separate read-only versioned routing/drop observations", g_enableRoutingDiagnostics);
+    cmd.AddValue("enableServiceObservation", "Add causal read-only actual UDP service extension", g_enableServiceObservation);
+    cmd.AddValue("sanitySpacingFraction", "Static chain spacing / nominal range", g_sanitySpacingFraction);
     cmd.AddValue("routePlan", "CSV route plan; also defines the evaluation window", g_routePlanPath);
     cmd.AddValue("routingStrategy", "olsr | hop | delay | persistence | logreg | xgb | edge-sage",
                  g_routingStrategy);
@@ -1156,7 +1602,20 @@ int main(int argc, char *argv[])
     cmd.AddValue("costMode", "neglog | one-minus | none", g_costMode);
     cmd.AddValue("appRateKbps", "Offered UDP data rate (kbps)", g_appRateKbps);
     cmd.AddValue("appPacketSize", "UDP payload size (bytes)", g_appPacketSize);
-    cmd.AddValue("scenarioMode", "standard | partition-reconnect | high-load", g_scenarioMode);
+    cmd.AddValue("scenarioMode", "standard | partition-reconnect | high-load | crossing-swarms | group-control | relay-recovery | relay-prevention | routing-sanity", g_scenarioMode);
+    cmd.AddValue("recoveryPolicy", "none | relay-chain | external (requires a live relay scenario)", g_recoveryPolicy);
+    cmd.AddValue("preventionMissionSpeed", "Exogenous mission anchor speed (m/s)", g_preventionMissionSpeed);
+    cmd.AddValue("preventionMissionStartStep", "Control boundary that starts mission motion", g_preventionMissionStartStep);
+    cmd.AddValue("preventionSpacingFraction", "Initial chain spacing / nominal range", g_preventionSpacingFraction);
+    cmd.AddValue("preventionOutputReservation", "Single-use token for a fresh bridge-owned output directory", g_preventionOutputReservation);
+    cmd.AddValue("recoveryLayoutSeed", "Independent layout RNG seed", g_recoveryLayoutSeed);
+    cmd.AddValue("recoveryRandomLayout", "Rotate/jitter initial clusters and vary separation", g_recoveryRandomLayout);
+    cmd.AddValue("recoverySpeed", "Maximum relay speed (m/s)", g_recoverySpeed);
+    cmd.AddValue("recoveryBudget", "Maximum travel per relay (m)", g_recoveryBudget);
+    cmd.AddValue("recoveryMinSeparation", "Minimum pairwise swept separation (m)", g_recoveryMinSeparation);
+    cmd.AddValue("recoveryRangeFactor", "Planning hop length / nominal range (not a radio guarantee)", g_recoveryRangeFactor);
+    cmd.AddValue("recoveryTriggerWindows", "Consecutive disconnected windows before moving", g_recoveryTriggerWindows);
+    cmd.AddValue("recoveryConfirmWindows", "Consecutive connected windows to confirm restoration", g_recoveryConfirmWindows);
     cmd.AddValue("backgroundFlows", "Number of measured background UDP flows", g_backgroundFlows);
     cmd.AddValue("backgroundRateKbps", "Offered rate per background flow (kbps)",
                  g_backgroundRateKbps);
@@ -1167,6 +1626,33 @@ int main(int argc, char *argv[])
     cmd.AddValue("groupReturnStep", "Start reconnect movement", g_returnOverride);
     cmd.AddValue("groupReconnectStep", "Groups reunited or crossed", g_reconnectOverride);
     cmd.Parse(argc, argv);
+    GuardPreventionOutput();
+    GuardDiagnosticOutput();
+    NS_ABORT_MSG_IF(!std::isfinite(g_sanitySpacingFraction) || g_sanitySpacingFraction<=0 ||
+                    g_sanitySpacingFraction>=1, "Invalid sanitySpacingFraction");
+    NS_ABORT_MSG_IF(g_scenarioMode=="routing-sanity" &&
+                    (g_routingStrategy!="olsr" || !g_routePlanPath.empty()), "routing-sanity requires live OLSR");
+    NS_ABORT_MSG_IF(g_recoveryPolicy != "none" && g_recoveryPolicy != "relay-chain" &&
+                    g_recoveryPolicy != "external", "Invalid recoveryPolicy");
+    NS_ABORT_MSG_IF(g_recoveryPolicy != "none" && !IsLiveRelayScenario(),
+                    "Recovery control requires a live relay scenario");
+    NS_ABORT_MSG_IF(IsLiveRelayScenario() &&
+                    (g_routingStrategy != "olsr" || !g_routePlanPath.empty()),
+                    "Relay recovery uses live OLSR; trace route plans are invalid after relocation");
+    NS_ABORT_MSG_IF(!std::isfinite(g_recoverySpeed) || g_recoverySpeed <= 0 ||
+                    !std::isfinite(g_recoveryBudget) || g_recoveryBudget < 0 ||
+                    !std::isfinite(g_recoveryMinSeparation) || g_recoveryMinSeparation <= 0 ||
+                    !std::isfinite(g_recoveryRangeFactor) || g_recoveryRangeFactor <= 0 ||
+                    g_recoveryRangeFactor >= 1 || g_recoveryTriggerWindows == 0 ||
+                    g_recoveryConfirmWindows == 0, "Invalid recovery limits");
+    NS_ABORT_MSG_IF(g_scenarioMode=="relay-prevention" &&
+                    (!std::isfinite(g_preventionMissionSpeed) || g_preventionMissionSpeed<=0 ||
+                     !std::isfinite(g_preventionSpacingFraction) || g_preventionSpacingFraction<=0 ||
+                     g_preventionSpacingFraction>=1), "Invalid prevention mission or spacing");
+    NS_ABORT_MSG_IF(!std::isfinite(g_xMax) || g_xMax <= 0 || !std::isfinite(g_yMax) || g_yMax <= 0 ||
+                    !std::isfinite(g_commRange) || g_commRange <= 0 ||
+                    !std::isfinite(g_warmup) || g_warmup < 0 || g_timeSteps == 0,
+                    "Invalid simulation area, range, warmup or duration");
     NS_ABORT_MSG_IF(g_backgroundPattern != "cbr" && g_backgroundPattern != "bursty", "Invalid backgroundPattern");
     NS_ABORT_MSG_IF(!std::isfinite(g_backgroundRateKbps) || !std::isfinite(g_groupSeparationM) ||
                     g_backgroundRateKbps < 0 || g_groupSeparationM < 0, "Invalid traffic or separation");
@@ -1191,7 +1677,8 @@ int main(int argc, char *argv[])
                              g_scenarioMode == "partition-reconnect" ||
                              g_scenarioMode == "high-load" ||
                              g_scenarioMode == "crossing-swarms" ||
-                             g_scenarioMode == "group-control";
+                             g_scenarioMode == "group-control" || g_scenarioMode=="routing-sanity" ||
+                             IsLiveRelayScenario();
     NS_ABORT_MSG_IF(!supportedStrategy, "Unsupported routing strategy: " << g_routingStrategy);
     NS_ABORT_MSG_IF(!supportedScenario, "Unsupported scenario mode: " << g_scenarioMode);
     bool validBackground = (g_backgroundFlows == 0 && g_backgroundRateKbps == 0.0) ||
@@ -1204,7 +1691,7 @@ int main(int argc, char *argv[])
                     "partition-reconnect requires at least 12 time steps");
     NS_ABORT_MSG_IF(g_scenarioMode == "partition-reconnect" && g_commRange <= 0.0,
                     "partition-reconnect requires a positive commRange");
-    NS_ABORT_MSG_IF(g_enableDataFlow && g_routePlanPath.empty(),
+    NS_ABORT_MSG_IF(g_enableDataFlow && g_routePlanPath.empty() && !IsLiveRelayScenario() && g_scenarioMode!="routing-sanity",
                     "enableDataFlow requires routePlan to define the evaluation window");
     NS_ABORT_MSG_IF(g_enableDataFlow && (g_appRateKbps <= 0.0 || g_appPacketSize == 0),
                     "appRateKbps and appPacketSize must be positive");
@@ -1218,8 +1705,33 @@ int main(int argc, char *argv[])
 
     g_nodes.Create(g_numUavs);
     g_prevDegree.assign(g_numUavs, 0);
+    if (IsLiveRelayScenario())
+    {
+        g_recoveryRxRatio.assign(g_numUavs,std::vector<double>(g_numUavs,0.0));
+        g_recoveryRssi=g_recoveryRxRatio;
+        g_recoveryRssiMask.assign(g_numUavs,std::vector<bool>(g_numUavs,false));
+    }
 
-    if (g_scenarioMode == "partition-reconnect" || g_scenarioMode == "crossing-swarms" ||
+    // For live OLSR the entries define only the traffic/evaluation times. No
+    // path is imported from an old mobility trace.
+    if ((IsLiveRelayScenario() || g_scenarioMode=="routing-sanity") && g_enableDataFlow)
+    {
+        for (uint32_t t = 0; t < g_timeSteps; ++t) { g_routePlan[t] = RoutePlanEntry{}; }
+    }
+
+    if (g_scenarioMode == "routing-sanity")
+    {
+        ConfigureSanityMobility();
+    }
+    else if (g_scenarioMode == "relay-recovery")
+    {
+        ConfigureRecoveryMobility();
+    }
+    else if (g_scenarioMode == "relay-prevention")
+    {
+        ConfigurePreventionMobility();
+    }
+    else if (g_scenarioMode == "partition-reconnect" || g_scenarioMode == "crossing-swarms" ||
         g_scenarioMode == "group-control")
     {
         ConfigurePartitionMobility();
@@ -1349,6 +1861,7 @@ int main(int argc, char *argv[])
     {
         g_ipToNode[g_ifaces.GetAddress(i)] = i;
     }
+    ConnectRoutingDiagnostics(devices);
 
     TypeId udpTid = TypeId::LookupByName("ns3::UdpSocketFactory");
     g_txSockets.resize(g_numUavs);
@@ -1378,6 +1891,7 @@ int main(int argc, char *argv[])
         double lastPlanTime = g_routePlan.rbegin()->first;
         double appStart = g_warmup + firstPlanTime + 1.01;
         double appStop = g_warmup + lastPlanTime + 2.0;
+        if (IsLiveRelayScenario() || g_scenarioMode=="routing-sanity") { appStop=g_warmup+g_timeSteps; }
         double intervalSeconds = g_appPacketSize * 8.0 / (g_appRateKbps * 1000.0);
 
         UdpServerHelper server(DATA_PORT);
@@ -1390,6 +1904,12 @@ int main(int argc, char *argv[])
         client.SetAttribute("Interval", TimeValue(Seconds(intervalSeconds)));
         client.SetAttribute("PacketSize", UintegerValue(g_appPacketSize));
         ApplicationContainer clientApp = client.Install(g_nodes.Get(g_sourceId));
+        if (g_enableServiceObservation)
+        {
+            NS_ABORT_MSG_IF(!clientApp.Get(0)->TraceConnectWithoutContext("TxWithAddresses",MakeCallback(&ServiceOffered)) ||
+                !serverApp.Get(0)->TraceConnectWithoutContext("RxWithAddresses",MakeCallback(&ServiceReceived)),
+                "Cannot attach actual service application traces");
+        }
         clientApp.Start(Seconds(appStart));
         clientApp.Stop(Seconds(appStop));
 
@@ -1426,11 +1946,25 @@ int main(int argc, char *argv[])
     if (g_enableDataFlow || g_backgroundFlows > 0)
     {
         flowMonitor = flowMonitorHelper.InstallAll();
+        if (g_enableServiceObservation) { g_serviceMonitor=flowMonitor; g_serviceClassifier=DynamicCast<Ipv4FlowClassifier>(flowMonitorHelper.GetClassifier()); }
     }
 
     g_nodesCsv.open(g_outputDir + "/nodes.csv");
     g_edgesCsv.open(g_outputDir + "/edges.csv");
     g_trafficCsv.open(g_outputDir + "/traffic_log.csv");
+    OpenRoutingDiagnostics();
+    if (IsLiveRelayScenario())
+    {
+        g_recoveryCsv.open(g_outputDir + "/recovery_log.csv");
+        g_recoveryActionsCsv.open(g_outputDir + "/recovery_actions.csv");
+        NS_ABORT_MSG_IF(!g_recoveryCsv || !g_recoveryActionsCsv, "Cannot open recovery outputs");
+        g_recoveryCsv << std::fixed << std::setprecision(6)
+                      << "time,sim_time_s,components,source_dest_connected,olsr_route_usable,"
+                         "all_connected,confirmed_connected,controller_active,total_travel_m,status\n";
+        g_recoveryActionsCsv << std::fixed << std::setprecision(6)
+                             << "time,node_id,action_x,action_y,action_z,command_vx,command_vy,command_vz,"
+                                "command_distance_m,travel_m,status\n";
+    }
     g_nodesCsv << std::fixed << std::setprecision(4)
                << "time,node_id,x,y,z,vx,vy,vz,speed,degree\n";
     g_edgesCsv << std::fixed << std::setprecision(4)
@@ -1445,7 +1979,7 @@ int main(int argc, char *argv[])
         Simulator::Schedule(Seconds(g_warmup + t + 1.0), &TakeSnapshot, t);
     }
     Simulator::Schedule(Seconds(g_warmup), []
-                        { g_window.clear(); });
+                        { g_window.clear(); g_diagnosticProbeTx.clear(); });
 
     AnimationInterface *anim = nullptr;
     if (g_enableAnim)
@@ -1480,10 +2014,12 @@ int main(int argc, char *argv[])
 
     Simulator::Stop(Seconds(g_warmup + g_timeSteps + 1.0));
     Simulator::Run();
+    WriteDiagnosticDrops();
     if (g_enableDataFlow)
     {
         WriteClosedLoopMetrics(flowMonitor, flowMonitorHelper);
     }
+    WriteFinalServiceAccounting();
     if (g_backgroundFlows > 0)
     {
         WriteBackgroundFlowMetrics(flowMonitor, flowMonitorHelper);
@@ -1501,6 +2037,8 @@ int main(int argc, char *argv[])
     g_nodesCsv.close();
     g_edgesCsv.close();
     g_trafficCsv.close();
+    g_recoveryCsv.close();
+    g_recoveryActionsCsv.close();
     WriteScenarioJson(runName);
 
     std::cout << "[OK] ns-3 dataset written to " << g_outputDir << std::endl;

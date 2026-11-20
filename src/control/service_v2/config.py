@@ -1,0 +1,58 @@
+"""Fixed adopted method, separate from immutable simulator defaults."""
+from dataclasses import dataclass, field
+
+
+POLICIES = ('hold', 'reactive', 'geometry', 'path-service-v1-reference', 'service-v2',
+            'service-v2-no-forecast', 'service-v2-no-online-service-state', 'service-v2-no-motion-gate')
+ADOPTED_SPEC_SHA256 = 'ce4ac80694795fd1c58125eb930be98d998bd148ea004cda1a9c169e43debcc2'
+
+
+@dataclass(frozen=True)
+class ServiceV2Config:
+    # init=False makes numerical amendments explicit source revisions.
+    comm_range: float = field(default=240., init=False)
+    horizons: tuple[int, ...] = field(default=(10, 20), init=False)
+    window_seconds: float = field(default=1., init=False)
+    window_tolerance: float = field(default=1e-7, init=False)
+    offered_floor: int = field(default=30, init=False)
+    service_windows: int = field(default=5, init=False)
+    confirmation_frames: int = field(default=3, init=False)
+    healthy_ratio: float = field(default=.95, init=False)
+    decline_ratio: float = field(default=.90, init=False)
+    severe_ratio: float = field(default=.50, init=False)
+    probe_threshold: float = field(default=.50, init=False)
+    speed_normalizer: float = field(default=8., init=False)
+    budget_normalizer: float = field(default=400., init=False)
+    arrival_clip_min: float = field(default=0., init=False)
+    arrival_clip_max: float = field(default=2., init=False)
+    arrival_delta_clip_min: float = field(default=-1., init=False)
+    arrival_delta_clip_max: float = field(default=1., init=False)
+    rssi_clip_min: float = field(default=-120., init=False)
+    rssi_clip_max: float = field(default=-20., init=False)
+    rssi_normalizer: float = field(default=100., init=False)
+    rssi_delta_normalizer: float = field(default=10., init=False)
+    relay_count_normalizer: float = field(default=3., init=False)
+    requested_speed: float = field(default=2., init=False)
+    start_deadband: float = field(default=3., init=False)
+    stop_deadband: float = field(default=1., init=False)
+    burst_commands: int = field(default=3, init=False)
+    cooldown_intervals: int = field(default=5, init=False)
+    risk_on: float = field(default=.50, init=False)
+    risk_off: float = field(default=.25, init=False)
+    forecast_confirmation_frames: int = field(default=2, init=False)
+    routing_allowance: float = field(default=3., init=False)
+    confirmation_allowance: float = field(default=2., init=False)
+    extrapolation_cap: float = field(default=10., init=False)
+    minimum_gain: float = field(default=2., init=False)
+    minimum_efficiency: float = field(default=.10, init=False)
+    numerical_tolerance: float = field(default=1e-8, init=False)
+    logistic_l2: float = field(default=.01, init=False)
+    calibration_l2: float = field(default=.001, init=False)
+    solver_max_iterations: int = field(default=100, init=False)
+    solver_update_tolerance: float = field(default=1e-7, init=False)
+    solver_min_line_search: float = field(default=1e-8, init=False)
+    minimum_scale: float = field(default=1e-8, init=False)
+    train_rows_per_class: int = field(default=50, init=False)
+    train_groups_per_class: int = field(default=6, init=False)
+    calibration_rows_per_class: int = field(default=20, init=False)
+    calibration_groups_per_class: int = field(default=3, init=False)

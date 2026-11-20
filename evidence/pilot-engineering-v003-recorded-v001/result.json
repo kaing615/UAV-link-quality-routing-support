@@ -1,0 +1,28 @@
+{
+  "argv": [
+    "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+    "/home/sac/uav-service/2026-11-12-service-prevention-v2/orchestration/service_v2_task4_audit_v003.py",
+    "pilot",
+    "--source-root",
+    "/home/sac/uav-service/2026-11-12-service-prevention-v2/source-runtime-v003",
+    "--study",
+    "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12",
+    "--pilot-alias",
+    "pilot-integration-v003",
+    "--development-audit",
+    "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/engineering/development-diagnostic-v001",
+    "--output",
+    "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/engineering/pilot-engineering-v003"
+  ],
+  "cwd": "/home/sac/uav-service/2026-11-12-service-prevention-v2/source-runtime-v003",
+  "direct_exit": 0,
+  "wall_seconds": 417.8560652732849,
+  "finished_unix": 1794492696.5167058,
+  "recorder_sha256": "8292397aed8c0212b09e519d5b1de4196e9c5e47086d00b1dc84fdaba0459808",
+  "environment": {
+    "LD_LIBRARY_PATH": "/home/sac/uav-service/2026-11-11-path-control/runtime/lib",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+  }
+}
