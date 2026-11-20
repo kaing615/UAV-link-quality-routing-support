@@ -21,6 +21,8 @@ trên validation. Không được dùng `plan["gain"]` hình học để giả l
 
 ## Quy trình chạy v3
 
+Protocol đăng ký trước, có số lượng seed và tiêu chí go/no-go cụ thể: [service_v3_protocol.md](service_v3_protocol.md).
+
 1. Giữ formal v2 làm baseline bất biến.
 2. Tạo seed validation mới, tách khỏi train/calibration/formal cũ.
 3. Sinh xác suất và nhãn future-only trên validation.

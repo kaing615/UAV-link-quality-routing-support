@@ -1,0 +1,750 @@
+{
+  "schema": "prevention-logistic-json-v1",
+  "feature_version": "prevention-link-v1",
+  "feature_names": [
+    "distance_range",
+    "radial_speed",
+    "rx_ratio",
+    "rx_delta",
+    "rssi",
+    "rssi_delta",
+    "rssi_present",
+    "rssi_delta_present",
+    "horizon_s"
+  ],
+  "horizons": [
+    3,
+    5,
+    10,
+    20
+  ],
+  "model_kind": "logistic",
+  "l2": 0.01,
+  "calibration_l2": 0.001,
+  "monotone_projection": "cumulative_max",
+  "comm_range": 240.0,
+  "splits": {
+    "train": [
+      {
+        "episode_id": "episode_00f540dfd36a4e368f0e10235e3f7831",
+        "layout_seed": 11001,
+        "radio_seed": 111001,
+        "source_hashes": {
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11001_11003/episodes/hold/layout_11001_radio_111001/episode_00f540dfd36a4e368f0e10235e3f7831/transitions.jsonl": "307caa1e416985f52837a15ad911a0d1aca845d42f2f136d92a03562bf05a833",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11001_11003/episodes/hold/layout_11001_radio_111001/episode_00f540dfd36a4e368f0e10235e3f7831/config.json": "15148e74c56114438bb532d29f84169eea519c40fc65e2fe80a990fa160924c3",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11001_11003/episodes.json": "0ccc5f3721453d9cf093bf30e9026cd04ab02c4907ce874d5c5223d7cf26029b",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11001_11003/run_config.json": "40a32e17398d104e605c490a1052cf5e70681716de7493eec097d8b98c03ddef",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11001_11003/episodes/hold/layout_11001_radio_111001/episode_00f540dfd36a4e368f0e10235e3f7831/policy_metadata.json": "dd07c52e01dbcd92b943e277aa9dcade81908599b1a67612fa74ccb5f59ce757"
+        },
+        "collection_policy": "hold",
+        "collection_split": "train"
+      },
+      {
+        "episode_id": "episode_36856a15a0d04e5ab2a6916d77d9af84",
+        "layout_seed": 11002,
+        "radio_seed": 111002,
+        "source_hashes": {
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11001_11003/episodes/hold/layout_11002_radio_111002/episode_36856a15a0d04e5ab2a6916d77d9af84/transitions.jsonl": "4402d17db2985182068723c9084d4660ea1834913d668282cdc0cb1d50b2d421",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11001_11003/episodes/hold/layout_11002_radio_111002/episode_36856a15a0d04e5ab2a6916d77d9af84/config.json": "a4d3b0b5d34cce8b8547a5c0f758477f4be3f7176d1507ac193a76c4e29653fd",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11001_11003/episodes.json": "0ccc5f3721453d9cf093bf30e9026cd04ab02c4907ce874d5c5223d7cf26029b",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11001_11003/run_config.json": "40a32e17398d104e605c490a1052cf5e70681716de7493eec097d8b98c03ddef",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11001_11003/episodes/hold/layout_11002_radio_111002/episode_36856a15a0d04e5ab2a6916d77d9af84/policy_metadata.json": "4574f53188409019e4eb18e0ca26244eb2505b2e096023162712abea679c59b5"
+        },
+        "collection_policy": "hold",
+        "collection_split": "train"
+      },
+      {
+        "episode_id": "episode_e406bee64f8946a5bed548c22160161f",
+        "layout_seed": 11003,
+        "radio_seed": 111003,
+        "source_hashes": {
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11001_11003/episodes/hold/layout_11003_radio_111003/episode_e406bee64f8946a5bed548c22160161f/transitions.jsonl": "1356caa2f381e951d36948ebb8947272dca56ac74af6c4ad9bcafa63343a9f57",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11001_11003/episodes/hold/layout_11003_radio_111003/episode_e406bee64f8946a5bed548c22160161f/config.json": "f1526af8b7a81460c8a7eef190e1fcbcab83f11995ea64fafd4d38db92e5ca6a",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11001_11003/episodes.json": "0ccc5f3721453d9cf093bf30e9026cd04ab02c4907ce874d5c5223d7cf26029b",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11001_11003/run_config.json": "40a32e17398d104e605c490a1052cf5e70681716de7493eec097d8b98c03ddef",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11001_11003/episodes/hold/layout_11003_radio_111003/episode_e406bee64f8946a5bed548c22160161f/policy_metadata.json": "0d417854c7367c91ff677edd1911b0d622d24bd45251f88573871b34a0b89283"
+        },
+        "collection_policy": "hold",
+        "collection_split": "train"
+      },
+      {
+        "episode_id": "episode_43d2d8eeb9f04bfdb97dfa5ead6af4bd",
+        "layout_seed": 11001,
+        "radio_seed": 111001,
+        "source_hashes": {
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11001_11003/episodes/reactive/layout_11001_radio_111001/episode_43d2d8eeb9f04bfdb97dfa5ead6af4bd/transitions.jsonl": "a82f1163b5033577df34199f85521b5aa71524e46b67480b784b64251946d713",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11001_11003/episodes/reactive/layout_11001_radio_111001/episode_43d2d8eeb9f04bfdb97dfa5ead6af4bd/config.json": "af894368613a0d33b097ae35d2405e8c47c5970faa6b33c85f084783d5b2e592",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11001_11003/episodes.json": "0ccc5f3721453d9cf093bf30e9026cd04ab02c4907ce874d5c5223d7cf26029b",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11001_11003/run_config.json": "40a32e17398d104e605c490a1052cf5e70681716de7493eec097d8b98c03ddef",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11001_11003/episodes/reactive/layout_11001_radio_111001/episode_43d2d8eeb9f04bfdb97dfa5ead6af4bd/policy_metadata.json": "33f1c3c206351a62cdaf641a6b2f05f549b241539d9183cc49163913bed2f191"
+        },
+        "collection_policy": "reactive",
+        "collection_split": "train"
+      },
+      {
+        "episode_id": "episode_ecddc3636cf048ff8641488a8b2f74af",
+        "layout_seed": 11002,
+        "radio_seed": 111002,
+        "source_hashes": {
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11001_11003/episodes/reactive/layout_11002_radio_111002/episode_ecddc3636cf048ff8641488a8b2f74af/transitions.jsonl": "76e603a951380425f5fb532c89331fa1b8a2430386c741cf4efe7183c0376eae",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11001_11003/episodes/reactive/layout_11002_radio_111002/episode_ecddc3636cf048ff8641488a8b2f74af/config.json": "d6e1072c627918da832dbd94743f8871beadb31a53e8e1f60c34f45f628843cd",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11001_11003/episodes.json": "0ccc5f3721453d9cf093bf30e9026cd04ab02c4907ce874d5c5223d7cf26029b",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11001_11003/run_config.json": "40a32e17398d104e605c490a1052cf5e70681716de7493eec097d8b98c03ddef",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11001_11003/episodes/reactive/layout_11002_radio_111002/episode_ecddc3636cf048ff8641488a8b2f74af/policy_metadata.json": "b9cf2da4c27ab0ef292ab5e0f0093ac20b850754f1fff7d9a8a04d036e8e24c9"
+        },
+        "collection_policy": "reactive",
+        "collection_split": "train"
+      },
+      {
+        "episode_id": "episode_899daf6426a94965a3dbf30aac674f0b",
+        "layout_seed": 11003,
+        "radio_seed": 111003,
+        "source_hashes": {
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11001_11003/episodes/reactive/layout_11003_radio_111003/episode_899daf6426a94965a3dbf30aac674f0b/transitions.jsonl": "1217bca6d921e3af6f335c1c800cba00edd0154aef1ffb3c4676052b071b989c",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11001_11003/episodes/reactive/layout_11003_radio_111003/episode_899daf6426a94965a3dbf30aac674f0b/config.json": "e2f8df2c28b3ef28e98931da831cf364b16ab74e544766228bcb548155cb1080",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11001_11003/episodes.json": "0ccc5f3721453d9cf093bf30e9026cd04ab02c4907ce874d5c5223d7cf26029b",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11001_11003/run_config.json": "40a32e17398d104e605c490a1052cf5e70681716de7493eec097d8b98c03ddef",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11001_11003/episodes/reactive/layout_11003_radio_111003/episode_899daf6426a94965a3dbf30aac674f0b/policy_metadata.json": "ac59061498fb8f95a076cfafc745631da2b9612e68f8472f13cdb7baa554f5ef"
+        },
+        "collection_policy": "reactive",
+        "collection_split": "train"
+      },
+      {
+        "episode_id": "episode_03e31867ed7a433b909072d9106660ce",
+        "layout_seed": 11004,
+        "radio_seed": 111004,
+        "source_hashes": {
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11004_11006/episodes/hold/layout_11004_radio_111004/episode_03e31867ed7a433b909072d9106660ce/transitions.jsonl": "0e3e8ad407421de9c21993085498005c62d802f248e7ce094a211399da70046e",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11004_11006/episodes/hold/layout_11004_radio_111004/episode_03e31867ed7a433b909072d9106660ce/config.json": "3aa1cf5f19efb419366df5d98b630100510c327e0923e368a8aa44d18bfb6c82",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11004_11006/episodes.json": "48773433d0a9c1f21153fe61ff8a4cb729bd0025bffd88e2691f99ebcabaf12f",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11004_11006/run_config.json": "3d0044aa3794d124df89cb9579a109cb98b20262a77ce023e73c57f1f7400e77",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11004_11006/episodes/hold/layout_11004_radio_111004/episode_03e31867ed7a433b909072d9106660ce/policy_metadata.json": "4c45286a94ee2d085369fa7ee80d621f8e082db4f46bae5767bc881b14dfe055"
+        },
+        "collection_policy": "hold",
+        "collection_split": "train"
+      },
+      {
+        "episode_id": "episode_83bb58be347a4a21a273ffc76935cace",
+        "layout_seed": 11005,
+        "radio_seed": 111005,
+        "source_hashes": {
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11004_11006/episodes/hold/layout_11005_radio_111005/episode_83bb58be347a4a21a273ffc76935cace/transitions.jsonl": "8158e7de62b16ae391d0b0f617cea60bdfed469eac440078deb02b963c2a74ca",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11004_11006/episodes/hold/layout_11005_radio_111005/episode_83bb58be347a4a21a273ffc76935cace/config.json": "4a402ae1619d5fc9c05140178384e3222ba697a3acbbd95148e103f35dcbf17c",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11004_11006/episodes.json": "48773433d0a9c1f21153fe61ff8a4cb729bd0025bffd88e2691f99ebcabaf12f",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11004_11006/run_config.json": "3d0044aa3794d124df89cb9579a109cb98b20262a77ce023e73c57f1f7400e77",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11004_11006/episodes/hold/layout_11005_radio_111005/episode_83bb58be347a4a21a273ffc76935cace/policy_metadata.json": "748e8c2a848f7f93cc5ee43c3a73b5bc9104237435fe5f14ec5578465d3c97aa"
+        },
+        "collection_policy": "hold",
+        "collection_split": "train"
+      },
+      {
+        "episode_id": "episode_98c623a2772d4cbd933e7f7709909b94",
+        "layout_seed": 11006,
+        "radio_seed": 111006,
+        "source_hashes": {
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11004_11006/episodes/hold/layout_11006_radio_111006/episode_98c623a2772d4cbd933e7f7709909b94/transitions.jsonl": "432960044f9c9357f561f01c1710f0b75620d691d2c9520183029c47202ea0ca",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11004_11006/episodes/hold/layout_11006_radio_111006/episode_98c623a2772d4cbd933e7f7709909b94/config.json": "768ef945ef9237dbf051294a4f868297694b7bd5bdbf22280adc9b7afe3c1e08",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11004_11006/episodes.json": "48773433d0a9c1f21153fe61ff8a4cb729bd0025bffd88e2691f99ebcabaf12f",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11004_11006/run_config.json": "3d0044aa3794d124df89cb9579a109cb98b20262a77ce023e73c57f1f7400e77",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11004_11006/episodes/hold/layout_11006_radio_111006/episode_98c623a2772d4cbd933e7f7709909b94/policy_metadata.json": "9ca764f73d65dbb85dac339545c1c51572d7e57994c3f5f536b7bd095e26f903"
+        },
+        "collection_policy": "hold",
+        "collection_split": "train"
+      },
+      {
+        "episode_id": "episode_5c162bcdac9a4dc5af155dcf2db671fb",
+        "layout_seed": 11004,
+        "radio_seed": 111004,
+        "source_hashes": {
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11004_11006/episodes/reactive/layout_11004_radio_111004/episode_5c162bcdac9a4dc5af155dcf2db671fb/transitions.jsonl": "e538372db3d9b6cb4ce693f78e38c5a2ee7b224bb951c05c9ff3f77ba960b8c9",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11004_11006/episodes/reactive/layout_11004_radio_111004/episode_5c162bcdac9a4dc5af155dcf2db671fb/config.json": "0c14714cbd6aa4a172bda46313c3ecdfdfd4b7e9e25af0c037ce36daf3272d29",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11004_11006/episodes.json": "48773433d0a9c1f21153fe61ff8a4cb729bd0025bffd88e2691f99ebcabaf12f",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11004_11006/run_config.json": "3d0044aa3794d124df89cb9579a109cb98b20262a77ce023e73c57f1f7400e77",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11004_11006/episodes/reactive/layout_11004_radio_111004/episode_5c162bcdac9a4dc5af155dcf2db671fb/policy_metadata.json": "0cc95e815f93866cb658dd2bc270c72819e0f634d188e5407806e1f57f9f7e38"
+        },
+        "collection_policy": "reactive",
+        "collection_split": "train"
+      },
+      {
+        "episode_id": "episode_b5c66d72dd6a43409e59add72dc71d43",
+        "layout_seed": 11005,
+        "radio_seed": 111005,
+        "source_hashes": {
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11004_11006/episodes/reactive/layout_11005_radio_111005/episode_b5c66d72dd6a43409e59add72dc71d43/transitions.jsonl": "3032240e9bbfe1c007e33d28f598104d2c5bdf9c744106f09f024aeefacad010",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11004_11006/episodes/reactive/layout_11005_radio_111005/episode_b5c66d72dd6a43409e59add72dc71d43/config.json": "2e176601c569661988be0db78a7a1e947acf879e5e0f99a97026bac5571d2933",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11004_11006/episodes.json": "48773433d0a9c1f21153fe61ff8a4cb729bd0025bffd88e2691f99ebcabaf12f",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11004_11006/run_config.json": "3d0044aa3794d124df89cb9579a109cb98b20262a77ce023e73c57f1f7400e77",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11004_11006/episodes/reactive/layout_11005_radio_111005/episode_b5c66d72dd6a43409e59add72dc71d43/policy_metadata.json": "56718223f337c3f341876ad84d4518eaedbd085ade039cc0125699530ba4e66e"
+        },
+        "collection_policy": "reactive",
+        "collection_split": "train"
+      },
+      {
+        "episode_id": "episode_43f71301161248ceb05124c167d52a9f",
+        "layout_seed": 11006,
+        "radio_seed": 111006,
+        "source_hashes": {
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11004_11006/episodes/reactive/layout_11006_radio_111006/episode_43f71301161248ceb05124c167d52a9f/transitions.jsonl": "1eb3b834300cf92694af49bdb9b7b0126f7e6e3c5db53f8aba3ca9e3d7981f6a",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11004_11006/episodes/reactive/layout_11006_radio_111006/episode_43f71301161248ceb05124c167d52a9f/config.json": "6c4ecb61736b887f708391bf68fe9d13f61ce229715f50bf711c64c88fdafd8c",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11004_11006/episodes.json": "48773433d0a9c1f21153fe61ff8a4cb729bd0025bffd88e2691f99ebcabaf12f",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11004_11006/run_config.json": "3d0044aa3794d124df89cb9579a109cb98b20262a77ce023e73c57f1f7400e77",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11004_11006/episodes/reactive/layout_11006_radio_111006/episode_43f71301161248ceb05124c167d52a9f/policy_metadata.json": "a76f3447f3655598eb627e8c00f67a46d7752e41cb791dca2ad705b137ebbeff"
+        },
+        "collection_policy": "reactive",
+        "collection_split": "train"
+      },
+      {
+        "episode_id": "episode_c93a3b1cd5b448ba8e4225d45a25ded0",
+        "layout_seed": 11007,
+        "radio_seed": 111007,
+        "source_hashes": {
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11007_11009/episodes/hold/layout_11007_radio_111007/episode_c93a3b1cd5b448ba8e4225d45a25ded0/transitions.jsonl": "185177b7692153eb924d627aa84a5d8778eee7a484569f9fd8b9d28855aab815",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11007_11009/episodes/hold/layout_11007_radio_111007/episode_c93a3b1cd5b448ba8e4225d45a25ded0/config.json": "35df3455d0fcf3620f890bd02c85d623b9ba63ec64a20c423a6f5aeea9fcb0dc",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11007_11009/episodes.json": "2724a8673074beba70f74b394f1903c26fc9875b7424a1ea24eb627109cf3fe0",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11007_11009/run_config.json": "a547e336903c843acf2b1ad49129a3cf6dd07042e0f313448c82ef5bdd9c865e",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11007_11009/episodes/hold/layout_11007_radio_111007/episode_c93a3b1cd5b448ba8e4225d45a25ded0/policy_metadata.json": "841151a1c5ea49c0be6787bf3e183555256a6c9b1f3d9c7c6eec58ec7da8a700"
+        },
+        "collection_policy": "hold",
+        "collection_split": "train"
+      },
+      {
+        "episode_id": "episode_2cd8f2a3d5314d329916c0cee9ed883b",
+        "layout_seed": 11008,
+        "radio_seed": 111008,
+        "source_hashes": {
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11007_11009/episodes/hold/layout_11008_radio_111008/episode_2cd8f2a3d5314d329916c0cee9ed883b/transitions.jsonl": "94f441a2fb265ed49ff1ac892d2662ba1cc766f4e9768554f5e83f194513cb4e",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11007_11009/episodes/hold/layout_11008_radio_111008/episode_2cd8f2a3d5314d329916c0cee9ed883b/config.json": "e2c0effc6746e3bbeae3f5ba994c3abf79bac930aaf1cb2ab771ac0963adc1d5",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11007_11009/episodes.json": "2724a8673074beba70f74b394f1903c26fc9875b7424a1ea24eb627109cf3fe0",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11007_11009/run_config.json": "a547e336903c843acf2b1ad49129a3cf6dd07042e0f313448c82ef5bdd9c865e",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11007_11009/episodes/hold/layout_11008_radio_111008/episode_2cd8f2a3d5314d329916c0cee9ed883b/policy_metadata.json": "12f3917afc78168e2b49fe5cbabc9b0c4feab5e7dcd83e3646bcde5f34492f9b"
+        },
+        "collection_policy": "hold",
+        "collection_split": "train"
+      },
+      {
+        "episode_id": "episode_6303088796fe44679635d9809d005a93",
+        "layout_seed": 11009,
+        "radio_seed": 111009,
+        "source_hashes": {
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11007_11009/episodes/hold/layout_11009_radio_111009/episode_6303088796fe44679635d9809d005a93/transitions.jsonl": "7368cad403da722c9ac3e43bf5d1cebef2311eb498b9dbff7206f2d439903304",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11007_11009/episodes/hold/layout_11009_radio_111009/episode_6303088796fe44679635d9809d005a93/config.json": "d60507b18551aaba90c9d5f78b184096cf01ed82ee16506487205b0e7aecfe4a",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11007_11009/episodes.json": "2724a8673074beba70f74b394f1903c26fc9875b7424a1ea24eb627109cf3fe0",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11007_11009/run_config.json": "a547e336903c843acf2b1ad49129a3cf6dd07042e0f313448c82ef5bdd9c865e",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11007_11009/episodes/hold/layout_11009_radio_111009/episode_6303088796fe44679635d9809d005a93/policy_metadata.json": "c8fd38270921774245c273643e476ab34a5ab96f68f0a1eb5e275acc8b54cf24"
+        },
+        "collection_policy": "hold",
+        "collection_split": "train"
+      },
+      {
+        "episode_id": "episode_f33e9ce456b7482b974e02befb0d4435",
+        "layout_seed": 11007,
+        "radio_seed": 111007,
+        "source_hashes": {
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11007_11009/episodes/reactive/layout_11007_radio_111007/episode_f33e9ce456b7482b974e02befb0d4435/transitions.jsonl": "f5adff8eb3062c55c397e5df907211b9ad3b8fdb765b3e8fc989f68dcef308ae",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11007_11009/episodes/reactive/layout_11007_radio_111007/episode_f33e9ce456b7482b974e02befb0d4435/config.json": "7cb2585c87a170756c77e9d9830f6cf802b058232a252a930ab526562a7e3136",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11007_11009/episodes.json": "2724a8673074beba70f74b394f1903c26fc9875b7424a1ea24eb627109cf3fe0",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11007_11009/run_config.json": "a547e336903c843acf2b1ad49129a3cf6dd07042e0f313448c82ef5bdd9c865e",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11007_11009/episodes/reactive/layout_11007_radio_111007/episode_f33e9ce456b7482b974e02befb0d4435/policy_metadata.json": "507fff7cf551ef22901fb2e634d7fe2ecd01eabd67c0fd57315b135ddffd2e34"
+        },
+        "collection_policy": "reactive",
+        "collection_split": "train"
+      },
+      {
+        "episode_id": "episode_15fbc2fb1b1449f7be8b40131a843894",
+        "layout_seed": 11008,
+        "radio_seed": 111008,
+        "source_hashes": {
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11007_11009/episodes/reactive/layout_11008_radio_111008/episode_15fbc2fb1b1449f7be8b40131a843894/transitions.jsonl": "1eb546a446617a33ca75ff3a5b5beda4d9227bedc9ef759ed64b6181c928f98d",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11007_11009/episodes/reactive/layout_11008_radio_111008/episode_15fbc2fb1b1449f7be8b40131a843894/config.json": "3c5160a6dfc8e1ee325c28163cdb48458eebb650b704e5ab8c92038364d13b69",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11007_11009/episodes.json": "2724a8673074beba70f74b394f1903c26fc9875b7424a1ea24eb627109cf3fe0",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11007_11009/run_config.json": "a547e336903c843acf2b1ad49129a3cf6dd07042e0f313448c82ef5bdd9c865e",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11007_11009/episodes/reactive/layout_11008_radio_111008/episode_15fbc2fb1b1449f7be8b40131a843894/policy_metadata.json": "865e64a337c01f55601eb9b3eb7febb680d1308ef7648376df6156c2000e1c1e"
+        },
+        "collection_policy": "reactive",
+        "collection_split": "train"
+      },
+      {
+        "episode_id": "episode_85eb6e73b3434a78854fd49daa2414b1",
+        "layout_seed": 11009,
+        "radio_seed": 111009,
+        "source_hashes": {
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11007_11009/episodes/reactive/layout_11009_radio_111009/episode_85eb6e73b3434a78854fd49daa2414b1/transitions.jsonl": "e049d00ac3f0ac9db75f797c2d717e9890a2bc7dce0187a585af85988111d457",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11007_11009/episodes/reactive/layout_11009_radio_111009/episode_85eb6e73b3434a78854fd49daa2414b1/config.json": "52d2da64f6eb08f09eeda5d35063aa7fe06ec28d2d48973fa37bfe899612cd8d",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11007_11009/episodes.json": "2724a8673074beba70f74b394f1903c26fc9875b7424a1ea24eb627109cf3fe0",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11007_11009/run_config.json": "a547e336903c843acf2b1ad49129a3cf6dd07042e0f313448c82ef5bdd9c865e",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11007_11009/episodes/reactive/layout_11009_radio_111009/episode_85eb6e73b3434a78854fd49daa2414b1/policy_metadata.json": "e78798d4906eeca6afb2ad92bda95e85f94d191930a6eda551ef3a59e2891e92"
+        },
+        "collection_policy": "reactive",
+        "collection_split": "train"
+      },
+      {
+        "episode_id": "episode_a339ff005dcb450da74206816d390c8e",
+        "layout_seed": 11010,
+        "radio_seed": 111010,
+        "source_hashes": {
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11010_11012/episodes/hold/layout_11010_radio_111010/episode_a339ff005dcb450da74206816d390c8e/transitions.jsonl": "75285e6054cd468d1b5191a0c202eddae77cea73081311038dcb5a7cf894fa5e",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11010_11012/episodes/hold/layout_11010_radio_111010/episode_a339ff005dcb450da74206816d390c8e/config.json": "b58eb753f0e4161a1738c627108400a88ce5860455ff880f47f9967aa045a62c",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11010_11012/episodes.json": "8d8ca5737838dcca555095d01951e58be9bd9e3bab0b82076523ee7e389824bf",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11010_11012/run_config.json": "a8a32f897f31e394e4118d23995541d24beb1e79e18d18d18c306ac87a93e066",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11010_11012/episodes/hold/layout_11010_radio_111010/episode_a339ff005dcb450da74206816d390c8e/policy_metadata.json": "d759004e43744649463b3853f3bb46fc109caafb17306efa2ccac2dfe7afe6eb"
+        },
+        "collection_policy": "hold",
+        "collection_split": "train"
+      },
+      {
+        "episode_id": "episode_78918649071a48fa9364e30e3375d2ef",
+        "layout_seed": 11011,
+        "radio_seed": 111011,
+        "source_hashes": {
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11010_11012/episodes/hold/layout_11011_radio_111011/episode_78918649071a48fa9364e30e3375d2ef/transitions.jsonl": "b8fd6aeb683b0139728d2001aa178a052f855e072b52915ae62a9a6caed20d9a",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11010_11012/episodes/hold/layout_11011_radio_111011/episode_78918649071a48fa9364e30e3375d2ef/config.json": "754623211050c09cdc4d7eecd6b5fd0f5045ee8207d4db885c7cceb65d7e8278",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11010_11012/episodes.json": "8d8ca5737838dcca555095d01951e58be9bd9e3bab0b82076523ee7e389824bf",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11010_11012/run_config.json": "a8a32f897f31e394e4118d23995541d24beb1e79e18d18d18c306ac87a93e066",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11010_11012/episodes/hold/layout_11011_radio_111011/episode_78918649071a48fa9364e30e3375d2ef/policy_metadata.json": "0892ce23901d9d8ad2ce06cd71d09ea9346a0491146e5cedd75000827ae6edae"
+        },
+        "collection_policy": "hold",
+        "collection_split": "train"
+      },
+      {
+        "episode_id": "episode_7a7052d2e5bb42a19f03c54b487b417a",
+        "layout_seed": 11012,
+        "radio_seed": 111012,
+        "source_hashes": {
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11010_11012/episodes/hold/layout_11012_radio_111012/episode_7a7052d2e5bb42a19f03c54b487b417a/transitions.jsonl": "bb4b3106f6e81a56ac915f5ca83c3f8c6ab5a4abf3c5acbf7eec4726179fdc68",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11010_11012/episodes/hold/layout_11012_radio_111012/episode_7a7052d2e5bb42a19f03c54b487b417a/config.json": "1cf7a35e5f9af0890e26bec2bbe53b68f21ab8b67b8fe045ca7c932909897197",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11010_11012/episodes.json": "8d8ca5737838dcca555095d01951e58be9bd9e3bab0b82076523ee7e389824bf",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11010_11012/run_config.json": "a8a32f897f31e394e4118d23995541d24beb1e79e18d18d18c306ac87a93e066",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11010_11012/episodes/hold/layout_11012_radio_111012/episode_7a7052d2e5bb42a19f03c54b487b417a/policy_metadata.json": "7db5f3124f2384961dd809579292dc09873586862f2091e01cd5be5928295a8a"
+        },
+        "collection_policy": "hold",
+        "collection_split": "train"
+      },
+      {
+        "episode_id": "episode_3a8c9a0935654a11ae9094f01bf95dd8",
+        "layout_seed": 11010,
+        "radio_seed": 111010,
+        "source_hashes": {
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11010_11012/episodes/reactive/layout_11010_radio_111010/episode_3a8c9a0935654a11ae9094f01bf95dd8/transitions.jsonl": "6f07517318ca65d46f80b29749685ad2cd8ae61f4840444f2ac61cc373c2006e",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11010_11012/episodes/reactive/layout_11010_radio_111010/episode_3a8c9a0935654a11ae9094f01bf95dd8/config.json": "43099f4da9e977cbb64c1b4f05137fbb9fcd3f4a1bdec0b8be68de15f1f0405e",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11010_11012/episodes.json": "8d8ca5737838dcca555095d01951e58be9bd9e3bab0b82076523ee7e389824bf",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11010_11012/run_config.json": "a8a32f897f31e394e4118d23995541d24beb1e79e18d18d18c306ac87a93e066",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11010_11012/episodes/reactive/layout_11010_radio_111010/episode_3a8c9a0935654a11ae9094f01bf95dd8/policy_metadata.json": "62af834ca697411207ed5ef650869b6faa367fb6accb8e770db44a8a2ada2fe8"
+        },
+        "collection_policy": "reactive",
+        "collection_split": "train"
+      },
+      {
+        "episode_id": "episode_7407f7f76d2c42319780aa1869566a38",
+        "layout_seed": 11011,
+        "radio_seed": 111011,
+        "source_hashes": {
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11010_11012/episodes/reactive/layout_11011_radio_111011/episode_7407f7f76d2c42319780aa1869566a38/transitions.jsonl": "b6216afac4886fa1a982952912a0709c8092ea82f7f0c7aa0db82bf8932a57ee",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11010_11012/episodes/reactive/layout_11011_radio_111011/episode_7407f7f76d2c42319780aa1869566a38/config.json": "41650d5fd5e85cc0510a0fd9cdb05bd4693dd8c7e1a74c39594144a7c92256d5",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11010_11012/episodes.json": "8d8ca5737838dcca555095d01951e58be9bd9e3bab0b82076523ee7e389824bf",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11010_11012/run_config.json": "a8a32f897f31e394e4118d23995541d24beb1e79e18d18d18c306ac87a93e066",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11010_11012/episodes/reactive/layout_11011_radio_111011/episode_7407f7f76d2c42319780aa1869566a38/policy_metadata.json": "8b548780a31f764462bd41fc6d370102d039fb7d77abdf64ba4151998b6b1820"
+        },
+        "collection_policy": "reactive",
+        "collection_split": "train"
+      },
+      {
+        "episode_id": "episode_c16dc40a13664793890d694e4bb52d95",
+        "layout_seed": 11012,
+        "radio_seed": 111012,
+        "source_hashes": {
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11010_11012/episodes/reactive/layout_11012_radio_111012/episode_c16dc40a13664793890d694e4bb52d95/transitions.jsonl": "25f84cbe05bb103bd034a356c15e16f649e5f0babf096b1950f4798757516dbd",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11010_11012/episodes/reactive/layout_11012_radio_111012/episode_c16dc40a13664793890d694e4bb52d95/config.json": "c99631db638a2b7f108e6187fc8004a975eea65a6758887b25a851846dcbafc5",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11010_11012/episodes.json": "8d8ca5737838dcca555095d01951e58be9bd9e3bab0b82076523ee7e389824bf",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11010_11012/run_config.json": "a8a32f897f31e394e4118d23995541d24beb1e79e18d18d18c306ac87a93e066",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train/train_11010_11012/episodes/reactive/layout_11012_radio_111012/episode_c16dc40a13664793890d694e4bb52d95/policy_metadata.json": "0e5e8b300fbce0cefbfb38e4b297799b4bba6fe6c2f742a6a5d991071e43647e"
+        },
+        "collection_policy": "reactive",
+        "collection_split": "train"
+      }
+    ],
+    "calibration": [
+      {
+        "episode_id": "episode_dae6f13a7cd74fbcadf6b9e8ee061375",
+        "layout_seed": 21001,
+        "radio_seed": 121001,
+        "source_hashes": {
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21001_21003/episodes/hold/layout_21001_radio_121001/episode_dae6f13a7cd74fbcadf6b9e8ee061375/transitions.jsonl": "1bd87fce70ffd51dfaf6f1036595829f26e26b9efebe5999e6c8a3f564a917a2",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21001_21003/episodes/hold/layout_21001_radio_121001/episode_dae6f13a7cd74fbcadf6b9e8ee061375/config.json": "818786a2765837f8461a78a61cdde6f0ea2044041de15ea55e15345667bc9e22",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21001_21003/episodes.json": "78546dfb08bfec79a9e53018fefbeb2bbec74d5e48f60da94e333dffc816978f",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21001_21003/run_config.json": "8cdbc8e70c78c12f23f3d9dc550f241e18ece2a4df8c37ab4eeedcf53a8a7718",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21001_21003/episodes/hold/layout_21001_radio_121001/episode_dae6f13a7cd74fbcadf6b9e8ee061375/policy_metadata.json": "092a7bd2afb90cdae34c0955ab64ad0482e64827e6120d88eeddb810a7547dd0"
+        },
+        "collection_policy": "hold",
+        "collection_split": "calibration"
+      },
+      {
+        "episode_id": "episode_99bf6e433c5c492db2a5624c926ba07f",
+        "layout_seed": 21002,
+        "radio_seed": 121002,
+        "source_hashes": {
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21001_21003/episodes/hold/layout_21002_radio_121002/episode_99bf6e433c5c492db2a5624c926ba07f/transitions.jsonl": "0096b88b8114e548a88c1305fca70f6345b643bd9ac87fe20d00736de8e61232",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21001_21003/episodes/hold/layout_21002_radio_121002/episode_99bf6e433c5c492db2a5624c926ba07f/config.json": "45e5a007908c8fa178dafed73803ef138214ffff84b9dc9081c6d2b992f32cb0",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21001_21003/episodes.json": "78546dfb08bfec79a9e53018fefbeb2bbec74d5e48f60da94e333dffc816978f",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21001_21003/run_config.json": "8cdbc8e70c78c12f23f3d9dc550f241e18ece2a4df8c37ab4eeedcf53a8a7718",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21001_21003/episodes/hold/layout_21002_radio_121002/episode_99bf6e433c5c492db2a5624c926ba07f/policy_metadata.json": "49de348b94bdc74e0625101304b68628ad2433fbbe18ccc9a6732b194f9b22ad"
+        },
+        "collection_policy": "hold",
+        "collection_split": "calibration"
+      },
+      {
+        "episode_id": "episode_714d54d5c3b1434f97f5d95d0510974b",
+        "layout_seed": 21003,
+        "radio_seed": 121003,
+        "source_hashes": {
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21001_21003/episodes/hold/layout_21003_radio_121003/episode_714d54d5c3b1434f97f5d95d0510974b/transitions.jsonl": "18bb423cb23bc6db2fa2b63171bb976c0c11845131266df09a9f6013cdedd9a0",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21001_21003/episodes/hold/layout_21003_radio_121003/episode_714d54d5c3b1434f97f5d95d0510974b/config.json": "dd62dda0e452f7b429718299372a5bf38064f67c93b70b27243161c5ea6db871",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21001_21003/episodes.json": "78546dfb08bfec79a9e53018fefbeb2bbec74d5e48f60da94e333dffc816978f",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21001_21003/run_config.json": "8cdbc8e70c78c12f23f3d9dc550f241e18ece2a4df8c37ab4eeedcf53a8a7718",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21001_21003/episodes/hold/layout_21003_radio_121003/episode_714d54d5c3b1434f97f5d95d0510974b/policy_metadata.json": "e1598155cc1d679cdb85cc9008bcaeff915e91f8c99646e736aae3082c3c71bf"
+        },
+        "collection_policy": "hold",
+        "collection_split": "calibration"
+      },
+      {
+        "episode_id": "episode_3a4ff759a25f4b948659ae94fb59908e",
+        "layout_seed": 21001,
+        "radio_seed": 121001,
+        "source_hashes": {
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21001_21003/episodes/reactive/layout_21001_radio_121001/episode_3a4ff759a25f4b948659ae94fb59908e/transitions.jsonl": "1fb2a54cba51a980df54b609f0a1dd681d71ed9a59816b62c0ed584ffb862540",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21001_21003/episodes/reactive/layout_21001_radio_121001/episode_3a4ff759a25f4b948659ae94fb59908e/config.json": "d0c8e56b7ba69bd3064a41270003b436b2ecb607eb28ac57b526e2eaeaf86300",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21001_21003/episodes.json": "78546dfb08bfec79a9e53018fefbeb2bbec74d5e48f60da94e333dffc816978f",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21001_21003/run_config.json": "8cdbc8e70c78c12f23f3d9dc550f241e18ece2a4df8c37ab4eeedcf53a8a7718",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21001_21003/episodes/reactive/layout_21001_radio_121001/episode_3a4ff759a25f4b948659ae94fb59908e/policy_metadata.json": "e85d367901f0d5a13b975b36ef4196a8f2d11ce7c2ccea84b14970ad89839cd2"
+        },
+        "collection_policy": "reactive",
+        "collection_split": "calibration"
+      },
+      {
+        "episode_id": "episode_01a5ad0b277e4b9e8541caa2c1d75ab7",
+        "layout_seed": 21002,
+        "radio_seed": 121002,
+        "source_hashes": {
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21001_21003/episodes/reactive/layout_21002_radio_121002/episode_01a5ad0b277e4b9e8541caa2c1d75ab7/transitions.jsonl": "c9416081315890e56c8cf63b79c91e56a00a5942a97358174e85887d2c8fe6d9",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21001_21003/episodes/reactive/layout_21002_radio_121002/episode_01a5ad0b277e4b9e8541caa2c1d75ab7/config.json": "d290934e14e20394328651a2b8e0650782b5e5d5ee9aa8bf9384680abbb5f92a",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21001_21003/episodes.json": "78546dfb08bfec79a9e53018fefbeb2bbec74d5e48f60da94e333dffc816978f",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21001_21003/run_config.json": "8cdbc8e70c78c12f23f3d9dc550f241e18ece2a4df8c37ab4eeedcf53a8a7718",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21001_21003/episodes/reactive/layout_21002_radio_121002/episode_01a5ad0b277e4b9e8541caa2c1d75ab7/policy_metadata.json": "41ebb61c96f2855750db6d139c13dfd51dc9b4370aa19df8ca94d748786b4e06"
+        },
+        "collection_policy": "reactive",
+        "collection_split": "calibration"
+      },
+      {
+        "episode_id": "episode_6b6c3c0853054ec6bf85161ba2a7498b",
+        "layout_seed": 21003,
+        "radio_seed": 121003,
+        "source_hashes": {
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21001_21003/episodes/reactive/layout_21003_radio_121003/episode_6b6c3c0853054ec6bf85161ba2a7498b/transitions.jsonl": "08b11a6a3a03eb269014e5c51ba159c106472b8f580c51cabf3f371aec0b0c3a",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21001_21003/episodes/reactive/layout_21003_radio_121003/episode_6b6c3c0853054ec6bf85161ba2a7498b/config.json": "0a0b2418ffab280ae099d250ad3243635b0eab656bf4a9ce72ddb303af56dbcd",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21001_21003/episodes.json": "78546dfb08bfec79a9e53018fefbeb2bbec74d5e48f60da94e333dffc816978f",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21001_21003/run_config.json": "8cdbc8e70c78c12f23f3d9dc550f241e18ece2a4df8c37ab4eeedcf53a8a7718",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21001_21003/episodes/reactive/layout_21003_radio_121003/episode_6b6c3c0853054ec6bf85161ba2a7498b/policy_metadata.json": "be12ab526840688705dce7005611a86960d81a8e10e8afeb763861efb4d154ee"
+        },
+        "collection_policy": "reactive",
+        "collection_split": "calibration"
+      },
+      {
+        "episode_id": "episode_0e41c9792c384788beaea99d2b41ae3a",
+        "layout_seed": 21004,
+        "radio_seed": 121004,
+        "source_hashes": {
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21004_21006/episodes/hold/layout_21004_radio_121004/episode_0e41c9792c384788beaea99d2b41ae3a/transitions.jsonl": "9dabe56ee724e6864e6a0df81e9cf6568ac13bfbbbd5e548f3b34da8972c994b",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21004_21006/episodes/hold/layout_21004_radio_121004/episode_0e41c9792c384788beaea99d2b41ae3a/config.json": "d54566bee6f2ea735b2757ad7e662466f33846173392750107401e7811750141",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21004_21006/episodes.json": "2489e969800f9f9f4e7be5e2f82b31c30586b15c8f92172e1c6a3096e6b07d97",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21004_21006/run_config.json": "443c62b3c76f2095a4ecd3d144f8ab8e8025cd897fc383857369ed9f66d2379a",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21004_21006/episodes/hold/layout_21004_radio_121004/episode_0e41c9792c384788beaea99d2b41ae3a/policy_metadata.json": "2acbc0dc73cbb8981c67e239a1b939ef2f4d1c91518b57e765509170ccf5f0e3"
+        },
+        "collection_policy": "hold",
+        "collection_split": "calibration"
+      },
+      {
+        "episode_id": "episode_f67d3ebe18e046019875faad8da719a4",
+        "layout_seed": 21005,
+        "radio_seed": 121005,
+        "source_hashes": {
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21004_21006/episodes/hold/layout_21005_radio_121005/episode_f67d3ebe18e046019875faad8da719a4/transitions.jsonl": "b01f991e29a5d867900a2782c91d3547da1effff219033246285d271e8fcddc4",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21004_21006/episodes/hold/layout_21005_radio_121005/episode_f67d3ebe18e046019875faad8da719a4/config.json": "7842448aa19fc3c12e80f324c22d0f68045f477396977b33a33ab719b5835d5a",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21004_21006/episodes.json": "2489e969800f9f9f4e7be5e2f82b31c30586b15c8f92172e1c6a3096e6b07d97",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21004_21006/run_config.json": "443c62b3c76f2095a4ecd3d144f8ab8e8025cd897fc383857369ed9f66d2379a",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21004_21006/episodes/hold/layout_21005_radio_121005/episode_f67d3ebe18e046019875faad8da719a4/policy_metadata.json": "c8be9c87a2d317705bd27428ea8777c3b55fe82433dceea5aac75b2b899d13ff"
+        },
+        "collection_policy": "hold",
+        "collection_split": "calibration"
+      },
+      {
+        "episode_id": "episode_3d5da1748f9245fab76cfa38ac38159f",
+        "layout_seed": 21006,
+        "radio_seed": 121006,
+        "source_hashes": {
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21004_21006/episodes/hold/layout_21006_radio_121006/episode_3d5da1748f9245fab76cfa38ac38159f/transitions.jsonl": "65c4c340d04836d45c3082a1c4ca0ea496ec1a47098be446792f12cdf27a1e84",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21004_21006/episodes/hold/layout_21006_radio_121006/episode_3d5da1748f9245fab76cfa38ac38159f/config.json": "619be7ba22a580b8be6572b8a65fb4a447a4f671c761438881d4fa4fca9002d6",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21004_21006/episodes.json": "2489e969800f9f9f4e7be5e2f82b31c30586b15c8f92172e1c6a3096e6b07d97",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21004_21006/run_config.json": "443c62b3c76f2095a4ecd3d144f8ab8e8025cd897fc383857369ed9f66d2379a",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21004_21006/episodes/hold/layout_21006_radio_121006/episode_3d5da1748f9245fab76cfa38ac38159f/policy_metadata.json": "27813426c2748a32b5600cba9531e8bd75fc463dd30b3a69a2dbc8c71d98bcf3"
+        },
+        "collection_policy": "hold",
+        "collection_split": "calibration"
+      },
+      {
+        "episode_id": "episode_52c3ce75247e4f0ca319ad54e7ad9be3",
+        "layout_seed": 21004,
+        "radio_seed": 121004,
+        "source_hashes": {
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21004_21006/episodes/reactive/layout_21004_radio_121004/episode_52c3ce75247e4f0ca319ad54e7ad9be3/transitions.jsonl": "a413146e21386a2cb57473c014d4dd4bd811ab6b3edc132acd886a536abb50b3",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21004_21006/episodes/reactive/layout_21004_radio_121004/episode_52c3ce75247e4f0ca319ad54e7ad9be3/config.json": "246e40bf2d0afd607a90b95cc84b9a864d6e98b8cb6fba00d6b4ac0b8b8fd827",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21004_21006/episodes.json": "2489e969800f9f9f4e7be5e2f82b31c30586b15c8f92172e1c6a3096e6b07d97",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21004_21006/run_config.json": "443c62b3c76f2095a4ecd3d144f8ab8e8025cd897fc383857369ed9f66d2379a",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21004_21006/episodes/reactive/layout_21004_radio_121004/episode_52c3ce75247e4f0ca319ad54e7ad9be3/policy_metadata.json": "4d65583056b319a0303409313008d57a9c96ed1bf8816bcee0651e64cfb23307"
+        },
+        "collection_policy": "reactive",
+        "collection_split": "calibration"
+      },
+      {
+        "episode_id": "episode_791ba6ef3ae949f6a0a2fe98cd7dfe42",
+        "layout_seed": 21005,
+        "radio_seed": 121005,
+        "source_hashes": {
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21004_21006/episodes/reactive/layout_21005_radio_121005/episode_791ba6ef3ae949f6a0a2fe98cd7dfe42/transitions.jsonl": "d9e68acee6dae8aed7bacc6090021abf065727d9ec71c04ffb20d9691d698aea",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21004_21006/episodes/reactive/layout_21005_radio_121005/episode_791ba6ef3ae949f6a0a2fe98cd7dfe42/config.json": "92f600d2bfac3ccf9b07d15c4a4c3b594ec50c1744a5ceb259eea0de7f70a58f",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21004_21006/episodes.json": "2489e969800f9f9f4e7be5e2f82b31c30586b15c8f92172e1c6a3096e6b07d97",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21004_21006/run_config.json": "443c62b3c76f2095a4ecd3d144f8ab8e8025cd897fc383857369ed9f66d2379a",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21004_21006/episodes/reactive/layout_21005_radio_121005/episode_791ba6ef3ae949f6a0a2fe98cd7dfe42/policy_metadata.json": "fe667377b27e45dbeb45d6d1c35daf3247ec0ba1ce3ef15ad3d6874df535665e"
+        },
+        "collection_policy": "reactive",
+        "collection_split": "calibration"
+      },
+      {
+        "episode_id": "episode_494642b339f64a9596a5816b5b0517a8",
+        "layout_seed": 21006,
+        "radio_seed": 121006,
+        "source_hashes": {
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21004_21006/episodes/reactive/layout_21006_radio_121006/episode_494642b339f64a9596a5816b5b0517a8/transitions.jsonl": "bfb1afcb7220e3326a8eb5351977d29cf8be36b2c65bb97209705e6364704476",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21004_21006/episodes/reactive/layout_21006_radio_121006/episode_494642b339f64a9596a5816b5b0517a8/config.json": "4ea07eed26f866e7a462997706ecc6805857f478b362356386263581adedd0da",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21004_21006/episodes.json": "2489e969800f9f9f4e7be5e2f82b31c30586b15c8f92172e1c6a3096e6b07d97",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21004_21006/run_config.json": "443c62b3c76f2095a4ecd3d144f8ab8e8025cd897fc383857369ed9f66d2379a",
+          "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration/calibration_21004_21006/episodes/reactive/layout_21006_radio_121006/episode_494642b339f64a9596a5816b5b0517a8/policy_metadata.json": "d42164a567db848d4da4ece9467ab081308e0d48fa800cddcb8c315630e5368e"
+        },
+        "collection_policy": "reactive",
+        "collection_split": "calibration"
+      }
+    ]
+  },
+  "models": {
+    "3": {
+      "mean": [
+        0.5817988870564367,
+        0.2310160234723603,
+        0.7965453557848987,
+        0.00013579576317218885,
+        -67.13845452720842,
+        -0.009003657106061895,
+        1.0,
+        0.990874524714829,
+        3.0
+      ],
+      "scale": [
+        0.05448687202709729,
+        0.6573493865400782,
+        0.0821084637344738,
+        0.08980549944223995,
+        0.677874634446715,
+        0.6391182446327885,
+        1.0,
+        0.09509048840969388,
+        1.0
+      ],
+      "weights": [
+        0.8762737797275838,
+        0.39069281772862385,
+        -0.5464807806898194,
+        0.18618754885635738,
+        -0.3328108061645941,
+        0.05525188829710749,
+        0.0,
+        0.005311060844333221,
+        0.0
+      ],
+      "intercept": -6.574553466125766,
+      "calibration": [
+        0.42774963800776483,
+        1.0065811275660812
+      ],
+      "train_samples": 18410,
+      "train_positive": 275,
+      "calibration_samples": 9213,
+      "calibration_positive": 163
+    },
+    "5": {
+      "mean": [
+        0.5811746939935629,
+        0.23006769789205814,
+        0.7971291800022071,
+        0.00013657432954420026,
+        -67.13173725638546,
+        -0.00865174833170728,
+        1.0,
+        0.9907295000551816,
+        5.0
+      ],
+      "scale": [
+        0.054124586815163196,
+        0.6617503536703804,
+        0.08179919699985816,
+        0.0895534812913277,
+        0.6748421090486173,
+        0.6396228615864519,
+        1.0,
+        0.09583609849940863,
+        1.0
+      ],
+      "weights": [
+        0.9441754641106707,
+        0.49136638050720327,
+        -0.5359274106033775,
+        0.1811158771598299,
+        -0.3886512626135316,
+        0.08791859779997052,
+        0.0,
+        0.005810128591586695,
+        0.0
+      ],
+      "intercept": -6.415490228152499,
+      "calibration": [
+        0.5508942054629525,
+        0.9721872687189398
+      ],
+      "train_samples": 18122,
+      "train_positive": 371,
+      "calibration_samples": 9069,
+      "calibration_positive": 233
+    },
+    "10": {
+      "mean": [
+        0.5796681497771327,
+        0.22784017673948392,
+        0.7984584219297746,
+        0.00017671398195505966,
+        -67.1158343437899,
+        -0.008470238685529548,
+        1.0,
+        0.9903453824492845,
+        10.0
+      ],
+      "scale": [
+        0.05327915649767745,
+        0.6733694817057968,
+        0.08132705296980833,
+        0.08943093839413262,
+        0.667830591957685,
+        0.6402615741113803,
+        1.0,
+        0.09778244172992999,
+        1.0
+      ],
+      "weights": [
+        1.0317379536625906,
+        0.7119433776560234,
+        -0.44745786634759965,
+        0.14656415667057368,
+        -0.4965665671686947,
+        0.1490513748258849,
+        0.0,
+        0.00829029283340602,
+        0.0
+      ],
+      "intercept": -5.951765435085049,
+      "calibration": [
+        0.5852911886211047,
+        0.8938096170504096
+      ],
+      "train_samples": 17401,
+      "train_positive": 585,
+      "calibration_samples": 8709,
+      "calibration_positive": 383
+    },
+    "20": {
+      "mean": [
+        0.5770951312601869,
+        0.22409092284701576,
+        0.8008849141711583,
+        0.00035396566846260003,
+        -67.09046316057247,
+        -0.00861552837445806,
+        1.0,
+        0.9894750031324395,
+        20.0
+      ],
+      "scale": [
+        0.05268213578761368,
+        0.6994396088720799,
+        0.08095220404745561,
+        0.08915885526333744,
+        0.6576222445762602,
+        0.6403813087239358,
+        1.0,
+        0.10205009215330123,
+        1.0
+      ],
+      "weights": [
+        0.985007892939765,
+        1.1231008067020045,
+        -0.26716001483706964,
+        0.09875114500407194,
+        -0.48118618258262325,
+        0.12075447282988502,
+        0.0,
+        0.025191564539103883,
+        0.0
+      ],
+      "intercept": -4.709663428691792,
+      "calibration": [
+        0.5776341540362445,
+        0.8870060712351091
+      ],
+      "train_samples": 15962,
+      "train_positive": 996,
+      "calibration_samples": 7989,
+      "calibration_positive": 636
+    }
+  },
+  "provenance": {
+    "command": [
+      "/home/sac/uav-prevention/2026-11-11-pilot/.venv/bin/python",
+      "-m",
+      "scripts.train.train_prevention_predictor",
+      "--train-root",
+      "results/prevention/train",
+      "--calibration-root",
+      "results/prevention/calibration",
+      "--output",
+      "results/prevention/model",
+      "--l2",
+      "0.01"
+    ],
+    "arguments": {
+      "train_root": "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/train",
+      "calibration_root": "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/calibration",
+      "output": "/home/sac/uav-prevention/2026-11-11-pilot/code/results/prevention/model",
+      "l2": 0.01
+    },
+    "source_hashes": {
+      "scripts/analysis/evaluate_prevention.py": "b67b7740f6c02e9889943e4c4f468768843914964c274882f1d52cd045e576ba",
+      "scripts/train/train_prevention_predictor.py": "b043791e46ccae85c684e5e06294495e572a5faa590a70f7def29d22b4ea45be",
+      "simulation/ns3/recovery-control.h": "61a7f2792a826a32ad820f5fae330af07550cef1daade3ef8bd3c0c4202cfd2f",
+      "simulation/ns3/recovery-protocol.h": "dfe5a85dabc45711b3014c07c2e8fc428cba555e682e8495c77c1cd30827a970",
+      "simulation/ns3/uav-olsr-dataset.cc": "09abc8f3836c231b342c0168bbf5956f69b2f62adc842f05d2da05adc2cbcd9e",
+      "src/control/bridge.py": "ed7916e2a7be8e5601151c01608d68384043fa38e9d243701bbd438836f1905e",
+      "src/control/prevention/__init__.py": "1e70120097963e6ccb6308142f92433af8de09e034249cdf9a4d84bb541f4cbb",
+      "src/control/prevention/config.py": "9aa7dff2cf4b8fcc86d093c1e10006330bb9db34a8a3bc771239648e21435fc8",
+      "src/control/prevention/controller.py": "92ad1311661e9ebab68b86446d2d68c7796ba3159b37b0870fdc9ebe14e0ea8b",
+      "src/control/prevention/environment.py": "09de3f73cabbc2208c336d7453bb5d33e04fa2051fb8d78f0887c42deb141d27",
+      "src/control/prevention/evaluation.py": "261684d85208eb7835b95c39379fa990d4316a9c0afd633ef065c8f599229da2",
+      "src/control/prevention/features.py": "05410d037ba60d70700cf1b9ba099e555e70ee5919b8b2aea7da2f2e316d27c1",
+      "src/control/prevention/prediction.py": "7c3bf5aba1135b367bbd6ee26f6408f86bda510f174000681a47bc9af2eb88f6"
+    }
+  }
+}
