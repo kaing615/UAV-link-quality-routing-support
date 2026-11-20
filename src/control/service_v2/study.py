@@ -189,8 +189,9 @@ def _validate_process_evidence(attempt, result, artifacts):
         if result['status']=='ok' and status!='captured': raise ValueError('Successful process requires both full simulator logs')
 
 
-def collect_case(protocol_path, cell_id, attempt, output):
-    phase=load_phase(protocol_path)
+def collect_case(protocol_path, cell_id, attempt, output, loader=load_phase, factory_builder=None):
+    """loader/factory_builder let a later protocol (v3) reuse this exact collector."""
+    phase=loader(protocol_path)
     cells=[c for c in phase['cells'] if c['cell_id']==cell_id]
     if len(cells)!=1 or type(attempt) is not int or attempt not in (0,1): raise ValueError('Unknown cell/attempt')
     cell=cells[0]; output=Path(output).resolve()
@@ -232,7 +233,8 @@ def collect_case(protocol_path, cell_id, attempt, output):
             finally:
                 if bridge is not None and bridge.process is not None:
                     exits.append(bridge.process.returncode)
-    factory=make_controller_factory(new,old,ServiceV2Config(),phase['new_model'],phase['method_sha256'])
+    factory=(factory_builder(phase,new,old) if factory_builder else
+             make_controller_factory(new,old,ServiceV2Config(),phase['new_model'],phase['method_sha256']))
     timings=[]
     class Timed:
         def __init__(self, controller): self.controller=controller
@@ -250,7 +252,7 @@ def collect_case(protocol_path, cell_id, attempt, output):
             policies=[cell['policy']],scenarios=[(cell['layout_seed'],cell['radio_seed'])],
             predictor=None,threshold=.5,routing_delay_s=3.,split=phase['phase'] if phase['phase'] in ('train','calibration') else 'test',
             provenance=dict(freeze_sha256=phase['_freeze_sha256'],cell_id=cell_id),
-            env_factory=partial(ObservedEnv,service_observation=True),controller_factory=timed_factory,supported_policies=POLICIES)
+            env_factory=partial(ObservedEnv,service_observation=True),controller_factory=timed_factory,supported_policies=tuple(phase.get('supported_policies',POLICIES)))
         records=strict_json(out/'collector/episodes.json')
         if len(records)!=1 or records[0]['status']!='ok': raise ValueError('Collector failed: '+str(records))
         episode=Path(records[0]['episode_dir']).resolve()
@@ -285,8 +287,8 @@ def collect_case(protocol_path, cell_id, attempt, output):
     return result
 
 
-def validate_collection(protocol_path, run_root):
-    phase=load_phase(protocol_path); root=Path(run_root).resolve()
+def validate_collection(protocol_path, run_root, loader=load_phase):
+    phase=loader(protocol_path); root=Path(run_root).resolve()
     manifest=strict_json(root/'collection.json')
     expected=dict(schema='service-v2-collection-v1',phase=phase['phase'],protocol=phase.get('protocol_path_at_freeze',phase['_path']),
         freeze_sha256=phase['_freeze_sha256'],cells=[c['cell_id'] for c in phase['cells']])
@@ -338,13 +340,13 @@ def validate_collection(protocol_path, run_root):
         complete=all(r['status']=='ok' for r in rows),planned_cells=len(rows),ok_cells=sum(r['status']=='ok' for r in rows),rows=rows)
 
 
-def load_service_episodes(run_root, expected_phase, policies=None):
+def load_service_episodes(run_root, expected_phase, policies=None, loader=load_phase):
     from .prediction import ServiceEpisode
     from ..prevention.config import PreventionConfig
     root=Path(run_root).resolve(); manifest=strict_json(root/'collection.json')
-    report=validate_collection(manifest['protocol'],root)
+    report=validate_collection(manifest['protocol'],root,loader)
     if report['phase']!=expected_phase or not report['complete']: raise ValueError('Incomplete/wrong phase collection; survivor selection forbidden')
-    phase=load_phase(manifest['protocol']); source=strict_json(Path(phase['_path']).parent/'source-manifest.json')
+    phase=loader(manifest['protocol']); source=strict_json(Path(phase['_path']).parent/'source-manifest.json')
     hashes={k:v['executed_sha256'] for k,v in source.items()}
     hashes['runtime/launcher']=phase['runtime']['launcher_sha256']
     if policies is not None and (not policies or len(set(policies))!=len(policies) or set(policies)-set(phase['policies'])): raise ValueError('Invalid policy selection')

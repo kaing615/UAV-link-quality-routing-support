@@ -155,6 +155,30 @@ def advance_motion(memory, state, risks, assessment, frame, config, method, mode
     return result(action, next_memory, 'restoration_motion' if memory.context != 'forecast' else 'forecast_motion', 'BURST')
 
 
+_THRESHOLD_FIELDS = ('risk_on', 'risk_off')
+
+
+def threshold_method(risk_on, risk_off):
+    """Adopted method with only the risk hysteresis replaced (v3 threshold arms)."""
+    method = ServiceV2Config()
+    object.__setattr__(method, 'risk_on', float(risk_on))
+    object.__setattr__(method, 'risk_off', float(risk_off))
+    if not supported_method(method):
+        raise ValueError('Risk hysteresis must satisfy 0 < risk_off < risk_on <= 1')
+    return method
+
+
+def supported_method(method):
+    if type(method) is not ServiceV2Config:
+        return False
+    if method == ServiceV2Config():
+        return True
+    rest = lambda m: {k: v for k, v in asdict(m).items() if k not in _THRESHOLD_FIELDS}
+    on, off = method.risk_on, method.risk_off
+    return (rest(method) == rest(ServiceV2Config()) and all(type(v) is float and np.isfinite(v) for v in (on, off))
+            and 0 < off < on <= 1)
+
+
 class ServiceV2Controller:
     """Own causal histories; external hashes identify the caller's frozen files.
 
@@ -167,7 +191,7 @@ class ServiceV2Controller:
         if policy not in V2_POLICIES:
             raise ValueError('Unsupported v2 controller role')
         _validate_config(config)
-        if not isinstance(method, ServiceV2Config) or method != ServiceV2Config():
+        if not supported_method(method):
             raise ValueError('Unsupported v2 method')
         if not isinstance(predictor, ServicePredictor):
             raise ValueError('A validated service predictor is required')
