@@ -66,6 +66,12 @@ def validate_ns3_binary(binary: Path, source_root: Path = Path("simulation/ns3")
         "CMakeLists.txt": source_root / "CMakeLists.txt",
         "build/uav-olsr-dataset": binary,
     }
+    # Motion and protocol are compiled from headers as part of this simulator.
+    # Changing them must invalidate a binary even when the .cc is unchanged.
+    for header in ("recovery-control.h", "recovery-protocol.h"):
+        path = source_root / header
+        if path.is_file():
+            inputs[header] = path
     current = fingerprint({}, list(inputs.values()))["files"]
     if any(expected.get(name) != current[str(path.resolve())] for name, path in inputs.items()):
         raise ValueError("ns-3 binary/source mismatch; rebuild before running experiments")

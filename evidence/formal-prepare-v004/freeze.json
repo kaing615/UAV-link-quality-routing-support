@@ -1,0 +1,30 @@
+{
+  "argv": [
+    "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+    "-m",
+    "src.control.service_v2.cli",
+    "freeze",
+    "--phase",
+    "formal",
+    "--seed-plan",
+    "/home/sac/uav-service/2026-11-12-service-prevention-v2/source-runtime-v003/reports/uav_service_prevention_v2_2026-11-12/seed-plans/formal.json",
+    "--design",
+    "/home/sac/uav-service/2026-11-12-service-prevention-v2/source-runtime-v003/docs/superpowers/specs/2026-11-12-service-prevention-v2-design.md",
+    "--output",
+    "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/formal",
+    "--model",
+    "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/model/predictor.json",
+    "--reference-model",
+    "/home/sac/uav-service/2026-11-12-service-prevention-v2/source-runtime-v003/reports/uav_prevention_pilot_2026-11-11/predictor.json"
+  ],
+  "cwd": "/home/sac/uav-service/2026-11-12-service-prevention-v2/source-runtime-v003",
+  "direct_exit": 0,
+  "environment": {
+    "LD_LIBRARY_PATH": "/home/sac/uav-service/2026-11-11-path-control/runtime/lib",
+    "MKL_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1"
+  },
+  "finished_unix": 1794501437.6273997,
+  "wall_seconds": 8.903708457946777
+}

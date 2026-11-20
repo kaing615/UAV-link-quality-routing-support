@@ -1,0 +1,18 @@
+{
+  "argv": [
+    "/home/sac/uav-service/2026-11-11-path-control/.venv/bin/python",
+    "-c",
+    "from pathlib import Path\nimport sys\nfrom src.control.service_v2.protocol import load_phase, verify_runtime, ROOT\np = load_phase(sys.argv[1])\nif p['run_argv'][0] != sys.executable or sys.prefix == sys.base_prefix or not Path(sys.executable).is_symlink():\n    raise ValueError('Frozen invocation/venv/symlink check failed')\nverify_runtime(p, ROOT)\nprint({'invocation': sys.executable, 'passed': True})\n",
+    "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/pilot-integration-v003/protocol.json"
+  ],
+  "cwd": "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/frozen/pilot-integration-v003/source",
+  "direct_exit": 0,
+  "environment": {
+    "LD_LIBRARY_PATH": "/home/sac/uav-service/2026-11-11-path-control/runtime/lib",
+    "MKL_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1"
+  },
+  "finished_unix": 1794488024.0064306,
+  "wall_seconds": 1.4674830436706543
+}

@@ -1,0 +1,151 @@
+{
+  "revision": 2,
+  "time_unix": 1794488064.290971,
+  "cells": {
+    "pilot-n4-static-01__hold": {
+      "state": "running",
+      "started_unix": 1794488064.2909641
+    },
+    "pilot-n4-static-01__reactive": {
+      "state": "planned"
+    },
+    "pilot-n4-static-01__geometry": {
+      "state": "planned"
+    },
+    "pilot-n4-static-01__path-service-v1-reference": {
+      "state": "planned"
+    },
+    "pilot-n4-static-01__service-v2": {
+      "state": "planned"
+    },
+    "pilot-n4-static-01__service-v2-no-forecast": {
+      "state": "planned"
+    },
+    "pilot-n4-static-01__service-v2-no-online-service-state": {
+      "state": "planned"
+    },
+    "pilot-n4-static-01__service-v2-no-motion-gate": {
+      "state": "planned"
+    },
+    "pilot-n4-gradual-01__hold": {
+      "state": "planned"
+    },
+    "pilot-n4-gradual-01__reactive": {
+      "state": "planned"
+    },
+    "pilot-n4-gradual-01__geometry": {
+      "state": "planned"
+    },
+    "pilot-n4-gradual-01__path-service-v1-reference": {
+      "state": "planned"
+    },
+    "pilot-n4-gradual-01__service-v2": {
+      "state": "planned"
+    },
+    "pilot-n4-gradual-01__service-v2-no-forecast": {
+      "state": "planned"
+    },
+    "pilot-n4-gradual-01__service-v2-no-online-service-state": {
+      "state": "planned"
+    },
+    "pilot-n4-gradual-01__service-v2-no-motion-gate": {
+      "state": "planned"
+    },
+    "pilot-n4-gradual-02__hold": {
+      "state": "planned"
+    },
+    "pilot-n4-gradual-02__reactive": {
+      "state": "planned"
+    },
+    "pilot-n4-gradual-02__geometry": {
+      "state": "planned"
+    },
+    "pilot-n4-gradual-02__path-service-v1-reference": {
+      "state": "planned"
+    },
+    "pilot-n4-gradual-02__service-v2": {
+      "state": "planned"
+    },
+    "pilot-n4-gradual-02__service-v2-no-forecast": {
+      "state": "planned"
+    },
+    "pilot-n4-gradual-02__service-v2-no-online-service-state": {
+      "state": "planned"
+    },
+    "pilot-n4-gradual-02__service-v2-no-motion-gate": {
+      "state": "planned"
+    },
+    "pilot-n5-static-01__hold": {
+      "state": "planned"
+    },
+    "pilot-n5-static-01__reactive": {
+      "state": "planned"
+    },
+    "pilot-n5-static-01__geometry": {
+      "state": "planned"
+    },
+    "pilot-n5-static-01__path-service-v1-reference": {
+      "state": "planned"
+    },
+    "pilot-n5-static-01__service-v2": {
+      "state": "planned"
+    },
+    "pilot-n5-static-01__service-v2-no-forecast": {
+      "state": "planned"
+    },
+    "pilot-n5-static-01__service-v2-no-online-service-state": {
+      "state": "planned"
+    },
+    "pilot-n5-static-01__service-v2-no-motion-gate": {
+      "state": "planned"
+    },
+    "pilot-n5-gradual-01__hold": {
+      "state": "planned"
+    },
+    "pilot-n5-gradual-01__reactive": {
+      "state": "planned"
+    },
+    "pilot-n5-gradual-01__geometry": {
+      "state": "planned"
+    },
+    "pilot-n5-gradual-01__path-service-v1-reference": {
+      "state": "planned"
+    },
+    "pilot-n5-gradual-01__service-v2": {
+      "state": "planned"
+    },
+    "pilot-n5-gradual-01__service-v2-no-forecast": {
+      "state": "planned"
+    },
+    "pilot-n5-gradual-01__service-v2-no-online-service-state": {
+      "state": "planned"
+    },
+    "pilot-n5-gradual-01__service-v2-no-motion-gate": {
+      "state": "planned"
+    },
+    "pilot-n5-gradual-02__hold": {
+      "state": "planned"
+    },
+    "pilot-n5-gradual-02__reactive": {
+      "state": "planned"
+    },
+    "pilot-n5-gradual-02__geometry": {
+      "state": "planned"
+    },
+    "pilot-n5-gradual-02__path-service-v1-reference": {
+      "state": "planned"
+    },
+    "pilot-n5-gradual-02__service-v2": {
+      "state": "planned"
+    },
+    "pilot-n5-gradual-02__service-v2-no-forecast": {
+      "state": "planned"
+    },
+    "pilot-n5-gradual-02__service-v2-no-online-service-state": {
+      "state": "planned"
+    },
+    "pilot-n5-gradual-02__service-v2-no-motion-gate": {
+      "state": "planned"
+    }
+  }
+}

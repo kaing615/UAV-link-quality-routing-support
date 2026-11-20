@@ -1,0 +1,21 @@
+{
+  "adoption_sha256": "497711997c61a94d8590e8dbbde2e4931b24f0af50acc137fc192e0b83385679",
+  "approval_path": "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/engineering/formal-launch-approval-v001.json",
+  "approval_sha256": "825c0544bf4aa2b614718a0dc7a5ca9379935fd33e5d37bdaa1cb4c4129fe9b4",
+  "prelaunch_review": {
+    "path": "/home/sac/uav-service/2026-11-12-service-prevention-v2/reports/uav_service_prevention_v2_2026-11-12/engineering/formal-prelaunch-accepted-v001.json",
+    "sha256": "6aed055003fb20eefec1efbd84bf4b98547de13a84094d61d37f875515a11115"
+  },
+  "verified_formal_identities": {
+    "freeze_sha256": "193a9984a836a04f07422d0f3657e380f3e8fbc1fef65ceae91219bc83f5c5e6",
+    "inherited_pilot_freeze_sha256": "7d17ed501f996d94aa62cc7b7fb4ff86b14cbe7981b19262a277a837c67ed77e",
+    "method_sha256": "c977477ffe7f6704a289ebd0cd050e836c796d130f2a4232d7996ba806765a1f",
+    "new_model_sha256": "719816f80b9df51c5544422522265e50bd454768869523036a8b8f4b1c657c10",
+    "phase": "formal",
+    "protocol_sha256": "99590e2d9f2fe945d04af941071c7b28d491f611e1f79c54b31e3d348489676b",
+    "reference_model_sha256": "3b74301ccb0e659ba6d2b593250decabd0f317386adfa4cc5d5b4e5174bacae8",
+    "seed_plan_sha256": "fdfaee568be703ffe0f5bfe8fbb75724cea599caa7069e80acc9082e7a98748f",
+    "source_manifest_sha256": "a5680954a0d5cd83aa864a7d951a786d4f19ae0c4b2cb3a588841f6abe3cb35b",
+    "spec_sha256": "ce4ac80694795fd1c58125eb930be98d998bd148ea004cda1a9c169e43debcc2"
+  }
+}

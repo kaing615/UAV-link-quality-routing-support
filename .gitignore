@@ -67,3 +67,15 @@ reports/controlled_scenarios/workers/
 # Serving model staging dir (weights pulled via DVC, never committed)
 models/*
 !models/.gitkeep
+
+# Scratch and tool caches
+tmp/
+.ua/
+
+# v2 experiment artifacts (6 GB): backed up outside git; only the final report is tracked
+evidence/queue-formal-v004/
+reports/uav_service_prevention_v2_2026-11-12/*
+!reports/uav_service_prevention_v2_2026-11-12/final/
+reports/uav_service_prevention_v2_2026-11-12/final/*
+!reports/uav_service_prevention_v2_2026-11-12/final/editorial-v001/
+reports/uav_service_prevention_v2_2026-11-12/final/editorial-v001/tables/

@@ -13,5 +13,5 @@ if [[ ! -f build/CMakeCache.txt && -x build/uav-olsr-dataset && -f build/source.
 else
   cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
   cmake --build build
-  sha256sum uav-olsr-dataset.cc CMakeLists.txt build/uav-olsr-dataset > build/source.sha256
+  sha256sum uav-olsr-dataset.cc CMakeLists.txt recovery-control.h recovery-protocol.h build/uav-olsr-dataset > build/source.sha256
 fi

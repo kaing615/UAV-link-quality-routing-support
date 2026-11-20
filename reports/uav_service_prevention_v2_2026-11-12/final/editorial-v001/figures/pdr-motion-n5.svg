@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg
+  PUBLIC '-//W3C//DTD SVG 1.0//EN'
+  'http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd'>
+<svg width="515" height="310" preserveAspectRatio="xMinYMin meet" viewBox="0 0 515 310" xmlns="http://www.w3.org/2000/svg" version="1.0" fill-rule="evenodd" xmlns:xlink="http://www.w3.org/1999/xlink">
+	<title>...</title>
+	<desc>...</desc>
+	<clipPath id="clip">
+		<rect x="0" y="0" width="515" height="310"/>
+	</clipPath>
+	<g id="group" transform="scale(1,-1) translate(0,-310)" style="clip-path: url(#clip)">
+		<g transform="">
+			<path d="M 47,93 L 47,271 Z" style="stroke: rgb(88%,90%,92%); stroke-linecap: butt; stroke-width: 0.3;"/>
+			<text x="38.0" y="80" style="font-family: V2Editorial; font-size: 7px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,160) scale(1,-1)">0</text>
+			<path d="M 120.5,93 L 120.5,271 Z" style="stroke: rgb(88%,90%,92%); stroke-linecap: butt; stroke-width: 0.3;"/>
+			<text x="111.5" y="80" style="font-family: V2Editorial; font-size: 7px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,160) scale(1,-1)">200</text>
+			<path d="M 194,93 L 194,271 Z" style="stroke: rgb(88%,90%,92%); stroke-linecap: butt; stroke-width: 0.3;"/>
+			<text x="185.0" y="80" style="font-family: V2Editorial; font-size: 7px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,160) scale(1,-1)">400</text>
+			<path d="M 267.5,93 L 267.5,271 Z" style="stroke: rgb(88%,90%,92%); stroke-linecap: butt; stroke-width: 0.3;"/>
+			<text x="258.5" y="80" style="font-family: V2Editorial; font-size: 7px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,160) scale(1,-1)">600</text>
+			<path d="M 341,93 L 341,271 Z" style="stroke: rgb(88%,90%,92%); stroke-linecap: butt; stroke-width: 0.3;"/>
+			<text x="332.0" y="80" style="font-family: V2Editorial; font-size: 7px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,160) scale(1,-1)">800</text>
+			<path d="M 414.5,93 L 414.5,271 Z" style="stroke: rgb(88%,90%,92%); stroke-linecap: butt; stroke-width: 0.3;"/>
+			<text x="405.5" y="80" style="font-family: V2Editorial; font-size: 7px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,160) scale(1,-1)">1000</text>
+			<path d="M 488,93 L 488,271 Z" style="stroke: rgb(88%,90%,92%); stroke-linecap: butt; stroke-width: 0.3;"/>
+			<text x="479.0" y="80" style="font-family: V2Editorial; font-size: 7px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,160) scale(1,-1)">1200</text>
+			<path d="M 47,93 L 488,93 Z" style="stroke: rgb(88%,90%,92%); stroke-linecap: butt; stroke-width: 0.3;"/>
+			<text x="18" y="91.0" style="font-family: V2Editorial; font-size: 7px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,182) scale(1,-1)">0.00</text>
+			<path d="M 47,137.5 L 488,137.5 Z" style="stroke: rgb(88%,90%,92%); stroke-linecap: butt; stroke-width: 0.3;"/>
+			<text x="18" y="135.5" style="font-family: V2Editorial; font-size: 7px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,271) scale(1,-1)">0.25</text>
+			<path d="M 47,182 L 488,182 Z" style="stroke: rgb(88%,90%,92%); stroke-linecap: butt; stroke-width: 0.3;"/>
+			<text x="18" y="180.0" style="font-family: V2Editorial; font-size: 7px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,360) scale(1,-1)">0.50</text>
+			<path d="M 47,226.5 L 488,226.5 Z" style="stroke: rgb(88%,90%,92%); stroke-linecap: butt; stroke-width: 0.3;"/>
+			<text x="18" y="224.5" style="font-family: V2Editorial; font-size: 7px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,449) scale(1,-1)">0.75</text>
+			<path d="M 47,271 L 488,271 Z" style="stroke: rgb(88%,90%,92%); stroke-linecap: butt; stroke-width: 0.3;"/>
+			<text x="18" y="269.0" style="font-family: V2Editorial; font-size: 7px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,538) scale(1,-1)">1.00</text>
+			<path d="M 47,93 L 488,93 Z" style="stroke: rgb(0%,0%,0%); stroke-linecap: butt; stroke-width: 0.6;"/>
+			<path d="M 47,93 L 47,271 Z" style="stroke: rgb(0%,0%,0%); stroke-linecap: butt; stroke-width: 0.6;"/>
+			<text x="47" y="287" style="font-family: V2EditorialBold; font-size: 8px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,574) scale(1,-1)">PDR ứng dụng</text>
+			<text x="167" y="61" style="font-family: V2Editorial; font-size: 8px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,122) scale(1,-1)">Tổng quãng đường relay (m)</text>
+			<circle cx="47.0" cy="258.8129333333333" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(41%,44%,50%); fill-rule: evenodd;"/>
+			<rect x="115.43008603987126" y="253.91746666666666" width="4.0" height="4.0" style="stroke: rgb(72%,10%,10%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="118.17253141277298" cy="254.88506666666666" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(1%,47%,34%); fill-rule: evenodd;"/>
+			<rect x="275.09131112749424" y="258.27253333333334" width="4.0" height="4.0" style="stroke: rgb(49%,13%,80%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="87.07969321653972" cy="260.3556" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(11%,30%,84%); fill-rule: evenodd;"/>
+			<rect x="63.029693214408226" y="261.9037333333333" width="4.0" height="4.0" style="stroke: rgb(76%,25%,4%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="78.25969321470222" cy="265.7074666666667" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(5%,45%,56%); fill-rule: evenodd;"/>
+			<rect x="115.76542352887297" y="236.34293333333332" width="4.0" height="4.0" style="stroke: rgb(52%,30%,5%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="47.0" cy="256.55826666666667" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(41%,44%,50%); fill-rule: evenodd;"/>
+			<rect x="122.91830606106738" y="255.8992" width="4.0" height="4.0" style="stroke: rgb(72%,10%,10%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="125.49442579986356" cy="252.54733333333334" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(1%,47%,34%); fill-rule: evenodd;"/>
+			<rect x="279.44843921067974" y="259.04386666666664" width="4.0" height="4.0" style="stroke: rgb(49%,13%,80%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="88.15999999114325" cy="254.86133333333333" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(11%,30%,84%); fill-rule: evenodd;"/>
+			<rect x="64.11000000760725" y="256.77733333333333" width="4.0" height="4.0" style="stroke: rgb(76%,25%,4%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="95.50999999819925" cy="218.40693333333334" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(5%,45%,56%); fill-rule: evenodd;"/>
+			<rect x="122.42716560686962" y="255.09226666666666" width="4.0" height="4.0" style="stroke: rgb(52%,30%,5%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="47.0" cy="259.7385333333333" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(41%,44%,50%); fill-rule: evenodd;"/>
+			<rect x="116.13020596812454" y="261.85626666666667" width="4.0" height="4.0" style="stroke: rgb(72%,10%,10%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="118.53621546510588" cy="243.67106666666666" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(1%,47%,34%); fill-rule: evenodd;"/>
+			<rect x="349.49745074862756" y="260.38480000000004" width="4.0" height="4.0" style="stroke: rgb(49%,13%,80%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="92.569999991327" cy="258.9078666666667" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(11%,30%,84%); fill-rule: evenodd;"/>
+			<rect x="71.45999999140051" y="259.0913333333333" width="4.0" height="4.0" style="stroke: rgb(76%,25%,4%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="91.10000000084526" cy="264.29533333333336" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(5%,45%,56%); fill-rule: evenodd;"/>
+			<rect x="116.46831261992966" y="260.65773333333334" width="4.0" height="4.0" style="stroke: rgb(52%,30%,5%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="47.0" cy="263.702" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(41%,44%,50%); fill-rule: evenodd;"/>
+			<rect x="113.76625490207307" y="254.3209333333333" width="4.0" height="4.0" style="stroke: rgb(72%,10%,10%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="116.40157301550305" cy="257.0804" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(1%,47%,34%); fill-rule: evenodd;"/>
+			<rect x="291.7674372217058" y="252.05440000000002" width="4.0" height="3.9999999999999716" style="stroke: rgb(49%,13%,80%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="73.46000001069424" cy="263.9630666666667" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(11%,30%,84%); fill-rule: evenodd;"/>
+			<rect x="53.819999996031" y="266.4012" width="4.0" height="4.0" style="stroke: rgb(76%,25%,4%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="82.280000002646" cy="259.33506666666665" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(5%,45%,56%); fill-rule: evenodd;"/>
+			<rect x="114.09451004878176" y="255.5432" width="4.0" height="4.0" style="stroke: rgb(52%,30%,5%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="47.0" cy="268.1994666666667" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(41%,44%,50%); fill-rule: evenodd;"/>
+			<rect x="113.627589726733" y="264.5618666666667" width="4.0" height="4.0" style="stroke: rgb(72%,10%,10%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="116.305255357355" cy="257.1041333333334" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(1%,47%,34%); fill-rule: evenodd;"/>
+			<rect x="336.26049279027745" y="258.3793333333333" width="4.0" height="4.0" style="stroke: rgb(49%,13%,80%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="82.279999992356" cy="259.06213333333335" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(11%,30%,84%); fill-rule: evenodd;"/>
+			<rect x="58.229999994414" y="261.38160000000005" width="4.0" height="4.0" style="stroke: rgb(76%,25%,4%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="73.459999989269" cy="266.8822666666666" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(5%,45%,56%); fill-rule: evenodd;"/>
+			<rect x="111.19293562722041" y="257.85720000000003" width="4.0" height="4.0" style="stroke: rgb(52%,30%,5%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="47.0" cy="256.19039999999995" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(41%,44%,50%); fill-rule: evenodd;"/>
+			<rect x="127.817507986046" y="259.23373333333336" width="4.0" height="4.0" style="stroke: rgb(72%,10%,10%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="130.090084735723" cy="257.1041333333334" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(1%,47%,34%); fill-rule: evenodd;"/>
+			<rect x="328.94141813394003" y="254.23786666666666" width="4.0" height="4.0" style="stroke: rgb(49%,13%,80%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="92.5700000113925" cy="244.27626666666666" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(11%,30%,84%); fill-rule: evenodd;"/>
+			<rect x="77.34000000775424" y="248.0909333333333" width="4.0" height="4.0" style="stroke: rgb(76%,25%,4%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="99.92000001664775" cy="250.61306666666667" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(5%,45%,56%); fill-rule: evenodd;"/>
+			<rect x="128.21152275335456" y="251.3424" width="4.0" height="4.0" style="stroke: rgb(52%,30%,5%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="47.0" cy="241.7012" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(41%,44%,50%); fill-rule: evenodd;"/>
+			<rect x="131.0412099315312" y="243.6528" width="4.0" height="4.0" style="stroke: rgb(72%,10%,10%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="133.53225009560225" cy="242.8404" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(1%,47%,34%); fill-rule: evenodd;"/>
+			<rect x="324.00502495047004" y="242.45426666666665" width="4.0" height="4.0" style="stroke: rgb(49%,13%,80%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="96.97999998765201" cy="251.46746666666667" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(11%,30%,84%); fill-rule: evenodd;"/>
+			<rect x="86.15999999371576" y="248.71986666666666" width="4.0" height="4.0" style="stroke: rgb(76%,25%,4%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="95.50999999004075" cy="249.41453333333334" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(5%,45%,56%); fill-rule: evenodd;"/>
+			<rect x="131.45123832258554" y="240.03346666666667" width="4.0" height="4.0" style="stroke: rgb(52%,30%,5%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="47.0" cy="255.336" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(41%,44%,50%); fill-rule: evenodd;"/>
+			<rect x="124.27081056697111" y="250.0608" width="4.0" height="4.0" style="stroke: rgb(72%,10%,10%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="126.77737674480665" cy="262.11186666666663" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(1%,47%,34%); fill-rule: evenodd;"/>
+			<rect x="389.2585191503325" y="245.148" width="4.0" height="4.0" style="stroke: rgb(49%,13%,80%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="97.58428730884077" cy="239.98053333333334" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(11%,30%,84%); fill-rule: evenodd;"/>
+			<rect x="95.58428730884077" y="237.98053333333334" width="4.0" height="4.0" style="stroke: rgb(76%,25%,4%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="96.11428733331627" cy="255.18173333333334" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(5%,45%,56%); fill-rule: evenodd;"/>
+			<rect x="124.64633999788778" y="243.2256" width="3.999999999999986" height="4.0" style="stroke: rgb(52%,30%,5%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="47.0" cy="140.348" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(41%,44%,50%); fill-rule: evenodd;"/>
+			<rect x="115.02759783109703" y="134.37266666666667" width="4.0" height="4.0" style="stroke: rgb(72%,10%,10%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="117.72719715707639" cy="167.23786666666666" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(1%,47%,34%); fill-rule: evenodd;"/>
+			<rect x="295.13882514642" y="147.33106666666666" width="4.0" height="4.0" style="stroke: rgb(49%,13%,80%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="140.752580204885" cy="184.50386666666668" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(11%,30%,84%); fill-rule: evenodd;"/>
+			<rect x="129.93258017181" y="177.2588" width="4.0" height="4.0" style="stroke: rgb(76%,25%,4%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="104.33000000959174" cy="141.74826666666667" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(5%,45%,56%); fill-rule: evenodd;"/>
+			<rect x="156.26380302093554" y="180.58146666666664" width="4.0" height="4.0" style="stroke: rgb(52%,30%,5%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="47.0" cy="185.204" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(41%,44%,50%); fill-rule: evenodd;"/>
+			<rect x="112.14780113645136" y="183.80919999999998" width="4.0" height="4.0" style="stroke: rgb(72%,10%,10%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="114.45685888417736" cy="188.5622666666667" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(1%,47%,34%); fill-rule: evenodd;"/>
+			<rect x="268.8663504200813" y="175.85853333333336" width="4.0" height="4.0" style="stroke: rgb(49%,13%,80%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="147.759357976655" cy="179.74533333333335" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(11%,30%,84%); fill-rule: evenodd;"/>
+			<rect x="134.44206824154003" y="174.93293333333332" width="4.0" height="4.0" style="stroke: rgb(76%,25%,4%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="69.05000000033075" cy="184.1004" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(5%,45%,56%); fill-rule: evenodd;"/>
+			<rect x="153.01143937240525" y="177.5554666666667" width="4.0" height="4.0" style="stroke: rgb(52%,30%,5%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="47.0" cy="188.8352" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(41%,44%,50%); fill-rule: evenodd;"/>
+			<rect x="120.95283661641716" y="189.24413333333334" width="4.0" height="4.0" style="stroke: rgb(72%,10%,10%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="123.59323082785792" cy="179.88773333333333" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(1%,47%,34%); fill-rule: evenodd;"/>
+			<rect x="345.7945946227425" y="181.76813333333334" width="4.0" height="4.0" style="stroke: rgb(49%,13%,80%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="156.280798908365" cy="177.728" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(11%,30%,84%); fill-rule: evenodd;"/>
+			<rect x="146.9307989094675" y="178.44546666666668" width="4.0" height="4.0" style="stroke: rgb(76%,25%,4%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="80.80999998224976" cy="184.7056" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(5%,45%,56%); fill-rule: evenodd;"/>
+			<rect x="162.13300994782247" y="181.54266666666666" width="4.0" height="4.0" style="stroke: rgb(52%,30%,5%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="47.0" cy="264.04613333333333" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(41%,44%,50%); fill-rule: evenodd;"/>
+			<rect x="113.36446165805576" y="259.7914666666667" width="4.0" height="4.0" style="stroke: rgb(72%,10%,10%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="116.30314656237634" cy="257.8517333333333" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(1%,47%,34%); fill-rule: evenodd;"/>
+			<rect x="269.98635705286125" y="253.514" width="4.0" height="4.0" style="stroke: rgb(49%,13%,80%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="91.10000000981225" cy="260.3437333333334" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(11%,30%,84%); fill-rule: evenodd;"/>
+			<rect x="67.04999999834625" y="260.1" width="4.0" height="4.0" style="stroke: rgb(76%,25%,4%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="91.100000003822" cy="260.6404" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(5%,45%,56%); fill-rule: evenodd;"/>
+			<rect x="113.69140720395372" y="255.76866666666666" width="4.0" height="4.0" style="stroke: rgb(52%,30%,5%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="47.0" cy="262.7170666666667" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(41%,44%,50%); fill-rule: evenodd;"/>
+			<rect x="119.73693552057752" y="256.8129333333333" width="4.0" height="4.0" style="stroke: rgb(72%,10%,10%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="122.6712186282647" cy="260.30813333333333" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(1%,47%,34%); fill-rule: evenodd;"/>
+			<rect x="271.301020015812" y="261.33413333333334" width="4.0" height="4.0" style="stroke: rgb(49%,13%,80%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="82.27999999522251" cy="259.1452" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(11%,30%,84%); fill-rule: evenodd;"/>
+			<rect x="53.8199999955165" y="265.70106666666663" width="4.0" height="4.0" style="stroke: rgb(76%,25%,4%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="86.68999999717025" cy="262.39666666666665" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(5%,45%,56%); fill-rule: evenodd;"/>
+			<rect x="120.0936794492053" y="258.58106666666663" width="4.0" height="4.0" style="stroke: rgb(52%,30%,5%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="47.0" cy="252.666" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(41%,44%,50%); fill-rule: evenodd;"/>
+			<rect x="125.92035530950822" y="249.33693333333332" width="4.000000000000014" height="4.0" style="stroke: rgb(72%,10%,10%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="128.6421687864785" cy="246.13933333333333" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(1%,47%,34%); fill-rule: evenodd;"/>
+			<rect x="380.173539687105" y="242.78653333333332" width="4.0" height="4.0" style="stroke: rgb(49%,13%,80%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="95.51000002289524" cy="255.07493333333332" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(11%,30%,84%); fill-rule: evenodd;"/>
+			<rect x="74.3999999940465" y="254.09546666666665" width="4.0" height="4.0" style="stroke: rgb(76%,25%,4%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="91.0999999834625" cy="227.22386666666665" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(5%,45%,56%); fill-rule: evenodd;"/>
+			<rect x="126.3077555998347" y="249.17079999999999" width="4.0" height="4.0" style="stroke: rgb(52%,30%,5%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="47.0" cy="257.74493333333334" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(41%,44%,50%); fill-rule: evenodd;"/>
+			<rect x="123.08965272144961" y="259.0794666666667" width="4.0" height="4.0" style="stroke: rgb(72%,10%,10%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="125.7825646371407" cy="252.51173333333332" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(1%,47%,34%); fill-rule: evenodd;"/>
+			<rect x="324.75082922703" y="249.11146666666667" width="4.0" height="4.0" style="stroke: rgb(49%,13%,80%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="71.9899999940465" cy="262.30173333333335" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(11%,30%,84%); fill-rule: evenodd;"/>
+			<rect x="52.34999999936055" y="254.20226666666667" width="4.0" height="4.0" style="stroke: rgb(76%,25%,4%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="69.04999999320125" cy="264.39026666666666" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(5%,45%,56%); fill-rule: evenodd;"/>
+			<rect x="123.46153556051317" y="250.90333333333334" width="4.0" height="4.0" style="stroke: rgb(52%,30%,5%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="47.0" cy="256.64133333333336" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(41%,44%,50%); fill-rule: evenodd;"/>
+			<rect x="122.33324706005881" y="251.04573333333335" width="4.0" height="4.0" style="stroke: rgb(72%,10%,10%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="124.62316015734098" cy="245.56973333333332" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(1%,47%,34%); fill-rule: evenodd;"/>
+			<rect x="305.563995691566" y="254.35653333333335" width="4.0" height="4.0" style="stroke: rgb(49%,13%,80%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="95.51000000613725" cy="240.90613333333332" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(11%,30%,84%); fill-rule: evenodd;"/>
+			<rect x="59.699999999228254" y="258.8421333333333" width="4.0" height="4.0" style="stroke: rgb(76%,25%,4%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="95.510000012348" cy="259.1926666666667" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(5%,45%,56%); fill-rule: evenodd;"/>
+			<rect x="122.7020676979647" y="237.52960000000002" width="4.0" height="4.0" style="stroke: rgb(52%,30%,5%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="47.0" cy="258.5518666666667" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(41%,44%,50%); fill-rule: evenodd;"/>
+			<rect x="124.00126655023313" y="257.79786666666666" width="4.000000000000014" height="4.0" style="stroke: rgb(72%,10%,10%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="126.77414256801342" cy="233.73866666666666" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(1%,47%,34%); fill-rule: evenodd;"/>
+			<rect x="320.49711819304497" y="252.60026666666667" width="4.0" height="4.000000000000028" style="stroke: rgb(49%,13%,80%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="91.61210254418592" cy="251.1352" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(11%,30%,84%); fill-rule: evenodd;"/>
+			<rect x="76.38210254054768" y="249.7404" width="4.0" height="4.0" style="stroke: rgb(76%,25%,4%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="96.02210251144167" cy="255.1936" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(5%,45%,56%); fill-rule: evenodd;"/>
+			<rect x="124.37814884903243" y="250.9508" width="3.999999999999986" height="4.0" style="stroke: rgb(52%,30%,5%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="47.0" cy="259.88093333333336" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(41%,44%,50%); fill-rule: evenodd;"/>
+			<rect x="115.99989183786944" y="257.1333333333333" width="4.0" height="4.0" style="stroke: rgb(72%,10%,10%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="118.78388314474465" cy="256.582" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(1%,47%,34%); fill-rule: evenodd;"/>
+			<rect x="331.51166473492503" y="245.43280000000001" width="4.0" height="4.0" style="stroke: rgb(49%,13%,80%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="80.81000000790124" cy="258.38573333333335" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(11%,30%,84%); fill-rule: evenodd;"/>
+			<rect x="56.760000001874246" y="263.7074666666667" width="4.0" height="4.0" style="stroke: rgb(76%,25%,4%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="86.69000002465924" cy="262.6102666666667" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(5%,45%,56%); fill-rule: evenodd;"/>
+			<rect x="116.33822103011246" y="251.022" width="4.0" height="4.0" style="stroke: rgb(52%,30%,5%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="47.0" cy="167.53453333333334" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(41%,44%,50%); fill-rule: evenodd;"/>
+			<rect x="128.40289936460584" y="163.41039999999998" width="4.0" height="4.0" style="stroke: rgb(72%,10%,10%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="131.32004064179586" cy="174.1324" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(1%,47%,34%); fill-rule: evenodd;"/>
+			<rect x="364.5116455083" y="164.18173333333334" width="4.0" height="4.0" style="stroke: rgb(49%,13%,80%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="148.82064222469998" cy="175.8768" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(11%,30%,84%); fill-rule: evenodd;"/>
+			<rect x="132.1206422228625" y="180.04746666666665" width="4.0" height="4.0" style="stroke: rgb(76%,25%,4%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="99.919999989563" cy="168.62626666666665" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(5%,45%,56%); fill-rule: evenodd;"/>
+			<rect x="169.87128622238126" y="176.41626666666667" width="4.0" height="4.0" style="stroke: rgb(52%,30%,5%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="47.0" cy="257.27026666666666" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(41%,44%,50%); fill-rule: evenodd;"/>
+			<rect x="115.07740098265882" y="257.47746666666666" width="4.0" height="4.0" style="stroke: rgb(72%,10%,10%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="117.59450441262013" cy="255.57333333333332" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(1%,47%,34%); fill-rule: evenodd;"/>
+			<rect x="299.04855972678" y="258.4386666666667" width="4.0" height="4.0" style="stroke: rgb(49%,13%,80%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="88.63989407666219" cy="258.7536" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(11%,30%,84%); fill-rule: evenodd;"/>
+			<rect x="60.17989408070468" y="263.57693333333333" width="4.000000000000007" height="4.0" style="stroke: rgb(76%,25%,4%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="69.52989406703" cy="259.964" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(5%,45%,56%); fill-rule: evenodd;"/>
+			<rect x="115.41149392473368" y="262.8056" width="4.0" height="4.0" style="stroke: rgb(52%,30%,5%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="50" cy="42" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(41%,44%,50%); fill-rule: evenodd;"/>
+			<text x="58" y="40" style="font-family: V2Editorial; font-size: 7px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,80) scale(1,-1)">HOLD</text>
+			<rect x="296" y="40" width="4" height="4" style="stroke: rgb(72%,10%,10%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<text x="306" y="40" style="font-family: V2Editorial; font-size: 7px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,80) scale(1,-1)">Phản ứng đồ thị</text>
+			<circle cx="50" cy="31" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(1%,47%,34%); fill-rule: evenodd;"/>
+			<text x="58" y="29" style="font-family: V2Editorial; font-size: 7px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,58) scale(1,-1)">Hình học</text>
+			<rect x="296" y="29" width="4" height="4" style="stroke: rgb(49%,13%,80%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<text x="306" y="29" style="font-family: V2Editorial; font-size: 7px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,58) scale(1,-1)">Tham chiếu v1</text>
+			<circle cx="50" cy="20" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(11%,30%,84%); fill-rule: evenodd;"/>
+			<text x="58" y="18" style="font-family: V2Editorial; font-size: 7px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,36) scale(1,-1)">v2 đầy đủ</text>
+			<rect x="296" y="18" width="4" height="4" style="stroke: rgb(76%,25%,4%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<text x="306" y="18" style="font-family: V2Editorial; font-size: 7px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,36) scale(1,-1)">v2 bỏ dự báo</text>
+			<circle cx="50" cy="9" r="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(5%,45%,56%); fill-rule: evenodd;"/>
+			<text x="58" y="7" style="font-family: V2Editorial; font-size: 7px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,14) scale(1,-1)">v2 bỏ trạng thái online</text>
+			<rect x="296" y="7" width="4" height="4" style="stroke: rgb(52%,30%,5%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<text x="306" y="7" style="font-family: V2Editorial; font-size: 7px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,14) scale(1,-1)">v2 bỏ cổng chuyển động</text>
+		</g>
+	</g>
+</svg>
