@@ -15,12 +15,12 @@ def _ok(row):
     return row is not None and row.get('status') == 'ok' and all(row.get(m) is not None for m in METRICS)
 
 
-def blocks(rows, policies, context='gradual'):
+def blocks(rows, policies, context='gradual', regimes=('n4', 'n5')):
     """Per regime: complete scenario blocks (every arm observed) and shared bootstrap draws."""
     rng = np.random.default_rng(BOOTSTRAP_SEED); lookup = {}; out = {}
     for r in rows:
         lookup[(r['regime'], r['context'], r['layout_seed'], r['radio_seed']), r['policy']] = r
-    for regime in ('n4', 'n5'):
+    for regime in regimes:
         keys = sorted({k for (k, _) in lookup if k[0] == regime and k[1] == context})
         complete = [k for k in keys if all(_ok(lookup.get((k, p))) for p in policies)]
         draws = rng.integers(0, len(complete), size=(BOOTSTRAP_SAMPLES, len(complete))) if complete else None
@@ -42,7 +42,7 @@ def contrast(block_data, a, b, metric):
                       float(np.mean([get(k, a, 1) - get(k, b, 0) for k in group['keys']]))]
         regimes[regime] = dict(planned=len(group['keys']), complete=len(group['complete']), point=float(delta.mean()),
                                missing_sensitivity=bounds)
-    pooled = (samples[0] + samples[1]) / 2
+    pooled = np.mean(samples, axis=0)  # equal weight per regime; identical to (a + b) / 2 for n4/n5
     return dict(arm=a, comparator=b, metric=metric, point=float(np.mean([r['point'] for r in regimes.values()])),
                 ci95=[float(v) for v in np.quantile(pooled, [.025, .975])], regimes=regimes)
 

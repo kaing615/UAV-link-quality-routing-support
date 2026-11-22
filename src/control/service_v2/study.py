@@ -189,7 +189,8 @@ def _validate_process_evidence(attempt, result, artifacts):
         if result['status']=='ok' and status!='captured': raise ValueError('Successful process requires both full simulator logs')
 
 
-def collect_case(protocol_path, cell_id, attempt, output, loader=load_phase, factory_builder=None, env_class=None):
+def collect_case(protocol_path, cell_id, attempt, output, loader=load_phase, factory_builder=None, env_class=None,
+                 validate_new=True):
     """loader/factory_builder/env_class let later protocols (v3, v4) reuse this exact collector."""
     phase=loader(protocol_path)
     cells=[c for c in phase['cells'] if c['cell_id']==cell_id]
@@ -206,7 +207,7 @@ def collect_case(protocol_path, cell_id, attempt, output, loader=load_phase, fac
     old=LearnedPredictor.load(package/'reference-model.json')
     old.validate_test_scenarios([(cell['layout_seed'],cell['radio_seed'])])
     new=ServicePredictor.load(package/'new-model.json') if phase['new_model'] else None
-    if new: new.validate_scenarios([cell])
+    if new and validate_new: new.validate_scenarios([cell])
     if attempt==1:
         prior=output.parent/'attempt-0'
         s=strict_json(prior/'status.json')

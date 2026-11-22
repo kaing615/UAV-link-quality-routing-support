@@ -1679,6 +1679,31 @@ WriteScenarioJson(const std::string &runName)
       << "}\n";
 }
 
+// IP-layer transmissions per class (every hop and every broadcast counts once): the
+// signalling cost of each routing method. Read-only; printed as one UAVTX stderr line.
+static std::map<std::string, std::pair<uint64_t, uint64_t>> g_txByClass;
+
+static void
+CountIpTx(Ptr<const Packet> packet, Ptr<Ipv4>, uint32_t)
+{
+    Ptr<Packet> copy = packet->Copy();
+    Ipv4Header ip;
+    copy->RemoveHeader(ip);
+    std::string kind = "other";
+    if (ip.GetProtocol() == UdpL4Protocol::PROT_NUMBER)
+    {
+        UdpHeader udp;
+        copy->PeekHeader(udp);
+        uint16_t port = udp.GetDestinationPort();
+        kind = port == 698 ? "olsr" : port == PROBE_PORT ? "probe"
+             : port >= BACKGROUND_PORT_BASE && port < BACKGROUND_PORT_BASE + g_backgroundFlows ? "background"
+             : "data";
+    }
+    auto& entry = g_txByClass[kind];
+    entry.first += 1;
+    entry.second += packet->GetSize();
+}
+
 int main(int argc, char *argv[])
 {
     std::string runName = "ns3_run";
@@ -1997,6 +2022,13 @@ int main(int argc, char *argv[])
         g_ipToNode[g_ifaces.GetAddress(i)] = i;
     }
     ConnectRoutingDiagnostics(devices);
+    if (g_enableServiceObservation)
+    {
+        for (uint32_t i = 0; i < g_numUavs; ++i)
+        {
+            g_nodes.Get(i)->GetObject<Ipv4L3Protocol>()->TraceConnectWithoutContext("Tx", MakeCallback(&CountIpTx));
+        }
+    }
 
     TypeId udpTid = TypeId::LookupByName("ns3::UdpSocketFactory");
     g_txSockets.resize(g_numUavs);
@@ -2154,6 +2186,16 @@ int main(int argc, char *argv[])
         std::cerr << "UAVROUTE_CHANGES " << g_overrideChanges << std::endl;
     }
     WriteDiagnosticDrops();
+    if (g_enableServiceObservation)
+    {
+        std::cerr << "UAVTX";
+        for (const char* kind : {"olsr", "probe", "data", "background", "other"})
+        {
+            const auto& entry = g_txByClass[kind];
+            std::cerr << ' ' << kind << '=' << entry.first << ':' << entry.second;
+        }
+        std::cerr << std::endl;
+    }
     if (g_enableDataFlow)
     {
         WriteClosedLoopMetrics(flowMonitor, flowMonitorHelper);

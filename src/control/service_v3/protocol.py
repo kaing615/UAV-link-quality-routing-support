@@ -20,6 +20,8 @@ class Study:
     layout_base: int
     radio_base: int
     cli_module: str
+    regimes: tuple = ('n4', 'n5')  # v7 adds n7
+    predictor_scenarios: bool = True  # False: arms never use the v2 predictor, so its n4/n5-only check is skipped
 
     def schema(self, kind):
         return f'service-{self.name}-{kind}-v1'
@@ -42,7 +44,7 @@ def build_phases(study=V3):
     phases, k = {}, 0
     for phase, (static, gradual) in study.counts.items():
         rows = []
-        for regime in REGIMES:
+        for regime in study.regimes:
             if phase == 'tuning':  # within-split pairing, as v2 train/calibration
                 for i in range(static):
                     k += 1
@@ -68,12 +70,12 @@ def validate_phases(phases, study=V3):
             if set(s) != {'id', 'regime', 'context', 'layout_seed', 'radio_seed'}: raise ValueError('Scenario fields')
             if not re.fullmatch('[A-Za-z0-9][A-Za-z0-9_.-]*', s['id']) or s['id'] in ids: raise ValueError('Scenario id')
             ids.add(s['id'])
-            if s['regime'] not in REGIMES or s['context'] not in CONTEXTS: raise ValueError('Regime/context')
+            if s['regime'] not in study.regimes or s['context'] not in CONTEXTS: raise ValueError('Regime/context')
             for key in ('layout_seed', 'radio_seed'):
                 if type(s[key]) is not int or not 0 <= s[key] < 2**31: raise ValueError('Seed range')
             pair = (s['layout_seed'], s['radio_seed'])
             owner.setdefault(pair, []).append((phase, s['regime'], s['context']))
-        for regime in REGIMES:
+        for regime in study.regimes:
             for context, n in zip(CONTEXTS, study.counts[phase]):
                 if sum(s['regime'] == regime and s['context'] == context for s in rows) != n:
                     raise ValueError('Wrong phase cardinality: '+phase)
@@ -173,7 +175,7 @@ def freeze(phase, seed_plan, output, model, reference_model, launcher, ns3_ident
             raise ValueError('Test requires a go decision from the validation package with the same selection')
     from ..service_v2.prediction import ServicePredictor
     cells = _cells(plan, phase, study)
-    ServicePredictor.load(model).validate_scenarios(cells)
+    if study.predictor_scenarios: ServicePredictor.load(model).validate_scenarios(cells)
     runtime = runtime_identity(dict(launcher=list(launcher), ns3_identity=ns3_identity, compiler_identity=compiler_identity))
     sources = {}
     for p in source_paths(ROOT):
