@@ -93,6 +93,8 @@ static std::string g_routePlanPath;
 static std::string g_routingStrategy = "olsr";
 // --routeControl=external: the external controller may pin the data route (UAVACT 2).
 static std::string g_routeControl = "none";
+// --olsrLinkQuality=etx needs ns-3.45 built with simulation/ns3/patches/ns-3.45-olsr-etx.patch.
+static std::string g_olsrLinkQuality = "none";
 static std::vector<uint32_t> g_overridePath;
 static uint32_t g_overrideChanges = 0;
 static void ApplyOverrideRoute(uint32_t step, const std::vector<uint32_t> &path);
@@ -1717,6 +1719,7 @@ int main(int argc, char *argv[])
     cmd.AddValue("appRateKbps", "Offered UDP data rate (kbps)", g_appRateKbps);
     cmd.AddValue("appPacketSize", "UDP payload size (bytes)", g_appPacketSize);
     cmd.AddValue("scenarioMode", "standard | partition-reconnect | high-load | crossing-swarms | group-control | relay-recovery | relay-prevention | routing-sanity", g_scenarioMode);
+    cmd.AddValue("olsrLinkQuality", "none | etx (OLSR-ETX: LQ_HELLO/LQ_TC, ETX shortest paths; patched ns-3 OLSR)", g_olsrLinkQuality);
     cmd.AddValue("routeControl", "none | external (controller pins the data route with UAVACT 2; needs external recovery)", g_routeControl);
     cmd.AddValue("recoveryPolicy", "none | relay-chain | external (requires a live relay scenario)", g_recoveryPolicy);
     cmd.AddValue("preventionMissionSpeed", "Exogenous mission anchor speed (m/s)", g_preventionMissionSpeed);
@@ -1750,6 +1753,13 @@ int main(int argc, char *argv[])
     NS_ABORT_MSG_IF(g_recoveryPolicy != "none" && g_recoveryPolicy != "relay-chain" &&
                     g_recoveryPolicy != "external", "Invalid recoveryPolicy");
     NS_ABORT_MSG_IF(g_routeControl != "none" && g_routeControl != "external", "Invalid routeControl");
+    NS_ABORT_MSG_IF(g_olsrLinkQuality != "none" && g_olsrLinkQuality != "etx", "Invalid olsrLinkQuality");
+    if (g_olsrLinkQuality == "etx")
+    {
+        // Fails at start-up (unknown attribute) unless the ETX-patched OLSR library is loaded.
+        Config::SetDefault("ns3::olsr::RoutingProtocol::LinkQualityEtx", BooleanValue(true));
+        std::cerr << "UAVOLSR link_quality=etx" << std::endl;
+    }
     NS_ABORT_MSG_IF(g_routeControl == "external" &&
                     (g_recoveryPolicy != "external" || !g_enableDataFlow || g_routingStrategy != "olsr" ||
                      !g_routePlanPath.empty()),

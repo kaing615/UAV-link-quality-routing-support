@@ -1,0 +1,670 @@
+OLSR-ETX link-quality extension for ns-3.45 src/olsr. Derived from ns-3 (GPL-2.0-only);
+this patch is distributed under the same licence as ns-3.
+Apply from the ns-3.45 root:  patch -p0 < ns-3.45-olsr-etx.patch
+Off by default (attribute LinkQualityEtx=false: unchanged wire format and behaviour).
+
+diff -ruN src/olsr/model/olsr-header.cc src/olsr/model/olsr-header.cc
+--- src/olsr/model/olsr-header.cc	2025-08-14 23:00:48.000000000 +0000
++++ src/olsr/model/olsr-header.cc	2026-11-22 08:42:48.325606949 +0000
+@@ -247,7 +247,16 @@
+ MessageHeader::Serialize(Buffer::Iterator start) const
+ {
+     Buffer::Iterator i = start;
+-    i.WriteU8(m_messageType);
++    uint8_t wireType = m_messageType;
++    if (m_messageType == HELLO_MESSAGE && m_message.hello.linkQuality)
++    {
++        wireType = LQ_HELLO_MESSAGE;
++    }
++    else if (m_messageType == TC_MESSAGE && m_message.tc.linkQuality)
++    {
++        wireType = LQ_TC_MESSAGE;
++    }
++    i.WriteU8(wireType);
+     i.WriteU8(m_vTime);
+     i.WriteHtonU16(GetSerializedSize());
+     i.WriteHtonU32(m_originatorAddress.Get());
+@@ -279,7 +288,12 @@
+ {
+     uint32_t size;
+     Buffer::Iterator i = start;
+-    m_messageType = (MessageType)i.ReadU8();
++    uint8_t wireType = i.ReadU8();
++    m_message.hello.linkQuality = wireType == LQ_HELLO_MESSAGE;
++    m_message.tc.linkQuality = wireType == LQ_TC_MESSAGE;
++    m_messageType = wireType == LQ_HELLO_MESSAGE ? HELLO_MESSAGE
++                    : wireType == LQ_TC_MESSAGE  ? TC_MESSAGE
++                                                 : (MessageType)wireType;
+     NS_ASSERT(m_messageType >= HELLO_MESSAGE && m_messageType <= HNA_MESSAGE);
+     m_vTime = i.ReadU8();
+     m_messageSize = i.ReadNtohU16();
+@@ -376,7 +390,7 @@
+     {
+         const LinkMessage& lm = *iter;
+         size += 4;
+-        size += IPV4_ADDRESS_SIZE * lm.neighborInterfaceAddresses.size();
++        size += (IPV4_ADDRESS_SIZE + (linkQuality ? 4 : 0)) * lm.neighborInterfaceAddresses.size();
+     }
+     return size;
+ }
+@@ -429,13 +443,18 @@
+         // from the beginning of the "Link Code" field and until the
+         // next "Link Code" field (or - if there are no more link types
+         // - the end of the message).
+-        i.WriteHtonU16(4 + lm.neighborInterfaceAddresses.size() * IPV4_ADDRESS_SIZE);
++        i.WriteHtonU16(4 + lm.neighborInterfaceAddresses.size() *
++                               (IPV4_ADDRESS_SIZE + (linkQuality ? 4 : 0)));
+ 
+-        for (auto neigh_iter = lm.neighborInterfaceAddresses.begin();
+-             neigh_iter != lm.neighborInterfaceAddresses.end();
+-             neigh_iter++)
++        for (std::size_t k = 0; k < lm.neighborInterfaceAddresses.size(); ++k)
+         {
+-            i.WriteHtonU32(neigh_iter->Get());
++            i.WriteHtonU32(lm.neighborInterfaceAddresses[k].Get());
++            if (linkQuality)
++            {
++                i.WriteU8(k < lm.lq.size() ? lm.lq[k] : 0);
++                i.WriteU8(k < lm.nlq.size() ? lm.nlq[k] : 0);
++                i.WriteHtonU16(0); // Reserved
++            }
+         }
+     }
+ }
+@@ -464,10 +483,17 @@
+         lm.linkCode = i.ReadU8();
+         i.ReadU8(); // Reserved
+         uint16_t lmSize = i.ReadNtohU16();
+-        NS_ASSERT((lmSize - 4) % IPV4_ADDRESS_SIZE == 0);
+-        for (int n = (lmSize - 4) / IPV4_ADDRESS_SIZE; n; --n)
++        const uint32_t entry = IPV4_ADDRESS_SIZE + (linkQuality ? 4 : 0);
++        NS_ASSERT((lmSize - 4) % entry == 0);
++        for (int n = (lmSize - 4) / entry; n; --n)
+         {
+             lm.neighborInterfaceAddresses.emplace_back(i.ReadNtohU32());
++            if (linkQuality)
++            {
++                lm.lq.push_back(i.ReadU8());
++                lm.nlq.push_back(i.ReadU8());
++                i.ReadNtohU16(); // Reserved
++            }
+         }
+         helloSizeLeft -= lmSize;
+         this->linkMessages.push_back(lm);
+@@ -481,7 +507,7 @@
+ uint32_t
+ MessageHeader::Tc::GetSerializedSize() const
+ {
+-    return 4 + this->neighborAddresses.size() * IPV4_ADDRESS_SIZE;
++    return 4 + this->neighborAddresses.size() * (IPV4_ADDRESS_SIZE + (linkQuality ? 4 : 0));
+ }
+ 
+ void
+@@ -513,9 +539,15 @@
+     i.WriteHtonU16(this->ansn);
+     i.WriteHtonU16(0); // Reserved
+ 
+-    for (auto iter = this->neighborAddresses.begin(); iter != this->neighborAddresses.end(); iter++)
++    for (std::size_t k = 0; k < this->neighborAddresses.size(); ++k)
+     {
+-        i.WriteHtonU32(iter->Get());
++        i.WriteHtonU32(this->neighborAddresses[k].Get());
++        if (linkQuality)
++        {
++            i.WriteU8(k < lq.size() ? lq[k] : 0);
++            i.WriteU8(k < nlq.size() ? nlq[k] : 0);
++            i.WriteHtonU16(0); // Reserved
++        }
+     }
+ }
+ 
+@@ -530,12 +562,21 @@
+     this->ansn = i.ReadNtohU16();
+     i.ReadNtohU16(); // Reserved
+ 
+-    NS_ASSERT((messageSize - 4) % IPV4_ADDRESS_SIZE == 0);
+-    int numAddresses = (messageSize - 4) / IPV4_ADDRESS_SIZE;
++    const uint32_t entry = IPV4_ADDRESS_SIZE + (linkQuality ? 4 : 0);
++    NS_ASSERT((messageSize - 4) % entry == 0);
++    int numAddresses = (messageSize - 4) / entry;
+     this->neighborAddresses.clear();
++    this->lq.clear();
++    this->nlq.clear();
+     for (int n = 0; n < numAddresses; ++n)
+     {
+         this->neighborAddresses.emplace_back(i.ReadNtohU32());
++        if (linkQuality)
++        {
++            this->lq.push_back(i.ReadU8());
++            this->nlq.push_back(i.ReadU8());
++            i.ReadNtohU16(); // Reserved
++        }
+     }
+ 
+     return messageSize;
+diff -ruN src/olsr/model/olsr-header.h src/olsr/model/olsr-header.h
+--- src/olsr/model/olsr-header.h	2025-08-14 23:00:48.000000000 +0000
++++ src/olsr/model/olsr-header.h	2026-11-22 08:42:48.325606949 +0000
+@@ -158,6 +158,9 @@
+         TC_MESSAGE = 2,
+         MID_MESSAGE = 3,
+         HNA_MESSAGE = 4,
++        // OLSR-ETX wire types (olsrd LQ extension); in memory they stay HELLO/TC.
++        LQ_HELLO_MESSAGE = 201,
++        LQ_TC_MESSAGE = 202,
+     };
+ 
+     MessageHeader();
+@@ -381,8 +384,12 @@
+             uint8_t linkCode; //!< Link code
+             std::vector<Ipv4Address>
+                 neighborInterfaceAddresses; //!< Neighbor interface address container.
++            std::vector<uint8_t> lq;        //!< OLSR-ETX: LQ per address (LQ_HELLO only)
++            std::vector<uint8_t> nlq;       //!< OLSR-ETX: NLQ per address (LQ_HELLO only)
+         };
+ 
++        bool linkQuality = false; //!< OLSR-ETX: serialize as LQ_HELLO
++
+         uint8_t hTime; //!< HELLO emission interval (coded)
+ 
+         /**
+@@ -459,6 +466,9 @@
+     {
+         std::vector<Ipv4Address> neighborAddresses; //!< Neighbor address container.
+         uint16_t ansn;                              //!< Advertised Neighbor Sequence Number.
++        bool linkQuality = false;                   //!< OLSR-ETX: serialize as LQ_TC
++        std::vector<uint8_t> lq;                    //!< OLSR-ETX: LQ per advertised neighbour
++        std::vector<uint8_t> nlq;                   //!< OLSR-ETX: NLQ per advertised neighbour
+ 
+         /**
+          * This method is used to print the content of a Tc message.
+diff -ruN src/olsr/model/olsr-repositories.h src/olsr/model/olsr-repositories.h
+--- src/olsr/model/olsr-repositories.h	2025-08-14 23:00:48.000000000 +0000
++++ src/olsr/model/olsr-repositories.h	2026-11-22 08:42:48.325606949 +0000
+@@ -174,6 +174,7 @@
+     Ipv4Address twoHopNeighborAddr;
+     /// Time at which this tuple expires and must be removed.
+     Time expirationTime; // previously called 'time_'
++    double etx = 1.0;    //!< OLSR-ETX: cost of neighbour -> 2-hop link
+ };
+ 
+ inline std::ostream&
+@@ -245,6 +246,7 @@
+     uint16_t sequenceNumber;
+     /// Time at which this tuple expires and must be removed.
+     Time expirationTime;
++    double etx = 1.0; //!< OLSR-ETX: cost of lastAddr -> destAddr
+ };
+ 
+ inline bool
+diff -ruN src/olsr/model/olsr-routing-protocol.cc src/olsr/model/olsr-routing-protocol.cc
+--- src/olsr/model/olsr-routing-protocol.cc	2025-08-14 23:00:49.000000000 +0000
++++ src/olsr/model/olsr-routing-protocol.cc	2026-11-22 08:42:48.325606949 +0000
+@@ -23,6 +23,15 @@
+ 
+ #include "olsr-routing-protocol.h"
+ 
++#include "ns3/boolean.h"
++#include "ns3/double.h"
++
++#include <algorithm>
++#include <cmath>
++#include <limits>
++#include <set>
++#include <tuple>
++
+ #include "olsr-repositories.h"
+ 
+ #include "ns3/boolean.h"
+@@ -212,6 +221,16 @@
+                           TimeValue(Seconds(5)),
+                           MakeTimeAccessor(&RoutingProtocol::m_hnaInterval),
+                           MakeTimeChecker())
++            .AddAttribute("LinkQualityEtx",
++                          "OLSR-ETX: LQ_HELLO/LQ_TC with link quality and ETX shortest paths.",
++                          BooleanValue(false),
++                          MakeBooleanAccessor(&RoutingProtocol::m_linkQuality),
++                          MakeBooleanChecker())
++            .AddAttribute("LinkQualityAging",
++                          "OLSR-ETX: EWMA weight of the newest OLSR packet observation.",
++                          DoubleValue(0.1),
++                          MakeDoubleAccessor(&RoutingProtocol::m_lqAging),
++                          MakeDoubleChecker<double>(0.0, 1.0))
+             .AddAttribute("Willingness",
+                           "Willingness of a node to carry and forward traffic for other nodes.",
+                           EnumValue(Willingness::DEFAULT),
+@@ -511,6 +530,10 @@
+ 
+     olsr::PacketHeader olsrPacketHeader;
+     packet->RemoveHeader(olsrPacketHeader);
++    if (m_linkQuality)
++    {
++        UpdateLinkQuality(senderIfaceAddr, olsrPacketHeader.GetPacketSequenceNumber());
++    }
+     NS_ASSERT(olsrPacketHeader.GetPacketLength() >= olsrPacketHeader.GetSerializedSize());
+     uint32_t sizeLeft = olsrPacketHeader.GetPacketLength() - olsrPacketHeader.GetSerializedSize();
+ 
+@@ -1006,6 +1029,12 @@
+     // 1. All the entries from the routing table are removed.
+     Clear();
+ 
++    if (m_linkQuality)
++    {
++        LqRoutes();
++    }
++    else
++    {
+     // 2. The new routing entries are added starting with the
+     // symmetric neighbors (h=1) as the destination nodes.
+     const NeighborSet& neighborSet = m_state.GetNeighbors();
+@@ -1194,6 +1223,7 @@
+             break;
+         }
+     }
++    } // !m_linkQuality
+ 
+     // 4. For each entry in the multiple interface association base
+     // where there exists a routing entry such that:
+@@ -1314,6 +1344,19 @@
+     const olsr::MessageHeader::Hello& hello = msg.GetHello();
+ 
+     LinkSensing(msg, hello, receiverIface, senderIface);
++    if (m_linkQuality && hello.linkQuality)
++    {
++        for (const auto& lm : hello.linkMessages)
++        {
++            for (std::size_t k = 0; k < lm.neighborInterfaceAddresses.size() && k < lm.lq.size(); ++k)
++            {
++                if (lm.neighborInterfaceAddresses[k] == receiverIface)
++                {
++                    m_lq[senderIface].nlq = DecodeLq(lm.lq[k]);
++                }
++            }
++        }
++    }
+ 
+ #ifdef NS3_LOG_ENABLE
+     {
+@@ -1394,6 +1437,10 @@
+     for (auto i = tc.neighborAddresses.begin(); i != tc.neighborAddresses.end(); i++)
+     {
+         const Ipv4Address& addr = *i;
++        const std::size_t lqIndex = i - tc.neighborAddresses.begin();
++        const double lqEtx = (tc.linkQuality && lqIndex < tc.lq.size())
++                                 ? PairEtx(tc.lq[lqIndex], tc.nlq[lqIndex])
++                                 : 1.0;
+         // 4.1. If there exist some tuple in the topology set where:
+         //      T_dest_addr == advertised neighbor main address, AND
+         //      T_last_addr == originator address,
+@@ -1404,6 +1451,7 @@
+         if (topologyTuple != nullptr)
+         {
+             topologyTuple->expirationTime = now + msg.GetVTime();
++            topologyTuple->etx = lqEtx;
+         }
+         else
+         {
+@@ -1418,6 +1466,7 @@
+             topologyTuple.lastAddr = msg.GetOriginatorAddress();
+             topologyTuple.sequenceNumber = tc.ansn;
+             topologyTuple.expirationTime = now + msg.GetVTime();
++            topologyTuple.etx = lqEtx;
+             AddTopologyTuple(topologyTuple);
+ 
+             // Schedules topology tuple deletion
+@@ -1726,6 +1775,7 @@
+ 
+     hello.SetHTime(m_helloInterval);
+     hello.willingness = m_willingness;
++    hello.linkQuality = m_linkQuality;
+ 
+     std::vector<olsr::MessageHeader::Hello::LinkMessage>& linkMessages = hello.linkMessages;
+ 
+@@ -1811,6 +1861,16 @@
+         linkMessage.neighborInterfaceAddresses.insert(linkMessage.neighborInterfaceAddresses.end(),
+                                                       interfaces.begin(),
+                                                       interfaces.end());
++        if (m_linkQuality)
++        {
++            for (const auto& address : linkMessage.neighborInterfaceAddresses)
++            {
++                auto state = m_lq.find(address);
++                linkMessage.lq.push_back(EncodeLq(state == m_lq.end() ? 0 : state->second.lq));
++                linkMessage.nlq.push_back(
++                    EncodeLq(state == m_lq.end() || state->second.nlq < 0 ? 0 : state->second.nlq));
++            }
++        }
+ 
+         linkMessages.push_back(linkMessage);
+     }
+@@ -1833,14 +1893,48 @@
+     msg.SetMessageSequenceNumber(GetMessageSequenceNumber());
+ 
+     olsr::MessageHeader::Tc& tc = msg.GetTc();
++    if (m_linkQuality)
++    {
++        // Every LQ_TC replaces the advertised set (receivers erase older ANSN).
++        IncrementAnsn();
++    }
+     tc.ansn = m_ansn;
++    tc.linkQuality = m_linkQuality;
+ 
++    if (m_linkQuality)
++    {
++        for (const auto& nb : m_state.GetNeighbors())
++        {
++            if (nb.status != NeighborTuple::STATUS_SYM)
++            {
++                continue;
++            }
++            double best = 0;
++            double bestNlq = 0;
++            for (const auto& link : m_state.GetLinks())
++            {
++                auto state = m_lq.find(link.neighborIfaceAddr);
++                if (GetMainAddress(link.neighborIfaceAddr) == nb.neighborMainAddr &&
++                    link.time >= Simulator::Now() && state != m_lq.end() && state->second.lq > best)
++                {
++                    best = state->second.lq;
++                    bestNlq = state->second.nlq < 0 ? state->second.lq : state->second.nlq;
++                }
++            }
++            tc.neighborAddresses.push_back(nb.neighborMainAddr);
++            tc.lq.push_back(EncodeLq(best));
++            tc.nlq.push_back(EncodeLq(bestNlq));
++        }
++    }
++    else
++    {
+     for (auto mprsel_tuple = m_state.GetMprSelectors().begin();
+          mprsel_tuple != m_state.GetMprSelectors().end();
+          mprsel_tuple++)
+     {
+         tc.neighborAddresses.push_back(mprsel_tuple->mainAddr);
+     }
++    }
+     QueueMessage(msg, JITTER);
+ }
+ 
+@@ -2167,6 +2261,12 @@
+                  nb2hop_addr_iter != linkMessage->neighborInterfaceAddresses.end();
+                  nb2hop_addr_iter++)
+             {
++                const std::size_t lqIndex =
++                    nb2hop_addr_iter - linkMessage->neighborInterfaceAddresses.begin();
++                const double lqEtx =
++                    (hello.linkQuality && lqIndex < linkMessage->lq.size())
++                        ? PairEtx(linkMessage->lq[lqIndex], linkMessage->nlq[lqIndex])
++                        : 1.0;
+                 Ipv4Address nb2hop_addr = GetMainAddress(*nb2hop_addr_iter);
+                 NS_LOG_DEBUG("Looking at 2-hop neighbor address from HELLO message: "
+                              << *nb2hop_addr_iter << " (main address is " << nb2hop_addr << ")");
+@@ -2193,6 +2293,7 @@
+                         new_nb2hop_tuple.neighborMainAddr = msg.GetOriginatorAddress();
+                         new_nb2hop_tuple.twoHopNeighborAddr = nb2hop_addr;
+                         new_nb2hop_tuple.expirationTime = now + msg.GetVTime();
++                        new_nb2hop_tuple.etx = lqEtx;
+                         AddTwoHopNeighborTuple(new_nb2hop_tuple);
+                         // Schedules nb2hop tuple deletion
+                         m_events.Track(Simulator::Schedule(DELAY(new_nb2hop_tuple.expirationTime),
+@@ -2204,6 +2305,7 @@
+                     else
+                     {
+                         nb2hop_tuple->expirationTime = now + msg.GetVTime();
++                        nb2hop_tuple->etx = lqEtx;
+                     }
+                 }
+                 else if (neighborType == NeighborType::NOT_NEIGH)
+@@ -2489,6 +2591,193 @@
+     m_state.EraseTwoHopNeighborTuple(tuple);
+ }
+ 
++uint8_t
++RoutingProtocol::EncodeLq(double value)
++{
++    return static_cast<uint8_t>(std::lround(std::clamp(value, 0.0, 1.0) * 255.0));
++}
++
++double
++RoutingProtocol::DecodeLq(uint8_t value)
++{
++    return value / 255.0;
++}
++
++double
++RoutingProtocol::PairEtx(uint8_t lq, uint8_t nlq)
++{
++    const double product = DecodeLq(lq) * DecodeLq(nlq);
++    return product < 1e-3 ? std::numeric_limits<double>::infinity() : 1.0 / product;
++}
++
++void
++RoutingProtocol::UpdateLinkQuality(const Ipv4Address& senderIface, uint16_t seq)
++{
++    LqState& s = m_lq[senderIface];
++    if (s.init)
++    {
++        uint16_t gap = static_cast<uint16_t>(seq - s.lastSeq - 1);
++        if (gap < 64) // larger gaps: restart or reordering, not counted as losses
++        {
++            for (uint16_t k = 0; k < gap; ++k)
++            {
++                s.lq *= 1.0 - m_lqAging;
++            }
++        }
++        s.lq = (1.0 - m_lqAging) * s.lq + m_lqAging;
++    }
++    else
++    {
++        s.lq = 1.0; // optimistic start, as a fresh symmetric link
++        s.init = true;
++    }
++    s.lastSeq = seq;
++    s.lastRx = Simulator::Now();
++}
++
++void
++RoutingProtocol::AgeLinkQuality()
++{
++    // A neighbour silent for more than 1.5 HELLO intervals has lost a packet.
++    for (auto& entry : m_lq)
++    {
++        if (entry.second.init && Simulator::Now() - entry.second.lastRx > 1.5 * m_helloInterval)
++        {
++            entry.second.lq *= 1.0 - m_lqAging;
++        }
++    }
++}
++
++double
++RoutingProtocol::LinkEtx(const Ipv4Address& neighborIface) const
++{
++    auto state = m_lq.find(neighborIface);
++    if (state == m_lq.end())
++    {
++        return std::numeric_limits<double>::infinity();
++    }
++    const double lq = state->second.lq;
++    const double nlq = state->second.nlq < 0 ? lq : state->second.nlq;
++    const double product = lq * nlq;
++    return product < 1e-3 ? std::numeric_limits<double>::infinity() : 1.0 / product;
++}
++
++void
++RoutingProtocol::LqRoutes()
++{
++    // Dijkstra on ETX over: own symmetric links (local LQ, neighbour-reported NLQ),
++    // neighbours' 2-hop links (LQ_HELLO) and advertised topology (LQ_TC).
++    struct Hop
++    {
++        Ipv4Address nextAddr;
++        Ipv4Address ifaceAddr;
++    };
++
++    const Time now = Simulator::Now();
++    std::map<Ipv4Address, std::vector<std::pair<Ipv4Address, double>>> edges;
++    std::map<Ipv4Address, Hop> firstHop; // neighbour main address -> best own link
++    std::map<Ipv4Address, double> firstCost;
++    std::set<Ipv4Address> relays;        // neighbours allowed to forward (willingness != NEVER)
++    for (const auto& nb : m_state.GetNeighbors())
++    {
++        if (nb.status != NeighborTuple::STATUS_SYM)
++        {
++            continue;
++        }
++        if (nb.willingness != Willingness::NEVER)
++        {
++            relays.insert(nb.neighborMainAddr);
++        }
++        for (const auto& link : m_state.GetLinks())
++        {
++            if (GetMainAddress(link.neighborIfaceAddr) != nb.neighborMainAddr || link.time < now)
++            {
++                continue;
++            }
++            const double cost = LinkEtx(link.neighborIfaceAddr);
++            auto known = firstCost.find(nb.neighborMainAddr);
++            if (std::isfinite(cost) && (known == firstCost.end() || cost < known->second))
++            {
++                firstCost[nb.neighborMainAddr] = cost;
++                firstHop[nb.neighborMainAddr] = Hop{link.neighborIfaceAddr, link.localIfaceAddr};
++            }
++        }
++    }
++    for (const auto& t : m_state.GetTwoHopNeighbors())
++    {
++        if (relays.count(t.neighborMainAddr) && t.twoHopNeighborAddr != m_mainAddress &&
++            std::isfinite(t.etx))
++        {
++            edges[t.neighborMainAddr].emplace_back(t.twoHopNeighborAddr, t.etx);
++        }
++    }
++    for (const auto& t : m_state.GetTopologySet())
++    {
++        if (t.destAddr != m_mainAddress && std::isfinite(t.etx))
++        {
++            edges[t.lastAddr].emplace_back(t.destAddr, t.etx);
++        }
++    }
++
++    // (cost, hops, address) ordering keeps the result deterministic.
++    std::map<Ipv4Address, std::tuple<double, uint32_t, Ipv4Address>> best; // dest -> (cost, hops, first)
++    std::set<std::tuple<double, uint32_t, Ipv4Address, Ipv4Address>> queue;  // (cost, hops, node, first)
++    for (const auto& [nb, cost] : firstCost)
++    {
++        best[nb] = {cost, 1, nb};
++        queue.insert({cost, 1, nb, nb});
++    }
++    while (!queue.empty())
++    {
++        auto [cost, hops, node, first] = *queue.begin();
++        queue.erase(queue.begin());
++        auto current = best.find(node);
++        if (current == best.end() || std::get<0>(current->second) < cost)
++        {
++            continue;
++        }
++        // Only symmetric neighbours (and, transitively, nodes reached through them) relay;
++        // a neighbour with willingness NEVER is a destination but not a relay.
++        if (hops == 1 && !relays.count(node))
++        {
++            continue;
++        }
++        for (const auto& [next, edgeCost] : edges[node])
++        {
++            if (next == m_mainAddress)
++            {
++                continue;
++            }
++            const double total = cost + edgeCost;
++            auto known = best.find(next);
++            if (known == best.end() || total < std::get<0>(known->second))
++            {
++                best[next] = {total, hops + 1, first};
++                queue.insert({total, hops + 1, next, first});
++            }
++        }
++    }
++    for (const auto& [dest, value] : best)
++    {
++        const Hop& hop = firstHop[std::get<2>(value)];
++        AddEntry(dest, hop.nextAddr, hop.ifaceAddr, std::get<1>(value));
++    }
++    // Neighbour interface addresses that differ from the main address (multi-interface nodes).
++    for (const auto& link : m_state.GetLinks())
++    {
++        RoutingTableEntry entry;
++        if (link.time >= now && !Lookup(link.neighborIfaceAddr, entry))
++        {
++            auto main = best.find(GetMainAddress(link.neighborIfaceAddr));
++            if (main != best.end())
++            {
++                const Hop& hop = firstHop[std::get<2>(main->second)];
++                AddEntry(link.neighborIfaceAddr, hop.nextAddr, hop.ifaceAddr, std::get<1>(main->second));
++            }
++        }
++    }
++}
++
+ void
+ RoutingProtocol::IncrementAnsn()
+ {
+@@ -2598,6 +2887,10 @@
+ void
+ RoutingProtocol::HelloTimerExpire()
+ {
++    if (m_linkQuality)
++    {
++        AgeLinkQuality();
++    }
+     SendHello();
+     m_helloTimer.Schedule(m_helloInterval);
+ }
+@@ -2605,7 +2898,12 @@
+ void
+ RoutingProtocol::TcTimerExpire()
+ {
+-    if (!m_state.GetMprSelectors().empty())
++    bool haveSymNeighbor = false;
++    for (const auto& nb : m_state.GetNeighbors())
++    {
++        haveSymNeighbor = haveSymNeighbor || nb.status == NeighborTuple::STATUS_SYM;
++    }
++    if (m_linkQuality ? haveSymNeighbor : !m_state.GetMprSelectors().empty())
+     {
+         SendTc();
+     }
+diff -ruN src/olsr/model/olsr-routing-protocol.h src/olsr/model/olsr-routing-protocol.h
+--- src/olsr/model/olsr-routing-protocol.h	2025-08-14 23:00:48.000000000 +0000
++++ src/olsr/model/olsr-routing-protocol.h	2026-11-22 08:42:48.325606949 +0000
+@@ -245,6 +245,30 @@
+     uint16_t m_messageSequenceNumber; //!< Messages sequence number counter.
+     uint16_t m_ansn;                  //!< Advertised Neighbor Set sequence number.
+ 
++    // OLSR-ETX link-quality extension (attribute LinkQualityEtx, default off)
++    bool m_linkQuality;  //!< Use LQ_HELLO/LQ_TC and ETX shortest paths
++    double m_lqAging;    //!< EWMA weight of the newest OLSR packet observation
++
++    /// Per neighbour-interface link quality state.
++    struct LqState
++    {
++        double lq = 0;        //!< Reception ratio of the neighbour's OLSR packets (EWMA)
++        double nlq = -1;      //!< Neighbour's reception ratio of ours (from its LQ_HELLO); <0 unknown
++        uint16_t lastSeq = 0; //!< Last OLSR packet sequence number seen
++        bool init = false;    //!< At least one packet seen
++        Time lastRx;          //!< Time of the last packet
++    };
++
++    std::map<Ipv4Address, LqState> m_lq; //!< Keyed by neighbour interface address
++
++    void UpdateLinkQuality(const Ipv4Address& senderIface, uint16_t seq);
++    void AgeLinkQuality();
++    double LinkEtx(const Ipv4Address& neighborIface) const;
++    void LqRoutes();
++    static uint8_t EncodeLq(double value);
++    static double DecodeLq(uint8_t value);
++    static double PairEtx(uint8_t lq, uint8_t nlq);
++
+     Time m_helloInterval;      //!< HELLO messages' emission interval.
+     Time m_tcInterval;         //!< TC messages' emission interval.
+     Time m_midInterval;        //!< MID messages' emission interval.

@@ -1,0 +1,16 @@
+{
+  "margin": 1.0,
+  "margin_source": {
+    "study": "v4",
+    "tuning_selection_sha256": "e498e159256dbd071c4ce2789687f220db9898da798f30c5bc77585751b9e24b"
+  },
+  "olsr_etx": {
+    "hello_interval_s": 2.0,
+    "link_quality_aging": 0.1,
+    "patch_sha256": "9cd7c5ec083e404f443832cc88f92f102ef57ef18230df66a4d34e4725550454",
+    "tc_advertises": "all symmetric neighbours",
+    "tc_interval_s": 5.0
+  },
+  "predictor_sha256": "719816f80b9df51c5544422522265e50bd454768869523036a8b8f4b1c657c10",
+  "schema": "service-v5-tuning-selection-v1"
+}
