@@ -189,8 +189,8 @@ def _validate_process_evidence(attempt, result, artifacts):
         if result['status']=='ok' and status!='captured': raise ValueError('Successful process requires both full simulator logs')
 
 
-def collect_case(protocol_path, cell_id, attempt, output, loader=load_phase, factory_builder=None):
-    """loader/factory_builder let a later protocol (v3) reuse this exact collector."""
+def collect_case(protocol_path, cell_id, attempt, output, loader=load_phase, factory_builder=None, env_class=None):
+    """loader/factory_builder/env_class let later protocols (v3, v4) reuse this exact collector."""
     phase=loader(protocol_path)
     cells=[c for c in phase['cells'] if c['cell_id']==cell_id]
     if len(cells)!=1 or type(attempt) is not int or attempt not in (0,1): raise ValueError('Unknown cell/attempt')
@@ -220,7 +220,7 @@ def collect_case(protocol_path, cell_id, attempt, output, loader=load_phase, fac
     from ..prevention.environment import Ns3PreventionEnv
     from ..prevention.evaluation import run_grid
     exits=[]; environments=[]; processes=[]; capture_errors=[]
-    class ObservedEnv(Ns3PreventionEnv):
+    class ObservedEnv(env_class or Ns3PreventionEnv):
         def __init__(self, **kwargs):
             super().__init__(**kwargs); environments.append(self)
         def close(self):

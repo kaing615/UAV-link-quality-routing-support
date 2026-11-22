@@ -16,7 +16,7 @@ RUN cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
 COPY simulation/ns3/ /src/ns3/
 RUN cmake -B /src/ns3/build -S /src/ns3 -G Ninja -DCMAKE_BUILD_TYPE=Release -DNS3_PREFIX=/opt/ns3 \
     && cmake --build /src/ns3/build \
-    && cd /src/ns3 && sha256sum uav-olsr-dataset.cc CMakeLists.txt recovery-control.h recovery-protocol.h build/uav-olsr-dataset > build/source.sha256
+    && cd /src/ns3 && sha256sum uav-olsr-dataset.cc CMakeLists.txt recovery-control.h recovery-protocol.h route-protocol.h build/uav-olsr-dataset > build/source.sha256
 
 FROM ubuntu:24.04
 RUN apt-get update && apt-get install -y --no-install-recommends \

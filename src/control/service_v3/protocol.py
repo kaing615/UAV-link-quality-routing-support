@@ -2,26 +2,45 @@
 
 See docs/service_v3_protocol.md. CLI: python -m src.control.service_v3.cli.
 """
+from dataclasses import dataclass
 from pathlib import Path
 import re
 
 from ..service_v2.protocol import _canonical_hash, _seeds, sha256, strict_json, write_json
 
-SCHEMA = 'service-v3-seed-plan-v1'
-# (static, gradual) scenarios per regime; tuning pairs share a seed pair.
-COUNTS = {'tuning': (8, 8), 'validation': (4, 12), 'test': (4, 20)}
-POLICIES = {
-    'tuning': ('hold', 'service-v2', 'service-v2-no-forecast'),
-    'validation': ('hold', 'service-v2', 'service-v2-no-forecast', 'service-v3-threshold', 'service-v3-gate'),
-    'test': ('hold', 'service-v2', 'service-v2-no-forecast', 'service-v3-threshold', 'service-v3-gate'),
-}
-LAYOUT_BASE, RADIO_BASE = 2_400_000, 2_500_000
 REGIMES, CONTEXTS = ('n4', 'n5'), ('static', 'gradual')
 
 
-def build_phases():
+@dataclass(frozen=True)
+class Study:
+    """Per-study constants; v4 reuses every function below with its own Study."""
+    name: str
+    counts: dict  # phase -> (static, gradual) scenarios per regime; tuning pairs share a seed pair
+    policies: dict  # phase -> arms
+    layout_base: int
+    radio_base: int
+    cli_module: str
+
+    def schema(self, kind):
+        return f'service-{self.name}-{kind}-v1'
+
+    @property
+    def all_policies(self):
+        return tuple(dict.fromkeys(p for arms in self.policies.values() for p in arms))
+
+
+V3 = Study('v3', {'tuning': (8, 8), 'validation': (4, 12), 'test': (4, 20)},
+           {'tuning': ('hold', 'service-v2', 'service-v2-no-forecast'),
+            'validation': ('hold', 'service-v2', 'service-v2-no-forecast', 'service-v3-threshold', 'service-v3-gate'),
+            'test': ('hold', 'service-v2', 'service-v2-no-forecast', 'service-v3-threshold', 'service-v3-gate')},
+           2_400_000, 2_500_000, 'src.control.service_v3.cli')
+SCHEMA, COUNTS, POLICIES = V3.schema('seed-plan'), V3.counts, V3.policies  # v3 names kept for callers
+LAYOUT_BASE, RADIO_BASE = V3.layout_base, V3.radio_base
+
+
+def build_phases(study=V3):
     phases, k = {}, 0
-    for phase, (static, gradual) in COUNTS.items():
+    for phase, (static, gradual) in study.counts.items():
         rows = []
         for regime in REGIMES:
             if phase == 'tuning':  # within-split pairing, as v2 train/calibration
@@ -29,19 +48,19 @@ def build_phases():
                     k += 1
                     for context in CONTEXTS:
                         rows.append(dict(id=f'{phase}-{regime}-{context}-{i+1:02d}', regime=regime, context=context,
-                                         layout_seed=LAYOUT_BASE+k, radio_seed=RADIO_BASE+k))
+                                         layout_seed=study.layout_base+k, radio_seed=study.radio_base+k))
                 continue
             for context, n in zip(CONTEXTS, (static, gradual)):
                 for i in range(n):
                     k += 1
                     rows.append(dict(id=f'{phase}-{regime}-{context}-{i+1:02d}', regime=regime, context=context,
-                                     layout_seed=LAYOUT_BASE+k, radio_seed=RADIO_BASE+k))
+                                     layout_seed=study.layout_base+k, radio_seed=study.radio_base+k))
         phases[phase] = rows
     return phases
 
 
-def validate_phases(phases):
-    if set(phases) != set(COUNTS): raise ValueError('v3 phases')
+def validate_phases(phases, study=V3):
+    if set(phases) != set(study.counts): raise ValueError(study.name+' phases')
     owner = {}
     for phase, rows in phases.items():
         ids = set()
@@ -55,7 +74,7 @@ def validate_phases(phases):
             pair = (s['layout_seed'], s['radio_seed'])
             owner.setdefault(pair, []).append((phase, s['regime'], s['context']))
         for regime in REGIMES:
-            for context, n in zip(CONTEXTS, COUNTS[phase]):
+            for context, n in zip(CONTEXTS, study.counts[phase]):
                 if sum(s['regime'] == regime and s['context'] == context for s in rows) != n:
                     raise ValueError('Wrong phase cardinality: '+phase)
     layout, radio = {}, {}
@@ -69,9 +88,9 @@ def validate_phases(phases):
     return phases
 
 
-def audit(phases, historical_files):
-    """Reject any seed already used by a historical (v2 or older) artifact."""
-    validate_phases(phases)
+def audit(phases, historical_files, study=V3):
+    """Reject any seed already used by a historical artifact (every earlier seed plan)."""
+    validate_phases(phases, study)
     layout, radio, files = set(), set(), {}
     for path in sorted(Path(p) for p in historical_files):
         files[path.as_posix()] = sha256(path)
@@ -85,17 +104,18 @@ def audit(phases, historical_files):
     return dict(evidence, evidence_sha256=_canonical_hash(evidence))
 
 
-def make_plan(historical_files):
-    phases = build_phases()
-    return dict(schema=SCHEMA, policies={k: list(v) for k, v in POLICIES.items()}, phases=phases,
-                historical_audit=audit(phases, historical_files))
+def make_plan(historical_files, study=V3):
+    phases = build_phases(study)
+    return dict(schema=study.schema('seed-plan'), policies={k: list(v) for k, v in study.policies.items()},
+                phases=phases, historical_audit=audit(phases, historical_files, study))
 
 
-def load_plan(path):
+def load_plan(path, study=V3):
     plan = strict_json(path)
-    if plan.get('schema') != SCHEMA or plan.get('policies') != {k: list(v) for k, v in POLICIES.items()}:
-        raise ValueError('v3 seed plan schema/policies')
-    validate_phases(plan['phases'])
+    if (plan.get('schema') != study.schema('seed-plan')
+            or plan.get('policies') != {k: list(v) for k, v in study.policies.items()}):
+        raise ValueError(study.name+' seed plan schema/policies')
+    validate_phases(plan['phases'], study)
     a = plan['historical_audit']
     evidence = {k: v for k, v in a.items() if k != 'evidence_sha256'}
     if a['evidence_sha256'] != _canonical_hash(evidence) or a['inventory_sha256'] != _canonical_hash(plan['phases']):
@@ -109,50 +129,50 @@ def load_plan(path):
 
 # ---- Frozen phase packages (same guarantees as v2 freeze_phase/load_phase) ----
 
-PHASE_SCHEMA = 'service-v3-phase-v1'
+PHASE_SCHEMA = V3.schema('phase')
 V2_MODEL_SHA256 = '719816f80b9df51c5544422522265e50bd454768869523036a8b8f4b1c657c10'  # formal v2 new-model.json
-ALL_POLICIES = POLICIES['validation']
+ALL_POLICIES = V3.all_policies
 
 
-def _cells(plan, phase):
+def _cells(plan, phase, study=V3):
     from dataclasses import asdict
     from ..service_v2.protocol import scenario_config
     return [dict(s, cell_id=s['id']+'__'+p, policy=p, config=asdict(scenario_config(s)),
-                 output_path=s['id']+'__'+p, attempts=[0, 1]) for s in plan['phases'][phase] for p in POLICIES[phase]]
+                 output_path=s['id']+'__'+p, attempts=[0, 1]) for s in plan['phases'][phase] for p in study.policies[phase]]
 
 
 def freeze(phase, seed_plan, output, model, reference_model, launcher, ns3_identity, compiler_identity,
-           selection=None, inherits=None, go=None):
-    """Freeze one v3 phase. validation needs the tuning selection; test also needs
+           selection=None, inherits=None, go=None, study=V3):
+    """Freeze one phase. validation needs the tuning selection; test also needs
     the validation package it inherits and that package's go decision."""
     from dataclasses import asdict
     import hashlib
     from ..service_v2.config import ServiceV2Config
     from ..service_v2.protocol import (ACCEPTED_REFERENCE_SOURCES, REFERENCE_SHA256, ROOT, reserve,
                                        runtime_identity, safe_path, source_paths)
-    if phase not in COUNTS: raise ValueError('Unknown v3 phase')
+    if phase not in study.counts: raise ValueError('Unknown phase')
     if (phase == 'tuning') != (selection is None): raise ValueError('Selection required exactly for validation/test')
     if (phase == 'test') != (inherits is not None and go is not None): raise ValueError('Test must inherit validation + go')
     out = reserve(output)
-    plan = load_plan(seed_plan)
-    if sha256(model) != V2_MODEL_SHA256: raise ValueError('v3 must reuse the formal v2 predictor unchanged')
+    plan = load_plan(seed_plan, study)
+    if sha256(model) != V2_MODEL_SHA256: raise ValueError('Must reuse the formal v2 predictor unchanged')
     if sha256(reference_model) != REFERENCE_SHA256: raise ValueError('Exact reference model mismatch')
     for name, digest in ACCEPTED_REFERENCE_SOURCES.items():
         if sha256(safe_path(ROOT, name)) != digest: raise ValueError('Accepted legacy reference source changed: '+name)
     inherited = None
     if selection is not None:
         chosen = strict_json(selection)
-        if chosen.get('schema') != 'service-v3-tuning-selection-v1' or chosen.get('predictor_sha256') != V2_MODEL_SHA256:
+        if chosen.get('schema') != study.schema('tuning-selection') or chosen.get('predictor_sha256') != V2_MODEL_SHA256:
             raise ValueError('Tuning selection schema/predictor')
     if phase == 'test':
-        inherited = load(inherits)
+        inherited = load(inherits, study)
         decision = strict_json(go)
-        if (inherited['phase'] != 'validation' or decision.get('schema') != 'service-v3-go-v1' or decision.get('go') is not True
+        if (inherited['phase'] != 'validation' or decision.get('schema') != study.schema('go') or decision.get('go') is not True
                 or decision.get('validation_freeze_sha256') != inherited['_freeze_sha256']
                 or inherited['selection_sha256'] != sha256(selection)):
             raise ValueError('Test requires a go decision from the validation package with the same selection')
     from ..service_v2.prediction import ServicePredictor
-    cells = _cells(plan, phase)
+    cells = _cells(plan, phase, study)
     ServicePredictor.load(model).validate_scenarios(cells)
     runtime = runtime_identity(dict(launcher=list(launcher), ns3_identity=ns3_identity, compiler_identity=compiler_identity))
     sources = {}
@@ -172,7 +192,7 @@ def freeze(phase, seed_plan, output, model, reference_model, launcher, ns3_ident
     write_json(out/'method.json', asdict(ServiceV2Config()))
     write_json(out/'source-manifest.json', sources)
     write_json(out/'runtime.json', runtime)
-    protocol = dict(schema=PHASE_SCHEMA, phase=phase, policies=list(POLICIES[phase]), cells=cells,
+    protocol = dict(schema=study.schema('phase'), phase=phase, policies=list(study.policies[phase]), cells=cells,
         expected_episodes=len(cells), reference_model=REFERENCE_SHA256, new_model=V2_MODEL_SHA256,
         seed_plan_sha256=sha256(seed_plan), method_sha256=sha256(out/'method.json'),
         selection_sha256=sha256(selection) if selection is not None else None,
@@ -180,33 +200,33 @@ def freeze(phase, seed_plan, output, model, reference_model, launcher, ns3_ident
         runtime=runtime, source_root_at_freeze=str(ROOT), package_root=str(out.resolve()),
         protocol_path_at_freeze=str((out/'protocol.json').resolve()), working_directory=str((out/'source').resolve()),
         retry='one identical-cell technical/infrastructure retry only', service_observation=True,
-        run_argv=[runtime['python_executable'], '-m', 'src.control.service_v3.cli', 'run-case',
+        run_argv=[runtime['python_executable'], '-m', study.cli_module, 'run-case',
                   '--protocol', str((out/'protocol.json').resolve()), '--cell-id', '{cell_id}',
                   '--attempt', '{attempt}', '--output', '{exclusive_attempt_output}'])
     write_json(out/'protocol.json', protocol)
     files = {p.relative_to(out).as_posix(): sha256(p) for p in sorted(out.rglob('*')) if p.is_file()}
-    write_json(out/'freeze.json', dict(schema='service-v3-freeze-v1', files=files))
-    load(out/'protocol.json')
+    write_json(out/'freeze.json', dict(schema=study.schema('freeze'), files=files))
+    load(out/'protocol.json', study)
     return out/'protocol.json'
 
 
-def load(path):
+def load(path, study=V3):
     from dataclasses import asdict
     from ..service_v2.config import ServiceV2Config
     from ..service_v2.protocol import REFERENCE_SHA256, safe_path
     path = Path(path).resolve(); root = path.parent
     freeze_record = strict_json(root/'freeze.json')
-    if freeze_record.get('schema') != 'service-v3-freeze-v1': raise ValueError('Freeze schema')
+    if freeze_record.get('schema') != study.schema('freeze'): raise ValueError('Freeze schema')
     files = freeze_record['files']
     actual = {p.relative_to(root).as_posix() for p in root.rglob('*') if p.is_file() and '__pycache__' not in p.parts}
     if actual != set(files) | {'freeze.json'}: raise ValueError('Unlisted/missing frozen file')
     for name, digest in files.items():
         if sha256(safe_path(root, name)) != digest: raise ValueError('Frozen file mismatch: '+name)
     p = strict_json(path)
-    if p.get('schema') != PHASE_SCHEMA or p.get('phase') not in COUNTS: raise ValueError('Phase schema')
-    plan = load_plan(root/'seed-plan.json')
-    if (sha256(root/'seed-plan.json') != p['seed_plan_sha256'] or p['policies'] != list(POLICIES[p['phase']])
-            or p['cells'] != _cells(plan, p['phase']) or p['expected_episodes'] != len(p['cells'])):
+    if p.get('schema') != study.schema('phase') or p.get('phase') not in study.counts: raise ValueError('Phase schema')
+    plan = load_plan(root/'seed-plan.json', study)
+    if (sha256(root/'seed-plan.json') != p['seed_plan_sha256'] or p['policies'] != list(study.policies[p['phase']])
+            or p['cells'] != _cells(plan, p['phase'], study) or p['expected_episodes'] != len(p['cells'])):
         raise ValueError('Cell inventory mismatch')
     if (p['reference_model'] != REFERENCE_SHA256 or sha256(root/'reference-model.json') != REFERENCE_SHA256
             or p['new_model'] != V2_MODEL_SHA256 or sha256(root/'new-model.json') != V2_MODEL_SHA256
@@ -217,7 +237,7 @@ def load(path):
     if has_selection != (p['phase'] != 'tuning') or (has_selection and sha256(root/'selection.json') != p['selection_sha256']):
         raise ValueError('Selection binding mismatch')
     p['_path'] = str(path); p['_freeze_sha256'] = sha256(root/'freeze.json')
-    p['supported_policies'] = ALL_POLICIES
+    p['supported_policies'] = study.all_policies
     return p
 
 

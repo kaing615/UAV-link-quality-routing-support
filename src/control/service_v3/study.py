@@ -31,11 +31,11 @@ def run_case(protocol_path, cell_id, attempt, output):
     return collect_case(protocol_path, cell_id, attempt, output, loader=v3.load, factory_builder=make_factory)
 
 
-def load_traces(protocol_path, run_root):
+def load_traces(protocol_path, run_root, loader=v3.load):
     """Complete collection only (no survivor selection): rows with frames and decisions."""
     from ..prevention.config import PreventionConfig
-    phase = v3.load(protocol_path)
-    report = validate_collection(protocol_path, run_root, loader=v3.load)
+    phase = loader(protocol_path)
+    report = validate_collection(protocol_path, run_root, loader=loader)
     if not report['complete']: raise ValueError('Incomplete collection; survivor selection forbidden')
     root = Path(run_root).resolve(); rows = []
     for row in report['rows']:
@@ -44,7 +44,8 @@ def load_traces(protocol_path, run_root):
         decisions = [strict_loads(line) for line in next((attempt/'collector/episodes').rglob('decisions.jsonl'))
                      .read_text(encoding='utf-8').splitlines()]
         if [d['step'] for d in decisions] != list(range(config.steps)): raise ValueError('Full decision trace required')
-        rows.append(dict(row, frames=read_frames(safe_path(attempt, row['episode_path']), config), decisions=decisions))
+        episode_dir = safe_path(attempt, row['episode_path'])
+        rows.append(dict(row, frames=read_frames(episode_dir, config), decisions=decisions, episode_dir=str(episode_dir)))
     return phase, report, rows
 
 

@@ -46,6 +46,7 @@
 #include "ns3/wifi-module.h"
 #include "recovery-control.h"
 #include "recovery-protocol.h"
+#include "route-protocol.h"
 
 #include <algorithm>
 #include <cmath>
@@ -90,6 +91,11 @@ static bool g_enableAnim = true;
 static bool g_enableDataFlow = false;
 static std::string g_routePlanPath;
 static std::string g_routingStrategy = "olsr";
+// --routeControl=external: the external controller may pin the data route (UAVACT 2).
+static std::string g_routeControl = "none";
+static std::vector<uint32_t> g_overridePath;
+static uint32_t g_overrideChanges = 0;
+static void ApplyOverrideRoute(uint32_t step, const std::vector<uint32_t> &path);
 static std::string g_predictionTarget = "none";
 static uint32_t g_predictionHorizon = 1;
 static std::string g_costMode = "none";
@@ -609,12 +615,19 @@ UpdateRecovery(uint32_t step, const std::vector<Vector> &positions,
         // Wait even at the final frame for an explicit orderly close. Python
         // acknowledges the terminal observation, then receives final metrics.
         try {
-            auto received=recovery::ReadAction(std::cin,step,3*(g_numUavs-2));
-            quit=received.quit;
+            std::vector<double> values;
+            if (g_routeControl=="external") {
+                auto received=recovery::ReadRoutedAction(std::cin,step,3*(g_numUavs-2),g_numUavs,g_sourceId,g_destId);
+                quit=received.quit; values=received.values;
+                if (!quit) ApplyOverrideRoute(step,received.route);
+            } else {
+                auto received=recovery::ReadAction(std::cin,step,3*(g_numUavs-2));
+                quit=received.quit; values=received.values;
+            }
             size_t k=0;
             if (!quit) for (uint32_t i=0;i<g_numUavs;++i) {
                 if (i==g_sourceId || i==g_destId) continue;
-                action[i]={received.values[k],received.values[k+1],received.values[k+2]}; k+=3;
+                action[i]={values[k],values[k+1],values[k+2]}; k+=3;
             }
         } catch (const std::exception &error) {
             NS_FATAL_ERROR("Recovery protocol error: " << error.what());
@@ -1039,6 +1052,107 @@ RemovePlannedRoutes()
                 routing->RemoveRoute(index - 1);
             }
         }
+    }
+}
+
+// Unicast to the destination follows g_overridePath on its nodes; everything
+// else, and every node when no override is pinned, uses live OLSR as before.
+class OverrideRouting : public Ipv4ListRouting
+{
+  public:
+    static TypeId GetTypeId()
+    {
+        static TypeId tid = TypeId("ns3::UavOverrideRouting")
+                                .SetParent<Ipv4ListRouting>()
+                                .AddConstructor<OverrideRouting>();
+        return tid;
+    }
+
+    uint32_t nodeId = 0;
+
+    bool Overrides(const Ipv4Header &header) const
+    {
+        if (g_overridePath.empty() || g_ifaces.GetN() <= g_destId || nodeId == g_destId
+            || header.GetDestination() != g_ifaces.GetAddress(g_destId))
+        {
+            return false;
+        }
+        auto current = std::find(g_overridePath.begin(), g_overridePath.end(), nodeId);
+        return current != g_overridePath.end() && current + 1 != g_overridePath.end();
+    }
+
+    Ptr<Ipv4Route> RouteOutput(Ptr<Packet> packet, const Ipv4Header &header,
+                              Ptr<NetDevice> oif, Socket::SocketErrno &error) override
+    {
+        if (Overrides(header))
+        {
+            Ptr<Ipv4Route> route = GetStaticRouting(nodeId)->RouteOutput(packet, header, oif, error);
+            if (route)
+            {
+                return route;
+            }
+        }
+        return Ipv4ListRouting::RouteOutput(packet, header, oif, error);
+    }
+
+    bool RouteInput(Ptr<const Packet> packet, const Ipv4Header &header, Ptr<const NetDevice> idev,
+                    const UnicastForwardCallback &ucb, const MulticastForwardCallback &mcb,
+                    const LocalDeliverCallback &lcb, const ErrorCallback &ecb) override
+    {
+        if (Overrides(header) && GetStaticRouting(nodeId)->RouteInput(packet, header, idev, ucb, mcb, lcb, ecb))
+        {
+            return true;
+        }
+        return Ipv4ListRouting::RouteInput(packet, header, idev, ucb, mcb, lcb, ecb);
+    }
+};
+
+class OverrideRoutingHelper : public Ipv4RoutingHelper
+{
+  public:
+    OverrideRoutingHelper *Copy() const override
+    {
+        return new OverrideRoutingHelper(*this);
+    }
+
+    Ptr<Ipv4RoutingProtocol> Create(Ptr<Node> node) const override
+    {
+        Ptr<OverrideRouting> routing = CreateObject<OverrideRouting>();
+        routing->nodeId = node->GetId();
+        Ipv4StaticRoutingHelper staticHelper;
+        OlsrHelper olsrHelper;
+        // Same priorities as the live OLSR list routing (OLSR consulted first).
+        routing->AddRoutingProtocol(staticHelper.Create(node), 10);
+        routing->AddRoutingProtocol(olsrHelper.Create(node), 20);
+        return routing;
+    }
+};
+
+static void
+ApplyOverrideRoute(uint32_t step, const std::vector<uint32_t> &path)
+{
+    if (path == g_overridePath)
+    {
+        return;
+    }
+    RemovePlannedRoutes();
+    g_overridePath = path;
+    g_overrideChanges += 1;
+    // Evidence for the controller trace: the simulator applied this route at this step.
+    std::cerr << "UAVROUTE " << step << ' ' << path.size();
+    for (uint32_t node : path)
+    {
+        std::cerr << ' ' << node;
+    }
+    std::cerr << std::endl;
+    Ipv4Address destination = g_ifaces.GetAddress(g_destId);
+    for (size_t index = 0; index + 1 < path.size(); ++index)
+    {
+        Ptr<Ipv4> ipv4 = g_nodes.Get(path[index])->GetObject<Ipv4>();
+        int32_t interface = ipv4->GetInterfaceForDevice(g_nodes.Get(path[index])->GetDevice(0));
+        NS_ABORT_MSG_IF(interface < 0, "No IPv4 interface for override route node " << path[index]);
+        GetStaticRouting(path[index])->AddHostRouteTo(destination, g_ifaces.GetAddress(path[index + 1]),
+                                                      static_cast<uint32_t>(interface));
     }
 }
 
@@ -1603,6 +1717,7 @@ int main(int argc, char *argv[])
     cmd.AddValue("appRateKbps", "Offered UDP data rate (kbps)", g_appRateKbps);
     cmd.AddValue("appPacketSize", "UDP payload size (bytes)", g_appPacketSize);
     cmd.AddValue("scenarioMode", "standard | partition-reconnect | high-load | crossing-swarms | group-control | relay-recovery | relay-prevention | routing-sanity", g_scenarioMode);
+    cmd.AddValue("routeControl", "none | external (controller pins the data route with UAVACT 2; needs external recovery)", g_routeControl);
     cmd.AddValue("recoveryPolicy", "none | relay-chain | external (requires a live relay scenario)", g_recoveryPolicy);
     cmd.AddValue("preventionMissionSpeed", "Exogenous mission anchor speed (m/s)", g_preventionMissionSpeed);
     cmd.AddValue("preventionMissionStartStep", "Control boundary that starts mission motion", g_preventionMissionStartStep);
@@ -1634,6 +1749,11 @@ int main(int argc, char *argv[])
                     (g_routingStrategy!="olsr" || !g_routePlanPath.empty()), "routing-sanity requires live OLSR");
     NS_ABORT_MSG_IF(g_recoveryPolicy != "none" && g_recoveryPolicy != "relay-chain" &&
                     g_recoveryPolicy != "external", "Invalid recoveryPolicy");
+    NS_ABORT_MSG_IF(g_routeControl != "none" && g_routeControl != "external", "Invalid routeControl");
+    NS_ABORT_MSG_IF(g_routeControl == "external" &&
+                    (g_recoveryPolicy != "external" || !g_enableDataFlow || g_routingStrategy != "olsr" ||
+                     !g_routePlanPath.empty()),
+                    "routeControl=external requires external recovery, the data flow and live OLSR");
     NS_ABORT_MSG_IF(g_recoveryPolicy != "none" && !IsLiveRelayScenario(),
                     "Recovery control requires a live relay scenario");
     NS_ABORT_MSG_IF(IsLiveRelayScenario() &&
@@ -1844,7 +1964,12 @@ int main(int argc, char *argv[])
 
     InternetStackHelper stack;
     PlannedRoutingHelper plannedRouting;
-    if (g_enableDataFlow && g_routingStrategy != "olsr")
+    OverrideRoutingHelper overrideRouting;
+    if (g_routeControl == "external")
+    {
+        stack.SetRoutingHelper(overrideRouting);
+    }
+    else if (g_enableDataFlow && g_routingStrategy != "olsr")
     {
         stack.SetRoutingHelper(plannedRouting);
     }
@@ -2014,6 +2139,10 @@ int main(int argc, char *argv[])
 
     Simulator::Stop(Seconds(g_warmup + g_timeSteps + 1.0));
     Simulator::Run();
+    if (g_routeControl == "external")
+    {
+        std::cerr << "UAVROUTE_CHANGES " << g_overrideChanges << std::endl;
+    }
     WriteDiagnosticDrops();
     if (g_enableDataFlow)
     {
