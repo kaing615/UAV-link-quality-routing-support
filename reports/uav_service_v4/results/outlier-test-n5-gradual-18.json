@@ -1,0 +1,7486 @@
+{
+ "source": "server ~/uav-service/2026-11-22-service-v4/runs/test/test-n5-gradual-18__*",
+ "note": "per-second window counts and route commands extracted read-only for the failure-case analysis",
+ "arms": {
+  "hold": {
+   "trace_sha256": "562443785d15b93371ce7962eb0dee99ee60b93dfac6fd3c961e87eea3312d3e",
+   "seconds": [
+    {
+     "step": 1,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.925
+    },
+    {
+     "step": 2,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.925
+    },
+    {
+     "step": 3,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.875
+    },
+    {
+     "step": 4,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.95
+    },
+    {
+     "step": 5,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.9
+    },
+    {
+     "step": 6,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.95
+    },
+    {
+     "step": 7,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.85
+    },
+    {
+     "step": 8,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.9
+    },
+    {
+     "step": 9,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.875
+    },
+    {
+     "step": 10,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.975
+    },
+    {
+     "step": 11,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.925
+    },
+    {
+     "step": 12,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.95
+    },
+    {
+     "step": 13,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.925
+    },
+    {
+     "step": 14,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.925
+    },
+    {
+     "step": 15,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.925
+    },
+    {
+     "step": 16,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.95
+    },
+    {
+     "step": 17,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.925
+    },
+    {
+     "step": 18,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.925
+    },
+    {
+     "step": 19,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.9
+    },
+    {
+     "step": 20,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.925
+    },
+    {
+     "step": 21,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.925
+    },
+    {
+     "step": 22,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.95
+    },
+    {
+     "step": 23,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.925
+    },
+    {
+     "step": 24,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.825
+    },
+    {
+     "step": 25,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.95
+    },
+    {
+     "step": 26,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.975
+    },
+    {
+     "step": 27,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.975
+    },
+    {
+     "step": 28,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.95
+    },
+    {
+     "step": 29,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.825
+    },
+    {
+     "step": 30,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.975
+    },
+    {
+     "step": 31,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.875
+    },
+    {
+     "step": 32,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.825
+    },
+    {
+     "step": 33,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.95
+    },
+    {
+     "step": 34,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.975
+    },
+    {
+     "step": 35,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.95
+    },
+    {
+     "step": 36,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.875
+    },
+    {
+     "step": 37,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 1
+    },
+    {
+     "step": 38,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.95
+    },
+    {
+     "step": 39,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.925
+    },
+    {
+     "step": 40,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.875
+    },
+    {
+     "step": 41,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.85
+    },
+    {
+     "step": 42,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.95
+    },
+    {
+     "step": 43,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.875
+    },
+    {
+     "step": 44,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.95
+    },
+    {
+     "step": 45,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.975
+    },
+    {
+     "step": 46,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.925
+    },
+    {
+     "step": 47,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.975
+    },
+    {
+     "step": 48,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 1
+    },
+    {
+     "step": 49,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.85
+    },
+    {
+     "step": 50,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.8
+    },
+    {
+     "step": 51,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.925
+    },
+    {
+     "step": 52,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.975
+    },
+    {
+     "step": 53,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 1
+    },
+    {
+     "step": 54,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.925
+    },
+    {
+     "step": 55,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.85
+    },
+    {
+     "step": 56,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.925
+    },
+    {
+     "step": 57,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.875
+    },
+    {
+     "step": 58,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.9
+    },
+    {
+     "step": 59,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.925
+    },
+    {
+     "step": 60,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.95
+    },
+    {
+     "step": 61,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.95
+    },
+    {
+     "step": 62,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.875
+    },
+    {
+     "step": 63,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.95
+    },
+    {
+     "step": 64,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.95
+    },
+    {
+     "step": 65,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.875
+    },
+    {
+     "step": 66,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.825
+    },
+    {
+     "step": 67,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.85
+    },
+    {
+     "step": 68,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.925
+    },
+    {
+     "step": 69,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.8
+    },
+    {
+     "step": 70,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.9
+    },
+    {
+     "step": 71,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.95
+    },
+    {
+     "step": 72,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 1
+    },
+    {
+     "step": 73,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.775
+    },
+    {
+     "step": 74,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.875
+    },
+    {
+     "step": 75,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.975
+    },
+    {
+     "step": 76,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.85
+    },
+    {
+     "step": 77,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.8
+    },
+    {
+     "step": 78,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.8
+    },
+    {
+     "step": 79,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.85
+    },
+    {
+     "step": 80,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.775
+    },
+    {
+     "step": 81,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.85
+    },
+    {
+     "step": 82,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.8
+    },
+    {
+     "step": 83,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.85
+    },
+    {
+     "step": 84,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.8
+    },
+    {
+     "step": 85,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.825
+    },
+    {
+     "step": 86,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.825
+    },
+    {
+     "step": 87,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.75
+    },
+    {
+     "step": 88,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.75
+    },
+    {
+     "step": 89,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.75
+    },
+    {
+     "step": 90,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.725
+    },
+    {
+     "step": 91,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.775
+    },
+    {
+     "step": 92,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.85
+    },
+    {
+     "step": 93,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.75
+    },
+    {
+     "step": 94,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.85
+    },
+    {
+     "step": 95,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.75
+    },
+    {
+     "step": 96,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.775
+    },
+    {
+     "step": 97,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.725
+    },
+    {
+     "step": 98,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.7
+    },
+    {
+     "step": 99,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.75
+    },
+    {
+     "step": 100,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.725
+    },
+    {
+     "step": 101,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.65
+    },
+    {
+     "step": 102,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.75
+    },
+    {
+     "step": 103,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.675
+    },
+    {
+     "step": 104,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.625
+    },
+    {
+     "step": 105,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.65
+    },
+    {
+     "step": 106,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.875
+    },
+    {
+     "step": 107,
+     "offered": 62,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.625
+    },
+    {
+     "step": 108,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.625
+    },
+    {
+     "step": 109,
+     "offered": 62,
+     "rx": 59,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.475
+    },
+    {
+     "step": 110,
+     "offered": 63,
+     "rx": 66,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.4
+    },
+    {
+     "step": 111,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.65
+    },
+    {
+     "step": 112,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.625
+    },
+    {
+     "step": 113,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.475
+    },
+    {
+     "step": 114,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.575
+    },
+    {
+     "step": 115,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.55
+    },
+    {
+     "step": 116,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.375
+    },
+    {
+     "step": 117,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.375
+    },
+    {
+     "step": 118,
+     "offered": 63,
+     "rx": 60,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.575
+    },
+    {
+     "step": 119,
+     "offered": 62,
+     "rx": 57,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.425
+    },
+    {
+     "step": 120,
+     "offered": 63,
+     "rx": 66,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.45
+    },
+    {
+     "step": 121,
+     "offered": 62,
+     "rx": 64,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.4
+    },
+    {
+     "step": 122,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.5
+    },
+    {
+     "step": 123,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.425
+    },
+    {
+     "step": 124,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.425
+    },
+    {
+     "step": 125,
+     "offered": 62,
+     "rx": 61,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.425
+    },
+    {
+     "step": 126,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.475
+    },
+    {
+     "step": 127,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.45
+    },
+    {
+     "step": 128,
+     "offered": 63,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.475
+    },
+    {
+     "step": 129,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.475
+    },
+    {
+     "step": 130,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.45
+    },
+    {
+     "step": 131,
+     "offered": 62,
+     "rx": 58,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.6
+    },
+    {
+     "step": 132,
+     "offered": 63,
+     "rx": 57,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.325
+    },
+    {
+     "step": 133,
+     "offered": 62,
+     "rx": 66,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.3
+    },
+    {
+     "step": 134,
+     "offered": 63,
+     "rx": 58,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.3
+    },
+    {
+     "step": 135,
+     "offered": 62,
+     "rx": 64,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.475
+    },
+    {
+     "step": 136,
+     "offered": 63,
+     "rx": 64,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.375
+    },
+    {
+     "step": 137,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.35
+    },
+    {
+     "step": 138,
+     "offered": 63,
+     "rx": 61,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.375
+    },
+    {
+     "step": 139,
+     "offered": 62,
+     "rx": 57,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.3
+    },
+    {
+     "step": 140,
+     "offered": 63,
+     "rx": 57,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.375
+    },
+    {
+     "step": 141,
+     "offered": 62,
+     "rx": 65,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.475
+    },
+    {
+     "step": 142,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.325
+    },
+    {
+     "step": 143,
+     "offered": 62,
+     "rx": 59,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.4
+    },
+    {
+     "step": 144,
+     "offered": 63,
+     "rx": 53,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.425
+    },
+    {
+     "step": 145,
+     "offered": 62,
+     "rx": 65,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.275
+    },
+    {
+     "step": 146,
+     "offered": 63,
+     "rx": 30,
+     "olsr_route": [
+      0,
+      1,
+      4
+     ],
+     "direct_rx": 0.125
+    },
+    {
+     "step": 147,
+     "offered": 62,
+     "rx": 35,
+     "olsr_route": [
+      0,
+      1,
+      4
+     ],
+     "direct_rx": 0.4
+    },
+    {
+     "step": 148,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      1,
+      4
+     ],
+     "direct_rx": 0.375
+    },
+    {
+     "step": 149,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      1,
+      4
+     ],
+     "direct_rx": 0.25
+    },
+    {
+     "step": 150,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      1,
+      4
+     ],
+     "direct_rx": 0.475
+    },
+    {
+     "step": 151,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      1,
+      4
+     ],
+     "direct_rx": 0.3
+    },
+    {
+     "step": 152,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      1,
+      4
+     ],
+     "direct_rx": 0.35
+    },
+    {
+     "step": 153,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      1,
+      4
+     ],
+     "direct_rx": 0.275
+    },
+    {
+     "step": 154,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      1,
+      4
+     ],
+     "direct_rx": 0.175
+    },
+    {
+     "step": 155,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      1,
+      4
+     ],
+     "direct_rx": 0.175
+    },
+    {
+     "step": 156,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      1,
+      4
+     ],
+     "direct_rx": 0.175
+    },
+    {
+     "step": 157,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      1,
+      4
+     ],
+     "direct_rx": 0.325
+    },
+    {
+     "step": 158,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      1,
+      4
+     ],
+     "direct_rx": 0.325
+    },
+    {
+     "step": 159,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      1,
+      4
+     ],
+     "direct_rx": 0.225
+    },
+    {
+     "step": 160,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      1,
+      4
+     ],
+     "direct_rx": 0.275
+    },
+    {
+     "step": 161,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      1,
+      4
+     ],
+     "direct_rx": 0.175
+    },
+    {
+     "step": 162,
+     "offered": 63,
+     "rx": 40,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.225
+    },
+    {
+     "step": 163,
+     "offered": 62,
+     "rx": 42,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.275
+    },
+    {
+     "step": 164,
+     "offered": 63,
+     "rx": 55,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.225
+    },
+    {
+     "step": 165,
+     "offered": 62,
+     "rx": 39,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.25
+    },
+    {
+     "step": 166,
+     "offered": 63,
+     "rx": 42,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.2
+    },
+    {
+     "step": 167,
+     "offered": 62,
+     "rx": 41,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.275
+    },
+    {
+     "step": 168,
+     "offered": 63,
+     "rx": 42,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.15
+    },
+    {
+     "step": 169,
+     "offered": 62,
+     "rx": 39,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.2
+    },
+    {
+     "step": 170,
+     "offered": 63,
+     "rx": 51,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.225
+    },
+    {
+     "step": 171,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.175
+    },
+    {
+     "step": 172,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.2
+    },
+    {
+     "step": 173,
+     "offered": 62,
+     "rx": 61,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.15
+    },
+    {
+     "step": 174,
+     "offered": 63,
+     "rx": 64,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.2
+    },
+    {
+     "step": 175,
+     "offered": 62,
+     "rx": 61,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.125
+    },
+    {
+     "step": 176,
+     "offered": 63,
+     "rx": 64,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.1
+    },
+    {
+     "step": 177,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.25
+    },
+    {
+     "step": 178,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.325
+    },
+    {
+     "step": 179,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.2
+    },
+    {
+     "step": 180,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.2
+    },
+    {
+     "step": 181,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.075
+    },
+    {
+     "step": 182,
+     "offered": 63,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.2
+    },
+    {
+     "step": 183,
+     "offered": 62,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.125
+    },
+    {
+     "step": 184,
+     "offered": 63,
+     "rx": 7,
+     "olsr_route": [],
+     "direct_rx": 0.15
+    },
+    {
+     "step": 185,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [],
+     "direct_rx": 0.05
+    },
+    {
+     "step": 186,
+     "offered": 63,
+     "rx": 97,
+     "olsr_route": [],
+     "direct_rx": 0.125
+    },
+    {
+     "step": 187,
+     "offered": 62,
+     "rx": 31,
+     "olsr_route": [],
+     "direct_rx": 0.2
+    },
+    {
+     "step": 188,
+     "offered": 63,
+     "rx": 23,
+     "olsr_route": [],
+     "direct_rx": 0.125
+    },
+    {
+     "step": 189,
+     "offered": 62,
+     "rx": 35,
+     "olsr_route": [],
+     "direct_rx": 0.15
+    },
+    {
+     "step": 190,
+     "offered": 63,
+     "rx": 21,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.15
+    },
+    {
+     "step": 191,
+     "offered": 62,
+     "rx": 91,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.225
+    },
+    {
+     "step": 192,
+     "offered": 63,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      1,
+      4
+     ],
+     "direct_rx": 0.25
+    },
+    {
+     "step": 193,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      1,
+      4
+     ],
+     "direct_rx": 0.075
+    },
+    {
+     "step": 194,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      1,
+      4
+     ],
+     "direct_rx": 0.075
+    },
+    {
+     "step": 195,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      1,
+      4
+     ],
+     "direct_rx": 0.15
+    },
+    {
+     "step": 196,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      1,
+      4
+     ],
+     "direct_rx": 0.075
+    },
+    {
+     "step": 197,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      1,
+      4
+     ],
+     "direct_rx": 0.125
+    },
+    {
+     "step": 198,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.2
+    },
+    {
+     "step": 199,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.15
+    },
+    {
+     "step": 200,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.2
+    },
+    {
+     "step": 201,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.05
+    },
+    {
+     "step": 202,
+     "offered": 63,
+     "rx": 60,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.2
+    },
+    {
+     "step": 203,
+     "offered": 62,
+     "rx": 65,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.125
+    },
+    {
+     "step": 204,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.075
+    },
+    {
+     "step": 205,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.1
+    },
+    {
+     "step": 206,
+     "offered": 63,
+     "rx": 23,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.05
+    },
+    {
+     "step": 207,
+     "offered": 62,
+     "rx": 21,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.125
+    },
+    {
+     "step": 208,
+     "offered": 63,
+     "rx": 16,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.05
+    },
+    {
+     "step": 209,
+     "offered": 62,
+     "rx": 17,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.025
+    },
+    {
+     "step": 210,
+     "offered": 63,
+     "rx": 19,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.075
+    },
+    {
+     "step": 211,
+     "offered": 62,
+     "rx": 17,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.075
+    },
+    {
+     "step": 212,
+     "offered": 63,
+     "rx": 71,
+     "olsr_route": [
+      0,
+      1,
+      4
+     ],
+     "direct_rx": 0.075
+    },
+    {
+     "step": 213,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      1,
+      4
+     ],
+     "direct_rx": 0.075
+    },
+    {
+     "step": 214,
+     "offered": 63,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      1,
+      4
+     ],
+     "direct_rx": 0.1
+    },
+    {
+     "step": 215,
+     "offered": 62,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      1,
+      4
+     ],
+     "direct_rx": 0.075
+    },
+    {
+     "step": 216,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      1,
+      4
+     ],
+     "direct_rx": 0.075
+    },
+    {
+     "step": 217,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      1,
+      4
+     ],
+     "direct_rx": 0.025
+    },
+    {
+     "step": 218,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      1,
+      4
+     ],
+     "direct_rx": 0.1
+    },
+    {
+     "step": 219,
+     "offered": 62,
+     "rx": 61,
+     "olsr_route": [
+      0,
+      1,
+      4
+     ],
+     "direct_rx": 0
+    },
+    {
+     "step": 220,
+     "offered": 63,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      1,
+      4
+     ],
+     "direct_rx": 0.05
+    },
+    {
+     "step": 221,
+     "offered": 62,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      1,
+      4
+     ],
+     "direct_rx": 0.05
+    },
+    {
+     "step": 222,
+     "offered": 63,
+     "rx": 60,
+     "olsr_route": [
+      0,
+      1,
+      4
+     ],
+     "direct_rx": 0.15
+    },
+    {
+     "step": 223,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      1,
+      4
+     ],
+     "direct_rx": 0.075
+    },
+    {
+     "step": 224,
+     "offered": 63,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      1,
+      4
+     ],
+     "direct_rx": 0.025
+    },
+    {
+     "step": 225,
+     "offered": 62,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      1,
+      4
+     ],
+     "direct_rx": 0.05
+    },
+    {
+     "step": 226,
+     "offered": 63,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.025
+    },
+    {
+     "step": 227,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.1
+    },
+    {
+     "step": 228,
+     "offered": 63,
+     "rx": 61,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0
+    },
+    {
+     "step": 229,
+     "offered": 62,
+     "rx": 57,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.025
+    },
+    {
+     "step": 230,
+     "offered": 63,
+     "rx": 61,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.025
+    },
+    {
+     "step": 231,
+     "offered": 62,
+     "rx": 66,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0
+    },
+    {
+     "step": 232,
+     "offered": 63,
+     "rx": 55,
+     "olsr_route": [
+      0,
+      1,
+      4
+     ],
+     "direct_rx": 0.05
+    },
+    {
+     "step": 233,
+     "offered": 62,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      1,
+      4
+     ],
+     "direct_rx": 0.025
+    },
+    {
+     "step": 234,
+     "offered": 63,
+     "rx": 67,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.05
+    },
+    {
+     "step": 235,
+     "offered": 62,
+     "rx": 61,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.025
+    },
+    {
+     "step": 236,
+     "offered": 63,
+     "rx": 60,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.025
+    },
+    {
+     "step": 237,
+     "offered": 62,
+     "rx": 61,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.05
+    },
+    {
+     "step": 238,
+     "offered": 63,
+     "rx": 61,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.025
+    },
+    {
+     "step": 239,
+     "offered": 62,
+     "rx": 65,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.05
+    },
+    {
+     "step": 240,
+     "offered": 63,
+     "rx": 64,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.025
+    }
+   ],
+   "route_commands": []
+  },
+  "lq-route": {
+   "trace_sha256": "2797ace3974918bf545d67016023905deb42d2e8179ae6710d3a73a00367c594",
+   "seconds": [
+    {
+     "step": 1,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.925
+    },
+    {
+     "step": 2,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.925
+    },
+    {
+     "step": 3,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.875
+    },
+    {
+     "step": 4,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.95
+    },
+    {
+     "step": 5,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.9
+    },
+    {
+     "step": 6,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.95
+    },
+    {
+     "step": 7,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.85
+    },
+    {
+     "step": 8,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.9
+    },
+    {
+     "step": 9,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.875
+    },
+    {
+     "step": 10,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.975
+    },
+    {
+     "step": 11,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.925
+    },
+    {
+     "step": 12,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.95
+    },
+    {
+     "step": 13,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.925
+    },
+    {
+     "step": 14,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.925
+    },
+    {
+     "step": 15,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.925
+    },
+    {
+     "step": 16,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.95
+    },
+    {
+     "step": 17,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.925
+    },
+    {
+     "step": 18,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.925
+    },
+    {
+     "step": 19,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.9
+    },
+    {
+     "step": 20,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.925
+    },
+    {
+     "step": 21,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.925
+    },
+    {
+     "step": 22,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.95
+    },
+    {
+     "step": 23,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.925
+    },
+    {
+     "step": 24,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.825
+    },
+    {
+     "step": 25,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.95
+    },
+    {
+     "step": 26,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.975
+    },
+    {
+     "step": 27,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.975
+    },
+    {
+     "step": 28,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.95
+    },
+    {
+     "step": 29,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.825
+    },
+    {
+     "step": 30,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.975
+    },
+    {
+     "step": 31,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.875
+    },
+    {
+     "step": 32,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.825
+    },
+    {
+     "step": 33,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.95
+    },
+    {
+     "step": 34,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.975
+    },
+    {
+     "step": 35,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.95
+    },
+    {
+     "step": 36,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.875
+    },
+    {
+     "step": 37,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 1
+    },
+    {
+     "step": 38,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.95
+    },
+    {
+     "step": 39,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.925
+    },
+    {
+     "step": 40,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.875
+    },
+    {
+     "step": 41,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.85
+    },
+    {
+     "step": 42,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.95
+    },
+    {
+     "step": 43,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.875
+    },
+    {
+     "step": 44,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.95
+    },
+    {
+     "step": 45,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.975
+    },
+    {
+     "step": 46,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.925
+    },
+    {
+     "step": 47,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.975
+    },
+    {
+     "step": 48,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 1
+    },
+    {
+     "step": 49,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.85
+    },
+    {
+     "step": 50,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.8
+    },
+    {
+     "step": 51,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.925
+    },
+    {
+     "step": 52,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.975
+    },
+    {
+     "step": 53,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 1
+    },
+    {
+     "step": 54,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.925
+    },
+    {
+     "step": 55,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.85
+    },
+    {
+     "step": 56,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.925
+    },
+    {
+     "step": 57,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.875
+    },
+    {
+     "step": 58,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.9
+    },
+    {
+     "step": 59,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.925
+    },
+    {
+     "step": 60,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.95
+    },
+    {
+     "step": 61,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.95
+    },
+    {
+     "step": 62,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.875
+    },
+    {
+     "step": 63,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.95
+    },
+    {
+     "step": 64,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.95
+    },
+    {
+     "step": 65,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.875
+    },
+    {
+     "step": 66,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.825
+    },
+    {
+     "step": 67,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.85
+    },
+    {
+     "step": 68,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.925
+    },
+    {
+     "step": 69,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.8
+    },
+    {
+     "step": 70,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.9
+    },
+    {
+     "step": 71,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.95
+    },
+    {
+     "step": 72,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 1
+    },
+    {
+     "step": 73,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.775
+    },
+    {
+     "step": 74,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.875
+    },
+    {
+     "step": 75,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.975
+    },
+    {
+     "step": 76,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.85
+    },
+    {
+     "step": 77,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.8
+    },
+    {
+     "step": 78,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.8
+    },
+    {
+     "step": 79,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.85
+    },
+    {
+     "step": 80,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.775
+    },
+    {
+     "step": 81,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.85
+    },
+    {
+     "step": 82,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.8
+    },
+    {
+     "step": 83,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.85
+    },
+    {
+     "step": 84,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.8
+    },
+    {
+     "step": 85,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.825
+    },
+    {
+     "step": 86,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.825
+    },
+    {
+     "step": 87,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.75
+    },
+    {
+     "step": 88,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.75
+    },
+    {
+     "step": 89,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.75
+    },
+    {
+     "step": 90,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.725
+    },
+    {
+     "step": 91,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.775
+    },
+    {
+     "step": 92,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.85
+    },
+    {
+     "step": 93,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.75
+    },
+    {
+     "step": 94,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.85
+    },
+    {
+     "step": 95,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.75
+    },
+    {
+     "step": 96,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.775
+    },
+    {
+     "step": 97,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.725
+    },
+    {
+     "step": 98,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.7
+    },
+    {
+     "step": 99,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.75
+    },
+    {
+     "step": 100,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.725
+    },
+    {
+     "step": 101,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.65
+    },
+    {
+     "step": 102,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.75
+    },
+    {
+     "step": 103,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.675
+    },
+    {
+     "step": 104,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.625
+    },
+    {
+     "step": 105,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.65
+    },
+    {
+     "step": 106,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.875
+    },
+    {
+     "step": 107,
+     "offered": 62,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.625
+    },
+    {
+     "step": 108,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.625
+    },
+    {
+     "step": 109,
+     "offered": 62,
+     "rx": 59,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.475
+    },
+    {
+     "step": 110,
+     "offered": 63,
+     "rx": 66,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.4
+    },
+    {
+     "step": 111,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.6
+    },
+    {
+     "step": 112,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.575
+    },
+    {
+     "step": 113,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.575
+    },
+    {
+     "step": 114,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.525
+    },
+    {
+     "step": 115,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.6
+    },
+    {
+     "step": 116,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.55
+    },
+    {
+     "step": 117,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.725
+    },
+    {
+     "step": 118,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.575
+    },
+    {
+     "step": 119,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.425
+    },
+    {
+     "step": 120,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.625
+    },
+    {
+     "step": 121,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.475
+    },
+    {
+     "step": 122,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.575
+    },
+    {
+     "step": 123,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.475
+    },
+    {
+     "step": 124,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.525
+    },
+    {
+     "step": 125,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.55
+    },
+    {
+     "step": 126,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.475
+    },
+    {
+     "step": 127,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.625
+    },
+    {
+     "step": 128,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.575
+    },
+    {
+     "step": 129,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.45
+    },
+    {
+     "step": 130,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.45
+    },
+    {
+     "step": 131,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.425
+    },
+    {
+     "step": 132,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.325
+    },
+    {
+     "step": 133,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.35
+    },
+    {
+     "step": 134,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.275
+    },
+    {
+     "step": 135,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.5
+    },
+    {
+     "step": 136,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.4
+    },
+    {
+     "step": 137,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.275
+    },
+    {
+     "step": 138,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.325
+    },
+    {
+     "step": 139,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.3
+    },
+    {
+     "step": 140,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.35
+    },
+    {
+     "step": 141,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.5
+    },
+    {
+     "step": 142,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.375
+    },
+    {
+     "step": 143,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.3
+    },
+    {
+     "step": 144,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.4
+    },
+    {
+     "step": 145,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.375
+    },
+    {
+     "step": 146,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.375
+    },
+    {
+     "step": 147,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.275
+    },
+    {
+     "step": 148,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.35
+    },
+    {
+     "step": 149,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.275
+    },
+    {
+     "step": 150,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.4
+    },
+    {
+     "step": 151,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.425
+    },
+    {
+     "step": 152,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.35
+    },
+    {
+     "step": 153,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.45
+    },
+    {
+     "step": 154,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.225
+    },
+    {
+     "step": 155,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.425
+    },
+    {
+     "step": 156,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.45
+    },
+    {
+     "step": 157,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.3
+    },
+    {
+     "step": 158,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.275
+    },
+    {
+     "step": 159,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.35
+    },
+    {
+     "step": 160,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.375
+    },
+    {
+     "step": 161,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.225
+    },
+    {
+     "step": 162,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.25
+    },
+    {
+     "step": 163,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.225
+    },
+    {
+     "step": 164,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.325
+    },
+    {
+     "step": 165,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.2
+    },
+    {
+     "step": 166,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.3
+    },
+    {
+     "step": 167,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.175
+    },
+    {
+     "step": 168,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.15
+    },
+    {
+     "step": 169,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.225
+    },
+    {
+     "step": 170,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.325
+    },
+    {
+     "step": 171,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.15
+    },
+    {
+     "step": 172,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.225
+    },
+    {
+     "step": 173,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.175
+    },
+    {
+     "step": 174,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.25
+    },
+    {
+     "step": 175,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.1
+    },
+    {
+     "step": 176,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.275
+    },
+    {
+     "step": 177,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.15
+    },
+    {
+     "step": 178,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.225
+    },
+    {
+     "step": 179,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.175
+    },
+    {
+     "step": 180,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.275
+    },
+    {
+     "step": 181,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.35
+    },
+    {
+     "step": 182,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.175
+    },
+    {
+     "step": 183,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.15
+    },
+    {
+     "step": 184,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.15
+    },
+    {
+     "step": 185,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.2
+    },
+    {
+     "step": 186,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.225
+    },
+    {
+     "step": 187,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.1
+    },
+    {
+     "step": 188,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.05
+    },
+    {
+     "step": 189,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.2
+    },
+    {
+     "step": 190,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.2
+    },
+    {
+     "step": 191,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.2
+    },
+    {
+     "step": 192,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.175
+    },
+    {
+     "step": 193,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.2
+    },
+    {
+     "step": 194,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.225
+    },
+    {
+     "step": 195,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.225
+    },
+    {
+     "step": 196,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.25
+    },
+    {
+     "step": 197,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.1
+    },
+    {
+     "step": 198,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.175
+    },
+    {
+     "step": 199,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.1
+    },
+    {
+     "step": 200,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.075
+    },
+    {
+     "step": 201,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.1
+    },
+    {
+     "step": 202,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.05
+    },
+    {
+     "step": 203,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.125
+    },
+    {
+     "step": 204,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.075
+    },
+    {
+     "step": 205,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.075
+    },
+    {
+     "step": 206,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.125
+    },
+    {
+     "step": 207,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.15
+    },
+    {
+     "step": 208,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      1,
+      4
+     ],
+     "direct_rx": 0.15
+    },
+    {
+     "step": 209,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      1,
+      4
+     ],
+     "direct_rx": 0.1
+    },
+    {
+     "step": 210,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      1,
+      4
+     ],
+     "direct_rx": 0.1
+    },
+    {
+     "step": 211,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      1,
+      4
+     ],
+     "direct_rx": 0.05
+    },
+    {
+     "step": 212,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      1,
+      4
+     ],
+     "direct_rx": 0.15
+    },
+    {
+     "step": 213,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      1,
+      4
+     ],
+     "direct_rx": 0.175
+    },
+    {
+     "step": 214,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      1,
+      4
+     ],
+     "direct_rx": 0.05
+    },
+    {
+     "step": 215,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      1,
+      4
+     ],
+     "direct_rx": 0.05
+    },
+    {
+     "step": 216,
+     "offered": 63,
+     "rx": 64,
+     "olsr_route": [
+      0,
+      1,
+      4
+     ],
+     "direct_rx": 0.125
+    },
+    {
+     "step": 217,
+     "offered": 62,
+     "rx": 61,
+     "olsr_route": [
+      0,
+      1,
+      4
+     ],
+     "direct_rx": 0.05
+    },
+    {
+     "step": 218,
+     "offered": 63,
+     "rx": 64,
+     "olsr_route": [],
+     "direct_rx": 0.125
+    },
+    {
+     "step": 219,
+     "offered": 62,
+     "rx": 61,
+     "olsr_route": [],
+     "direct_rx": 0.05
+    },
+    {
+     "step": 220,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [],
+     "direct_rx": 0.075
+    },
+    {
+     "step": 221,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [],
+     "direct_rx": 0.075
+    },
+    {
+     "step": 222,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.075
+    },
+    {
+     "step": 223,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.05
+    },
+    {
+     "step": 224,
+     "offered": 63,
+     "rx": 61,
+     "olsr_route": [
+      0,
+      1,
+      4
+     ],
+     "direct_rx": 0.075
+    },
+    {
+     "step": 225,
+     "offered": 62,
+     "rx": 64,
+     "olsr_route": [
+      0,
+      1,
+      4
+     ],
+     "direct_rx": 0.075
+    },
+    {
+     "step": 226,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      1,
+      4
+     ],
+     "direct_rx": 0.025
+    },
+    {
+     "step": 227,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      1,
+      4
+     ],
+     "direct_rx": 0.1
+    },
+    {
+     "step": 228,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.1
+    },
+    {
+     "step": 229,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.075
+    },
+    {
+     "step": 230,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.075
+    },
+    {
+     "step": 231,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0
+    },
+    {
+     "step": 232,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      3,
+      1,
+      4
+     ],
+     "direct_rx": 0.025
+    },
+    {
+     "step": 233,
+     "offered": 62,
+     "rx": 61,
+     "olsr_route": [
+      0,
+      3,
+      1,
+      4
+     ],
+     "direct_rx": 0.05
+    },
+    {
+     "step": 234,
+     "offered": 63,
+     "rx": 55,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.075
+    },
+    {
+     "step": 235,
+     "offered": 62,
+     "rx": 67,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0
+    },
+    {
+     "step": 236,
+     "offered": 63,
+     "rx": 55,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.025
+    },
+    {
+     "step": 237,
+     "offered": 62,
+     "rx": 65,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.075
+    },
+    {
+     "step": 238,
+     "offered": 63,
+     "rx": 64,
+     "olsr_route": [],
+     "direct_rx": 0
+    },
+    {
+     "step": 239,
+     "offered": 62,
+     "rx": 56,
+     "olsr_route": [],
+     "direct_rx": 0.075
+    },
+    {
+     "step": 240,
+     "offered": 63,
+     "rx": 65,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0
+    }
+   ],
+   "route_commands": [
+    {
+     "step": 110,
+     "reason": "engage",
+     "route": [
+      0,
+      2,
+      4
+     ]
+    },
+    {
+     "step": 212,
+     "reason": "release",
+     "route": []
+    },
+    {
+     "step": 214,
+     "reason": "engage",
+     "route": [
+      0,
+      2,
+      4
+     ]
+    },
+    {
+     "step": 225,
+     "reason": "switch",
+     "route": [
+      0,
+      1,
+      3,
+      4
+     ]
+    },
+    {
+     "step": 232,
+     "reason": "switch",
+     "route": [
+      0,
+      2,
+      4
+     ]
+    }
+   ]
+  },
+  "lq-route-restore": {
+   "trace_sha256": "63a9fd62a8cdf0385da72a40e55331cf4dc6211efb82dfe0374098055a231df5",
+   "seconds": [
+    {
+     "step": 1,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.925
+    },
+    {
+     "step": 2,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.925
+    },
+    {
+     "step": 3,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.875
+    },
+    {
+     "step": 4,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.95
+    },
+    {
+     "step": 5,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.9
+    },
+    {
+     "step": 6,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.95
+    },
+    {
+     "step": 7,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.85
+    },
+    {
+     "step": 8,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.9
+    },
+    {
+     "step": 9,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.875
+    },
+    {
+     "step": 10,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.975
+    },
+    {
+     "step": 11,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.925
+    },
+    {
+     "step": 12,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.95
+    },
+    {
+     "step": 13,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.925
+    },
+    {
+     "step": 14,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.925
+    },
+    {
+     "step": 15,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.925
+    },
+    {
+     "step": 16,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.95
+    },
+    {
+     "step": 17,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.925
+    },
+    {
+     "step": 18,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.925
+    },
+    {
+     "step": 19,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.9
+    },
+    {
+     "step": 20,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.925
+    },
+    {
+     "step": 21,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.925
+    },
+    {
+     "step": 22,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.95
+    },
+    {
+     "step": 23,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.925
+    },
+    {
+     "step": 24,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.825
+    },
+    {
+     "step": 25,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.95
+    },
+    {
+     "step": 26,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.975
+    },
+    {
+     "step": 27,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.975
+    },
+    {
+     "step": 28,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.95
+    },
+    {
+     "step": 29,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.825
+    },
+    {
+     "step": 30,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.975
+    },
+    {
+     "step": 31,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.875
+    },
+    {
+     "step": 32,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.825
+    },
+    {
+     "step": 33,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.95
+    },
+    {
+     "step": 34,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.975
+    },
+    {
+     "step": 35,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.95
+    },
+    {
+     "step": 36,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.875
+    },
+    {
+     "step": 37,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 1
+    },
+    {
+     "step": 38,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.95
+    },
+    {
+     "step": 39,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.925
+    },
+    {
+     "step": 40,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.875
+    },
+    {
+     "step": 41,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.85
+    },
+    {
+     "step": 42,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.95
+    },
+    {
+     "step": 43,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.875
+    },
+    {
+     "step": 44,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.95
+    },
+    {
+     "step": 45,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.975
+    },
+    {
+     "step": 46,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.925
+    },
+    {
+     "step": 47,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.975
+    },
+    {
+     "step": 48,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 1
+    },
+    {
+     "step": 49,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.85
+    },
+    {
+     "step": 50,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.8
+    },
+    {
+     "step": 51,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.925
+    },
+    {
+     "step": 52,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.975
+    },
+    {
+     "step": 53,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 1
+    },
+    {
+     "step": 54,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.925
+    },
+    {
+     "step": 55,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.85
+    },
+    {
+     "step": 56,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.925
+    },
+    {
+     "step": 57,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.875
+    },
+    {
+     "step": 58,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.9
+    },
+    {
+     "step": 59,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.925
+    },
+    {
+     "step": 60,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.95
+    },
+    {
+     "step": 61,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.95
+    },
+    {
+     "step": 62,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.875
+    },
+    {
+     "step": 63,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.95
+    },
+    {
+     "step": 64,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.95
+    },
+    {
+     "step": 65,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.875
+    },
+    {
+     "step": 66,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.825
+    },
+    {
+     "step": 67,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.85
+    },
+    {
+     "step": 68,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.925
+    },
+    {
+     "step": 69,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.8
+    },
+    {
+     "step": 70,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.9
+    },
+    {
+     "step": 71,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.95
+    },
+    {
+     "step": 72,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 1
+    },
+    {
+     "step": 73,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.775
+    },
+    {
+     "step": 74,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.875
+    },
+    {
+     "step": 75,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.975
+    },
+    {
+     "step": 76,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.85
+    },
+    {
+     "step": 77,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.825
+    },
+    {
+     "step": 78,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.75
+    },
+    {
+     "step": 79,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.875
+    },
+    {
+     "step": 80,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.85
+    },
+    {
+     "step": 81,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.775
+    },
+    {
+     "step": 82,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.875
+    },
+    {
+     "step": 83,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.825
+    },
+    {
+     "step": 84,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.875
+    },
+    {
+     "step": 85,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.7
+    },
+    {
+     "step": 86,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.725
+    },
+    {
+     "step": 87,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.875
+    },
+    {
+     "step": 88,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.825
+    },
+    {
+     "step": 89,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.675
+    },
+    {
+     "step": 90,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.85
+    },
+    {
+     "step": 91,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.9
+    },
+    {
+     "step": 92,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.8
+    },
+    {
+     "step": 93,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.775
+    },
+    {
+     "step": 94,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.775
+    },
+    {
+     "step": 95,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.725
+    },
+    {
+     "step": 96,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.65
+    },
+    {
+     "step": 97,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.8
+    },
+    {
+     "step": 98,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.8
+    },
+    {
+     "step": 99,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.725
+    },
+    {
+     "step": 100,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.625
+    },
+    {
+     "step": 101,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.775
+    },
+    {
+     "step": 102,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.675
+    },
+    {
+     "step": 103,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.675
+    },
+    {
+     "step": 104,
+     "offered": 63,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.675
+    },
+    {
+     "step": 105,
+     "offered": 62,
+     "rx": 0,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.7
+    },
+    {
+     "step": 106,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.5
+    },
+    {
+     "step": 107,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.55
+    },
+    {
+     "step": 108,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.7
+    },
+    {
+     "step": 109,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.625
+    },
+    {
+     "step": 110,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.625
+    },
+    {
+     "step": 111,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.55
+    },
+    {
+     "step": 112,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.5
+    },
+    {
+     "step": 113,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.575
+    },
+    {
+     "step": 114,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.475
+    },
+    {
+     "step": 115,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.35
+    },
+    {
+     "step": 116,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.5
+    },
+    {
+     "step": 117,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.5
+    },
+    {
+     "step": 118,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.35
+    },
+    {
+     "step": 119,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.575
+    },
+    {
+     "step": 120,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.5
+    },
+    {
+     "step": 121,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.5
+    },
+    {
+     "step": 122,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.45
+    },
+    {
+     "step": 123,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.375
+    },
+    {
+     "step": 124,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.45
+    },
+    {
+     "step": 125,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.45
+    },
+    {
+     "step": 126,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.45
+    },
+    {
+     "step": 127,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.375
+    },
+    {
+     "step": 128,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.4
+    },
+    {
+     "step": 129,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.5
+    },
+    {
+     "step": 130,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.5
+    },
+    {
+     "step": 131,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.325
+    },
+    {
+     "step": 132,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.5
+    },
+    {
+     "step": 133,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.45
+    },
+    {
+     "step": 134,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.275
+    },
+    {
+     "step": 135,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.525
+    },
+    {
+     "step": 136,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.4
+    },
+    {
+     "step": 137,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.45
+    },
+    {
+     "step": 138,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.375
+    },
+    {
+     "step": 139,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.3
+    },
+    {
+     "step": 140,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.35
+    },
+    {
+     "step": 141,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.35
+    },
+    {
+     "step": 142,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.3
+    },
+    {
+     "step": 143,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.4
+    },
+    {
+     "step": 144,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.35
+    },
+    {
+     "step": 145,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.3
+    },
+    {
+     "step": 146,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.175
+    },
+    {
+     "step": 147,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.25
+    },
+    {
+     "step": 148,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.3
+    },
+    {
+     "step": 149,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.325
+    },
+    {
+     "step": 150,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.375
+    },
+    {
+     "step": 151,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.325
+    },
+    {
+     "step": 152,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.225
+    },
+    {
+     "step": 153,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.325
+    },
+    {
+     "step": 154,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.5
+    },
+    {
+     "step": 155,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.25
+    },
+    {
+     "step": 156,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.225
+    },
+    {
+     "step": 157,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.275
+    },
+    {
+     "step": 158,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.275
+    },
+    {
+     "step": 159,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.2
+    },
+    {
+     "step": 160,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.3
+    },
+    {
+     "step": 161,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.175
+    },
+    {
+     "step": 162,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.275
+    },
+    {
+     "step": 163,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.225
+    },
+    {
+     "step": 164,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.25
+    },
+    {
+     "step": 165,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.15
+    },
+    {
+     "step": 166,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.225
+    },
+    {
+     "step": 167,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      4
+     ],
+     "direct_rx": 0.225
+    },
+    {
+     "step": 168,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.275
+    },
+    {
+     "step": 169,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.15
+    },
+    {
+     "step": 170,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.275
+    },
+    {
+     "step": 171,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.2
+    },
+    {
+     "step": 172,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.15
+    },
+    {
+     "step": 173,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.225
+    },
+    {
+     "step": 174,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.15
+    },
+    {
+     "step": 175,
+     "offered": 62,
+     "rx": 60,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.075
+    },
+    {
+     "step": 176,
+     "offered": 63,
+     "rx": 65,
+     "olsr_route": [],
+     "direct_rx": 0.25
+    },
+    {
+     "step": 177,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [],
+     "direct_rx": 0.2
+    },
+    {
+     "step": 178,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [],
+     "direct_rx": 0.2
+    },
+    {
+     "step": 179,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [],
+     "direct_rx": 0.15
+    },
+    {
+     "step": 180,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.15
+    },
+    {
+     "step": 181,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.125
+    },
+    {
+     "step": 182,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.2
+    },
+    {
+     "step": 183,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.15
+    },
+    {
+     "step": 184,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.275
+    },
+    {
+     "step": 185,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.225
+    },
+    {
+     "step": 186,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.2
+    },
+    {
+     "step": 187,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.225
+    },
+    {
+     "step": 188,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.275
+    },
+    {
+     "step": 189,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.025
+    },
+    {
+     "step": 190,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.075
+    },
+    {
+     "step": 191,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.125
+    },
+    {
+     "step": 192,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.15
+    },
+    {
+     "step": 193,
+     "offered": 62,
+     "rx": 61,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.125
+    },
+    {
+     "step": 194,
+     "offered": 63,
+     "rx": 64,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.175
+    },
+    {
+     "step": 195,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.075
+    },
+    {
+     "step": 196,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.2
+    },
+    {
+     "step": 197,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.1
+    },
+    {
+     "step": 198,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.125
+    },
+    {
+     "step": 199,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.1
+    },
+    {
+     "step": 200,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.125
+    },
+    {
+     "step": 201,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.05
+    },
+    {
+     "step": 202,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.05
+    },
+    {
+     "step": 203,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.15
+    },
+    {
+     "step": 204,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.075
+    },
+    {
+     "step": 205,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.075
+    },
+    {
+     "step": 206,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.1
+    },
+    {
+     "step": 207,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.1
+    },
+    {
+     "step": 208,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.05
+    },
+    {
+     "step": 209,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.05
+    },
+    {
+     "step": 210,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.1
+    },
+    {
+     "step": 211,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.125
+    },
+    {
+     "step": 212,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      1,
+      4
+     ],
+     "direct_rx": 0.1
+    },
+    {
+     "step": 213,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      1,
+      4
+     ],
+     "direct_rx": 0.15
+    },
+    {
+     "step": 214,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      1,
+      4
+     ],
+     "direct_rx": 0.025
+    },
+    {
+     "step": 215,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      1,
+      4
+     ],
+     "direct_rx": 0
+    },
+    {
+     "step": 216,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.075
+    },
+    {
+     "step": 217,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.025
+    },
+    {
+     "step": 218,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.05
+    },
+    {
+     "step": 219,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.075
+    },
+    {
+     "step": 220,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.075
+    },
+    {
+     "step": 221,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.025
+    },
+    {
+     "step": 222,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.125
+    },
+    {
+     "step": 223,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.05
+    },
+    {
+     "step": 224,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.125
+    },
+    {
+     "step": 225,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0
+    },
+    {
+     "step": 226,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.025
+    },
+    {
+     "step": 227,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.025
+    },
+    {
+     "step": 228,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.125
+    },
+    {
+     "step": 229,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.075
+    },
+    {
+     "step": 230,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.1
+    },
+    {
+     "step": 231,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      2,
+      4
+     ],
+     "direct_rx": 0.1
+    },
+    {
+     "step": 232,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.025
+    },
+    {
+     "step": 233,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.025
+    },
+    {
+     "step": 234,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.05
+    },
+    {
+     "step": 235,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.025
+    },
+    {
+     "step": 236,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.05
+    },
+    {
+     "step": 237,
+     "offered": 62,
+     "rx": 62,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.05
+    },
+    {
+     "step": 238,
+     "offered": 63,
+     "rx": 61,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.05
+    },
+    {
+     "step": 239,
+     "offered": 62,
+     "rx": 64,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.075
+    },
+    {
+     "step": 240,
+     "offered": 63,
+     "rx": 63,
+     "olsr_route": [
+      0,
+      3,
+      4
+     ],
+     "direct_rx": 0.05
+    }
+   ],
+   "route_commands": [
+    {
+     "step": 114,
+     "reason": "engage",
+     "route": [
+      0,
+      2,
+      4
+     ]
+    },
+    {
+     "step": 205,
+     "reason": "switch",
+     "route": [
+      0,
+      1,
+      3,
+      4
+     ]
+    }
+   ]
+  }
+ }
+}

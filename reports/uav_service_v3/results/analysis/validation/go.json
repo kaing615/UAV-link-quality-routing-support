@@ -1,0 +1,20 @@
+{
+  "criteria": {
+    "motion_not_above_v2": {
+      "passed": true,
+      "value": -15.87843661814583
+    },
+    "pdr_not_worse_than_margin": {
+      "margin": -0.005,
+      "passed": true,
+      "value": -0.0028250000000000124
+    },
+    "spearman_positive": {
+      "passed": false,
+      "value": -0.19226360487592742
+    }
+  },
+  "go": false,
+  "schema": "service-v3-go-v1",
+  "validation_freeze_sha256": "e49bf9d2d8bf4b1b02d0394b69085d8d8f4eec54bf7c8301110120fc95d7baba"
+}

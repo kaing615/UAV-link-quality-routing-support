@@ -1,6 +1,6 @@
 # Protocol v4: điều khiển route theo chất lượng link
 
-Trạng thái: **đăng ký trước, chưa freeze, chưa chạy** (2026-11-21). Tài liệu này được viết sau kết quả âm của v2
+Trạng thái: **đã chạy xong (2026-11-22).** Tuning 128/128 (chọn m = 1,0), validation 128/128 (go = true), test 192/192: lq-route − hold = +4,18 điểm % (CI 95% [1,14; 6,36]), cả 3 bước kiểm định đạt, toàn vẹn route 96/96. Kết quả đã khóa: `reports/uav_service_v4/results/`; báo cáo: `reports/nckh_final/main.pdf`. Phần dưới đây là bản đăng ký trước (2026-11-21), giữ nguyên. Tài liệu này được viết sau kết quả âm của v2
 và v3 và sau phần [chẩn đoán](../reports/uav_service_v3/diagnosis/README.md), trước mọi lần chạy v4.
 Mọi thay đổi sau khi chạy tuning phải ghi thành bản sửa đổi có ngày và lý do.
 

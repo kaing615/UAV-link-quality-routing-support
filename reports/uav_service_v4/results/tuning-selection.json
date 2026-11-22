@@ -1,0 +1,1001 @@
+{
+  "chosen_arm": "lq-route-m10",
+  "margin": 1.0,
+  "margins": [
+    {
+      "arm": "lq-route-m0",
+      "ci95": [
+        0.03777749999999999,
+        0.08381718749999996
+      ],
+      "comparator": "hold",
+      "margin": 0.0,
+      "metric": "actual_udp_pdr",
+      "point": 0.061841666666666656,
+      "regimes": {
+        "n4": {
+          "complete": 8,
+          "missing_sensitivity": [
+            0.07390833333333333,
+            0.07390833333333333
+          ],
+          "planned": 8,
+          "point": 0.07390833333333333
+        },
+        "n5": {
+          "complete": 8,
+          "missing_sensitivity": [
+            0.04977499999999999,
+            0.04977499999999999
+          ],
+          "planned": 8,
+          "point": 0.04977499999999999
+        }
+      }
+    },
+    {
+      "arm": "lq-route-m05",
+      "ci95": [
+        0.03669906250000002,
+        0.08937916666666668
+      ],
+      "comparator": "hold",
+      "margin": 0.5,
+      "metric": "actual_udp_pdr",
+      "point": 0.06701666666666668,
+      "regimes": {
+        "n4": {
+          "complete": 8,
+          "missing_sensitivity": [
+            0.07324166666666669,
+            0.07324166666666669
+          ],
+          "planned": 8,
+          "point": 0.07324166666666669
+        },
+        "n5": {
+          "complete": 8,
+          "missing_sensitivity": [
+            0.06079166666666668,
+            0.06079166666666668
+          ],
+          "planned": 8,
+          "point": 0.06079166666666668
+        }
+      }
+    },
+    {
+      "arm": "lq-route-m10",
+      "ci95": [
+        0.06104989583333336,
+        0.08772500000000003
+      ],
+      "comparator": "hold",
+      "margin": 1.0,
+      "metric": "actual_udp_pdr",
+      "point": 0.07433750000000001,
+      "regimes": {
+        "n4": {
+          "complete": 8,
+          "missing_sensitivity": [
+            0.06965833333333335,
+            0.06965833333333335
+          ],
+          "planned": 8,
+          "point": 0.06965833333333335
+        },
+        "n5": {
+          "complete": 8,
+          "missing_sensitivity": [
+            0.07901666666666668,
+            0.07901666666666668
+          ],
+          "planned": 8,
+          "point": 0.07901666666666668
+        }
+      }
+    }
+  ],
+  "predictor_sha256": "719816f80b9df51c5544422522265e50bd454768869523036a8b8f4b1c657c10",
+  "route_integrity": {
+    "tuning-n4-gradual-01__hold": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n4-gradual-01__lq-route-m0": {
+      "applied_changes": 26,
+      "commanded_changes": 26,
+      "ok": true,
+      "override_seconds": 142,
+      "simulator_total": 26
+    },
+    "tuning-n4-gradual-01__lq-route-m05": {
+      "applied_changes": 10,
+      "commanded_changes": 10,
+      "ok": true,
+      "override_seconds": 141,
+      "simulator_total": 10
+    },
+    "tuning-n4-gradual-01__lq-route-m10": {
+      "applied_changes": 8,
+      "commanded_changes": 8,
+      "ok": true,
+      "override_seconds": 131,
+      "simulator_total": 8
+    },
+    "tuning-n4-gradual-02__hold": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n4-gradual-02__lq-route-m0": {
+      "applied_changes": 32,
+      "commanded_changes": 32,
+      "ok": true,
+      "override_seconds": 131,
+      "simulator_total": 32
+    },
+    "tuning-n4-gradual-02__lq-route-m05": {
+      "applied_changes": 8,
+      "commanded_changes": 8,
+      "ok": true,
+      "override_seconds": 123,
+      "simulator_total": 8
+    },
+    "tuning-n4-gradual-02__lq-route-m10": {
+      "applied_changes": 9,
+      "commanded_changes": 9,
+      "ok": true,
+      "override_seconds": 125,
+      "simulator_total": 9
+    },
+    "tuning-n4-gradual-03__hold": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n4-gradual-03__lq-route-m0": {
+      "applied_changes": 29,
+      "commanded_changes": 29,
+      "ok": true,
+      "override_seconds": 143,
+      "simulator_total": 29
+    },
+    "tuning-n4-gradual-03__lq-route-m05": {
+      "applied_changes": 10,
+      "commanded_changes": 10,
+      "ok": true,
+      "override_seconds": 129,
+      "simulator_total": 10
+    },
+    "tuning-n4-gradual-03__lq-route-m10": {
+      "applied_changes": 5,
+      "commanded_changes": 5,
+      "ok": true,
+      "override_seconds": 123,
+      "simulator_total": 5
+    },
+    "tuning-n4-gradual-04__hold": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n4-gradual-04__lq-route-m0": {
+      "applied_changes": 29,
+      "commanded_changes": 29,
+      "ok": true,
+      "override_seconds": 128,
+      "simulator_total": 29
+    },
+    "tuning-n4-gradual-04__lq-route-m05": {
+      "applied_changes": 8,
+      "commanded_changes": 8,
+      "ok": true,
+      "override_seconds": 127,
+      "simulator_total": 8
+    },
+    "tuning-n4-gradual-04__lq-route-m10": {
+      "applied_changes": 8,
+      "commanded_changes": 8,
+      "ok": true,
+      "override_seconds": 127,
+      "simulator_total": 8
+    },
+    "tuning-n4-gradual-05__hold": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n4-gradual-05__lq-route-m0": {
+      "applied_changes": 30,
+      "commanded_changes": 30,
+      "ok": true,
+      "override_seconds": 137,
+      "simulator_total": 30
+    },
+    "tuning-n4-gradual-05__lq-route-m05": {
+      "applied_changes": 11,
+      "commanded_changes": 11,
+      "ok": true,
+      "override_seconds": 140,
+      "simulator_total": 11
+    },
+    "tuning-n4-gradual-05__lq-route-m10": {
+      "applied_changes": 7,
+      "commanded_changes": 7,
+      "ok": true,
+      "override_seconds": 137,
+      "simulator_total": 7
+    },
+    "tuning-n4-gradual-06__hold": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n4-gradual-06__lq-route-m0": {
+      "applied_changes": 23,
+      "commanded_changes": 23,
+      "ok": true,
+      "override_seconds": 125,
+      "simulator_total": 23
+    },
+    "tuning-n4-gradual-06__lq-route-m05": {
+      "applied_changes": 11,
+      "commanded_changes": 11,
+      "ok": true,
+      "override_seconds": 130,
+      "simulator_total": 11
+    },
+    "tuning-n4-gradual-06__lq-route-m10": {
+      "applied_changes": 5,
+      "commanded_changes": 5,
+      "ok": true,
+      "override_seconds": 131,
+      "simulator_total": 5
+    },
+    "tuning-n4-gradual-07__hold": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n4-gradual-07__lq-route-m0": {
+      "applied_changes": 22,
+      "commanded_changes": 22,
+      "ok": true,
+      "override_seconds": 119,
+      "simulator_total": 22
+    },
+    "tuning-n4-gradual-07__lq-route-m05": {
+      "applied_changes": 10,
+      "commanded_changes": 10,
+      "ok": true,
+      "override_seconds": 108,
+      "simulator_total": 10
+    },
+    "tuning-n4-gradual-07__lq-route-m10": {
+      "applied_changes": 5,
+      "commanded_changes": 5,
+      "ok": true,
+      "override_seconds": 126,
+      "simulator_total": 5
+    },
+    "tuning-n4-gradual-08__hold": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n4-gradual-08__lq-route-m0": {
+      "applied_changes": 34,
+      "commanded_changes": 34,
+      "ok": true,
+      "override_seconds": 142,
+      "simulator_total": 34
+    },
+    "tuning-n4-gradual-08__lq-route-m05": {
+      "applied_changes": 18,
+      "commanded_changes": 18,
+      "ok": true,
+      "override_seconds": 120,
+      "simulator_total": 18
+    },
+    "tuning-n4-gradual-08__lq-route-m10": {
+      "applied_changes": 8,
+      "commanded_changes": 8,
+      "ok": true,
+      "override_seconds": 131,
+      "simulator_total": 8
+    },
+    "tuning-n4-static-01__hold": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n4-static-01__lq-route-m0": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n4-static-01__lq-route-m05": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n4-static-01__lq-route-m10": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n4-static-02__hold": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n4-static-02__lq-route-m0": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n4-static-02__lq-route-m05": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n4-static-02__lq-route-m10": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n4-static-03__hold": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n4-static-03__lq-route-m0": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n4-static-03__lq-route-m05": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n4-static-03__lq-route-m10": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n4-static-04__hold": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n4-static-04__lq-route-m0": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n4-static-04__lq-route-m05": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n4-static-04__lq-route-m10": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n4-static-05__hold": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n4-static-05__lq-route-m0": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n4-static-05__lq-route-m05": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n4-static-05__lq-route-m10": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n4-static-06__hold": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n4-static-06__lq-route-m0": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n4-static-06__lq-route-m05": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n4-static-06__lq-route-m10": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n4-static-07__hold": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n4-static-07__lq-route-m0": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n4-static-07__lq-route-m05": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n4-static-07__lq-route-m10": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n4-static-08__hold": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n4-static-08__lq-route-m0": {
+      "applied_changes": 2,
+      "commanded_changes": 2,
+      "ok": true,
+      "override_seconds": 5,
+      "simulator_total": 2
+    },
+    "tuning-n4-static-08__lq-route-m05": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n4-static-08__lq-route-m10": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n5-gradual-01__hold": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n5-gradual-01__lq-route-m0": {
+      "applied_changes": 25,
+      "commanded_changes": 25,
+      "ok": true,
+      "override_seconds": 124,
+      "simulator_total": 25
+    },
+    "tuning-n5-gradual-01__lq-route-m05": {
+      "applied_changes": 11,
+      "commanded_changes": 11,
+      "ok": true,
+      "override_seconds": 131,
+      "simulator_total": 11
+    },
+    "tuning-n5-gradual-01__lq-route-m10": {
+      "applied_changes": 6,
+      "commanded_changes": 6,
+      "ok": true,
+      "override_seconds": 128,
+      "simulator_total": 6
+    },
+    "tuning-n5-gradual-02__hold": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n5-gradual-02__lq-route-m0": {
+      "applied_changes": 27,
+      "commanded_changes": 27,
+      "ok": true,
+      "override_seconds": 133,
+      "simulator_total": 27
+    },
+    "tuning-n5-gradual-02__lq-route-m05": {
+      "applied_changes": 11,
+      "commanded_changes": 11,
+      "ok": true,
+      "override_seconds": 138,
+      "simulator_total": 11
+    },
+    "tuning-n5-gradual-02__lq-route-m10": {
+      "applied_changes": 9,
+      "commanded_changes": 9,
+      "ok": true,
+      "override_seconds": 136,
+      "simulator_total": 9
+    },
+    "tuning-n5-gradual-03__hold": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n5-gradual-03__lq-route-m0": {
+      "applied_changes": 34,
+      "commanded_changes": 34,
+      "ok": true,
+      "override_seconds": 144,
+      "simulator_total": 34
+    },
+    "tuning-n5-gradual-03__lq-route-m05": {
+      "applied_changes": 20,
+      "commanded_changes": 20,
+      "ok": true,
+      "override_seconds": 114,
+      "simulator_total": 20
+    },
+    "tuning-n5-gradual-03__lq-route-m10": {
+      "applied_changes": 9,
+      "commanded_changes": 9,
+      "ok": true,
+      "override_seconds": 132,
+      "simulator_total": 9
+    },
+    "tuning-n5-gradual-04__hold": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n5-gradual-04__lq-route-m0": {
+      "applied_changes": 27,
+      "commanded_changes": 27,
+      "ok": true,
+      "override_seconds": 146,
+      "simulator_total": 27
+    },
+    "tuning-n5-gradual-04__lq-route-m05": {
+      "applied_changes": 15,
+      "commanded_changes": 15,
+      "ok": true,
+      "override_seconds": 127,
+      "simulator_total": 15
+    },
+    "tuning-n5-gradual-04__lq-route-m10": {
+      "applied_changes": 11,
+      "commanded_changes": 11,
+      "ok": true,
+      "override_seconds": 140,
+      "simulator_total": 11
+    },
+    "tuning-n5-gradual-05__hold": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n5-gradual-05__lq-route-m0": {
+      "applied_changes": 25,
+      "commanded_changes": 25,
+      "ok": true,
+      "override_seconds": 151,
+      "simulator_total": 25
+    },
+    "tuning-n5-gradual-05__lq-route-m05": {
+      "applied_changes": 19,
+      "commanded_changes": 19,
+      "ok": true,
+      "override_seconds": 108,
+      "simulator_total": 19
+    },
+    "tuning-n5-gradual-05__lq-route-m10": {
+      "applied_changes": 10,
+      "commanded_changes": 10,
+      "ok": true,
+      "override_seconds": 121,
+      "simulator_total": 10
+    },
+    "tuning-n5-gradual-06__hold": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n5-gradual-06__lq-route-m0": {
+      "applied_changes": 28,
+      "commanded_changes": 28,
+      "ok": true,
+      "override_seconds": 128,
+      "simulator_total": 28
+    },
+    "tuning-n5-gradual-06__lq-route-m05": {
+      "applied_changes": 10,
+      "commanded_changes": 10,
+      "ok": true,
+      "override_seconds": 128,
+      "simulator_total": 10
+    },
+    "tuning-n5-gradual-06__lq-route-m10": {
+      "applied_changes": 7,
+      "commanded_changes": 7,
+      "ok": true,
+      "override_seconds": 115,
+      "simulator_total": 7
+    },
+    "tuning-n5-gradual-07__hold": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n5-gradual-07__lq-route-m0": {
+      "applied_changes": 32,
+      "commanded_changes": 32,
+      "ok": true,
+      "override_seconds": 145,
+      "simulator_total": 32
+    },
+    "tuning-n5-gradual-07__lq-route-m05": {
+      "applied_changes": 22,
+      "commanded_changes": 22,
+      "ok": true,
+      "override_seconds": 135,
+      "simulator_total": 22
+    },
+    "tuning-n5-gradual-07__lq-route-m10": {
+      "applied_changes": 9,
+      "commanded_changes": 9,
+      "ok": true,
+      "override_seconds": 136,
+      "simulator_total": 9
+    },
+    "tuning-n5-gradual-08__hold": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n5-gradual-08__lq-route-m0": {
+      "applied_changes": 31,
+      "commanded_changes": 31,
+      "ok": true,
+      "override_seconds": 149,
+      "simulator_total": 31
+    },
+    "tuning-n5-gradual-08__lq-route-m05": {
+      "applied_changes": 17,
+      "commanded_changes": 17,
+      "ok": true,
+      "override_seconds": 139,
+      "simulator_total": 17
+    },
+    "tuning-n5-gradual-08__lq-route-m10": {
+      "applied_changes": 13,
+      "commanded_changes": 13,
+      "ok": true,
+      "override_seconds": 147,
+      "simulator_total": 13
+    },
+    "tuning-n5-static-01__hold": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n5-static-01__lq-route-m0": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n5-static-01__lq-route-m05": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n5-static-01__lq-route-m10": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n5-static-02__hold": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n5-static-02__lq-route-m0": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n5-static-02__lq-route-m05": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n5-static-02__lq-route-m10": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n5-static-03__hold": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n5-static-03__lq-route-m0": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n5-static-03__lq-route-m05": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n5-static-03__lq-route-m10": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n5-static-04__hold": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n5-static-04__lq-route-m0": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n5-static-04__lq-route-m05": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n5-static-04__lq-route-m10": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n5-static-05__hold": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n5-static-05__lq-route-m0": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n5-static-05__lq-route-m05": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n5-static-05__lq-route-m10": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n5-static-06__hold": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n5-static-06__lq-route-m0": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n5-static-06__lq-route-m05": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n5-static-06__lq-route-m10": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n5-static-07__hold": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n5-static-07__lq-route-m0": {
+      "applied_changes": 2,
+      "commanded_changes": 2,
+      "ok": true,
+      "override_seconds": 5,
+      "simulator_total": 2
+    },
+    "tuning-n5-static-07__lq-route-m05": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n5-static-07__lq-route-m10": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n5-static-08__hold": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n5-static-08__lq-route-m0": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n5-static-08__lq-route-m05": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    },
+    "tuning-n5-static-08__lq-route-m10": {
+      "applied_changes": 0,
+      "commanded_changes": 0,
+      "ok": true,
+      "override_seconds": 0,
+      "simulator_total": 0
+    }
+  },
+  "rule": "max pooled gradual PDR(arm) - PDR(hold); tie -> larger margin",
+  "schema": "service-v4-tuning-selection-v1",
+  "tuning_freeze_sha256": "5a2b11c444f7e56ebbff00ecac5282f78c5db4f63e87fd571db19f99ae5256b6"
+}

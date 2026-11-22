@@ -79,3 +79,16 @@ reports/uav_service_prevention_v2_2026-11-12/*
 reports/uav_service_prevention_v2_2026-11-12/final/*
 !reports/uav_service_prevention_v2_2026-11-12/final/editorial-v001/
 reports/uav_service_prevention_v2_2026-11-12/final/editorial-v001/tables/
+
+# NCKH final report: keep figures/logo/PDF, drop LaTeX build files
+!reports/nckh_final/images/*.png
+!reports/nckh_final/assets/*.jpeg
+reports/nckh_final/*.aux
+reports/nckh_final/*.log
+reports/nckh_final/*.toc
+reports/nckh_final/*.out
+reports/nckh_final/*.lof
+reports/nckh_final/*.lot
+reports/nckh_final/*.xdv
+reports/nckh_final/*.fls
+reports/nckh_final/*.fdb_latexmk

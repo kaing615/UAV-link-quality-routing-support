@@ -1,6 +1,6 @@
 # Protocol v3: dự báo suy giảm + cổng giá trị hành động
 
-Trạng thái: **đăng ký trước, chưa freeze, chưa chạy.** Tài liệu này được viết
+Trạng thái: **đã chạy và dừng theo protocol (2026-11-20).** Tuning 96/96, validation 160/160 hợp lệ; go = false vì Spearman = −0,19 (tiêu chí 5.1), nên không freeze test. Kết quả đã khóa: `reports/uav_service_v3/results/`. Phần dưới đây là bản đăng ký trước, giữ nguyên. Tài liệu này được viết
 sau khi đã biết kết quả formal v2 (âm), trước mọi lần chạy v3. Mọi thay đổi
 sau khi chạy tuning phải ghi thành bản sửa đổi có ngày và lý do.
 

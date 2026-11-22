@@ -1,0 +1,531 @@
+% Bao cao tong ket NCKH sinh vien 2026 -- bien dich bang XeLaTeX (latexmk -xelatex main.tex).
+% Hinh trong images/ duoc tao bang: python scripts/analysis/make_nckh_figures.py
+\documentclass[12pt,a4paper]{report}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[utf8]{vietnam}
+\else
+  \usepackage{fontspec}
+  \IfFontExistsTF{Times New Roman}{\setmainfont{Times New Roman}}{\setmainfont{TeX Gyre Termes}}
+  \IfFontExistsTF{Consolas}{\setmonofont{Consolas}}{\setmonofont{lmmono10-regular.otf}}
+\fi
+\usepackage[top=2cm,bottom=2cm,left=2.5cm,right=2.5cm,headheight=16pt]{geometry}
+\usepackage{amsmath,amssymb,graphicx,float,fancyhdr,indentfirst,array}
+\usepackage[table]{xcolor}
+\usepackage{booktabs,tabularx,longtable,ragged2e,enumitem,tocloft}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta}
+\usepackage{listings}
+\usepackage{caption}
+\usepackage{xurl}
+\usepackage[unicode,hidelinks,hypertexnames=false]{hyperref}
+
+% Thong tin sua mot lan tai day
+\newcommand{\HoTenA}{Nguyễn Đình Tâm}
+\newcommand{\MSSVA}{23521389}
+\newcommand{\HoTenB}{Võ Công Vinh}
+\newcommand{\MSSVB}{23521800}
+\newcommand{\LopHoc}{Nghiên cứu khoa học sinh viên 2026}
+\newcommand{\GiangVien}{ThS. Đặng Lê Bảo Chương}
+\newcommand{\Khoa}{KHOA MẠNG MÁY TÍNH VÀ TRUYỀN THÔNG}
+\newcommand{\NgayBaoCao}{11/2026}
+\newcommand{\TenDeTai}{Dự đoán chất lượng liên kết đa thời điểm và hỗ trợ định tuyến trong mạng UAV bằng Graph Neural Network}
+\hypersetup{pdftitle={Báo cáo tổng kết NCKH -- UAV Link Quality Routing Support},pdfauthor={\HoTenA, \HoTenB}}
+
+\renewcommand{\chaptername}{Chương}
+\renewcommand{\contentsname}{MỤC LỤC}
+\renewcommand{\listfigurename}{DANH MỤC HÌNH ẢNH}
+\renewcommand{\listtablename}{DANH MỤC BẢNG BIỂU}
+\renewcommand{\figurename}{Hình}
+\renewcommand{\tablename}{Bảng}
+\renewcommand{\bibname}{TÀI LIỆU THAM KHẢO}
+\renewcommand{\appendixname}{Phụ lục}
+\renewcommand{\cftfigpresnum}{Hình }
+\renewcommand{\cftfigaftersnum}{:\quad}
+\setlength{\cftfignumwidth}{5.5em}
+\renewcommand{\cfttabpresnum}{Bảng }
+\renewcommand{\cfttabaftersnum}{:\quad}
+\setlength{\cfttabnumwidth}{5.5em}
+\renewcommand{\cftsecleader}{\cftdotfill{\cftdotsep}}
+\renewcommand{\cftsubsecleader}{\cftdotfill{\cftdotsep}}
+\renewcommand{\cftsecfont}{\bfseries}
+\renewcommand{\cftsecpagefont}{\bfseries}
+\setlength{\parindent}{1.2cm}
+\setlength{\parskip}{3pt}
+\setlength{\emergencystretch}{2em}
+\renewcommand{\arraystretch}{1.15}
+\raggedbottom
+\setlist{itemsep=2pt,topsep=4pt,leftmargin=*}
+\setlist[itemize,1]{label=--}
+\setlist[itemize,2]{label=-}
+\captionsetup{font=small,labelfont=bf}
+\newcolumntype{Y}{>{\RaggedRight\arraybackslash}X}
+\newcolumntype{P}[1]{>{\RaggedRight\arraybackslash}p{#1}}
+\newcolumntype{R}[1]{>{\raggedleft\arraybackslash}p{#1}}
+\newcommand{\code}[1]{\texttt{\detokenize{#1}}}
+\newcommand{\HeaderFooter}{%
+  \fancyhf{}%
+  \fancyhead[L]{\small NCKH sinh viên 2026 -- Báo cáo tổng kết}%
+  \fancyhead[R]{\small UAV Link Quality Routing Support}%
+  \fancyfoot[L]{\small \MSSVA{} -- \HoTenA; \MSSVB{} -- \HoTenB}%
+  \fancyfoot[R]{\thepage}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\footrulewidth}{0.4pt}}
+\pagestyle{fancy}
+\HeaderFooter
+\fancypagestyle{plain}{\HeaderFooter}
+\fancypagestyle{no-page-number}{\HeaderFooter\fancyfoot[R]{}}
+\lstset{basicstyle=\ttfamily\footnotesize,breaklines=true,columns=fullflexible,
+  keepspaces=true,showstringspaces=false,frame=single,rulecolor=\color{black!25},
+  backgroundcolor=\color{black!2},tabsize=2,aboveskip=8pt,belowskip=8pt}
+
+% Hinh ket qua: images/<file>.png (tao tu du lieu da khoa)
+\newcommand{\Fig}[3]{%
+  \begin{figure}[H]
+    \centering
+    \IfFileExists{images/#1.png}{\includegraphics[width=.94\linewidth,height=.36\textheight,keepaspectratio]{images/#1.png}}{%
+      \fbox{\parbox[c][3cm][c]{.88\linewidth}{\centering\textbf{THIẾU HÌNH #1}\par\footnotesize chạy scripts/analysis/make\_nckh\_figures.py}}}
+    \caption{#2}\label{#3}
+  \end{figure}}
+
+\begin{document}
+% ============================================================
+%  TRANG BIA
+% ============================================================
+\begin{titlepage}
+\centering
+\textbf{\large ĐẠI HỌC QUỐC GIA THÀNH PHỐ HỒ CHÍ MINH}\\
+\textbf{\large TRƯỜNG ĐẠI HỌC CÔNG NGHỆ THÔNG TIN}\\[3pt]
+\textbf{\normalsize\Khoa}
+\vspace{.5cm}
+
+\rule{6cm}{.4pt}
+\vspace{.8cm}
+
+\IfFileExists{assets/logo.jpeg}{\includegraphics[width=4cm]{assets/logo.jpeg}}{\fbox{\parbox[c][3cm][c]{4cm}{\centering LOGO UIT}}}
+\vspace{.8cm}
+
+\textbf{\Large BÁO CÁO TỔNG KẾT}\\[6pt]
+\textbf{\large ĐỀ TÀI NGHIÊN CỨU KHOA HỌC SINH VIÊN 2026}
+\vspace{.7cm}
+
+\rule{.55\textwidth}{.4pt}
+\vspace{.6cm}
+
+{\large\textbf{Đề tài:}}\\[.4cm]
+{\fontsize{18pt}{24pt}\selectfont\bfseries
+DỰ ĐOÁN CHẤT LƯỢNG LIÊN KẾT\\
+ĐA THỜI ĐIỂM VÀ HỖ TRỢ ĐỊNH TUYẾN\\
+TRONG MẠNG UAV BẰNG\\
+GRAPH NEURAL NETWORK\par}
+\vspace{.35cm}
+{\large\itshape Nội dung tổng kết: từ dự báo suy giảm dịch vụ đến\\điều khiển định tuyến theo chất lượng liên kết\par}
+\vspace{.5cm}
+\rule{.7\textwidth}{.4pt}
+\vspace{.7cm}
+
+Giảng viên hướng dẫn: \GiangVien\\[.5cm]
+Sinh viên thực hiện:\\[.2cm]
+\begin{tabular}{rll}
+1. & \HoTenA & MSSV: \MSSVA\\
+2. & \HoTenB & MSSV: \MSSVB
+\end{tabular}
+\vfill
+Tp. Hồ Chí Minh, \NgayBaoCao
+\end{titlepage}
+
+% ============================================================
+%  NHAN XET GIANG VIEN
+% ============================================================
+\thispagestyle{no-page-number}
+\begin{center}\textbf{\Large NHẬN XÉT CỦA GIẢNG VIÊN HƯỚNG DẪN}\end{center}
+\vspace{1cm}
+\foreach \n in {1,...,14}{\noindent\makebox[\linewidth]{\dotfill}\par\vspace{.55cm}}
+\vfill
+\begin{flushright}Ngày \ldots{} tháng \ldots{} năm \ldots\\[.3cm]
+\textbf{Giảng viên hướng dẫn}\\[1.5cm]\end{flushright}
+\clearpage
+
+% ============================================================
+%  PHAN CONG
+% ============================================================
+\thispagestyle{no-page-number}
+\begin{center}\textbf{\Large BẢNG PHÂN CÔNG NHIỆM VỤ}\end{center}
+\vspace{.3cm}
+\noindent\textbf{Chương trình:} \LopHoc.\\
+\textbf{Đề tài:} \TenDeTai.\\
+\textbf{Giảng viên hướng dẫn:} \GiangVien.
+\begin{table}[H]
+\centering\small
+\begin{tabularx}{\linewidth}{|P{.8cm}|P{3cm}|P{1.8cm}|Y|}
+\hline
+\textbf{STT}&\textbf{Họ và tên}&\textbf{MSSV}&\textbf{Nhiệm vụ}\\\hline
+1&\HoTenA&\MSSVA&\textit{[Nhóm điền nhiệm vụ.]}\\\hline
+2&\HoTenB&\MSSVB&\textit{[Nhóm điền nhiệm vụ.]}\\\hline
+\end{tabularx}
+\caption{Phân công nhiệm vụ trong nhóm.}\label{tab:phancong}
+\end{table}
+\clearpage
+
+% ============================================================
+%  TOM TAT
+% ============================================================
+\pagenumbering{roman}
+\chapter*{TÓM TẮT NỘI DUNG}
+\addcontentsline{toc}{chapter}{TÓM TẮT NỘI DUNG}
+Đề tài nghiên cứu cách dùng thông tin về chất lượng liên kết để duy trì dịch vụ truyền dữ liệu qua chuỗi UAV làm relay khi hai đầu mút tách xa nhau. Toàn bộ thí nghiệm được thực hiện trên ns-3.45 với OLSR, bằng ba vòng thí nghiệm có giao thức đăng ký trước: hạt giống mới được kiểm toán, mã nguồn và mô hình được khóa bằng hash, tiêu chí go/no-go và phép bootstrap theo khối kịch bản được cố định trước khi chạy.
+
+Vòng v2 (384 episode) cho thấy thêm dự báo suy giảm vào bộ điều khiển di chuyển relay làm PDR giảm 0,99 điểm phần trăm (CI 95\%: $-1{,}99$ đến $-0{,}02$) và tăng 41,2 m quãng đường. Vòng v3 thêm ngưỡng chọn trên dữ liệu tuning và cổng giá trị hành động, nhưng dừng ở validation vì mô hình lợi ích không dự đoán được tác động của chuyển động (Spearman $-0{,}19$). Phân tích chẩn đoán trên dữ liệu v2 chỉ ra nguyên nhân: OLSR chọn tuyến theo số hop nên giữ liên kết trực tiếp chất lượng kém khoảng 59\% thời gian, chiếm 52\% số gói bị mất, phần mà việc di chuyển relay không tác động tới.
+
+Từ đó, vòng v4 đề xuất ghim tuyến dữ liệu sang đường qua relay khi ETX của đường đó tốt hơn rõ rệt lựa chọn của OLSR. Trên 192 episode của pha test đã khóa, phương pháp tăng PDR thêm 4,18 điểm phần trăm so với OLSR thuần (CI 95\%: 1,14 đến 6,36) mà không cần di chuyển UAV; cả ba bước kiểm định theo thứ tự cố định đều đạt, 96/96 episode có tuyến được simulator áp dụng đúng như lệnh. Báo cáo cũng nêu một trường hợp thất bại (giảm 41,9 điểm phần trăm) và các hạn chế: điều khiển tập trung lý tưởng, chưa có baseline OLSR-ETX và một họ kịch bản.
+
+\noindent\textbf{Từ khóa:} UAV, FANET, OLSR, ETX, chất lượng liên kết, định tuyến, ns-3, thí nghiệm đăng ký trước, bootstrap.
+\clearpage
+\tableofcontents
+\clearpage
+\phantomsection\addcontentsline{toc}{chapter}{DANH MỤC HÌNH ẢNH}\listoffigures
+\clearpage
+\phantomsection\addcontentsline{toc}{chapter}{DANH MỤC BẢNG BIỂU}\listoftables
+\clearpage
+\pagenumbering{arabic}
+
+% ============================================================
+%  CHUONG 1
+% ============================================================
+\chapter{Giới thiệu}
+\section{Bối cảnh và vấn đề}
+Trong mạng UAV (FANET), các UAV có thể làm relay để nối hai đầu mút nằm ngoài tầm phủ trực tiếp của nhau~\cite{bekmezci}. Khi hai đầu mút di chuyển tách xa, chất lượng các liên kết vô tuyến thay đổi liên tục; giao thức định tuyến phải chọn lại đường và dịch vụ ứng dụng (đo bằng tỷ lệ gói đến đích, PDR) có thể suy giảm. Hai đòn bẩy điều khiển tự nhiên là \emph{vị trí relay} (di chuyển UAV) và \emph{đường đi của dữ liệu} (định tuyến). Câu hỏi thực tiễn là thông tin về chất lượng liên kết, đo được hoặc dự báo được, nên được dùng để điều khiển đòn bẩy nào và có thực sự cải thiện dịch vụ hay không.
+
+\section{Mục tiêu và câu hỏi nghiên cứu}
+\begin{itemize}
+  \item \textbf{CH1.} Dự báo suy giảm dịch vụ kết hợp di chuyển relay có làm tăng PDR so với bộ điều khiển chỉ phục hồi khi đã suy giảm hay không? (vòng v2, v3)
+  \item \textbf{CH2.} Nếu không, gói tin thực sự bị mất ở đâu và vì sao? (phân tích chẩn đoán)
+  \item \textbf{CH3.} Điều khiển tuyến dữ liệu theo chất lượng liên kết (ETX) có làm tăng PDR so với OLSR thuần hay không? (vòng v4)
+\end{itemize}
+
+\section{Đối chiếu với thuyết minh và điều chỉnh hướng}
+Thuyết minh ban đầu đặt mục tiêu dự đoán chất lượng liên kết đa thời điểm bằng Graph Neural Network và dùng dự đoán đó hỗ trợ định tuyến. Giai đoạn đầu (báo cáo tiến độ ngày 31/10/2026~\cite{tiendo}) tập trung vào bài toán dự đoán ngoại tuyến. Trong giai đoạn tổng kết, nhóm chuyển trọng tâm sang câu hỏi mà dự đoán cuối cùng phục vụ: \emph{hành động điều khiển nào làm dịch vụ tốt hơn trong một hệ thống vòng kín}. Lý do: một dự báo chính xác chưa chắc đem lại lợi ích mạng nếu hành động đi kèm sai, và chỉ thí nghiệm vòng kín mới trả lời được điều này. Kết quả v4 quay trở lại đúng mục tiêu ``hỗ trợ định tuyến'' của thuyết minh, nhưng với chất lượng liên kết đo được; thay bằng chất lượng liên kết dự báo (GNN) là bước phát triển tiếp theo (Chương~\ref{chap:conclusion}).
+
+\section{Phạm vi}
+Mô phỏng ns-3.45, Wi-Fi 802.11g, OLSR; chuỗi 4 hoặc 5 UAV (2 hoặc 3 relay); hai bối cảnh: \emph{gradual} (hai đầu mút tách xa dần) và \emph{static}; mỗi episode 240 giây với luồng UDP 15.000 gói. Không thử nghiệm trên phần cứng thật.
+
+\section{Đóng góp}
+\begin{itemize}
+  \item Một quy trình thí nghiệm vòng kín có đăng ký trước, khóa bằng hash, tái lập được, áp dụng cho ba vòng v2, v3, v4 (tổng cộng 1.392 episode có dữ liệu hợp lệ, không ô nào thiếu).
+  \item Hai kết quả âm có kiểm soát: dự báo cộng di chuyển relay (v2) và cổng giá trị hành động (v3) không cải thiện PDR.
+  \item Chẩn đoán định lượng nguyên nhân: lựa chọn tuyến min-hop của OLSR là nguồn mất gói chính, không phải vị trí relay.
+  \item Một phương pháp ghim tuyến theo ETX có trễ (hysteresis) kèm cơ chế kiểm tra toàn vẹn giữa lệnh và tuyến simulator áp dụng; tăng PDR có ý nghĩa thống kê trên pha test đã khóa.
+\end{itemize}
+
+\section{Cấu trúc báo cáo}
+Chương~\ref{chap:background} trình bày cơ sở lý thuyết; Chương~\ref{chap:method} mô tả hệ thống mô phỏng, quy trình thí nghiệm và ba phương pháp; Chương~\ref{chap:results} trình bày kết quả; Chương~\ref{chap:discussion} thảo luận và hạn chế; Chương~\ref{chap:conclusion} kết luận. Phụ lục ghi thông tin tái lập.
+
+% ============================================================
+%  CHUONG 2
+% ============================================================
+\chapter{Cơ sở lý thuyết và tổng quan}\label{chap:background}
+\section{Mạng UAV và chuỗi relay}
+FANET là mạng ad hoc gồm các UAV, đặc trưng bởi tính di động cao và topology thay đổi nhanh~\cite{bekmezci}. Khi hai đầu mút nằm ngoài tầm phủ của nhau, các UAV trung gian tạo thành chuỗi relay. Hai cách giữ dịch vụ là đặt lại vị trí relay để các liên kết đủ tốt, hoặc chọn đường đi tốt nhất trên các liên kết đang có.
+
+\section{OLSR và lựa chọn tuyến theo số hop}
+OLSR~\cite{rfc3626} là giao thức định tuyến chủ động trạng thái liên kết: mỗi nút phát HELLO để cảm nhận liên kết đối xứng với hàng xóm, chọn tập MPR để phát tán thông điệp TC, rồi tính tuyến ngắn nhất \emph{theo số hop}. Một liên kết được coi là dùng được chỉ cần HELLO đi qua được theo cả hai chiều; mức tổn thất gói trên liên kết không đi vào chi phí tuyến. OLSRv2~\cite{rfc7181} bổ sung khung metric liên kết nhưng OLSR của ns-3 dùng chuẩn RFC 3626.
+
+\section{Thước đo ETX}
+De Couto và cộng sự~\cite{decouto} chỉ ra rằng định tuyến min-hop có xu hướng chọn các liên kết dài, tổn thất cao, và đề xuất ETX: số lần truyền kỳ vọng để một gói đi qua liên kết thành công,
+\begin{equation}
+\mathrm{ETX}(a,b)=\frac{1}{d_f(a,b)\, d_r(a,b)},\qquad \mathrm{ETX}(P)=\sum_{(a,b)\in P}\mathrm{ETX}(a,b),
+\end{equation}
+trong đó $d_f$, $d_r$ là tỷ lệ nhận gói probe theo chiều đi và chiều về. Một đường nhiều hop nhưng chất lượng cao có thể có ETX nhỏ hơn một liên kết trực tiếp kém.
+
+\section{Thí nghiệm đăng ký trước và bootstrap theo khối}
+Đăng ký trước (pre-registration) cố định giả thuyết, tham số và phân tích trước khi thấy dữ liệu, tránh việc chọn lại cấu hình sau khi nhìn kết quả~\cite{nosek}. Khoảng tin cậy được tính bằng bootstrap~\cite{efron} trên \emph{khối kịch bản}: mỗi lần lấy mẫu lại giữ nguyên tất cả các arm của cùng một cặp hạt giống, nên so sánh là so sánh ghép cặp.
+
+\section{Khoảng trống}
+Các công trình về đặt vị trí relay thường giả định tuyến đi theo chuỗi hình học mà bộ điều khiển chọn. Trong hệ thống có OLSR thật, giả định này không chắc đúng. Đề tài kiểm chứng thực nghiệm giả định đó và đo trực tiếp lợi ích của việc điều khiển tuyến so với điều khiển vị trí.
+
+% ============================================================
+%  CHUONG 3
+% ============================================================
+\chapter{Phương pháp}\label{chap:method}
+\section{Môi trường mô phỏng}
+\begin{table}[H]
+\centering\small
+\begin{tabularx}{\linewidth}{@{}P{4.3cm}Y@{}}
+\toprule\textbf{Thành phần}&\textbf{Cấu hình}\\\midrule
+Simulator&ns-3.45~\cite{ns3}, chương trình \code{uav-olsr-dataset} của đề tài.\\
+Lớp vật lý/MAC&802.11g, tốc độ cố định 6 Mbps cho dữ liệu và điều khiển.\\
+Định tuyến&OLSR (RFC 3626) của ns-3.\\
+Topology&Chuỗi n4 (2 relay) hoặc n5 (3 relay); tầm phủ danh định 240 m; vùng 1800 m.\\
+Bối cảnh&\emph{gradual}: từ giây 30 hai đầu mút di chuyển ngược chiều 1 m/s; \emph{static}: không di chuyển.\\
+Lưu lượng&UDP CBR 256 kbps, gói 512 B, 15.000 gói mỗi episode 240 giây.\\
+Đo liên kết&Probe broadcast mỗi 0,05 s; ma trận tỷ lệ nhận $d(a,b)$ theo cửa sổ 1 giây.\\
+Chỉ số chính&$\mathrm{PDR}=\dfrac{\text{số gói nhận ở sink}}{\text{số gói ứng dụng phát}}$ trên toàn episode.\\
+\bottomrule
+\end{tabularx}
+\caption{Cấu hình mô phỏng dùng chung cho v2, v3, v4.}\label{tab:sim}
+\end{table}
+
+\section{Kiến trúc điều khiển vòng kín}
+Simulator chạy đồng bộ với bộ điều khiển Python qua stdin/stdout (Hình~\ref{fig:arch}). Mỗi giây, simulator gửi một frame quan sát (vị trí, ma trận $d(a,b)$, tuyến OLSR hiện tại, bộ đếm gói của cửa sổ) và chờ một lệnh. Lệnh phiên bản 1 (\code{UAVACT 1}) chỉ chứa vận tốc relay; phiên bản 2 (\code{UAVACT 2}, dùng ở v4) có thêm tuyến cần ghim.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=1.2cm and 1.6cm, every node/.style={font=\small},
+  box/.style={draw, rounded corners=2pt, align=center, minimum width=3.6cm, minimum height=1.1cm, fill=black!3}]
+\node[box] (sim) {ns-3.45\\OLSR + \code{OverrideRouting}};
+\node[box, right=of sim] (ctl) {Bộ điều khiển Python\\(v2/v3: di chuyển; v4: tuyến)};
+\node[box, below=of sim] (log) {Log simulator\\\code{UAVROUTE}};
+\node[box, below=of ctl] (dec) {Nhật ký quyết định\\\code{decisions.jsonl}};
+\draw[-{Latex}] ([yshift=2mm]sim.east) -- node[above]{frame mỗi giây} ([yshift=2mm]ctl.west);
+\draw[-{Latex}] ([yshift=-2mm]ctl.west) -- node[below]{\code{UAVACT 1|2}} ([yshift=-2mm]sim.west -| sim.east);
+\draw[-{Latex}] (sim) -- (log);
+\draw[-{Latex}] (ctl) -- (dec);
+\draw[{Latex}-{Latex}, dashed] (log) -- node[below]{kiểm tra toàn vẹn} (dec);
+\end{tikzpicture}
+\caption{Kiến trúc vòng kín và kiểm tra toàn vẹn giữa lệnh và tuyến được áp dụng.}\label{fig:arch}
+\end{figure}
+
+\section{Quy trình thí nghiệm có đăng ký trước}
+Mỗi vòng có ba pha dùng hạt giống riêng: \emph{tuning} (chọn tham số), \emph{validation} (quyết định go/no-go, không chọn lại gì) và \emph{test} (phân tích đã khóa). Các nguyên tắc chung:
+\begin{itemize}
+  \item Hạt giống mới được kiểm toán không trùng mọi hạt giống của các vòng trước (v4 so với 14 kế hoạch cũ).
+  \item Trước khi chạy, mã nguồn, mô hình, kế hoạch hạt giống và môi trường chạy được sao chép vào một package và khóa bằng SHA-256; mọi lần chạy kiểm tra lại hash.
+  \item Mỗi ô (kịch bản $\times$ arm) chỉ được chạy lại tối đa một lần khi lỗi kỹ thuật; không thay hạt giống vì kết quả xấu.
+  \item Chỉ chạy test khi validation đạt go; tham số không được đổi sau khi thấy dữ liệu validation hay test.
+\end{itemize}
+Hiệu ứng chính là trung bình cân bằng của hai cấu hình trên các kịch bản gradual:
+\begin{equation}
+\hat\Delta=\tfrac12\left(\bar\delta_{n4}+\bar\delta_{n5}\right),\qquad \delta_{g,k}=\mathrm{PDR}_{A}(g,k)-\mathrm{PDR}_{B}(g,k),
+\end{equation}
+với $k$ là cặp hạt giống. CI 95\% lấy từ 10.000 lần bootstrap theo khối kịch bản, RNG cố định.
+
+\section{Vòng v2: dự báo suy giảm và di chuyển relay}
+Bộ dự báo logistic ước lượng xác suất suy giảm dịch vụ trong 10 và 20 giây tới từ đặc trưng dịch vụ và đo đạc liên kết. Khi rủi ro vượt 0,50, bộ điều khiển khởi động một đợt di chuyển relay theo kế hoạch hình học có giới hạn quãng đường, khoảng cách an toàn và thời gian nghỉ. Formal v2 so sánh 8 vai trò, trong đó so sánh chính là \code{service-v2} với bản bỏ dự báo \code{service-v2-no-forecast} (chỉ di chuyển phục hồi khi dịch vụ đã suy giảm).
+
+\section{Vòng v3: ngưỡng chọn trên tuning và cổng giá trị hành động}
+Giữ nguyên bộ dự báo v2; chọn ngưỡng $\tau$ trên dữ liệu tuning (ràng buộc recall $\ge 0{,}30$). Mỗi đợt di chuyển dự báo được gán nhãn lợi ích
+$y=\mathrm{PDR}_{\text{policy}}(t,t{+}30]-\mathrm{PDR}_{\text{HOLD}}(t,t{+}30]$ trên cùng hạt giống. Mô hình ridge~\cite{hoerl} trên 9 đặc trưng ước lượng $\hat y$; cổng chỉ cho di chuyển khi $\hat y-\lambda\cdot\text{quãng đường}\ge 0$.
+
+\section{Vòng v4: ghim tuyến theo chất lượng liên kết}
+\subsection{Bộ quyết định tuyến}
+Chất lượng liên kết được làm mượt bằng EWMA, $q_t=\alpha d_t+(1-\alpha)q_{t-1}$ với $\alpha=0{,}5$. ETX của liên kết là $1/(q_{ab}q_{ba})$, chặn trên 1000. Gọi $P^\ast$ là đường qua relay có ETX nhỏ nhất, $O$ là tuyến OLSR hiện tại ($\mathrm{ETX}(O)=\infty$ nếu không có tuyến) và $G$ là tuyến đang ghim. Với margin $m$, quy tắc mỗi giây như sau.
+
+\begin{table}[H]
+\centering\small
+\begin{tabularx}{\linewidth}{@{}P{2.4cm}P{6.4cm}Y@{}}
+\toprule\textbf{Trạng thái}&\textbf{Điều kiện (xét theo thứ tự)}&\textbf{Hành động}\\\midrule
+Khởi động&3 giây đầu episode&Không ghim.\\
+$G$ rỗng&$\mathrm{ETX}(P^\ast)+m<\mathrm{ETX}(O)$ và $P^\ast$ dùng được&Ghim $G=P^\ast$ (\emph{engage}).\\
+$G$ đang ghim&Một liên kết của $G$ trong cửa sổ đo mới nhất $<0{,}1$&Thay bằng $P^\ast$ nếu $\mathrm{ETX}(P^\ast)+m<\mathrm{ETX}(O)$, nếu không thì nhả về OLSR.\\
+&Chưa đủ 5 giây kể từ lần đổi trước&Giữ nguyên (\emph{dwell}).\\
+&$\mathrm{ETX}(O)+m<\mathrm{ETX}(G)$&Nhả, trả về OLSR (\emph{release}).\\
+&$\mathrm{ETX}(P^\ast)+m<\mathrm{ETX}(G)$&Đổi sang $P^\ast$ (\emph{switch}).\\
+&Không điều kiện nào đúng&Giữ nguyên.\\\bottomrule
+\end{tabularx}
+\caption{Quy tắc của bộ quyết định tuyến, áp dụng mỗi giây.}\label{tab:rules}
+\end{table}
+Phát hiện liên kết hỏng dùng cửa sổ đo mới nhất (chưa làm mượt) vì EWMA cần khoảng 4 giây mới phản ánh một liên kết đứt hẳn. Chỉ $m$ được chọn ở pha tuning, trong tập $\{0;\,0{,}5;\,1{,}0\}$.
+
+\subsection{Thực thi trong simulator}
+Lớp \code{OverrideRouting} (kế thừa \code{Ipv4ListRouting}) chuyển gói unicast tới đích theo tuyến tĩnh nếu nút nằm trên tuyến đang ghim, mọi trường hợp khác dùng OLSR như cũ. Mỗi lần đổi tuyến simulator ghi một dòng \code{UAVROUTE}. Kiểm tra toàn vẹn yêu cầu chuỗi lệnh đổi tuyến trong nhật ký quyết định trùng khớp hoàn toàn với các dòng này. Kiểm tra trước đăng ký cho thấy khi không ghim tuyến, stack mới cho kết quả giống hệt OLSR cũ (HOLD nhận đúng 12.596/15.000 gói như formal v2 trên cùng hạt giống).
+
+\subsection{Các arm và tiêu chí}
+\begin{table}[H]
+\centering\small
+\begin{tabularx}{\linewidth}{@{}P{4.6cm}Y@{}}
+\toprule\textbf{Arm}&\textbf{Mô tả}\\\midrule
+\code{hold}&Relay đứng yên, OLSR thuần (baseline).\\
+\code{service-v2-no-forecast}&Di chuyển phục hồi của v2, OLSR thuần.\\
+\code{lq-route}&Relay đứng yên, ghim tuyến theo ETX.\\
+\code{lq-route-restore}&Di chuyển phục hồi và ghim tuyến theo ETX.\\\bottomrule
+\end{tabularx}
+\caption{Các arm của pha validation và test v4.}\label{tab:arms}
+\end{table}
+Go cần cả ba: PDR(\code{lq-route}) $-$ PDR(\code{hold}) $>0$; ghim tuyến được dùng trong ít nhất 50\% episode gradual; toàn vẹn tuyến đạt ở mọi episode. Pha test kiểm định theo thứ tự cố định, mỗi bước thành công khi cận dưới CI 95\% $>0$: (1) \code{lq-route} $-$ \code{hold} (endpoint chính); (2) \code{lq-route-restore} $-$ \code{service-v2-no-forecast}; (3) \code{lq-route-restore} $-$ \code{hold}.
+
+% ============================================================
+%  CHUONG 4
+% ============================================================
+\chapter{Kết quả}\label{chap:results}
+\section{Tổng quan các vòng thí nghiệm}
+\begin{table}[H]
+\centering\small
+\begin{tabularx}{\linewidth}{@{}P{1.6cm}P{4.4cm}P{2.6cm}Y@{}}
+\toprule\textbf{Vòng}&\textbf{Phương pháp}&\textbf{Episode hợp lệ}&\textbf{Kết quả}\\\midrule
+v2&Dự báo + di chuyển relay&384/384 (formal)&Âm: PDR $-0{,}99$ điểm \%, quãng đường $+41{,}2$ m.\\
+v3&Ngưỡng tuning + cổng giá trị hành động&96 + 160&No-go ở validation (Spearman $-0{,}19$).\\
+v4&Ghim tuyến theo ETX&128 + 128 + 192&Dương: PDR $+4{,}18$ điểm \% ở test, 3/3 kiểm định đạt.\\\bottomrule
+\end{tabularx}
+\caption{Tóm tắt ba vòng thí nghiệm.}\label{tab:overview}
+\end{table}
+
+\section{Vòng v2}
+Bộ dự báo có PR-AUC 0,415 (10 giây) và 0,694 (20 giây) trên HOLD; tại ngưỡng 0,50, recall lần lượt là 0,049 và 0,409. So sánh chính được tóm tắt ở Bảng~\ref{tab:v2}.
+\begin{table}[H]
+\centering\small
+\begin{tabularx}{\linewidth}{@{}P{2.6cm}YY@{}}
+\toprule\textbf{Cấu hình}&\textbf{Chênh PDR (điểm \%), CI 95\%}&\textbf{Chênh quãng đường (m), CI 95\%}\\\midrule
+n4&$-0{,}17$ [$-1{,}62$; $1{,}26$]&$+35{,}1$ [25,6; 45,0]\\
+n5&$-1{,}80$ [$-3{,}26$; $-0{,}55$]&$+47{,}3$ [38,1; 56,4]\\
+Gộp cân bằng&$-0{,}99$ [$-1{,}99$; $-0{,}02$]&$+41{,}2$ [34,7; 47,9]\\\bottomrule
+\end{tabularx}
+\caption{Formal v2: \code{service-v2} trừ \code{service-v2-no-forecast} (gradual, 20 cặp mỗi cấu hình).}\label{tab:v2}
+\end{table}
+
+\section{Vòng v3}
+Tuning chọn horizon 20 giây (PR-AUC 0,776 so với 0,450) và $\tau=0{,}192$ (recall 0,972, precision 0,669, FPR 0,052). Tuy nhiên mô hình lợi ích trên 34 đợt di chuyển có nhãn không dự đoán được gì: $R^2$ leave-one-out $-0{,}24$, Spearman $-0{,}02$; mọi giá trị $\lambda$ trên lưới đều cho tổng lợi ích thực tế âm. Bảng~\ref{tab:v3} là kết quả validation.
+\begin{table}[H]
+\centering\small
+\begin{tabularx}{\linewidth}{@{}P{6.2cm}P{3.4cm}Y@{}}
+\toprule\textbf{Tiêu chí go/no-go}&\textbf{Giá trị}&\textbf{Kết quả}\\\midrule
+Spearman($\hat y$, $y$) $>0$ (158 đợt)&$-0{,}192$&Không đạt\\
+PDR(v3-gate) $-$ PDR(no-forecast) $\ge -0{,}5$ điểm \%&$-0{,}28$ [$-1{,}35$; $0{,}97$]&Đạt\\
+Quãng đường(v3-gate) $\le$ quãng đường(v2)&$-15{,}9$ m [$-31{,}5$; $-0{,}7$]&Đạt\\\bottomrule
+\end{tabularx}
+\caption{Validation v3 (gradual, 12 kịch bản mỗi cấu hình). Kết quả: go = false, không chạy test.}\label{tab:v3}
+\end{table}
+Hạ ngưỡng làm số đợt di chuyển dự báo tăng từ 59 (v2) lên 138 (v3-threshold) mà PDR không tăng; cổng chặn 895 lần và chỉ còn 26 đợt.
+
+\section{Chẩn đoán: gói tin bị mất ở đâu}
+Phân tích đọc lại 384 episode formal v2 theo từng giây, phân loại theo tuyến OLSR đang dùng (Hình~\ref{fig:loss}). Khi tuyến đã ổn định hơn 5 giây, đi thẳng có PDR 0,900 còn qua relay là 0,966. Trong phần lớn các giây đi thẳng có sẵn đường qua relay với liên kết yếu nhất $\ge 0{,}9$. Cả 94 đợt di chuyển dự báo của v2 đều bắt đầu khi tuyến \emph{đã} đi qua relay, nên di chuyển relay không chạm tới phần mất gói lớn nhất. Ngoài ra, tại thời điểm bắt đầu đợt di chuyển, PDR theo giây của trace có điều khiển đã chênh HOLD tới $+0{,}18$ do các can thiệp trước đó, làm nhãn lợi ích của v3 bị nhiễu.
+\Fig{fig_loss_by_route}{Phân bố gói bị mất theo loại tuyến OLSR (HOLD, gradual, 24 episode formal v2).}{fig:loss}
+
+\section{Vòng v4}
+\subsection{Tuning}
+Cả ba margin đều tăng PDR; margin 1,0 được chọn theo quy tắc đăng ký trước, đồng thời ít đổi tuyến nhất (Hình~\ref{fig:tuning}). Toàn vẹn tuyến đạt 128/128 episode.
+\Fig{fig_v4_tuning}{Tuning v4: chênh PDR so với HOLD theo margin và số lần đổi tuyến.}{fig:tuning}
+
+\subsection{Validation}
+\begin{table}[H]
+\centering\small
+\begin{tabularx}{\linewidth}{@{}P{6.2cm}P{3.6cm}Y@{}}
+\toprule\textbf{Tiêu chí go/no-go}&\textbf{Giá trị}&\textbf{Kết quả}\\\midrule
+PDR(\code{lq-route}) $-$ PDR(\code{hold}) $>0$&$+4{,}68$ [1,82; 7,13]&Đạt\\
+Ghim tuyến trong $\ge 50\%$ episode gradual&24/24 (100\%)&Đạt\\
+Toàn vẹn tuyến ở mọi episode&64/64&Đạt\\\bottomrule
+\end{tabularx}
+\caption{Validation v4 (gradual, 12 kịch bản mỗi cấu hình). Kết quả: go = true.}\label{tab:v4val}
+\end{table}
+
+\subsection{Test (phân tích đã khóa)}
+\begin{table}[H]
+\centering\small
+\begin{tabularx}{\linewidth}{@{}P{5.6cm}P{3.2cm}P{2.6cm}Y@{}}
+\toprule\textbf{Bước kiểm định}&\textbf{Chênh PDR (điểm \%), CI 95\%}&\textbf{n4 / n5}&\textbf{Kết quả}\\\midrule
+1. \code{lq-route} $-$ \code{hold}&$+4{,}18$ [1,14; 6,36]&$+6{,}51$ / $+1{,}85$&Đạt\\
+2. \code{lq-route-restore} $-$ \code{service-v2-no-forecast}&$+5{,}96$ [4,69; 7,09]&$+6{,}33$ / $+5{,}59$&Đạt\\
+3. \code{lq-route-restore} $-$ \code{hold}&$+5{,}96$ [4,67; 7,20]&$+7{,}29$ / $+4{,}63$&Đạt\\\bottomrule
+\end{tabularx}
+\caption{Test v4: 192/192 episode hợp lệ, 20 kịch bản gradual mỗi cấu hình, toàn vẹn tuyến 96/96, không vi phạm an toàn.}\label{tab:v4test}
+\end{table}
+\Fig{fig_v4_arms}{PDR trung bình theo arm, test v4, gradual.}{fig:arms}
+Ghim tuyến làm tăng PDR ở 35/40 cặp kịch bản (Hình~\ref{fig:paired}). Ghim tuyến được dùng ở 40/40 episode gradual, trung bình 7,6 lần đổi tuyến mỗi episode. Chỉ di chuyển phục hồi thì không có lợi: \code{service-v2-no-forecast} $-$ \code{hold} $=+0{,}00$ điểm \% (CI $-1{,}02$; $1{,}05$) dù relay đi thêm 81,6 m. Trong bối cảnh static, mọi arm có PDR bằng nhau.
+\Fig{fig_v4_paired}{Chênh PDR theo từng cặp kịch bản, test v4.}{fig:paired}
+
+\section{Trường hợp thất bại}
+Ghim tuyến làm giảm PDR ở 5/40 kịch bản: $-41{,}87$ (n5-18), $-12{,}91$ (n5-13), $-4{,}39$ (n4-14), $-1{,}16$ và $-0{,}46$ điểm \%. Ở kịch bản n5-18 (Hình~\ref{fig:outlier}), \emph{cả ba arm} đều không nhận gói nào trong khoảng 100 giây đầu dù tỷ lệ nhận probe trên các liên kết gần 1,0. Sau đó HOLD phục hồi, còn \code{lq-route} ghim đường $0\!\to\!2\!\to\!4$ ở giây 110 và tiếp tục nhận 0 gói đến giây 212. Bộ quyết định không nhả tuyến vì nó chỉ quan sát chất lượng probe, không quan sát số gói dữ liệu thực sự đến đích. Bất thường ở tầng dữ liệu trong 100 giây đầu chưa được giải thích. Đáng chú ý, \code{lq-route-restore} trên cùng kịch bản lại nhận nhiều gói hơn HOLD (8.438 so với 7.645).
+\Fig{fig_v4_outlier}{Kịch bản test n5-18: PDR theo cửa sổ 10 giây.}{fig:outlier}
+
+% ============================================================
+%  CHUONG 5
+% ============================================================
+\chapter{Thảo luận}\label{chap:discussion}
+\section{Diễn giải}
+Ba vòng thí nghiệm cho một chuỗi lập luận nhất quán. Dự báo suy giảm có thể đạt chất lượng khá (PR-AUC 0,69--0,78 ở horizon 20 giây), nhưng biến hành động sai: di chuyển relay không thay đổi được tuyến mà OLSR chọn, và trong kịch bản đang xét, phần lớn tổn thất nằm ở liên kết trực tiếp mà OLSR giữ vì nó ngắn nhất theo số hop. Khi đổi sang biến hành động đúng (tuyến dữ liệu), cùng loại thông tin chất lượng liên kết đem lại lợi ích có ý nghĩa thống kê mà không tốn quãng đường bay.
+
+Mức tăng nhỏ dần qua các pha (tuning $+7{,}4$, validation $+4{,}7$, test $+4{,}2$ điểm \%) phù hợp với việc pha tuning dùng để chọn margin và nên lạc quan; pha test dùng hạt giống mới và kết quả vẫn dương. Lợi ích ở n5 ($+1{,}85$) nhỏ hơn n4 ($+6{,}51$) và kém ổn định hơn: bốn trong năm kịch bản giảm thuộc n5.
+
+Kết hợp ghim tuyến với di chuyển phục hồi cho kết quả không nhất quán giữa validation ($-1{,}73$ so với chỉ ghim tuyến) và test ($+1{,}78$, CI 0,02 đến 4,65). Bước 2 và 3 của kiểm định đạt nhờ phần ghim tuyến; không thể kết luận rằng di chuyển đem lại lợi ích thêm.
+
+\section{Hạn chế và mối đe dọa tính hợp lệ}
+\begin{itemize}
+  \item \textbf{Điều khiển lý tưởng:} bộ điều khiển tập trung thấy chất lượng mọi liên kết và tuyến được ghim tức thời, không trễ và không mất thông điệp điều khiển. Hệ thống thật phải trả chi phí báo hiệu và độ trễ.
+  \item \textbf{Thiếu baseline OLSR-ETX:} OLSR của ns-3 không có metric chất lượng liên kết. So sánh với một OLSR dùng ETX phân tán là cần thiết để tách lợi ích của ETX khỏi lợi ích của điều khiển tập trung.
+  \item \textbf{Thiếu phản hồi tầng dữ liệu:} trường hợp n5-18 cho thấy chất lượng probe không đủ để đảm bảo dữ liệu đến đích.
+  \item \textbf{Phạm vi kịch bản:} một họ kịch bản (chuỗi 4--5 UAV, hai đầu mút tách xa, tầm phủ 240 m), một mức tải, chỉ mô phỏng.
+  \item \textbf{Phân tích chẩn đoán} là khám phá, không đăng ký trước; nó chỉ được dùng để đặt giả thuyết cho v4, còn kết luận v4 đến từ pha test đã khóa.
+  \item \textbf{Sửa đổi protocol:} một lỗi code ở bước chọn margin của v4 được sửa trước khi có bất kỳ kết quả chọn nào; quy tắc chọn không đổi, và sửa đổi được ghi vào protocol.
+\end{itemize}
+
+\section{So với kế hoạch ban đầu}
+Đề tài chưa dùng GNN trong vòng điều khiển. Kết quả v4 cho thấy nơi một bộ dự đoán chất lượng liên kết có giá trị: thay chất lượng đo được bằng chất lượng dự báo để ghim tuyến \emph{trước} khi liên kết suy giảm. Đây là cách nối kết quả giai đoạn dự đoán với mục tiêu hỗ trợ định tuyến của thuyết minh.
+
+% ============================================================
+%  CHUONG 6
+% ============================================================
+\chapter{Kết luận và hướng phát triển}\label{chap:conclusion}
+\section{Kết luận}
+Trong mô phỏng ns-3 với OLSR, việc dự báo suy giảm và di chuyển relay không cải thiện dịch vụ, vì nguồn tổn thất chính là việc OLSR chọn tuyến theo số hop chứ không phải vị trí relay. Ghim tuyến dữ liệu sang đường qua relay khi ETX tốt hơn rõ rệt tăng PDR thêm 4,18 điểm phần trăm (CI 95\%: 1,14 đến 6,36) trên pha test đã khóa, không cần di chuyển UAV, với 96/96 episode áp dụng tuyến đúng như lệnh. Kết quả có giới hạn rõ: điều khiển tập trung lý tưởng, một họ kịch bản và một trường hợp thất bại nghiêm trọng.
+
+\section{Hướng phát triển}
+\begin{itemize}
+  \item Thêm phản hồi tầng dữ liệu: nhả hoặc đổi tuyến ghim khi số gói nhận sụp đổ.
+  \item So sánh với OLSR dùng ETX phân tán và mô hình hóa trễ, mất thông điệp điều khiển.
+  \item Dùng chất lượng liên kết \emph{dự báo} (mô hình GNN của giai đoạn đầu) để ghim tuyến chủ động.
+  \item Mở rộng kịch bản: nhiều UAV hơn, nhiều luồng, tải nền, mô hình kênh khác.
+\end{itemize}
+
+% ============================================================
+%  PHU LUC
+% ============================================================
+\appendix
+\chapter{Thông tin tái lập}
+\section{Mã nguồn và phiên bản}
+\begin{table}[H]
+\centering\small
+\begin{tabularx}{\linewidth}{@{}P{4.2cm}Y@{}}
+\toprule\textbf{Thành phần}&\textbf{Giá trị}\\\midrule
+Kho mã&\url{https://github.com/kaing615/UAV-link-quality-routing-support}\\
+Protocol v3 / code v3&\code{a0823fc} / \code{9d68610}, \code{545adae}\\
+Chẩn đoán&\code{088f19c}\\
+Code v4 / sửa lỗi chọn margin&\code{44cc1cc} / \code{6a8bb1f}\\
+Binary simulator v4&SHA-256 \code{c989fa0c...}, ns-3.45, GCC 13.3\\
+Predictor v2 (dùng lại, không fit)&SHA-256 \code{719816f8...}\\
+Hạt giống v3 / v4&layout 2400001--2400096 / 2600001--2600096\\\bottomrule
+\end{tabularx}
+\caption{Phiên bản mã nguồn và định danh.}\label{tab:versions}
+\end{table}
+
+\section{Tệp kết quả đã khóa}
+\begin{table}[H]
+\centering\small
+\begin{tabularx}{\linewidth}{@{}YP{3.4cm}@{}}
+\toprule\textbf{Tệp (trong \code{reports/})}&\textbf{SHA-256 (16 ký tự đầu)}\\\midrule
+{\footnotesize\code{uav_service_v3/results/tuning-selection.json}}&\code{92963a6a37c0f266}\\
+{\footnotesize\code{uav_service_v3/results/analysis/validation/go.json}}&\code{c46e361779922926}\\
+{\footnotesize\code{uav_service_v4/results/tuning-selection.json}}&\code{e498e159256dbd07}\\
+{\footnotesize\code{uav_service_v4/results/analysis/validation/go.json}}&\code{7e0a5f7b64855934}\\
+{\footnotesize\code{uav_service_v4/results/packages/test/freeze.json}}&\code{d0ea292794e7c954}\\
+{\footnotesize\code{uav_service_v4/results/analysis/test/analysis.json}}&\code{8b6ed7bfaa659113}\\\bottomrule
+\end{tabularx}
+\caption{Các tệp kết quả chính và hash.}\label{tab:hashes}
+\end{table}
+
+\section{Lệnh chạy}
+\begin{lstlisting}
+# moi pha: freeze -> chay hang loat -> validate -> select (tuning) / analyze
+python -m src.control.service_v4.cli freeze --phase test --selection tuning-selection.json \
+    --inherits packages/validation/protocol.json --go analysis/validation/go.json ...
+python orchestration/service_v4_queue.py --protocol packages/test/protocol.json ...
+python -m src.control.service_v4.cli analyze --protocol packages/test/protocol.json \
+    --run-root runs/test --output analysis/test
+# hinh trong bao cao
+python scripts/analysis/make_nckh_figures.py
+\end{lstlisting}
+Protocol đầy đủ: \code{docs/service_v3_protocol.md}, \code{docs/service_v4_protocol.md}; chẩn đoán: \code{reports/uav_service_v3/diagnosis/README.md}.
+
+\clearpage
+\phantomsection
+\addcontentsline{toc}{chapter}{TÀI LIỆU THAM KHẢO}
+\begin{thebibliography}{99}
+\bibitem{bekmezci} İ. Bekmezci, O. K. Sahingoz, Ş. Temel. Flying Ad-Hoc Networks (FANETs): A survey. \textit{Ad Hoc Networks}, 11(3):1254--1270, 2013.
+\bibitem{rfc3626} T. Clausen, P. Jacquet. \textit{Optimized Link State Routing Protocol (OLSR)}. RFC 3626, 2003. \url{https://www.rfc-editor.org/rfc/rfc3626}.
+\bibitem{rfc7181} T. Clausen, C. Dearlove, P. Jacquet, U. Herberg. \textit{The Optimized Link State Routing Protocol Version 2}. RFC 7181, 2014. \url{https://www.rfc-editor.org/rfc/rfc7181}.
+\bibitem{decouto} D. S. J. De Couto, D. Aguayo, J. Bicket, R. Morris. A high-throughput path metric for multi-hop wireless routing. \textit{Proc. ACM MobiCom}, 2003.
+\bibitem{ns3} ns-3 Network Simulator, phiên bản 3.45. \url{https://www.nsnam.org/}.
+\bibitem{efron} B. Efron, R. J. Tibshirani. \textit{An Introduction to the Bootstrap}. Chapman \& Hall, 1993.
+\bibitem{nosek} B. A. Nosek, C. R. Ebersole, A. C. DeHaven, D. T. Mellor. The preregistration revolution. \textit{Proceedings of the National Academy of Sciences}, 115(11):2600--2606, 2018.
+\bibitem{hoerl} A. E. Hoerl, R. W. Kennard. Ridge regression: Biased estimation for nonorthogonal problems. \textit{Technometrics}, 12(1):55--67, 1970.
+\bibitem{tiendo} \HoTenA, \HoTenB. \textit{Báo cáo tiến độ nghiên cứu khoa học: Tiến độ triển khai và kết quả core matrix theo held-seed}. Trường Đại học Công nghệ Thông tin, 31/10/2026.
+\end{thebibliography}
+\end{document}

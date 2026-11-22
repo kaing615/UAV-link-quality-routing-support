@@ -1,0 +1,19 @@
+{
+  "criteria": {
+    "override_engaged": {
+      "minimum": 0.5,
+      "passed": true,
+      "value": 1.0
+    },
+    "pdr_route_above_hold": {
+      "passed": true,
+      "value": 0.04681666666666665
+    },
+    "routes_applied_as_commanded": {
+      "passed": true
+    }
+  },
+  "go": true,
+  "schema": "service-v4-go-v1",
+  "validation_freeze_sha256": "991cb8062e7e72c4065c6586d543ac3d9613a77ae43a1f87d5c3b2ebdeb4d2c6"
+}
