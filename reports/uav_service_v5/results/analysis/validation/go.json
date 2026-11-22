@@ -1,0 +1,18 @@
+{
+  "criteria": {
+    "olsr_etx_active_only_in_its_arm": {
+      "passed": true
+    },
+    "olsr_etx_reduces_direct_route_time": {
+      "hold": 0.5756944444444444,
+      "olsr_etx": 0.4019097222222222,
+      "passed": true
+    },
+    "routes_applied_as_commanded": {
+      "passed": true
+    }
+  },
+  "go": true,
+  "schema": "service-v5-go-v1",
+  "validation_freeze_sha256": "7172828db0318cde423a9dbbb81770ac5ffbb260c1ef263d2d3bf00387fb4b22"
+}
