@@ -12,9 +12,11 @@ import matplotlib.pyplot as plt
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / 'reports/nckh_final/images'
 V4 = ROOT / 'reports/uav_service_v4/results'
+V5, V6 = (ROOT / f'reports/uav_service_v{n}/results' for n in (5, 6))
 # One fixed colour per arm in every figure (validated categorical slots 1-4).
 ARM = {'hold': ('HOLD (OLSR)', '#2a78d6'), 'service-v2-no-forecast': ('Di chuyển phục hồi', '#eb6834'),
-       'lq-route': ('lq-route (ghim route)', '#1baf7a'), 'lq-route-restore': ('lq-route + phục hồi', '#eda100')}
+       'lq-route': ('lq-route (ghim route)', '#1baf7a'), 'lq-route-restore': ('lq-route + phục hồi', '#eda100'),
+       'olsr-etx': ('OLSR-ETX (phân tán)', '#8a5cd0')}
 INK, MUTED, GRID = '#1f1f1e', '#5f5e5a', '#e6e5e0'
 plt.rcParams.update({'font.family': 'DejaVu Sans', 'font.size': 10, 'axes.edgecolor': MUTED, 'axes.labelcolor': INK,
                      'xtick.color': MUTED, 'ytick.color': MUTED, 'axes.spines.top': False, 'axes.spines.right': False,
@@ -65,7 +67,8 @@ def arms_and_pairs():
     rows = [r for r in json.loads((V4 / 'analysis/test/analysis.json').read_text())['rows'] if r['context'] == 'gradual']
     fig, ax = plt.subplots(figsize=(6.6, 3.0))
     width = .2
-    for i, (arm, (label, color)) in enumerate(ARM.items()):
+    for i, arm in enumerate(('hold', 'service-v2-no-forecast', 'lq-route', 'lq-route-restore')):
+        label, color = ARM[arm]
         means = [sum(r['actual_udp_pdr'] for r in rows if r['regime'] == g and r['policy'] == arm) / 20 for g in ('n4', 'n5')]
         xs = [g + (i - 1.5) * (width + .02) for g in range(2)]
         ax.bar(xs, means, width, color=color, label=label)
@@ -109,7 +112,41 @@ def outlier():
     save(fig, 'fig_v4_outlier.png')
 
 
+def v5_v6_paired():
+    """lq-route - olsr-etx per gradual scenario, v5 (ARP default) vs v6 (ARP DeadTimeout 1 s)."""
+    fig, ax = plt.subplots(figsize=(6.6, 2.8))
+    for y, (name, root) in enumerate((('v6 (đã sửa ARP)', V6), ('v5 (ARP mặc định)', V5))):
+        rows = [r for r in json.loads((root / 'analysis/test/analysis.json').read_text())['rows'] if r['context'] == 'gradual']
+        pdr = {(r['regime'], r['layout_seed'], r['policy']): r['actual_udp_pdr'] for r in rows}
+        for g, offset in (('n4', -.12), ('n5', .12)):
+            d = [(pdr[(g, l, 'lq-route')] - pdr[(g, l, 'olsr-etx')]) * 100 for (gg, l, p) in pdr if gg == g and p == 'hold']
+            ax.scatter(d, [y + offset] * len(d), s=34, color=ARM['lq-route'][1], edgecolor='white', linewidth=1, zorder=3,
+                       marker='o' if g == 'n4' else 's')
+            ax.text(51, y + offset, f'{g}: lq-route hơn {sum(v > 0 for v in d)}/{len(d)}', va='center', fontsize=8, color=INK)
+    ax.axvline(0, color=MUTED, lw=1); ax.set_yticks([0, 1], ['v6 (đã sửa ARP)', 'v5 (ARP mặc định)'])
+    ax.set_ylim(-.5, 1.5); ax.set_xlim(-60, 50); ax.grid(axis='y', visible=False)
+    ax.set_xlabel('PDR lq-route − OLSR-ETX theo kịch bản (điểm %); tròn = n4, vuông = n5')
+    save(fig, 'fig_v56_paired.png')
+
+
+def v6_loss():
+    mix = json.loads((V6 / 'analysis/test/analysis.json').read_text())['route_mix']
+    kinds = (('direct', 'Đi thẳng', '#d95f45'), ('relay', 'Qua relay', '#eda100'), ('none', 'Không có route', '#8c8a83'))
+    arms = ['hold', 'olsr-etx', 'lq-route']
+    fig, ax = plt.subplots(figsize=(6.6, 2.4))
+    left = [0] * len(arms)
+    for kind, label, color in kinds:
+        vals = [mix[a]['lost_packets'].get(kind, 0) / 1000 for a in arms]
+        ax.barh([ARM[a][0] for a in arms][::-1], vals[::-1], left=left[::-1], color=color, height=.55, label=label)
+        left = [l + v for l, v in zip(left, vals)]
+    for y, total in enumerate(left[::-1]): ax.text(total + .5, y, f'{total:.1f}'.replace('.', ',') + ' nghìn', va='center', fontsize=8.5, color=INK)
+    ax.set_xlabel('Số gói bị mất (nghìn), test v6, 40 kịch bản gradual')
+    ax.set_xlim(0, max(left) * 1.18); ax.grid(axis='y', visible=False)
+    ax.legend(ncol=3, fontsize=8, frameon=False, loc='upper center', bbox_to_anchor=(.5, -.3))
+    save(fig, 'fig_v6_loss.png')
+
+
 if __name__ == '__main__':
     OUT.mkdir(parents=True, exist_ok=True)
-    loss_by_route(); tuning(); arms_and_pairs(); outlier()
+    loss_by_route(); tuning(); arms_and_pairs(); outlier(); v5_v6_paired(); v6_loss()
     print(sorted(p.name for p in OUT.glob('*.png')))

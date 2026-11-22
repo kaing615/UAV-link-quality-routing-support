@@ -1,6 +1,7 @@
 # Protocol v6: v5 lặp lại sau khi sửa lỗi ARP của ns-3
 
-Trạng thái: **đăng ký trước, chưa freeze, chưa chạy** (2026-11-22). Viết sau khi có kết quả v5 (H1 không đạt) và
+Trạng thái: **đã chạy xong** (2026-11-22). Validation go=true; pha test: cả hai bước kiểm định đạt (mục 8). Mục 1–7
+viết trước khi chạy và không sửa sau đó. Viết ngày 2026-11-22, sau khi có kết quả v5 (H1 không đạt) và
 chẩn đoán lỗi ARP (mục 8.1 của [protocol v5](service_v5_protocol.md)), trước mọi lần chạy v6.
 
 - Seed plan: [`reports/uav_service_v6/seed-plan.json`](../reports/uav_service_v6/seed-plan.json); thiết lập cố định:
@@ -67,3 +68,41 @@ trắng (nếu có).
 ## 7. Cách chạy
 
 Như v5, thay `service_v5` bằng `service_v6`; dùng cùng binary (`240123d2…`) và bộ thư viện runtime của v5.
+
+## 8. Kết quả (thêm sau khi chạy)
+
+Dữ liệu: [`reports/uav_service_v6/results/`](../reports/uav_service_v6/results/). Freeze validation `3d71846b…`,
+go.json `aa348bb6…`, freeze test `9921c242…`, analysis test `7b7d1413…`. 96 + 144 episode, tất cả status ok,
+không retry. Ở cả hai pha: toàn vẹn route đạt (32/32, 48/48), cờ ETX và cờ ARP đúng ở mọi episode, **không episode
+nào mất trắng**.
+
+**Validation: go = true** (đủ 5 điều kiện). Tỷ lệ giây đi thẳng: hold 0,575, olsr-etx 0,398.
+
+**Test (kiểm định đã khóa, gradual, 40 kịch bản):**
+
+| Bước | Chênh lệch PDR | CI 95% | n4 / n5 | Kết luận |
+|---|---|---|---|---|
+| 1. lq-route − olsr-etx (H1) | **+4,57 điểm %** | **[+3,60; +5,55]** | +4,71 / +4,42 | **đạt** |
+| 2. olsr-etx − hold (H2) | +1,01 điểm % | [+0,10; +1,91] | +1,45 / +0,56 | đạt |
+| lq-route − hold (mô tả) | +5,58 điểm % | [+4,53; +6,63] | +6,16 / +4,99 | lặp lại v4 |
+
+PDR trung bình (gradual): hold 0,921; olsr-etx 0,931; lq-route 0,977. Static: ba arm như nhau (≥ 0,999).
+
+Theo từng kịch bản (mô tả): lq-route hơn olsr-etx ở 39/40 kịch bản (n4 19/20, n5 20/20); kịch bản duy nhất thua là n4, −1,1 điểm %.
+Độ lệch chuẩn của chênh lệch ở n5 là 2,8 điểm % (v5: 22 điểm %). olsr-etx hơn hold ở 24/40 kịch bản.
+
+Số gói mất theo loại route OLSR quan sát được (gradual, tổng 40 kịch bản):
+
+| Arm | Đi thẳng | Qua relay | Không có route |
+|---|---|---|---|
+| hold | 17.685 | 9.079 | 20.617 |
+| olsr-etx | 880 | 6.185 | 34.271 |
+| lq-route | 1.089 | 6.981 | 5.857 |
+
+OLSR-ETX gần như bỏ hết mất gói trên link đi thẳng yếu, nhưng mất nhiều hơn hẳn trong các giây không có route
+(chuyển route chậm qua HELLO 2 s / TC 5 s). lq-route giảm được cả hai loại.
+
+**Kết luận:** sau khi sửa lỗi ARP, cả H1 và H2 đều đạt. Ghim route tập trung theo ETX tốt hơn OLSR-ETX phân tán
++4,57 điểm %, và OLSR-ETX tốt hơn OLSR thường một chút (+1,01 điểm %). Giới hạn: lq-route là điều khiển tập trung lý
+tưởng (biết chất lượng link của toàn mạng, lệnh tới ngay); OLSR-ETX là bản cài đặt của nhóm; một họ kịch bản
+(chuỗi relay 4–5 UAV, 802.11g).

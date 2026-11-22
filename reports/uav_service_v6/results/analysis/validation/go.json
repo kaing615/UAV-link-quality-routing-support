@@ -1,0 +1,25 @@
+{
+  "criteria": {
+    "arp_fix_in_every_episode": {
+      "passed": true
+    },
+    "no_startup_blackout": {
+      "cells": [],
+      "passed": true
+    },
+    "olsr_etx_active_only_in_its_arm": {
+      "passed": true
+    },
+    "olsr_etx_reduces_direct_route_time": {
+      "hold": 0.5753472222222222,
+      "olsr_etx": 0.3980902777777778,
+      "passed": true
+    },
+    "routes_applied_as_commanded": {
+      "passed": true
+    }
+  },
+  "go": true,
+  "schema": "service-v6-go-v1",
+  "validation_freeze_sha256": "3d71846b27f4f2ecaf85124b56c89a40a490359dd204ff3d2bf4991400124e87"
+}
