@@ -75,8 +75,18 @@ def route_integrity(row):
                 override_seconds=sum(bool((d.get('route_control') or {}).get('route')) for d in row['decisions']))
 
 
-def select(protocol_path, run_root, output):
+def margin_table(rows, policies):
+    """Pooled gradual PDR(arm) - PDR(hold) for every tuning margin arm."""
     from ..service_v3.analysis import blocks, contrast
+    data = blocks(rows, policies)
+    return [dict(contrast(data, arm, 'hold', 'actual_udp_pdr'), margin=margin) for arm, margin in MARGIN_ARMS.items()]
+
+
+def choose_margin(table):
+    return max(table, key=lambda t: (t['point'] if t['point'] is not None else -1e9, t['margin']))  # tie -> larger margin
+
+
+def select(protocol_path, run_root, output):
     from ..service_v3.study import load_traces
     phase, _, rows = load_traces(protocol_path, run_root, loader=load)
     if phase['phase'] != 'tuning': raise ValueError('Selection uses tuning only')
@@ -84,10 +94,8 @@ def select(protocol_path, run_root, output):
     integrity = {r['cell_id']: route_integrity(r) for r in rows}
     bad = sorted(k for k, v in integrity.items() if not v['ok'])
     if bad: raise ValueError('Commanded and applied routes differ (technical failure): '+', '.join(bad[:5]))
-    data = blocks(rows, phase['policies'])
-    table = [dict(arm=arm, margin=margin, **contrast(data, arm, 'hold', 'actual_udp_pdr'))
-             for arm, margin in MARGIN_ARMS.items()]
-    best = max(table, key=lambda t: (t['point'] if t['point'] is not None else -1e9, t['margin']))  # tie -> larger margin
+    table = margin_table(rows, phase['policies'])
+    best = choose_margin(table)
     selection = dict(schema=V4.schema('tuning-selection'), tuning_freeze_sha256=phase['_freeze_sha256'],
                      predictor_sha256=p3.V2_MODEL_SHA256, rule='max pooled gradual PDR(arm) - PDR(hold); tie -> larger margin',
                      margins=table, margin=best['margin'], chosen_arm=best['arm'],

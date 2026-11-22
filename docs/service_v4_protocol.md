@@ -91,3 +91,11 @@ Chỉ mô tả, không kiểm định:
 Binary được build bằng ns-3.45 trong WSL, rồi chép vào `build/recovery/` của repo trên server cùng file `source.sha256`. Bridge sẽ kiểm tra hash nguồn và binary.
 
 Lệnh: `python -m src.control.service_v4.cli freeze|run-case|validate|select|analyze`. Chạy hàng loạt bằng `orchestration/service_v4_queue.py`.
+
+## 9. Sửa đổi
+
+**2026-11-22 – sửa lỗi code bước chọn margin (trước khi có kết quả chọn).** Pha tuning đã thu đủ 128/128 cell hợp lệ
+(freeze `packages/tuning`, HEAD `44cc1cc`). Lệnh `select` dừng với `TypeError: dict() got multiple values for keyword argument 'arm'`,
+do khóa `arm` bị trùng khi gộp bảng; chưa có bảng margin nào được tạo ra. Commit sửa lỗi tách phần tính bảng thành
+`margin_table`/`choose_margin`, thêm test, và không đổi quy tắc chọn ở mục 4. Không chạy lại mô phỏng; dữ liệu tuning giữ nguyên.
+Bước `select` được chạy lại từ commit đã sửa. Package validation sẽ freeze từ commit này.

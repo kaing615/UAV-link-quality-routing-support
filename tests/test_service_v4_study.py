@@ -121,3 +121,57 @@ def test_freeze_load_and_factory_for_every_arm(tmp_path):
     assert arms['lq-route'].decider.margin == .5 and arms['lq-route-restore'].inner.controller.policy == 'service-v2-no-forecast'
     with pytest.raises(ValueError):
         p3.load(tmp_path / 'validation' / 'protocol.json')  # a v4 package is not a v3 package
+
+
+def test_margin_table_and_choice():
+    policies = s4.V4.policies['tuning']
+    effects = {'hold': 0., 'lq-route-m0': .03, 'lq-route-m05': .03, 'lq-route-m10': .01}
+    rows = [dict(regime=g, context='gradual', layout_seed=i, radio_seed=i, policy=p, status='ok',
+                 actual_udp_pdr=.85 + e + .001 * i, total_relay_travel_m=0.)
+            for g in ('n4', 'n5') for i in range(6) for p, e in effects.items()]
+    table = s4.margin_table(rows, policies)
+    assert [(t['arm'], t['margin']) for t in table] == [('lq-route-m0', 0.), ('lq-route-m05', .5), ('lq-route-m10', 1.)]
+    assert [round(t['point'], 6) for t in table] == [.03, .03, .01] and all(t['comparator'] == 'hold' for t in table)
+    assert s4.choose_margin(table)['margin'] == .5   # tie between 0 and 0.5 -> larger margin
+
+
+def _collection(tmp_path, phase, effect=.02):
+    """Synthetic complete collection rows as load_traces returns them, with simulator logs."""
+    from dataclasses import asdict
+    policies = list(s4.V4.policies[phase]); rows = []
+    for regime in ('n4', 'n5'):
+        for i in range(3):
+            for policy in policies:
+                frames = service_frames([60] * 240)
+                pinned = policy.startswith('lq-route')
+                decisions = [dict(step=t, route_control=dict(route=[0, 1, 3] if pinned and t >= 5 else [])) for t in range(240)]
+                episode = tmp_path / f'{regime}-{i}-{policy}'; episode.mkdir(parents=True)
+                (episode / 'simulator.stderr.log').write_text(
+                    ('UAVROUTE 5 3 0 1 3\nUAVROUTE_CHANGES 1\n' if pinned else 'UAVROUTE_CHANGES 0\n'))
+                bonus = effect if pinned else 0.
+                rows.append(dict(cell_id=f'{phase}-{regime}-gradual-{i:02d}__{policy}', regime=regime, context='gradual',
+                                 layout_seed=10 * i + (regime == 'n5'), radio_seed=10 * i, policy=policy, status='ok',
+                                 config=asdict(fixture_config()), trace_sha256='t' * 64, actual_udp_pdr=.85 + bonus + .001 * i,
+                                 total_relay_travel_m=0., frames=frames, decisions=decisions, episode_dir=str(episode)))
+    meta = dict(phase=phase, policies=policies, _freeze_sha256='f' * 64, selection_sha256=None if phase == 'tuning' else 's' * 64)
+    return meta, dict(planned_cells=len(rows), ok_cells=len(rows)), rows
+
+
+@pytest.mark.parametrize('phase', ['tuning', 'validation', 'test'])
+def test_select_and_analyze_end_to_end(tmp_path, monkeypatch, phase):
+    import src.control.service_v3.study as v3study
+    from src.control.service_v4.analysis import analyze
+    collection = _collection(tmp_path / 'runs', phase)
+    monkeypatch.setattr(v3study, 'load_traces', lambda *a, **k: collection)
+    if phase == 'tuning':
+        selection = s4.select('protocol.json', 'runs', tmp_path / 'selection.json')
+        assert selection['margin'] == 1. and all(v['ok'] for v in selection['route_integrity'].values())
+        assert json.loads((tmp_path / 'selection.json').read_text())['schema'] == 'service-v4-tuning-selection-v1'
+        return
+    result = analyze('protocol.json', 'runs', tmp_path / 'analysis')
+    assert result['route_integrity_ok'] and result['mechanism']['lq-route']['engaged_share'] == 1
+    if phase == 'validation':
+        go = json.loads((tmp_path / 'analysis' / 'go.json').read_text())
+        assert go['go'] and go['schema'] == 'service-v4-go-v1'
+    else:
+        assert [s['success'] for s in result['fixed_sequence']] == [True, True, True]  # both pinned arms get +0.02
