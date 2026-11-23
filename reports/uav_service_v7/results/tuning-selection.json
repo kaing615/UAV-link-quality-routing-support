@@ -1,0 +1,56 @@
+{
+  "arp_flag": "--ns3::ArpCache::DeadTimeout=+1s",
+  "background": [
+    "--backgroundFlows=2",
+    "--backgroundRateKbps=128"
+  ],
+  "delay_s": 2,
+  "margin": 1.0,
+  "margin_source": {
+    "study": "v4",
+    "tuning_selection_sha256": "e498e159256dbd071c4ce2789687f220db9898da798f30c5bc77585751b9e24b"
+  },
+  "olsr_etx": {
+    "link_quality_aging": 0.1,
+    "patch_sha256": "9cd7c5ec083e404f443832cc88f92f102ef57ef18230df66a4d34e4725550454"
+  },
+  "olsr_etx_fast": {
+    "hello_interval_s": 0.5,
+    "table": [
+      {
+        "arm": "olsr-etx-h050",
+        "hello_interval_s": 0.5,
+        "olsr_Bps": 1783.2138888888887,
+        "pdr": 0.8948444444444446,
+        "regimes": {
+          "n5": 0.9196111111111112,
+          "n7": 0.8700777777777778
+        }
+      },
+      {
+        "arm": "olsr-etx-h025",
+        "hello_interval_s": 0.25,
+        "olsr_Bps": 3571.748611111111,
+        "pdr": 0.8947555555555555,
+        "regimes": {
+          "n5": 0.9222666666666667,
+          "n7": 0.8672444444444444
+        }
+      },
+      {
+        "arm": "olsr-etx-h010",
+        "hello_interval_s": 0.1,
+        "olsr_Bps": 8935.698611111111,
+        "pdr": 0.8762611111111112,
+        "regimes": {
+          "n5": 0.9119888888888888,
+          "n7": 0.8405333333333335
+        }
+      }
+    ],
+    "tc_interval_s": 1.25
+  },
+  "predictor_sha256": "719816f80b9df51c5544422522265e50bd454768869523036a8b8f4b1c657c10",
+  "schema": "service-v7-tuning-selection-v1",
+  "tuning_freeze_sha256": "6b3565b0ba89e1b934756a5fe8018ee7937d3ed328e155d4a45330cbfd6da095"
+}

@@ -12,11 +12,12 @@ import matplotlib.pyplot as plt
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / 'reports/nckh_final/images'
 V4 = ROOT / 'reports/uav_service_v4/results'
-V5, V6 = (ROOT / f'reports/uav_service_v{n}/results' for n in (5, 6))
+V5, V6, V7 = (ROOT / f'reports/uav_service_v{n}/results' for n in (5, 6, 7))
 # One fixed colour per arm in every figure (validated categorical slots 1-4).
 ARM = {'hold': ('HOLD (OLSR)', '#2a78d6'), 'service-v2-no-forecast': ('Di chuyển phục hồi', '#eb6834'),
        'lq-route': ('lq-route (ghim route)', '#1baf7a'), 'lq-route-restore': ('lq-route + phục hồi', '#eda100'),
-       'olsr-etx': ('OLSR-ETX (phân tán)', '#8a5cd0')}
+       'olsr-etx': ('OLSR-ETX (phân tán)', '#8a5cd0'), 'olsr-etx-fast': ('OLSR-ETX, HELLO 0,5 s', '#c43d8f'),
+       'lq-route-delay': ('lq-route, trễ 2 s', '#0e7c66')}
 INK, MUTED, GRID = '#1f1f1e', '#5f5e5a', '#e6e5e0'
 plt.rcParams.update({'font.family': 'DejaVu Sans', 'font.size': 10, 'axes.edgecolor': MUTED, 'axes.labelcolor': INK,
                      'xtick.color': MUTED, 'ytick.color': MUTED, 'axes.spines.top': False, 'axes.spines.right': False,
@@ -146,7 +147,26 @@ def v6_loss():
     save(fig, 'fig_v6_loss.png')
 
 
+def v7_cost():
+    """Signalling cost vs PDR per arm, v7 test (gradual)."""
+    a = json.loads((V7 / 'analysis/test/analysis.json').read_text())
+    rows = [r for r in a['rows'] if r['context'] == 'gradual']
+    fig, ax = plt.subplots(figsize=(6.6, 3.0))
+    offsets = {'hold': (8, -4), 'olsr-etx': (4, 11), 'olsr-etx-fast': (8, -13), 'lq-route': (-10, 8), 'lq-route-delay': (-10, -14)}
+    for arm in ('hold', 'olsr-etx', 'olsr-etx-fast', 'lq-route', 'lq-route-delay'):
+        cost = a['overhead'][arm]['method_total_Bps'] / 1000
+        pdr = sum(r['actual_udp_pdr'] for r in rows if r['policy'] == arm) / sum(r['policy'] == arm for r in rows)
+        label, color = ARM[arm]
+        ax.scatter([cost], [pdr], s=70, color=color, edgecolor='white', linewidth=1, zorder=3)
+        dx, dy = offsets[arm]
+        ax.annotate(label, (cost, pdr), xytext=(dx, dy), textcoords='offset points', fontsize=8.5, color=INK,
+                    ha='left' if dx > 0 else 'right')
+    ax.set_xlabel('Báo hiệu của phương pháp (kB/s): OLSR; với lq-route thêm probe và báo cáo')
+    ax.set_ylabel('PDR trung bình (gradual)'); ax.set_xlim(-0.3, 6.5); ax.set_ylim(.87, .955)
+    save(fig, 'fig_v7_cost.png')
+
+
 if __name__ == '__main__':
     OUT.mkdir(parents=True, exist_ok=True)
-    loss_by_route(); tuning(); arms_and_pairs(); outlier(); v5_v6_paired(); v6_loss()
+    loss_by_route(); tuning(); arms_and_pairs(); outlier(); v5_v6_paired(); v6_loss(); v7_cost()
     print(sorted(p.name for p in OUT.glob('*.png')))

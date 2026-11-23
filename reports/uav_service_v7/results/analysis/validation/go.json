@@ -1,0 +1,28 @@
+{
+  "criteria": {
+    "arm_flags_exact": {
+      "passed": true
+    },
+    "background_measured": {
+      "passed": true
+    },
+    "fast_hello_active": {
+      "olsr_etx_Bps": 444.1875,
+      "olsr_etx_fast_Bps": 1784.990625,
+      "passed": true
+    },
+    "no_startup_blackout": {
+      "cells": [],
+      "passed": true
+    },
+    "routes_applied_as_commanded": {
+      "passed": true
+    },
+    "transmissions_counted": {
+      "passed": true
+    }
+  },
+  "go": true,
+  "schema": "service-v7-go-v1",
+  "validation_freeze_sha256": "9d137dae130febb808c4dd96c90a5de97a1cfcdfd411ba2d7feb84cfead4086a"
+}

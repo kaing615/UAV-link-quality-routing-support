@@ -1,6 +1,7 @@
 # Protocol v7: baseline cân bằng thông tin, độ trễ điều khiển và kịch bản rộng hơn
 
-Trạng thái: **đăng ký trước, chưa freeze, chưa chạy** (2026-11-23). Viết sau khi v6 đạt cả hai bước kiểm định
+Trạng thái: **đã chạy xong** (2026-11-23). Tuning chọn HELLO 0,5 s; validation go=true; pha test: cả ba bước kiểm định
+đạt (mục 8). Mục 1–7 viết trước khi chạy và không sửa sau đó. Viết sau khi v6 đạt cả hai bước kiểm định
 (lq-route − olsr-etx = +4,57 điểm %, CI 95% [3,60; 5,55]) và trước mọi lần chạy v7.
 
 - Seed plan: [`reports/uav_service_v7/seed-plan.json`](../reports/uav_service_v7/seed-plan.json).
@@ -99,3 +100,44 @@ Như v6, thay `service_v6` bằng `service_v7`, thêm pha tuning và bước `se
 `freeze --phase tuning` → queue → `validate` → `select --output tuning-selection.json`; sau đó validation và test
 dùng `--selection tuning-selection.json`. Binary mới (hash trong `build/recovery/source.sha256`) dùng bộ thư viện
 runtime của v5/v6.
+
+## 8. Kết quả (thêm sau khi chạy)
+
+Dữ liệu: [`reports/uav_service_v7/results/`](../reports/uav_service_v7/results/). Freeze tuning `6b3565b0…`,
+selection `b666ac07…`, freeze validation `9d137dae…`, go.json `f6de4bf9…`, freeze test `92ec2c87…`, analysis test
+`0eb750b8…`. 72 + 100 + 240 episode, tất cả status ok, không retry. Ở mọi pha: cờ của từng arm đúng, có bộ đếm
+UAVTX và số liệu luồng nền ở mọi episode, không episode nào mất trắng; toàn vẹn tuyến 40/40 (validation) và 96/96
+(test).
+
+**Tuning:** PDR gradual (cân bằng n5/n7) theo HELLO: 0,5 s → 0,8948; 0,25 s → 0,8948; 0,1 s → 0,8763. Chọn
+**HELLO 0,5 s, TC 1,25 s** (cao nhất; 0,25 s thấp hơn 0,0001). HELLO nhanh hơn không giúp OLSR-ETX: 0,1 s kém nhất
+dù tốn byte OLSR gấp 5 lần.
+
+**Validation: go = true** (đủ 6 điều kiện). Byte OLSR: olsr-etx 444 B/s, olsr-etx-fast 1.785 B/s.
+
+**Test (kiểm định đã khóa, gradual, 40 kịch bản, cân bằng n5/n7):**
+
+| Bước | Chênh lệch PDR | CI 95% | n5 / n7 | Kết luận |
+|---|---|---|---|---|
+| 1. lq-route − olsr-etx-fast (H1) | **+5,06 điểm %** | **[4,21; 5,91]** | +5,27 / +4,85 | **đạt** |
+| 2. lq-route-delay − olsr-etx-fast (H2) | +4,82 | [4,04; 5,58] | +4,90 / +4,74 | đạt |
+| 3. lq-route − olsr-etx (H3) | +5,15 | [4,35; 5,98] | +4,68 / +5,62 | đạt |
+
+Mô tả (không kiểm định):
+- PDR trung bình gradual: hold 0,883; olsr-etx 0,890; olsr-etx-fast 0,890; lq-route 0,941; lq-route-delay 0,939.
+- olsr-etx-fast − olsr-etx: +0,09 điểm % [−0,62; 0,79]; olsr-etx − hold: +0,68 [−0,27; 1,59];
+  lq-route − hold: +5,83 [4,99; 6,69].
+- Trễ 2 s gần như không làm mất lợi ích: lq-route − lq-route-delay = +0,24 điểm % [−0,13; 0,61].
+- Theo kịch bản: lq-route hơn olsr-etx-fast ở 39/40 (thua duy nhất −2,1 điểm %, n5); lq-route-delay cũng 39/40.
+- **Luồng nền không bị hại mà còn tốt hơn:** PDR luồng nền lq-route − olsr-etx-fast = +1,41 điểm % [1,21; 1,61];
+  lq-route − hold = +1,60 [1,41; 1,81].
+- **Chi phí báo hiệu** (B/s, gradual, test): hold 288 (OLSR); olsr-etx 445; olsr-etx-fast 1.781; lq-route 5.551 =
+  OLSR 288 + probe 5.018 + báo cáo ước lượng 245; lq-route-delay 5.551. Phần lớn chi phí của lq-route là probe
+  (20 gói/s mỗi nút). Luồng chính phát 32.000 B/s, nên báo hiệu của lq-route bằng khoảng 17% tốc độ luồng chính,
+  của olsr-etx-fast khoảng 6%.
+- Số gói mất theo loại tuyến (test): olsr-etx-fast mất ít trên liên kết trực tiếp (1.126) nhưng nhiều nhất khi
+  không có tuyến (43.496); lq-route 2.330 / 13.970.
+
+**Kết luận:** lợi ích của ghim tuyến tập trung giữ nguyên khi OLSR-ETX được tăng tốc độ thông tin (chọn HELLO tốt
+nhất trong ba mức), khi lệnh điều khiển trễ 2 s, trên chuỗi 7 UAV và khi có luồng nền. Đổi lại, phương pháp tốn
+báo hiệu gấp khoảng 3 lần OLSR-ETX-fast, chủ yếu do probe; chưa thử tần số probe thấp hơn.
