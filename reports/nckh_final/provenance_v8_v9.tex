@@ -1,0 +1,41 @@
+\section{Hồ sơ bổ sung v8 và v9}
+
+Mỗi queue được khởi chạy một lần; bảng thời gian không cộng smoke, fit, validate hoặc analyze. Bảng~\ref{tab:newqueues} được tính từ thời điểm bắt đầu/kết thúc wrapper của các cell; Bảng~\ref{tab:newhashes} liên kết kết quả với package đã khóa.
+
+\begin{table}[htbp]
+\centering\small
+\begin{tabularx}{\linewidth}{@{}p{2.2cm}Yp{3cm}p{3cm}@{}}
+\toprule
+\textbf{Nghiên cứu}&\textbf{Pha}&\textbf{Cell hợp lệ}&\textbf{Queue (phút)}\\\midrule
+v8&validation&80&24,88\\
+v8&test&192&68,42\\
+v9&validation&80&28,33\\
+v9&test&192&64,57\\
+\bottomrule
+\end{tabularx}
+\caption{Số cell và thời gian queue của các nghiên cứu bổ sung.}\label{tab:newqueues}
+\end{table}
+
+
+\begin{table}[htbp]
+\centering\small
+\begin{tabularx}{\linewidth}{@{}Yp{4.5cm}@{}}
+\toprule
+\textbf{Tệp trong reports/}&\textbf{SHA-256 (16 ký tự đầu)}\\\midrule
+\path{uav_service_v8/results/analysis/test/analysis.json}&\code{1231a365990a7323}\\
+\path{uav_service_v8/results/analysis/validation/analysis.json}&\code{ecb6540c0512f5e5}\\
+\path{uav_service_v8/results/packages/test/freeze.json}&\code{b96d0130b5fde7e6}\\
+\path{uav_service_v8/results/packages/validation/freeze.json}&\code{a8ab761887656fbd}\\
+\path{uav_service_v8/results/selection.json}&\code{ad2e0741a0d7509e}\\
+\path{uav_service_v9/results/analysis/test/analysis.json}&\code{0f40bc7093a583aa}\\
+\path{uav_service_v9/results/analysis/validation/analysis.json}&\code{f5e55ee89da568bf}\\
+\path{uav_service_v9/results/packages/test/freeze.json}&\code{a7223951c34ebf64}\\
+\path{uav_service_v9/results/packages/validation/freeze.json}&\code{1c0f2141875bcedd}\\
+\path{uav_service_v9/results/selection.json}&\code{a3219acae53168db}\\
+\bottomrule
+\end{tabularx}
+\caption{Định danh kết quả mới. Hash đầy đủ và danh sách tệp nằm trong export-manifest.json của từng nghiên cứu.}\label{tab:newhashes}
+\end{table}
+
+
+V8 dùng layout seed 3400001 trở đi, radio seed 3500001 trở đi; v9 dùng 3600001 và 3700001 trở đi. Mỗi freeze chứa toàn bộ seed plan và source snapshot. Mô hình hồi quy nằm trong \path{reports/uav_service_v8/model/selection.json}; selection v9 giữ nguyên trọng số, thêm metadata điều khiển vị trí. Hướng dẫn tái lập và kiểm toán: \path{reports/nckh_final/REPRODUCIBILITY.md}.

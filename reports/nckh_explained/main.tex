@@ -1,0 +1,59 @@
+\documentclass[12pt,a4paper,oneside]{report}
+\usepackage{fontspec}
+\setmainfont{Times New Roman}
+\setsansfont{Arial}
+\usepackage[margin=24mm,headheight=16pt]{geometry}
+\usepackage{amsmath,amssymb,booktabs,tabularx,array,longtable,graphicx,xcolor,enumitem,tikz,fancyhdr,needspace}
+\usetikzlibrary{arrows.meta,positioning}
+\usepackage[unicode,colorlinks=true,linkcolor=blue!45!black,urlcolor=blue!45!black,citecolor=blue!45!black]{hyperref}
+\definecolor{inkblue}{HTML}{002FA7}
+\renewcommand{\chaptername}{Chương}
+\renewcommand{\contentsname}{Mục lục}
+\renewcommand{\figurename}{Hình}
+\renewcommand{\tablename}{Bảng}
+\renewcommand{\bibname}{Nguồn đối chiếu}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+\setlength{\emergencystretch}{3em}
+\linespread{1.10}
+\setlist{leftmargin=*,itemsep=3pt,topsep=3pt}
+\pagestyle{fancy}\fancyhf{}\fancyhead[L]{\small\sffamily Hiểu nghiên cứu mạng UAV}\fancyfoot[C]{\thepage}
+\newcommand{\remember}[1]{\par\medskip\noindent\textcolor{inkblue}{\textbf{Điều cần nhớ.}} #1\par\medskip}
+\newcommand{\example}[1]{\par\medskip\noindent\textbf{Ví dụ minh họa, không phải số liệu thí nghiệm.} #1\par\medskip}
+\begin{document}
+\hypersetup{pageanchor=false}
+\begin{titlepage}
+\sffamily\color{inkblue}\vspace*{20mm}
+{\Large TÀI LIỆU ĐỌC KÈM BÁO CÁO NCKH\par}\vspace{16mm}
+{\Huge\bfseries Hiểu nghiên cứu\par mạng UAV\par từ đầu đến cuối\par}\vspace{12mm}
+{\Large Dự báo liên kết, định tuyến\par và điều khiển vị trí relay\par}
+\vspace{18mm}\color{black}
+{\large Dành cho người mới bắt đầu\par}
+\vfill
+Nguyễn Đình Tâm là người thực hiện chính của đề tài.\\
+Đồng tác giả: Võ Công Vinh.\\
+GVHD: ThS. Đặng Lê Bảo Chương.\\
+Trường Đại học Công nghệ Thông tin, ĐHQG-HCM.\\[6mm]
+Bản giải thích ngày 23 tháng 11 năm 2026.\\
+Tài liệu này diễn giải hồ sơ nghiên cứu đã hoàn thành, không bổ sung kết quả thí nghiệm mới.
+\end{titlepage}
+\pagenumbering{roman}
+\hypersetup{pageanchor=true}
+\tableofcontents
+\clearpage
+\pagenumbering{arabic}
+\input{01_foundations}
+\input{02_journey}
+\input{03_forecasting}
+\input{04_control}
+\input{05_experiments}
+\input{06_results}
+\input{07_tools}
+\input{08_defense}
+\begin{thebibliography}{9}
+\bibitem{report} Nhóm nghiên cứu. \emph{Báo cáo tổng kết NCKH: Dự báo chất lượng liên kết bằng mạng nơ-ron đồ thị cho định tuyến và bố trí UAV}. Bản ngày 23/11/2026, 51 trang. Hồ sơ kèm theo: nckh\_final.
+\bibitem{paper} Nhóm nghiên cứu. \emph{Dự báo chất lượng liên kết bằng mạng nơ-ron đồ thị cho định tuyến và bố trí UAV}. Bản thảo bài báo, 7 trang, ngày 23/11/2026. Hồ sơ kèm theo: nckh\_paper.
+\bibitem{repro} Nhóm nghiên cứu. \emph{Hồ sơ tái lập NCKH}, kế hoạch nghiên cứu v8/v9, mô hình đã khóa, kết quả phân tích và bằng chứng kiểm toán. Gói NCKH\_UAV\_2026-11-23.
+\end{thebibliography}
+\end{document}

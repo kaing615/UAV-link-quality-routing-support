@@ -1,0 +1,143 @@
+\section{Vòng v8: đưa dự báo GNN vào lựa chọn tuyến}\label{sec:m8}
+Vòng v8 kiểm tra trực tiếp liệu chất lượng liên kết dự báo có tăng PDR so với
+chất lượng hiện tại khi giữ nguyên luật ghim tuyến. Mô hình ở vòng này là
+\textbf{Edge-SAGE hồi quy mới}, dự báo tỷ lệ nhận probe trung bình của năm giây
+tiếp theo; không phải checkpoint phân loại QoS/survival của Chương~\ref{chap:gnn}.
+Mô hình phân loại cũ và bộ hồi quy mới trả lời hai bài toán khác nhau.
+GNN ở đây được học có giám sát; lựa chọn tuyến và vị trí theo luật cố định.
+V8/v9 không sử dụng học tăng cường hoặc học chính sách hành động từ phần thưởng.
+Hình~\ref{fig:v8v9design} tóm tắt yếu tố giữ nguyên và yếu tố thay đổi trong
+hai nghiên cứu, giúp tách tác dụng của dự báo đối với mỗi loại hành động.
+\Fig{fig_v8_v9_design}{Hai phép so sánh vòng kín: thay thông tin chọn tuyến ở v8, thay trigger chuyển động ở v9. Sơ đồ mô tả thiết kế, không biểu diễn kết quả hiệu quả.}{fig:v8v9design}
+
+\subsection{Dữ liệu phát triển và mô hình}
+Chỉ sử dụng trace HOLD đã có của v7: 48 episode test cũ để fit, 20 episode
+validation cũ để chọn epoch. Những episode này đã được quan sát ở v7, nên ở
+v8 chúng được công bố là \emph{dữ liệu phát triển}. Validation và test v8 dùng
+các cặp seed mới, được kiểm toán không trùng các vòng trước. Không chia ngẫu
+nhiên các frame của cùng một episode sang cả tập fit và tập chọn epoch.
+
+Tại giây $t$, mỗi nút có tám đặc trưng: tọa độ trừ tâm đội hình (chia 240 m),
+vận tốc (chia 10 m/s), bậc hàng xóm và tỷ lệ nhận probe trung bình, chuẩn hóa
+theo $N-1$. Mỗi cặp nút có bảy đặc trưng: khoảng cách, RSSI, tỷ lệ nhận hiện
+tại, EWMA với hệ số 0,5, chênh tỷ lệ nhận so với giây trước, vận tốc tách xa
+và độ lớn vận tốc tương đối. RSSI thiếu được mã hóa thành $-100$ dBm.
+Chỉ có cạnh truyền thông điệp khi tỷ lệ nhận hiện tại ít nhất 0,1.
+Mọi đầu vào được tính từ quan sát đến giây $t$; không dùng quỹ đạo nhiệm vụ
+hoặc gói nhận trong tương lai. Nhãn huấn luyện là
+\begin{equation}
+ y_{ij,t}=\frac{1}{5}\sum_{h=1}^{5}q_{ij,t+h}.
+\end{equation}
+Nhãn này là chất lượng trung bình, không phải xác suất duy trì kết nối trong
+toàn bộ năm giây.
+
+Hai lớp tổng hợp trung bình kiểu GraphSAGE~\cite{graphsage}, mỗi lớp 64 chiều
+và ReLU, kết hợp thông tin nút với đặc trưng cạnh. Bộ giải mã nhận hai biểu
+diễn nút và đặc trưng cạnh, qua lớp 64 chiều và sigmoid; logits được đối xứng
+hóa trước sigmoid. Mô hình có 19.137 tham số. Đối chứng MLP bỏ hai nhánh truyền
+thông điệp, giữ cùng đầu vào và chiều rộng lớp, có 13.505 tham số. Đây là
+ablation của \emph{truyền thông điệp học được}, không phải mô hình hoàn toàn
+không có thông tin topology: đặc trưng bậc nút và tỷ lệ nhận vẫn được giữ.
+Số tham số hai mô hình không bằng nhau, nên chênh lệch không thể quy hoàn
+toàn cho riêng cấu trúc đồ thị.
+Với $\mathcal N_i$ là các hàng xóm đo được, phép cập nhật có dạng
+\begin{equation}
+h_i^{(\ell)}=\operatorname{ReLU}\!\left(W_s^{(\ell)}h_i^{(\ell-1)}+b_s^{(\ell)}
++W_m^{(\ell)}\left[\overline{h}_{\mathcal N_i}^{(\ell-1)}\Vert
+\overline e_{\mathcal N_i}\right]+b_m^{(\ell)}\right),\quad \ell=1,2.
+\end{equation}
+Trung bình bằng 0 khi nút không có hàng xóm. MLP bỏ hạng chứa $W_m,b_m$;
+các đặc trưng cạnh của chính cặp nút vẫn đi vào bộ giải mã. Bộ giải mã sinh
+$z_{ij}$ và đầu ra là $\sigma((z_{ij}+z_{ji})/2)$, đường chéo đặt bằng 0.
+
+Huấn luyện bằng MSE trên các cạnh không chéo, Adam với learning rate 0,001,
+weight decay $10^{-5}$, batch 128, clip norm 5, tối đa 60 epoch; chọn MSE thấp
+nhất trên tập chọn epoch, patience 10, seed 20261123. Hai cấu hình n5/n7 có
+số mẫu cân bằng. GNN và MLP lần lượt chọn epoch 58 và 59. Suy luận triển khai
+bằng NumPy trên CPU; sai số tuyệt đối lớn nhất so với PyTorch trên 40 snapshot
+kiểm tra là $1{,}19\times10^{-7}$, thấp hơn ngưỡng $10^{-5}$ đã định.
+
+\subsection{Các nhóm so sánh và phân tích}
+Bốn arm gồm \code{lq-route}, \code{gnn-route}, \code{mlp-route} và
+\code{olsr-etx-fast}. Ba arm đầu cùng dùng margin ETX 1,0, warmup ba bước,
+dwell năm giây; chỉ thay ma trận chất lượng dùng tính chi phí tuyến. Cơ chế
+phát hiện liên kết hỏng vẫn dùng tỷ lệ nhận hiện tại dưới 0,1. ETX-fast kế
+thừa HELLO 0,5 s và TC 1,25 s đã chọn ở v7. Relay đứng yên trong mọi arm.
+
+Validation gồm 80 episode: mỗi cấu hình hai khối static và tám khối gradual,
+mỗi khối bốn arm. Go chỉ xét tính đầy đủ và đúng đắn kỹ thuật, không xét
+dấu hoặc mức tăng PDR. Test gồm 192 episode: bốn khối static và 20 khối gradual
+mỗi cấu hình. Ba bước kiểm định lần lượt là PDR của GNN trừ chất lượng hiện
+tại, GNN trừ MLP, rồi GNN trừ ETX-fast; một bước chỉ được khẳng định khi cận
+dưới CI 95\% dương và mọi bước trước đã đạt. Bootstrap 10.000 lần trên 40 khối
+gradual ghép cặp, cân bằng n5/n7, seed 20261120. Các frame hoặc gói tin không
+được coi là các mẫu độc lập.
+
+MSE ngoại tuyến của GNN, MLP và EWMA được đo trên cùng trace test của
+\code{lq-route}, tách biệt với PDR vòng kín. Thời gian tính quyết định được
+collector đo quanh toàn bộ lời gọi bộ điều khiển trên server đang chạy bốn
+worker; đây không phải độ trễ truyền lệnh hay thời gian tính trên UAV.
+Server là máy ảo KVM với tám vCPU, báo model Intel Xeon Silver 4110
+2,10 GHz. Mỗi worker giới hạn OMP, OpenBLAS và MKL về một luồng.
+Chi phí báo cáo vị trí, vận tốc và RSSI chưa được mô phỏng thành lưu lượng
+tranh chấp kênh, nên không áp nguyên ước lượng báo hiệu chỉ gồm tỷ lệ nhận
+của v7 cho hệ thống GNN.
+
+\section{Vòng v9: kích hoạt điều khiển vị trí bằng dự báo}\label{sec:m9}
+Vòng v9 được thiết kế trước khi xem test v8, dùng nguyên trọng số GNN/MLP
+đã khóa và không fit lại. Tất cả arm giữ bộ định tuyến \code{lq-route} theo
+chất lượng \emph{hiện tại}; thay đổi cần kiểm tra là cơ chế kích hoạt chuyển
+động. Bốn arm là \code{route-only} (đứng yên), \code{reactive-motion},
+\code{gnn-motion} và \code{mlp-motion}. Cách bố trí lại relay, giới hạn tốc độ
+và ngân sách giống nhau trong ba arm có chuyển động.
+
+\subsection{Kích hoạt và luật chọn vị trí}
+Chất lượng đường tốt nhất được định nghĩa bằng bài toán đường rộng nhất:
+\begin{equation}
+ Q_t=\max_{P:s\rightarrow d}\;\min_{(i,j)\in P}q_{ij,t}.
+\end{equation}
+Reactive dùng EWMA hiện tại; hai arm dự báo dùng thêm ma trận dự báo của
+mình. Sau ba frame quan sát, chuyển động được kích hoạt khi $Q_t<0{,}70$
+trong hai frame liên tiếp. Với GNN/MLP, điều kiện yếu có thể đến từ hiện tại
+hoặc dự báo, nên vẫn giữ fallback phản ứng như reactive. Cạnh dự báo chỉ
+được xét nếu tỷ lệ nhận hiện tại ít nhất 0,1.
+
+Relay được xếp theo hình chiếu lên đường nối hai đầu mút hiện tại. Vị trí
+đích là các điểm chia đều đoạn đó; không đọc vị trí đầu mút trong tương lai.
+Vận tốc hướng tới vị trí đích, tối đa 8 m/s, deadband 1 m, ngân sách 400 m
+cho mỗi relay. Mỗi đợt tối đa mười bước, sau đó nghỉ năm bước; dừng sớm nếu
+chất lượng hiện tại và chất lượng dự báo (nếu có) đều đạt 0,80 trong ba frame.
+Lệnh được kiểm tra khoảng cách nhỏ nhất liên tục trong một bước, tính cả
+vận tốc đầu mút đang quan sát; nếu dưới 5 m thì không gửi chuyển động cho
+các relay ở bước đó. Simulator còn thực thi ràng buộc an toàn riêng.
+
+Để có thách thức chia cắt, hai đầu mút gradual đi xa nhau với tốc độ
+\textbf{tốc độ danh định 2 m/s mỗi đầu mút} từ giây 30; các điều kiện còn lại giữ như v8.
+Simulator nhân tốc độ với hệ số ngẫu nhiên theo layout seed trong [0,85; 1,15],
+dùng chung cho các arm; nguồn đi theo chiều $+y$, đích theo chiều $-y$ và dừng
+ở biên vùng mô phỏng. Tốc độ danh định này khác dữ liệu fit (1 m/s), vì vậy đây đồng thời là kiểm tra chuyển
+miền. Chưa có dữ liệu để mặc định dự báo được hiệu chuẩn cho tốc độ mới.
+Hơn nữa, dữ liệu fit chỉ có relay đứng yên, trong khi các arm v9 tạo vận tốc
+relay mới. Mô hình dự báo không được huấn luyện như bộ tiên đoán phản thực
+cho từng hành động; ở đây nó chỉ kích hoạt một luật bố trí đã cố định.
+
+\subsection{Cổng khả năng kiểm tra và endpoint chính}
+Validation có 80 episode như v8, dùng seed mới. Ngoài các kiểm tra kỹ thuật,
+an toàn, ngân sách và relay đứng yên đúng arm, ít nhất 8/16 episode gradual
+\code{route-only} phải mất kết nối ít nhất năm giây. Cổng này kiểm tra baseline
+có đủ thách thức để trả lời câu hỏi; không lấy lợi ích GNN làm điều kiện go.
+Nếu không đạt thì dừng test, giữ nguyên kết quả, không tăng tốc rồi chạy lại
+cùng nghiên cứu.
+
+Nếu go, test có 192 episode. Endpoint chính là số giây mất kết nối của
+reactive trừ GNN; sau đó mới xét PDR GNN trừ reactive và số giây mất kết nối
+của MLP trừ GNN. Quy tắc CI và thứ tự cố định giống v8. Mất kết nối được đếm
+trên frame 1--240 khi nguồn và đích không nằm cùng thành phần liên thông
+trong đồ thị probe ngưỡng 0,5. Chỉ số này khác số giây OLSR không có tuyến
+và khác mất gói UDP. PDR tăng riêng lẻ không đủ chứng minh ngăn chia cắt.
+Chia cắt ở đây là một endpoint theo ngưỡng đồ thị probe, không đồng nghĩa
+mọi khả năng truyền vô tuyến giữa hai thành phần đã biến mất.
+Quãng đường, số đợt chuyển động, outage dài nhất và PDR luồng nền được báo
+cáo mô tả cùng kết quả chính. Quãng đường chưa được chuyển thành năng lượng.
+Tất cả điều khiển vị trí mới dừng ở vận tốc trong ns-3, chưa kết nối autopilot
+hoặc thử nghiệm UAV thật.

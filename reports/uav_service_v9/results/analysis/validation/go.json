@@ -1,0 +1,36 @@
+{
+  "criteria": {
+    "background_ok": {
+      "passed": true
+    },
+    "flags_ok": {
+      "passed": true
+    },
+    "forecasts_ok": {
+      "passed": true
+    },
+    "no_startup_blackout": {
+      "passed": true
+    },
+    "partition_challenge": {
+      "passed": true,
+      "qualifying_baseline_episodes": 16,
+      "required": 8
+    },
+    "route_integrity_ok": {
+      "passed": true
+    },
+    "route_only_stationary": {
+      "passed": true
+    },
+    "safety_ok": {
+      "passed": true
+    },
+    "transmissions_ok": {
+      "passed": true
+    }
+  },
+  "go": true,
+  "schema": "service-v9-go-v1",
+  "validation_freeze_sha256": "1c0f2141875bceddaeb224cab8d25836322ff56f19b987a86d2270dfb8c7dcdc"
+}

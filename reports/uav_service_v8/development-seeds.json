@@ -1,0 +1,13 @@
+{
+  "purpose": "development-only smoke; excluded from formal v8",
+  "scenarios": [
+    {
+      "layout_seed": 3399001,
+      "radio_seed": 3499001
+    },
+    {
+      "layout_seed": 3399002,
+      "radio_seed": 3499002
+    }
+  ]
+}

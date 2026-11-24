@@ -1,0 +1,441 @@
+{
+  "version": "v9",
+  "phase": "test",
+  "validation_go": {
+    "criteria": {
+      "background_ok": {
+        "passed": true
+      },
+      "flags_ok": {
+        "passed": true
+      },
+      "forecasts_ok": {
+        "passed": true
+      },
+      "no_startup_blackout": {
+        "passed": true
+      },
+      "partition_challenge": {
+        "passed": true,
+        "qualifying_baseline_episodes": 16,
+        "required": 8
+      },
+      "route_integrity_ok": {
+        "passed": true
+      },
+      "route_only_stationary": {
+        "passed": true
+      },
+      "safety_ok": {
+        "passed": true
+      },
+      "transmissions_ok": {
+        "passed": true
+      }
+    },
+    "go": true
+  },
+  "counts": {
+    "validation": 80,
+    "test": 192
+  },
+  "analysis_sha256": "0f40bc7093a583aa39844681ee6fd3ecb848e63337b55a57267ff6f68d9156fa",
+  "fixed_sequence": [
+    {
+      "contrast": {
+        "arm": "reactive-motion",
+        "ci95": [
+          -1.05,
+          1.4500000000000002
+        ],
+        "comparator": "gnn-motion",
+        "metric": "disconnected_seconds",
+        "point": 0.2,
+        "regimes": {
+          "n5": {
+            "complete": 20,
+            "missing_sensitivity": null,
+            "planned": 20,
+            "point": -0.35
+          },
+          "n7": {
+            "complete": 20,
+            "missing_sensitivity": null,
+            "planned": 20,
+            "point": 0.75
+          }
+        }
+      },
+      "interpretable": true,
+      "name": "disconnected_seconds_reactive-motion_vs_gnn-motion",
+      "success": false
+    },
+    {
+      "contrast": {
+        "arm": "gnn-motion",
+        "ci95": [
+          -0.0031517083333333384,
+          0.010426874999999985
+        ],
+        "comparator": "reactive-motion",
+        "metric": "actual_udp_pdr",
+        "point": 0.003380000000000003,
+        "regimes": {
+          "n5": {
+            "complete": 20,
+            "missing_sensitivity": [
+              0.0018866666666666697,
+              0.0018866666666666697
+            ],
+            "planned": 20,
+            "point": 0.0018866666666666697
+          },
+          "n7": {
+            "complete": 20,
+            "missing_sensitivity": [
+              0.004873333333333335,
+              0.004873333333333335
+            ],
+            "planned": 20,
+            "point": 0.004873333333333335
+          }
+        }
+      },
+      "interpretable": false,
+      "name": "actual_udp_pdr_gnn-motion_vs_reactive-motion",
+      "success": false
+    },
+    {
+      "contrast": {
+        "arm": "mlp-motion",
+        "ci95": [
+          0.09999999999999998,
+          2.525
+        ],
+        "comparator": "gnn-motion",
+        "metric": "disconnected_seconds",
+        "point": 1.225,
+        "regimes": {
+          "n5": {
+            "complete": 20,
+            "missing_sensitivity": null,
+            "planned": 20,
+            "point": 0.7
+          },
+          "n7": {
+            "complete": 20,
+            "missing_sensitivity": null,
+            "planned": 20,
+            "point": 1.75
+          }
+        }
+      },
+      "interpretable": false,
+      "name": "disconnected_seconds_mlp-motion_vs_gnn-motion",
+      "success": true
+    }
+  ],
+  "means": {
+    "static": {
+      "gnn-motion": {
+        "actual_udp_pdr": 0.9946166666666667,
+        "background_pdr": 0.9986970521843048,
+        "disconnected_seconds": 0.0,
+        "no_olsr_route_seconds": 0.0,
+        "total_relay_travel_m": 0.0,
+        "longest_outage_seconds": 0.0,
+        "motion_starts": 0.0,
+        "safety_blocks": 0.0
+      },
+      "mlp-motion": {
+        "actual_udp_pdr": 0.9946166666666667,
+        "background_pdr": 0.9986970521843048,
+        "disconnected_seconds": 0.0,
+        "no_olsr_route_seconds": 0.0,
+        "total_relay_travel_m": 0.0,
+        "longest_outage_seconds": 0.0,
+        "motion_starts": 0.0,
+        "safety_blocks": 0.0
+      },
+      "reactive-motion": {
+        "actual_udp_pdr": 0.9946166666666667,
+        "background_pdr": 0.9986970521843048,
+        "disconnected_seconds": 0.0,
+        "no_olsr_route_seconds": 0.0,
+        "total_relay_travel_m": 0.0,
+        "longest_outage_seconds": 0.0,
+        "motion_starts": 0.0,
+        "safety_blocks": 0.0
+      },
+      "route-only": {
+        "actual_udp_pdr": 0.9946166666666667,
+        "background_pdr": 0.9986970521843048,
+        "disconnected_seconds": 0.0,
+        "no_olsr_route_seconds": 0.0,
+        "total_relay_travel_m": 0.0,
+        "longest_outage_seconds": 0.0,
+        "motion_starts": 0.0,
+        "safety_blocks": 0.0
+      }
+    },
+    "gradual": {
+      "gnn-motion": {
+        "actual_udp_pdr": 0.8860050000000002,
+        "background_pdr": 0.8460828575222414,
+        "disconnected_seconds": 31.25,
+        "no_olsr_route_seconds": 89.75,
+        "total_relay_travel_m": 636.7598394576297,
+        "longest_outage_seconds": 20.3,
+        "motion_starts": 8.3,
+        "safety_blocks": 0.0
+      },
+      "mlp-motion": {
+        "actual_udp_pdr": 0.8808116666666667,
+        "background_pdr": 0.8388676802549462,
+        "disconnected_seconds": 32.475,
+        "no_olsr_route_seconds": 89.375,
+        "total_relay_travel_m": 638.9714606678056,
+        "longest_outage_seconds": 21.375,
+        "motion_starts": 8.3,
+        "safety_blocks": 0.0
+      },
+      "reactive-motion": {
+        "actual_udp_pdr": 0.8826250000000002,
+        "background_pdr": 0.8433292391448678,
+        "disconnected_seconds": 31.45,
+        "no_olsr_route_seconds": 88.8,
+        "total_relay_travel_m": 637.4813486504827,
+        "longest_outage_seconds": 20.45,
+        "motion_starts": 7.925,
+        "safety_blocks": 0.0
+      },
+      "route-only": {
+        "actual_udp_pdr": 0.59892,
+        "background_pdr": 0.8116750763510823,
+        "disconnected_seconds": 123.425,
+        "no_olsr_route_seconds": 102.0,
+        "total_relay_travel_m": 0.0,
+        "longest_outage_seconds": 117.575,
+        "motion_starts": 0.0,
+        "safety_blocks": 0.0
+      }
+    }
+  },
+  "episode_sd": {
+    "static": {
+      "gnn-motion": {
+        "actual_udp_pdr": 0.0072794339567138645,
+        "background_pdr": 0.003685292944040881,
+        "disconnected_seconds": 0.0,
+        "no_olsr_route_seconds": 0.0,
+        "total_relay_travel_m": 0.0,
+        "longest_outage_seconds": 0.0,
+        "motion_starts": 0.0,
+        "safety_blocks": 0.0
+      },
+      "mlp-motion": {
+        "actual_udp_pdr": 0.0072794339567138645,
+        "background_pdr": 0.003685292944040881,
+        "disconnected_seconds": 0.0,
+        "no_olsr_route_seconds": 0.0,
+        "total_relay_travel_m": 0.0,
+        "longest_outage_seconds": 0.0,
+        "motion_starts": 0.0,
+        "safety_blocks": 0.0
+      },
+      "reactive-motion": {
+        "actual_udp_pdr": 0.0072794339567138645,
+        "background_pdr": 0.003685292944040881,
+        "disconnected_seconds": 0.0,
+        "no_olsr_route_seconds": 0.0,
+        "total_relay_travel_m": 0.0,
+        "longest_outage_seconds": 0.0,
+        "motion_starts": 0.0,
+        "safety_blocks": 0.0
+      },
+      "route-only": {
+        "actual_udp_pdr": 0.0072794339567138645,
+        "background_pdr": 0.003685292944040881,
+        "disconnected_seconds": 0.0,
+        "no_olsr_route_seconds": 0.0,
+        "total_relay_travel_m": 0.0,
+        "longest_outage_seconds": 0.0,
+        "motion_starts": 0.0,
+        "safety_blocks": 0.0
+      }
+    },
+    "gradual": {
+      "gnn-motion": {
+        "actual_udp_pdr": 0.04274236977273457,
+        "background_pdr": 0.04535381828311203,
+        "disconnected_seconds": 25.143434683676528,
+        "no_olsr_route_seconds": 15.562528961974904,
+        "total_relay_travel_m": 221.87862053642763,
+        "longest_outage_seconds": 21.486071815277963,
+        "motion_starts": 0.8227533512074423,
+        "safety_blocks": 0.0
+      },
+      "mlp-motion": {
+        "actual_udp_pdr": 0.04925430234147367,
+        "background_pdr": 0.05190219394517349,
+        "disconnected_seconds": 25.045586642289102,
+        "no_olsr_route_seconds": 17.142969703537666,
+        "total_relay_travel_m": 223.66929432615206,
+        "longest_outage_seconds": 22.185335304297354,
+        "motion_starts": 0.7909747313543117,
+        "safety_blocks": 0.0
+      },
+      "reactive-motion": {
+        "actual_udp_pdr": 0.04386402373640133,
+        "background_pdr": 0.04776130931376044,
+        "disconnected_seconds": 24.423559454147064,
+        "no_olsr_route_seconds": 16.040333777459487,
+        "total_relay_travel_m": 222.91757615205597,
+        "longest_outage_seconds": 21.604783420961816,
+        "motion_starts": 0.9971112120675253,
+        "safety_blocks": 0.0
+      },
+      "route-only": {
+        "actual_udp_pdr": 0.04914926668786032,
+        "background_pdr": 0.021590667479725073,
+        "disconnected_seconds": 8.17402860220978,
+        "no_olsr_route_seconds": 11.985033401748433,
+        "total_relay_travel_m": 0.0,
+        "longest_outage_seconds": 10.185176508672813,
+        "motion_starts": 0.0,
+        "safety_blocks": 0.0
+      }
+    }
+  },
+  "technical": {
+    "background_ok": true,
+    "flags_ok": true,
+    "forecasts_ok": true,
+    "no_startup_blackout": true,
+    "route_integrity_ok": true,
+    "route_only_stationary": true,
+    "safety_ok": true,
+    "transmissions_ok": true
+  },
+  "route_integrity_count": 192,
+  "route_changes": {
+    "gnn-motion": {
+      "episodes": 48,
+      "commanded_changes": 201,
+      "override_seconds": 7010
+    },
+    "mlp-motion": {
+      "episodes": 48,
+      "commanded_changes": 190,
+      "override_seconds": 7018
+    },
+    "reactive-motion": {
+      "episodes": 48,
+      "commanded_changes": 193,
+      "override_seconds": 6994
+    },
+    "route-only": {
+      "episodes": 48,
+      "commanded_changes": 1155,
+      "override_seconds": 4907
+    }
+  },
+  "forecast_evaluation": null,
+  "timings": {
+    "route-only": {
+      "n": 11520,
+      "mean_ms": 3.2927050347451665,
+      "median_ms": 3.0797490035183728,
+      "p95_ms": 8.745747996727005,
+      "max_ms": 81.54075298807584
+    },
+    "reactive-motion": {
+      "n": 11520,
+      "mean_ms": 3.6374601748042954,
+      "median_ms": 3.2414625020464882,
+      "p95_ms": 9.450017008930445,
+      "max_ms": 79.55623499583453
+    },
+    "gnn-motion": {
+      "n": 11520,
+      "mean_ms": 6.309244596084479,
+      "median_ms": 5.42491051601246,
+      "p95_ms": 13.855429977411404,
+      "max_ms": 101.80946500622667
+    },
+    "mlp-motion": {
+      "n": 11520,
+      "mean_ms": 5.929782611294993,
+      "median_ms": 5.1706030062632635,
+      "p95_ms": 13.278120022732764,
+      "max_ms": 80.7476059999317
+    }
+  },
+  "timing_note": "Measured complete controller.act latency on server CPU during four-worker simulation; not pure neural inference or UAV/control-channel latency.",
+  "hashes": {
+    "analysis/test/analysis.json": "0f40bc7093a583aa39844681ee6fd3ecb848e63337b55a57267ff6f68d9156fa",
+    "analysis/validation/analysis.json": "f5e55ee89da568bff732ebd4163148d2c59c307bbf778b266f7d04c65ec5c809",
+    "analysis/validation/go.json": "fc4b2e228bfc2647968c1a71edbc55a9cee1d55f400fcac66ee851be1b377b31",
+    "packages/test/freeze.json": "a7223951c34ebf64927faaf0d32f74c1ea35f007649dfaf1e70ba2dc3a6f571b",
+    "packages/test/go.json": "fc4b2e228bfc2647968c1a71edbc55a9cee1d55f400fcac66ee851be1b377b31",
+    "packages/validation/freeze.json": "1c0f2141875bceddaeb224cab8d25836322ff56f19b987a86d2270dfb8c7dcdc"
+  },
+  "queue_completions": {
+    "validation": {
+      "cells": 80,
+      "wrapper_exit_zero": 80,
+      "note": "Wrapper completion is not collection validation; validate every frozen cell separately."
+    },
+    "test": {
+      "cells": 192,
+      "wrapper_exit_zero": 192,
+      "note": "Wrapper completion is not collection validation; validate every frozen cell separately."
+    }
+  },
+  "motion_supplement": {
+    "gnn-motion": {
+      "episodes": 40,
+      "moving_episodes": 40,
+      "motion_before_outage": 39,
+      "both_motion_and_outage": 39,
+      "no_outage_episodes": 1,
+      "safety_blocked_decisions": 0,
+      "simulator_rejections": 0,
+      "max_relay_travel_m": 319.317784639,
+      "episodes_with_exhausted_relay": 0
+    },
+    "mlp-motion": {
+      "episodes": 40,
+      "moving_episodes": 40,
+      "motion_before_outage": 40,
+      "both_motion_and_outage": 40,
+      "no_outage_episodes": 0,
+      "safety_blocked_decisions": 0,
+      "simulator_rejections": 0,
+      "max_relay_travel_m": 319.317776366,
+      "episodes_with_exhausted_relay": 0
+    },
+    "reactive-motion": {
+      "episodes": 40,
+      "moving_episodes": 40,
+      "motion_before_outage": 40,
+      "both_motion_and_outage": 40,
+      "no_outage_episodes": 0,
+      "safety_blocked_decisions": 0,
+      "simulator_rejections": 0,
+      "max_relay_travel_m": 319.31776561,
+      "episodes_with_exhausted_relay": 0
+    },
+    "route-only": {
+      "episodes": 40,
+      "moving_episodes": 0,
+      "motion_before_outage": 0,
+      "both_motion_and_outage": 0,
+      "no_outage_episodes": 0,
+      "safety_blocked_decisions": 0,
+      "simulator_rejections": 0,
+      "max_relay_travel_m": 0,
+      "episodes_with_exhausted_relay": 0
+    }
+  }
+}

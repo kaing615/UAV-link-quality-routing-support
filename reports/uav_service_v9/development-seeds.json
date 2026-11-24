@@ -1,0 +1,12 @@
+{
+  "scenarios": [
+    {
+      "layout_seed": 3599001,
+      "radio_seed": 3699001
+    },
+    {
+      "layout_seed": 3599002,
+      "radio_seed": 3699002
+    }
+  ]
+}

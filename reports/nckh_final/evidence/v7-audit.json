@@ -1,0 +1,227 @@
+{
+  "analysis_sha256": "0eb750b80ceebc9db0b45deb007cfcbbddf464027a1c194acdfa66502dfd7950",
+  "phases": {
+    "tuning": 72,
+    "validation": 100,
+    "test": 240
+  },
+  "test_scenario_blocks": 48,
+  "gradual_blocks": 40,
+  "route_integrity_ok": 96,
+  "method_cost_ratio_route_to_fast": 3.117422889043474,
+  "method_cost_ratio_route_to_etx": 12.480230434171702,
+  "paired_wins": {
+    "route_minus_fast_pp": 39,
+    "delay_minus_fast_pp": 39
+  },
+  "fixed_sequence": [
+    {
+      "contrast": {
+        "arm": "lq-route",
+        "ci95": [
+          0.042119833333333336,
+          0.05913895833333334
+        ],
+        "comparator": "olsr-etx-fast",
+        "metric": "actual_udp_pdr",
+        "point": 0.050625,
+        "regimes": {
+          "n5": {
+            "complete": 20,
+            "missing_sensitivity": [
+              0.05272333333333332,
+              0.05272333333333332
+            ],
+            "planned": 20,
+            "point": 0.05272333333333332
+          },
+          "n7": {
+            "complete": 20,
+            "missing_sensitivity": [
+              0.048526666666666676,
+              0.048526666666666676
+            ],
+            "planned": 20,
+            "point": 0.048526666666666676
+          }
+        }
+      },
+      "interpretable": true,
+      "name": "pdr_lq_route_vs_olsr_etx_fast",
+      "rule": "lower_gt_0",
+      "success": true
+    },
+    {
+      "contrast": {
+        "arm": "lq-route-delay",
+        "ci95": [
+          0.04037816666666668,
+          0.05579337499999999
+        ],
+        "comparator": "olsr-etx-fast",
+        "metric": "actual_udp_pdr",
+        "point": 0.04821500000000001,
+        "regimes": {
+          "n5": {
+            "complete": 20,
+            "missing_sensitivity": [
+              0.04899666666666667,
+              0.04899666666666667
+            ],
+            "planned": 20,
+            "point": 0.04899666666666667
+          },
+          "n7": {
+            "complete": 20,
+            "missing_sensitivity": [
+              0.04743333333333334,
+              0.04743333333333334
+            ],
+            "planned": 20,
+            "point": 0.04743333333333334
+          }
+        }
+      },
+      "interpretable": true,
+      "name": "pdr_lq_route_delay_vs_olsr_etx_fast",
+      "rule": "lower_gt_0",
+      "success": true
+    },
+    {
+      "contrast": {
+        "arm": "lq-route",
+        "ci95": [
+          0.043534749999999976,
+          0.059825333333333314
+        ],
+        "comparator": "olsr-etx",
+        "metric": "actual_udp_pdr",
+        "point": 0.05151833333333333,
+        "regimes": {
+          "n5": {
+            "complete": 20,
+            "missing_sensitivity": [
+              0.046813333333333325,
+              0.046813333333333325
+            ],
+            "planned": 20,
+            "point": 0.046813333333333325
+          },
+          "n7": {
+            "complete": 20,
+            "missing_sensitivity": [
+              0.056223333333333333,
+              0.056223333333333333
+            ],
+            "planned": 20,
+            "point": 0.056223333333333333
+          }
+        }
+      },
+      "interpretable": true,
+      "name": "pdr_lq_route_vs_olsr_etx",
+      "rule": "lower_gt_0",
+      "success": true
+    }
+  ],
+  "static_descriptive": [
+    {
+      "arm": "lq-route",
+      "ci95": [
+        -0.002208333333333326,
+        0.0068839583333333435
+      ],
+      "comparator": "olsr-etx-fast",
+      "metric": "actual_udp_pdr",
+      "point": 0.0016666666666666774,
+      "regimes": {
+        "n5": {
+          "complete": 4,
+          "missing_sensitivity": [
+            0.005216666666666675,
+            0.005216666666666675
+          ],
+          "planned": 4,
+          "point": 0.005216666666666675
+        },
+        "n7": {
+          "complete": 4,
+          "missing_sensitivity": [
+            -0.0018833333333333202,
+            -0.0018833333333333202
+          ],
+          "planned": 4,
+          "point": -0.0018833333333333202
+        }
+      }
+    },
+    {
+      "arm": "lq-route-delay",
+      "ci95": [
+        -0.0036916666666666764,
+        0.006241666666666673
+      ],
+      "comparator": "olsr-etx-fast",
+      "metric": "actual_udp_pdr",
+      "point": 0.0006416666666666654,
+      "regimes": {
+        "n5": {
+          "complete": 4,
+          "missing_sensitivity": [
+            0.005216666666666675,
+            0.005216666666666675
+          ],
+          "planned": 4,
+          "point": 0.005216666666666675
+        },
+        "n7": {
+          "complete": 4,
+          "missing_sensitivity": [
+            -0.003933333333333344,
+            -0.003933333333333344
+          ],
+          "planned": 4,
+          "point": -0.003933333333333344
+        }
+      }
+    },
+    {
+      "arm": "lq-route",
+      "ci95": [
+        -0.001674999999999996,
+        0.0008750000000000147
+      ],
+      "comparator": "olsr-etx",
+      "metric": "actual_udp_pdr",
+      "point": -0.00043333333333332724,
+      "regimes": {
+        "n5": {
+          "complete": 4,
+          "missing_sensitivity": [
+            0.0,
+            0.0
+          ],
+          "planned": 4,
+          "point": 0.0
+        },
+        "n7": {
+          "complete": 4,
+          "missing_sensitivity": [
+            -0.0008666666666666545,
+            -0.0008666666666666545
+          ],
+          "planned": 4,
+          "point": -0.0008666666666666545
+        }
+      }
+    }
+  ],
+  "means_gradual": {
+    "hold": 0.8827283333333333,
+    "olsr-etx": 0.889475,
+    "olsr-etx-fast": 0.8903683333333333,
+    "lq-route": 0.9409933333333333,
+    "lq-route-delay": 0.9385833333333334
+  },
+  "note": "Descriptive figures from frozen results; no new inference, seed selection or simulations."
+}

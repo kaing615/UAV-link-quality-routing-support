@@ -1,0 +1,109 @@
+\subsection{Môi trường và thiết kế thí nghiệm}
+Thực nghiệm dùng ns-3.45, Wi-Fi 802.11g và OLSR~\cite{rfc3626} trên chuỗi 5 hoặc 7 UAV.
+Nguồn và đích ở hai đầu chuỗi; các nút còn lại làm relay. Mỗi episode dài
+240 giây, luồng chính UDP 256 kbps, hai luồng nền 128 kbps. Hai bối cảnh gồm
+static và gradual: đầu mút đứng yên hoặc di chuyển tách xa từ giây 30.
+Binary và runtime kế thừa nghiên cứu trước, gồm baseline OLSR-ETX do nhóm
+cài đặt và thời hạn ARP DeadTimeout 1 giây. Mọi arm dùng cùng binary,
+kênh, lưu lượng và seed của khối tương ứng.
+Vùng mô phỏng $1800\times1200$ m, độ cao 50--150 m. Khoảng cách ban đầu
+giữa các nút liên tiếp danh định 24 m với jitter tối đa 0,72 m mỗi tọa độ.
+Kênh dùng log-distance (số mũ 2,2, suy hao tham chiếu 40 dB tại 1 m) và
+Nakagami ($m=3;1{,}5;1$ theo các dải khoảng cách dưới 96 m, 96--180 m,
+trên 180 m). Công suất phát 20 dBm, tốc độ PHY cố định 6 Mbps. Tầm phủ
+danh định 240 m dùng để đặt độ nhạy thu, không phải ngưỡng cắt liên kết
+theo khoảng cách. Warmup 10 giây; probe broadcast cách 0,05 giây, tổng hợp
+cửa sổ một giây; luồng chính gói 512 B, 15.000 gói mỗi episode.
+
+Protocol được viết trước các mô phỏng mới. Mỗi pha đóng gói mã nguồn, mô
+hình, seed plan và định danh runtime bằng SHA-256; test kế thừa đúng nguồn
+và mô hình validation. Mỗi cell chạy một lần; queue bốn worker giữ lock
+toàn server. Validation có 80 cell (hai static và tám gradual mỗi cấu hình,
+bốn arm); test có 192 cell (bốn static và 20 gradual mỗi cấu hình, bốn arm).
+Không chọn lại mô hình theo kết quả dịch vụ của validation hoặc test.
+
+\subsection{Dự báo liên kết và đối chứng}
+Mô hình dự báo tỷ lệ nhận probe trung bình trong năm giây tiếp theo, không
+phải xác suất sống sót của liên kết. Dữ liệu phát triển gồm 48 trace HOLD
+test v7 để fit và 20 trace HOLD validation v7 để chọn epoch. Các dữ liệu đã
+quan sát này được coi hoàn toàn là dữ liệu phát triển cho nghiên cứu mới;
+v8/v9 dùng seed độc lập đã kiểm toán. Mỗi episode có 236 gốc dự báo hợp lệ,
+tạo 11.328 mẫu fit và 4.720 mẫu chọn epoch; các frame tương quan không được
+coi là các lần lặp độc lập khi kiểm định hiệu quả điều khiển.
+
+Đầu vào chỉ gồm quan sát hiện tại và quá khứ. Tám đặc trưng nút gồm tọa độ
+tương đối với tâm đội hình, vận tốc, bậc hàng xóm và tỷ lệ nhận trung bình.
+Bảy đặc trưng cạnh gồm khoảng cách, RSSI, tỷ lệ nhận hiện tại, EWMA hệ số
+0,5, chênh tỷ lệ nhận, vận tốc tách xa và độ lớn vận tốc tương đối. Tọa độ
+và khoảng cách chia 240 m; vận tốc chia 10 m/s; RSSI biến đổi thành
+$(RSSI+90)/40$, giá trị thiếu mã hóa $-100$ dBm. Cạnh truyền thông điệp có
+tỷ lệ nhận hiện tại ít nhất 0,1. Không đọc quỹ đạo nhiệm vụ trong tương lai.
+
+Edge-SAGE gồm hai lớp tổng hợp trung bình với đặc trưng cạnh, 64 chiều và
+ReLU; bộ giải mã cặp nút 64 chiều và sigmoid, đối xứng hóa logits. GNN có
+19.137 tham số. MLP bỏ hai nhánh truyền thông điệp học được, còn 13.505 tham
+số; vẫn giữ đặc trưng bậc nút. Vì thế ablation chưa tách riêng tác động của
+truyền thông điệp khỏi khác biệt dung lượng mô hình. Cả hai dùng MSE, Adam
+lr 0,001, weight decay $10^{-5}$, batch 128, clip norm 5, tối đa 60 epoch,
+patience 10, seed 20261123. GNN/MLP chọn epoch 58/59. Sai số lớn nhất giữa
+suy luận NumPy và PyTorch trên 40 snapshot kiểm tra là $1{,}19\times10^{-7}$.
+Đây là học có giám sát; các nghiên cứu không dùng học tăng cường.
+
+\subsection{Nghiên cứu định tuyến v8}
+Bốn arm là chất lượng hiện tại (\code{lq-route}), dự báo GNN
+(\code{gnn-route}), dự báo MLP (\code{mlp-route}) và OLSR-ETX-fast.
+Ba arm ghim tuyến giữ cùng luật ETX với margin 1,0, warmup ba bước và dwell
+năm giây; kiểm tra liên kết hỏng vẫn dựa trên tỷ lệ nhận hiện tại dưới 0,1.
+ETX-fast dùng HELLO 0,5 s, TC 1,25 s đã chọn ở v7. Relay đứng yên; tốc độ
+mỗi đầu mút gradual có giá trị danh định 1 m/s, nhân hệ số [0,85; 1,15] theo
+layout seed. Nguồn đi theo chiều $+y$, đích theo chiều $-y$; cùng seed giữ
+cùng chuyển động đầu mút giữa các arm. Validation chỉ kiểm tra kỹ thuật: đủ cell,
+đúng tuyến, cờ simulator, forecast, bộ đếm và luồng nền, không blackout khởi
+động và không di chuyển relay. Go không phụ thuộc chênh PDR.
+
+Ba bước kiểm định theo thứ tự cố định là PDR GNN trừ hiện tại, GNN trừ MLP,
+rồi GNN trừ ETX-fast. Một bước đạt khi cận dưới CI 95\% dương; chỉ diễn giải
+khẳng định khi mọi bước trước đạt. MSE test được đo riêng cho GNN, MLP và
+EWMA trên cùng các trace \code{lq-route}, tách khỏi PDR vòng kín.
+
+\subsection{Nghiên cứu vị trí v9}
+V9 giữ nguyên trọng số v8 và giữ định tuyến theo chất lượng hiện tại ở mọi
+arm. Các arm là relay đứng yên, kích hoạt di chuyển phản ứng, kích hoạt bằng
+GNN và kích hoạt bằng MLP. Chất lượng đường tốt nhất là $Q=\max_P\min_{e\in P}q_e$.
+Sau ba frame, reactive kích hoạt nếu EWMA hiện tại có $Q<0{,}70$ trong hai
+frame liên tiếp; GNN/MLP dùng thêm điều kiện tương tự trên dự báo. Cạnh dự
+báo chỉ được dùng nếu số đo hiện tại ít nhất 0,1.
+
+Các relay được xếp theo hình chiếu lên đường nối đầu mút hiện tại rồi hướng
+tới các điểm chia đều đoạn đó. Giới hạn: 8 m/s, 400 m mỗi relay, deadband
+1 m, tối đa mười bước mỗi đợt và nghỉ năm bước. Dừng sớm sau ba frame có
+chất lượng hiện tại và dự báo (nếu có) ít nhất 0,80. Kiểm tra khoảng cách
+nhỏ nhất trong bước phải đạt 5 m; nếu không, lệnh chuyển động relay bằng 0.
+Luật này giống nhau ở mọi arm có chuyển động, chỉ khác trigger.
+
+Tốc độ danh định mỗi đầu mút gradual tăng lên 2 m/s, vẫn giữ hệ số ngẫu nhiên
+theo seed như v8, để tạo thách thức chia cắt; khác phân phối fit 1 m/s.
+Validation đòi kỹ thuật/an toàn đạt và ít nhất 8/16
+baseline gradual đứng yên mất kết nối ít nhất năm giây. Nếu không đạt thì
+dừng test, không chỉnh lại tốc độ trong cùng nghiên cứu.
+
+Endpoint chính là số giây mất kết nối của reactive trừ GNN; sau đó xét PDR
+GNN trừ reactive, rồi số giây mất kết nối của MLP trừ GNN. Mất kết nối là
+nguồn và đích khác thành phần liên thông trong đồ thị probe ngưỡng 0,5, đếm
+trên frame 1--240. Số giây OLSR không có tuyến và PDR là các đại lượng khác.
+Đây là chia cắt theo ngưỡng đồ thị đo được, không phải chứng minh hoàn toàn
+không có gói vô tuyến nào có thể truyền giữa các thành phần.
+Quãng đường, outage dài nhất, số đợt di chuyển và PDR luồng nền là mô tả.
+
+\subsection{Phân tích thống kê và chi phí}
+Mỗi so sánh giữ bốn arm cùng khối seed; bootstrap 10.000 lần trên 40 khối
+gradual test, 20 mỗi cấu hình, cân bằng n5/n7, RNG 20261120. Bootstrap~\cite{efron1993}
+được áp dụng ở cấp kịch bản để giữ tương quan giữa các arm. Kết quả âm và
+các bước bị đóng cổng vẫn được trình bày. CI chứa 0 không chứng minh tương
+đương. Kết quả static chỉ mô tả với tám khối.
+
+Collector đo thời gian toàn bộ quyết định trên máy ảo KVM tám vCPU (model
+Intel Xeon Silver 4110 2,10 GHz), chạy bốn worker, mỗi worker giới hạn thư
+viện tính toán về một luồng. Probe phát trong mọi arm; telemetry và lệnh tập trung chưa được
+truyền thành gói cạnh tranh kênh. Không quy thời gian tính thành độ trễ điều
+khiển đầu cuối, số byte thành airtime, hoặc quãng đường thành năng lượng.

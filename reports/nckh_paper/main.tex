@@ -1,0 +1,136 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{fontspec}
+\setmainfont{Times New Roman}
+\setmonofont{Consolas}
+\usepackage[margin=2.3cm]{geometry}
+\usepackage{amsmath,amssymb,graphicx,booktabs,tabularx,array}
+\usepackage{enumitem,caption,xurl}
+\usepackage[unicode,hidelinks]{hyperref}
+\setlength{\emergencystretch}{2em}
+\setlength{\parskip}{3pt}
+\setlist{itemsep=2pt,topsep=3pt,leftmargin=*}
+\renewcommand{\figurename}{Hình}
+\renewcommand{\tablename}{Bảng}
+\renewcommand{\refname}{Tài liệu tham khảo}
+\renewcommand{\abstractname}{Tóm tắt}
+\newcommand{\code}[1]{\texttt{\detokenize{#1}}}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\title{\textbf{Dự báo chất lượng liên kết bằng mạng nơ-ron đồ thị cho định tuyến và bố trí UAV}}
+\author{Nguyễn Đình Tâm\thanks{Tác giả liên hệ: \href{mailto:23521389@gm.uit.edu.vn}{23521389@gm.uit.edu.vn}.} \and Võ Công Vinh}
+\date{Trường Đại học Công nghệ Thông tin, ĐHQG-HCM\\Tháng 11 năm 2026}
+\begin{document}
+\maketitle
+\begin{abstract}
+Nghiên cứu đánh giá giá trị của dự báo chất lượng liên kết đối với hai hành động trong mạng phương tiện bay không người lái (UAV): chọn tuyến dữ liệu và kích hoạt bố trí lại relay. Mạng nơ-ron đồ thị (GNN) dự báo tỷ lệ nhận probe trung bình trong năm giây tiếp theo từ vị trí, vận tốc và số đo liên kết nhân quả. Mô hình được học có giám sát từ dữ liệu lịch sử; mô hình đối chứng bỏ truyền thông điệp học được, nhưng vẫn giữ đặc trưng bậc nút và có ít tham số hơn. Hai nghiên cứu vòng kín được khóa trước khi chạy, mỗi nghiên cứu gồm 80 lượt validation và 192 lượt test mới trong ns-3.45, với chuỗi năm hoặc bảy UAV và các nhóm so sánh ghép cặp theo seed. Nghiên cứu định tuyến giữ relay đứng yên và cùng luật ghim tuyến, chỉ thay chất lượng hiện tại bằng dự báo. Trên 40 khối gradual test, dự báo đồ thị tăng tỷ lệ gói đến đích (PDR) 0,66 điểm phần trăm so với chất lượng hiện tại, khoảng tin cậy 95\% [0,38; 1,00], và tăng 0,38 điểm so với mô hình bỏ truyền thông điệp, khoảng tin cậy [0,12; 0,67]. Nghiên cứu điều khiển vị trí giữ cùng định tuyến và luật bố trí, chỉ thay điều kiện kích hoạt chuyển động. Dự báo giảm trung bình 0,20 giây chia cắt đồ thị probe so với kích hoạt phản ứng, khoảng tin cậy [$-1,05$; $1,45$], nên endpoint chính không đạt. Các nhóm di chuyển có khoảng 31 giây chia cắt so với 123 giây khi đứng yên, nhưng cần khoảng 637 m tổng quãng đường relay; đây là so sánh mô tả, không chứng minh lợi ích riêng của dự báo. Kết quả cho thấy cần đánh giá bộ dự báo cùng hành động cụ thể: GNN cải thiện định tuyến trong phạm vi đã thử, còn trigger vị trí chưa thể hiện lợi ích thêm rõ. Các giới hạn gồm telemetry tập trung chưa tranh chấp kênh, một seed huấn luyện, thay đổi phân phối chuyển động ở nghiên cứu vị trí và chưa có thử nghiệm bay thật.
+\end{abstract}
+\noindent\textbf{Từ khóa:} mạng UAV; mạng nơ-ron đồ thị; chất lượng liên kết; định tuyến; điều khiển vị trí.
+\section{Giới thiệu}
+Trong chuỗi UAV làm relay, suy giảm liên kết có thể gây mất gói hoặc chia cắt
+nguồn--đích. Dự báo liên kết có thể hỗ trợ hai quyết định khác nhau: chọn đường
+đi của gói tin và đặt lại vị trí relay. Một mô hình dự báo tốt hơn chưa tự động
+chứng minh một bộ điều khiển tốt hơn; cần so sánh vòng kín với cùng luật hành
+động và các kịch bản ghép cặp.
+
+ETX đưa xác suất truyền thành công vào chi phí đường đi, thay cho chỉ đếm
+hop~\cite{decouto}. Predictive-OLSR đã dùng vận tốc tương đối và GPS để điều
+chỉnh chất lượng đường~\cite{rosati2013}. Vì vậy, đóng góp cần kiểm tra ở đây
+là giá trị thêm của dự báo học được trong một hệ thống có kiểm soát, không
+phải tuyên bố lần đầu dùng dự báo hoặc vị trí trong định tuyến UAV.
+GraphSAGE cung cấp cơ chế học tổng hợp thông tin hàng xóm trên
+đồ thị~\cite{graphsage}; nghiên cứu dùng một biến thể có đặc trưng cạnh
+để hồi quy chất lượng liên kết.
+
+OLSR-LCN kết hợp tuổi thọ liên kết, nhiễu và tải nút trong mở rộng
+OLSR~\cite{liu2025}. Tối ưu quỹ đạo relay và công suất cũng đã được nghiên
+cứu trong hệ thống mobile relaying~\cite{zeng2016}. Nghiên cứu hiện tại dùng
+luật bố trí đơn giản để kiểm tra riêng thời điểm kích hoạt bằng dự báo;
+không giải bài toán quỹ đạo tối ưu hoặc so sánh hiệu năng trực tiếp với các
+công trình trên. Điểm nhấn là tách các phép so sánh, giữ seed và nguồn đã
+khóa, kiểm tra lệnh thực thi, và phân biệt chất lượng dự báo với dịch vụ mạng.
+
+Bài báo đặt hai câu hỏi. Thứ nhất, dự báo GNN có cải thiện tỷ lệ gói đến đích
+(PDR) so với chất lượng hiện tại khi giữ nguyên luật chọn tuyến? Thứ hai,
+dự báo có giảm số giây chia cắt khi giữ cùng định tuyến và cùng luật bố trí
+relay, chỉ thay cơ chế kích hoạt chuyển động? Hai nghiên cứu kế tiếp được
+ký hiệu v8 và v9 để liên kết với các hồ sơ thực nghiệm trong kho mã.
+\section{Vật liệu và phương pháp}
+Hình~\ref{fig:design} tóm tắt hai phép so sánh.
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{images/fig_v8_v9_design.pdf}
+\caption{Thiết kế tách riêng dự báo cho định tuyến và dự báo cho kích hoạt chuyển động.}\label{fig:design}
+\end{figure}
+\input{methods}
+\section{Kết quả}
+\input{results}
+\section{Thảo luận}
+Hai nghiên cứu cho các kết luận khác nhau về cùng một bộ dự báo. Với luật
+ghim tuyến, GNN đem lại lợi ích thêm nhỏ nhưng CI dương; so sánh với MLP
+ủng hộ lợi ích của cấu hình GNN đã thử, chưa cô lập riêng ảnh hưởng của
+truyền thông điệp vì số tham số khác nhau. Việc ít đổi tuyến hơn là một
+giải thích khả dĩ, chưa được can thiệp kiểm tra riêng.
+
+Với điều khiển vị trí, endpoint chính không đạt. Kết quả GNN--MLP có CI
+riêng lẻ dương chỉ mang tính mô tả vì cổng đầu tiên đã đóng. Trigger reactive
+dùng ngưỡng chất lượng 0,70, thường đã hành động trước chia cắt đồ thị
+ngưỡng 0,5; nó không chờ đến khi mất liên lạc mới di chuyển. Do đó dư địa
+cho dự báo năm giây có thể nhỏ. Chuyển miền vận tốc và việc mô hình chỉ
+được fit trên relay đứng yên cũng là các khả năng cần kiểm tra tiếp.
+Không có phép thử riêng để chọn một giải thích làm nguyên nhân duy nhất.
+
+Di chuyển giảm mạnh mất kết nối so với relay đứng yên ở kịch bản nhanh,
+nhưng lợi ích đó chưa chứng minh phần đóng góp riêng của dự báo. Chi phí
+hình học tương tự giữa trigger GNN và reactive, trong khi GNN cần tính
+toán và telemetry bổ sung. CI chứa 0 không chứng minh tương đương; cũng
+không đủ căn cứ để thêm một mô hình phức tạp chỉ từ chênh lệch điểm ước lượng.
+Không thay ngưỡng hoặc huấn luyện lại sau khi thấy test. Hướng tiếp theo
+là thu thập dữ liệu relay di chuyển, kiểm tra hiệu chuẩn và báo hiệu trên
+kênh, rồi đăng ký một nghiên cứu mới nếu học chính sách bằng RL.
+
+
+Các giới hạn đã xác định gồm một họ topology chuỗi relay, bộ điều khiển
+tập trung chưa chịu mất thông điệp, lưu lượng telemetry chưa tranh chấp kênh,
+và chưa có thử nghiệm UAV thật. Ở nghiên cứu vị trí, tốc độ đầu mút khác dữ
+liệu huấn luyện, đồng thời relay chuyển từ đứng yên trong dữ liệu fit sang
+di chuyển. Mô hình không được huấn luyện để so sánh các hành động phản thực;
+nó chỉ kích hoạt một luật bố trí cố định. Quãng đường di chuyển chỉ là chi phí hình học, chưa được
+chuyển đổi thành năng lượng.
+Mỗi mô hình chỉ có một seed huấn luyện; CI bootstrap theo kịch bản điều kiện
+trên trọng số đã khóa, chưa mô tả biến thiên giữa các lần huấn luyện.
+\section{Kết luận}
+Trong hai nghiên cứu đã khóa trên chuỗi 5/7 UAV, GNN hồi quy năm giây
+cải thiện PDR khi dùng cho lựa chọn tuyến, nhưng chưa thể hiện lợi ích
+thêm rõ khi chỉ kích hoạt một luật bố trí relay chung. Kết luận về dự báo
+cần gắn với hành động và baseline cụ thể; độ chính xác dự báo cao hơn
+không thay thế thí nghiệm dịch vụ vòng kín. Hệ thống và bằng chứng hiện
+có phù hợp cho đánh giá mô phỏng trong phạm vi công bố, chưa xác nhận
+khả năng triển khai bay thật.
+\section*{Thông tin tác giả và dữ liệu}
+Nhóm cảm ơn ThS. Đặng Lê Bảo Chương đã hướng dẫn đề tài.
+Nguyễn Đình Tâm là người thực hiện chính và tác giả liên hệ.
+Kho mã nền: \url{https://github.com/kaing615/UAV-link-quality-routing-support}.
+Gói tái lập đi kèm bản thảo chứa nguồn đóng gói, mô hình, kế hoạch seed,
+kết quả và manifest SHA-256; trace đầy đủ được lưu trên server của nhóm.
+\begin{thebibliography}{9}
+\bibitem{decouto} D. S. J. De Couto, D. Aguayo, J. Bicket, R. Morris.
+A high-throughput path metric for multi-hop wireless routing.
+\textit{Proc. ACM MobiCom}, 2003.
+\bibitem{rosati2013} S. Rosati, K. Kruzelecki, L. Traynard, B. Rimoldi.
+\textit{Speed-Aware Routing for UAV Ad-Hoc Networks}.
+arXiv:1307.6350, 2013. \url{https://arxiv.org/abs/1307.6350}.
+\bibitem{graphsage} W. L. Hamilton, R. Ying, J. Leskovec.
+Inductive representation learning on large graphs.
+\textit{NeurIPS}, 2017. \url{https://arxiv.org/abs/1706.02216}.
+\bibitem{liu2025} J. Liu, P. Gong, H. Yang, S. Li, X. Gao.
+Cross-Layer Optimized OLSR Protocol for FANETs in Interference-Intensive Environments.
+\textit{Drones}, 9(11):778, 2025. \url{https://doi.org/10.3390/drones9110778}.
+\bibitem{zeng2016} Y. Zeng, R. Zhang, T. J. Lim.
+Throughput maximization for UAV-enabled mobile relaying systems.
+\textit{IEEE Transactions on Communications}, 64(12):4983--4996, 2016.
+\bibitem{rfc3626} T. Clausen, P. Jacquet.
+\textit{Optimized Link State Routing Protocol (OLSR)}. RFC 3626, 2003.
+\url{https://www.rfc-editor.org/rfc/rfc3626}.
+\bibitem{efron1993} B. Efron, R. J. Tibshirani.
+\textit{An Introduction to the Bootstrap}. Chapman \& Hall, 1993.
+\end{thebibliography}
+\end{document}

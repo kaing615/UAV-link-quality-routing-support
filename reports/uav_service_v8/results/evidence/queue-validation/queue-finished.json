@@ -1,0 +1,5 @@
+{
+  "cells": 80,
+  "wrapper_exit_zero": 80,
+  "note": "Wrapper completion is not collection validation; validate every frozen cell separately."
+}

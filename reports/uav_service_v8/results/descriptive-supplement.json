@@ -1,0 +1,1722 @@
+{
+  "phases": {
+    "validation": {
+      "decision_timing_ms": {
+        "lq-route": {
+          "n": 4800,
+          "mean_ms": 3.3653478816449933,
+          "median_ms": 2.914351993240416,
+          "p95_ms": 8.88662101351656,
+          "max_ms": 25.24390400503762
+        },
+        "gnn-route": {
+          "n": 4800,
+          "mean_ms": 5.639132689035857,
+          "median_ms": 4.607051989296451,
+          "p95_ms": 11.98328600730747,
+          "max_ms": 35.65881701069884
+        },
+        "mlp-route": {
+          "n": 4800,
+          "mean_ms": 5.273810962219916,
+          "median_ms": 4.298520507290959,
+          "p95_ms": 11.235746002057567,
+          "max_ms": 31.837451009778306
+        },
+        "olsr-etx-fast": {
+          "n": 4800,
+          "mean_ms": 0.70293031672918,
+          "median_ms": 0.5414964980445802,
+          "p95_ms": 1.6386189963668585,
+          "max_ms": 8.353785990038887
+        }
+      },
+      "timing_episodes": [
+        {
+          "cell_id": "validation-n5-static-01__lq-route",
+          "mean_ms": 1.2754952621132059,
+          "median_ms": 1.0732550144894049,
+          "max_ms": 5.024473997764289
+        },
+        {
+          "cell_id": "validation-n5-static-01__gnn-route",
+          "mean_ms": 2.9732917481548307,
+          "median_ms": 2.8590194997377694,
+          "max_ms": 8.448643988231197
+        },
+        {
+          "cell_id": "validation-n5-static-01__mlp-route",
+          "mean_ms": 3.144563166036581,
+          "median_ms": 2.774969005258754,
+          "max_ms": 9.998566005378962
+        },
+        {
+          "cell_id": "validation-n5-static-01__olsr-etx-fast",
+          "mean_ms": 0.7096070887200767,
+          "median_ms": 0.5383194948080927,
+          "max_ms": 2.6583440194372088
+        },
+        {
+          "cell_id": "validation-n5-static-02__lq-route",
+          "mean_ms": 1.7166607087953405,
+          "median_ms": 1.5412365028169006,
+          "max_ms": 5.584715021541342
+        },
+        {
+          "cell_id": "validation-n5-static-02__gnn-route",
+          "mean_ms": 4.470421920874894,
+          "median_ms": 4.215580003801733,
+          "max_ms": 9.907317988108844
+        },
+        {
+          "cell_id": "validation-n5-static-02__mlp-route",
+          "mean_ms": 4.158307853746616,
+          "median_ms": 3.8107594882603735,
+          "max_ms": 10.953538992907852
+        },
+        {
+          "cell_id": "validation-n5-static-02__olsr-etx-fast",
+          "mean_ms": 0.9237064962993221,
+          "median_ms": 0.6726199935656041,
+          "max_ms": 3.959713998483494
+        },
+        {
+          "cell_id": "validation-n5-gradual-01__lq-route",
+          "mean_ms": 1.0263102490474314,
+          "median_ms": 1.0162464895984158,
+          "max_ms": 2.966021973406896
+        },
+        {
+          "cell_id": "validation-n5-gradual-01__gnn-route",
+          "mean_ms": 3.003961254095581,
+          "median_ms": 2.9442969971569255,
+          "max_ms": 5.83620899124071
+        },
+        {
+          "cell_id": "validation-n5-gradual-01__mlp-route",
+          "mean_ms": 2.6239823673677165,
+          "median_ms": 2.5840544985840097,
+          "max_ms": 5.6677639950066805
+        },
+        {
+          "cell_id": "validation-n5-gradual-01__olsr-etx-fast",
+          "mean_ms": 0.5329413742098646,
+          "median_ms": 0.5106270109536126,
+          "max_ms": 1.7687109939288348
+        },
+        {
+          "cell_id": "validation-n5-gradual-02__lq-route",
+          "mean_ms": 1.0511885331652593,
+          "median_ms": 1.0386275098426268,
+          "max_ms": 3.378996974788606
+        },
+        {
+          "cell_id": "validation-n5-gradual-02__gnn-route",
+          "mean_ms": 3.1125793933218424,
+          "median_ms": 3.0001375125721097,
+          "max_ms": 7.35232699662447
+        },
+        {
+          "cell_id": "validation-n5-gradual-02__mlp-route",
+          "mean_ms": 2.6777858124357103,
+          "median_ms": 2.6112859923159704,
+          "max_ms": 7.9804960114415735
+        },
+        {
+          "cell_id": "validation-n5-gradual-02__olsr-etx-fast",
+          "mean_ms": 0.5199448302543411,
+          "median_ms": 0.5113725055707619,
+          "max_ms": 1.134382007876411
+        },
+        {
+          "cell_id": "validation-n5-gradual-03__lq-route",
+          "mean_ms": 1.1463441963618,
+          "median_ms": 1.0457969910930842,
+          "max_ms": 8.416583994403481
+        },
+        {
+          "cell_id": "validation-n5-gradual-03__gnn-route",
+          "mean_ms": 3.5236021743912715,
+          "median_ms": 3.111726007773541,
+          "max_ms": 23.440274002496153
+        },
+        {
+          "cell_id": "validation-n5-gradual-03__mlp-route",
+          "mean_ms": 3.252134341892088,
+          "median_ms": 2.8145240066805854,
+          "max_ms": 14.42629098892212
+        },
+        {
+          "cell_id": "validation-n5-gradual-03__olsr-etx-fast",
+          "mean_ms": 0.7940898468708232,
+          "median_ms": 0.652265502139926,
+          "max_ms": 8.095430006505921
+        },
+        {
+          "cell_id": "validation-n5-gradual-04__lq-route",
+          "mean_ms": 1.288741016954494,
+          "median_ms": 1.0993444884661585,
+          "max_ms": 5.034359986893833
+        },
+        {
+          "cell_id": "validation-n5-gradual-04__gnn-route",
+          "mean_ms": 3.530344558506234,
+          "median_ms": 3.31763549183961,
+          "max_ms": 9.88052602042444
+        },
+        {
+          "cell_id": "validation-n5-gradual-04__mlp-route",
+          "mean_ms": 3.4029298833047505,
+          "median_ms": 3.1101335043786094,
+          "max_ms": 16.604183008894324
+        },
+        {
+          "cell_id": "validation-n5-gradual-04__olsr-etx-fast",
+          "mean_ms": 0.4164125327709674,
+          "median_ms": 0.37194148171693087,
+          "max_ms": 2.1131719986442477
+        },
+        {
+          "cell_id": "validation-n5-gradual-05__lq-route",
+          "mean_ms": 1.0352410117775435,
+          "median_ms": 0.8899999957066029,
+          "max_ms": 5.272944981697947
+        },
+        {
+          "cell_id": "validation-n5-gradual-05__gnn-route",
+          "mean_ms": 3.189241449581459,
+          "median_ms": 2.8358605050016195,
+          "max_ms": 17.256816994631663
+        },
+        {
+          "cell_id": "validation-n5-gradual-05__mlp-route",
+          "mean_ms": 3.0446797087885593,
+          "median_ms": 2.4228654947364703,
+          "max_ms": 14.307602017652243
+        },
+        {
+          "cell_id": "validation-n5-gradual-05__olsr-etx-fast",
+          "mean_ms": 0.8696730254693344,
+          "median_ms": 0.8308630058309063,
+          "max_ms": 5.021377990487963
+        },
+        {
+          "cell_id": "validation-n5-gradual-06__lq-route",
+          "mean_ms": 1.2557968040103635,
+          "median_ms": 1.1452229955466464,
+          "max_ms": 7.080392009811476
+        },
+        {
+          "cell_id": "validation-n5-gradual-06__gnn-route",
+          "mean_ms": 3.914312445340329,
+          "median_ms": 3.53117250779178,
+          "max_ms": 35.65881701069884
+        },
+        {
+          "cell_id": "validation-n5-gradual-06__mlp-route",
+          "mean_ms": 3.5960239370372924,
+          "median_ms": 3.340905997902155,
+          "max_ms": 11.946439975872636
+        },
+        {
+          "cell_id": "validation-n5-gradual-06__olsr-etx-fast",
+          "mean_ms": 0.42196733763072797,
+          "median_ms": 0.3125434886896983,
+          "max_ms": 2.692882000701502
+        },
+        {
+          "cell_id": "validation-n5-gradual-07__lq-route",
+          "mean_ms": 0.7647272575316796,
+          "median_ms": 0.6615804886678234,
+          "max_ms": 5.864280974492431
+        },
+        {
+          "cell_id": "validation-n5-gradual-07__gnn-route",
+          "mean_ms": 2.5240398088499205,
+          "median_ms": 2.0522565027931705,
+          "max_ms": 8.100256003672257
+        },
+        {
+          "cell_id": "validation-n5-gradual-07__mlp-route",
+          "mean_ms": 2.526545854683112,
+          "median_ms": 2.16624399763532,
+          "max_ms": 18.032676016446203
+        },
+        {
+          "cell_id": "validation-n5-gradual-07__olsr-etx-fast",
+          "mean_ms": 0.9842059707201164,
+          "median_ms": 0.8563879964640364,
+          "max_ms": 4.727994004497305
+        },
+        {
+          "cell_id": "validation-n5-gradual-08__lq-route",
+          "mean_ms": 1.68571929486158,
+          "median_ms": 1.4082690031500533,
+          "max_ms": 10.595812986139208
+        },
+        {
+          "cell_id": "validation-n5-gradual-08__gnn-route",
+          "mean_ms": 4.655424486918491,
+          "median_ms": 4.237348504830152,
+          "max_ms": 16.896112996619195
+        },
+        {
+          "cell_id": "validation-n5-gradual-08__mlp-route",
+          "mean_ms": 4.304795049877915,
+          "median_ms": 3.7656485073966905,
+          "max_ms": 18.975260987645015
+        },
+        {
+          "cell_id": "validation-n5-gradual-08__olsr-etx-fast",
+          "mean_ms": 0.34758820377949934,
+          "median_ms": 0.2825039846356958,
+          "max_ms": 1.2214989983476698
+        },
+        {
+          "cell_id": "validation-n7-static-01__lq-route",
+          "mean_ms": 5.842270017819828,
+          "median_ms": 5.317962990375236,
+          "max_ms": 19.08477398683317
+        },
+        {
+          "cell_id": "validation-n7-static-01__gnn-route",
+          "mean_ms": 8.061217984504765,
+          "median_ms": 7.650939500308596,
+          "max_ms": 21.54223300749436
+        },
+        {
+          "cell_id": "validation-n7-static-01__mlp-route",
+          "mean_ms": 7.020174434486155,
+          "median_ms": 6.568749988218769,
+          "max_ms": 23.294660000829026
+        },
+        {
+          "cell_id": "validation-n7-static-01__olsr-etx-fast",
+          "mean_ms": 0.9742674660325671,
+          "median_ms": 0.8912625053199008,
+          "max_ms": 4.0536929736845195
+        },
+        {
+          "cell_id": "validation-n7-static-02__lq-route",
+          "mean_ms": 5.371319228531017,
+          "median_ms": 4.813225008547306,
+          "max_ms": 25.24390400503762
+        },
+        {
+          "cell_id": "validation-n7-static-02__gnn-route",
+          "mean_ms": 7.7775043240156565,
+          "median_ms": 7.415152998873964,
+          "max_ms": 22.3721050133463
+        },
+        {
+          "cell_id": "validation-n7-static-02__mlp-route",
+          "mean_ms": 7.019294837421815,
+          "median_ms": 6.27828850701917,
+          "max_ms": 24.07668699743226
+        },
+        {
+          "cell_id": "validation-n7-static-02__olsr-etx-fast",
+          "mean_ms": 0.8473083943196494,
+          "median_ms": 0.778750007157214,
+          "max_ms": 6.573090999154374
+        },
+        {
+          "cell_id": "validation-n7-gradual-01__lq-route",
+          "mean_ms": 5.779383704308809,
+          "median_ms": 4.8689164977986366,
+          "max_ms": 20.69115702761337
+        },
+        {
+          "cell_id": "validation-n7-gradual-01__gnn-route",
+          "mean_ms": 8.219318267704997,
+          "median_ms": 7.292262511327863,
+          "max_ms": 16.330979007761925
+        },
+        {
+          "cell_id": "validation-n7-gradual-01__mlp-route",
+          "mean_ms": 7.932814984330132,
+          "median_ms": 7.303081496502273,
+          "max_ms": 29.647016985109076
+        },
+        {
+          "cell_id": "validation-n7-gradual-01__olsr-etx-fast",
+          "mean_ms": 0.7007477410904054,
+          "median_ms": 0.6052745011402294,
+          "max_ms": 6.936908001080155
+        },
+        {
+          "cell_id": "validation-n7-gradual-02__lq-route",
+          "mean_ms": 5.982229525883061,
+          "median_ms": 5.861689991434105,
+          "max_ms": 15.80614599515684
+        },
+        {
+          "cell_id": "validation-n7-gradual-02__gnn-route",
+          "mean_ms": 8.5709222836158,
+          "median_ms": 8.662335516419262,
+          "max_ms": 28.370479005388916
+        },
+        {
+          "cell_id": "validation-n7-gradual-02__mlp-route",
+          "mean_ms": 7.88560183403509,
+          "median_ms": 7.586565508972853,
+          "max_ms": 26.411281985929236
+        },
+        {
+          "cell_id": "validation-n7-gradual-02__olsr-etx-fast",
+          "mean_ms": 0.7457184919379264,
+          "median_ms": 0.6306524883257225,
+          "max_ms": 6.569941993802786
+        },
+        {
+          "cell_id": "validation-n7-gradual-03__lq-route",
+          "mean_ms": 6.5043254287350765,
+          "median_ms": 6.488560495199636,
+          "max_ms": 16.210125002544373
+        },
+        {
+          "cell_id": "validation-n7-gradual-03__gnn-route",
+          "mean_ms": 7.743726678866854,
+          "median_ms": 7.164978509536013,
+          "max_ms": 19.545081013347954
+        },
+        {
+          "cell_id": "validation-n7-gradual-03__mlp-route",
+          "mean_ms": 7.960225175823628,
+          "median_ms": 7.887443993240595,
+          "max_ms": 22.79199700569734
+        },
+        {
+          "cell_id": "validation-n7-gradual-03__olsr-etx-fast",
+          "mean_ms": 0.9270307629776653,
+          "median_ms": 0.7695134991081432,
+          "max_ms": 4.0379260026384145
+        },
+        {
+          "cell_id": "validation-n7-gradual-04__lq-route",
+          "mean_ms": 6.190097983684002,
+          "median_ms": 6.242133997147903,
+          "max_ms": 12.149926013080403
+        },
+        {
+          "cell_id": "validation-n7-gradual-04__gnn-route",
+          "mean_ms": 8.282717484932315,
+          "median_ms": 7.637982504093088,
+          "max_ms": 24.68924000277184
+        },
+        {
+          "cell_id": "validation-n7-gradual-04__mlp-route",
+          "mean_ms": 7.93318587639078,
+          "median_ms": 7.698800502112135,
+          "max_ms": 22.12778100511059
+        },
+        {
+          "cell_id": "validation-n7-gradual-04__olsr-etx-fast",
+          "mean_ms": 0.6963800253288355,
+          "median_ms": 0.6445580074796453,
+          "max_ms": 4.030468000564724
+        },
+        {
+          "cell_id": "validation-n7-gradual-05__lq-route",
+          "mean_ms": 4.8984879756365745,
+          "median_ms": 4.0417919954052195,
+          "max_ms": 21.31022699177265
+        },
+        {
+          "cell_id": "validation-n7-gradual-05__gnn-route",
+          "mean_ms": 7.847677091679846,
+          "median_ms": 6.595541999558918,
+          "max_ms": 32.37852800521068
+        },
+        {
+          "cell_id": "validation-n7-gradual-05__mlp-route",
+          "mean_ms": 7.036423736887325,
+          "median_ms": 6.11748248047661,
+          "max_ms": 31.837451009778306
+        },
+        {
+          "cell_id": "validation-n7-gradual-05__olsr-etx-fast",
+          "mean_ms": 0.6001692209489798,
+          "median_ms": 0.35883550299331546,
+          "max_ms": 8.353785990038887
+        },
+        {
+          "cell_id": "validation-n7-gradual-06__lq-route",
+          "mean_ms": 4.37653282485068,
+          "median_ms": 3.690496989293024,
+          "max_ms": 19.32702597696334
+        },
+        {
+          "cell_id": "validation-n7-gradual-06__gnn-route",
+          "mean_ms": 6.5540928707681205,
+          "median_ms": 5.063518998213112,
+          "max_ms": 22.46481500333175
+        },
+        {
+          "cell_id": "validation-n7-gradual-06__mlp-route",
+          "mean_ms": 6.316022188669497,
+          "median_ms": 5.372782004997134,
+          "max_ms": 26.388585014501587
+        },
+        {
+          "cell_id": "validation-n7-gradual-06__olsr-etx-fast",
+          "mean_ms": 0.6764699924436476,
+          "median_ms": 0.42503600707277656,
+          "max_ms": 7.194098987383768
+        },
+        {
+          "cell_id": "validation-n7-gradual-07__lq-route",
+          "mean_ms": 5.072462394794759,
+          "median_ms": 4.022977504064329,
+          "max_ms": 18.47679098136723
+        },
+        {
+          "cell_id": "validation-n7-gradual-07__gnn-route",
+          "mean_ms": 7.038836887174209,
+          "median_ms": 6.399560996214859,
+          "max_ms": 23.439941985998303
+        },
+        {
+          "cell_id": "validation-n7-gradual-07__mlp-route",
+          "mean_ms": 6.54191232060839,
+          "median_ms": 5.890083499252796,
+          "max_ms": 22.326745005557314
+        },
+        {
+          "cell_id": "validation-n7-gradual-07__olsr-etx-fast",
+          "mean_ms": 0.5488943332845034,
+          "median_ms": 0.3456385020399466,
+          "max_ms": 4.6475369890686125
+        },
+        {
+          "cell_id": "validation-n7-gradual-08__lq-route",
+          "mean_ms": 5.043624214037361,
+          "median_ms": 3.9100755093386397,
+          "max_ms": 20.49911901121959
+        },
+        {
+          "cell_id": "validation-n7-gradual-08__gnn-route",
+          "mean_ms": 7.789420667419715,
+          "median_ms": 6.728555483277887,
+          "max_ms": 23.768765007844195
+        },
+        {
+          "cell_id": "validation-n7-gradual-08__mlp-route",
+          "mean_ms": 7.098815880575178,
+          "median_ms": 6.238004003535025,
+          "max_ms": 25.014385988470167
+        },
+        {
+          "cell_id": "validation-n7-gradual-08__olsr-etx-fast",
+          "mean_ms": 0.8214831994943476,
+          "median_ms": 0.8387220004806295,
+          "max_ms": 4.026265989523381
+        }
+      ],
+      "example_traces": {
+        "lq-route": "runs/validation/validation-n5-gradual-01__lq-route/attempt-0/collector/episodes/lq-route/layout_3400003_radio_3500003/episode_b3fcfbc5fc5f4b22a339cc47cfcf3e5c/transitions.jsonl",
+        "gnn-route": "runs/validation/validation-n5-gradual-01__gnn-route/attempt-0/collector/episodes/gnn-route/layout_3400003_radio_3500003/episode_59327559b813407cae6d2063766de325/transitions.jsonl",
+        "mlp-route": "runs/validation/validation-n5-gradual-01__mlp-route/attempt-0/collector/episodes/mlp-route/layout_3400003_radio_3500003/episode_332c6f8f8bc04dc089bf9bce09517aa8/transitions.jsonl",
+        "olsr-etx-fast": "runs/validation/validation-n5-gradual-01__olsr-etx-fast/attempt-0/collector/episodes/olsr-etx-fast/layout_3400003_radio_3500003/episode_42c58a5f186e4179935dc9981fda3b99/transitions.jsonl"
+      },
+      "example_selection": "Lowest layout seed among n5 gradual scenarios; all arms, regardless of outcome.",
+      "timing_note": "Measured complete controller.act latency on server CPU during four-worker simulation; not pure neural inference or UAV/control-channel latency."
+    },
+    "test": {
+      "decision_timing_ms": {
+        "lq-route": {
+          "n": 11520,
+          "mean_ms": 3.19083402098891,
+          "median_ms": 2.997897012392059,
+          "p95_ms": 9.106407989747822,
+          "max_ms": 115.41187801049091
+        },
+        "gnn-route": {
+          "n": 11520,
+          "mean_ms": 5.853124920493731,
+          "median_ms": 4.921043509966694,
+          "p95_ms": 13.83143398561515,
+          "max_ms": 90.36480999202468
+        },
+        "mlp-route": {
+          "n": 11520,
+          "mean_ms": 5.417716589421515,
+          "median_ms": 4.553166014375165,
+          "p95_ms": 12.684735003858805,
+          "max_ms": 96.73249200568534
+        },
+        "olsr-etx-fast": {
+          "n": 11520,
+          "mean_ms": 0.673324731443851,
+          "median_ms": 0.47795150021556765,
+          "p95_ms": 1.373323000734672,
+          "max_ms": 14.509612985420972
+        }
+      },
+      "timing_episodes": [
+        {
+          "cell_id": "test-n5-static-01__lq-route",
+          "mean_ms": 0.9851353908743476,
+          "median_ms": 0.9385000012116507,
+          "max_ms": 7.861733989557251
+        },
+        {
+          "cell_id": "test-n5-static-01__gnn-route",
+          "mean_ms": 4.197251633255898,
+          "median_ms": 3.2614454976283014,
+          "max_ms": 20.158078987151384
+        },
+        {
+          "cell_id": "test-n5-static-01__mlp-route",
+          "mean_ms": 3.518047205216135,
+          "median_ms": 3.084441996179521,
+          "max_ms": 27.823254000395536
+        },
+        {
+          "cell_id": "test-n5-static-01__olsr-etx-fast",
+          "mean_ms": 0.6478336507522423,
+          "median_ms": 0.4035749880131334,
+          "max_ms": 6.571942998562008
+        },
+        {
+          "cell_id": "test-n5-static-02__lq-route",
+          "mean_ms": 0.5897981362068094,
+          "median_ms": 0.48169550427701324,
+          "max_ms": 6.800910021411255
+        },
+        {
+          "cell_id": "test-n5-static-02__gnn-route",
+          "mean_ms": 2.535310268528216,
+          "median_ms": 1.748524999129586,
+          "max_ms": 15.705809026258066
+        },
+        {
+          "cell_id": "test-n5-static-02__mlp-route",
+          "mean_ms": 2.012100329132712,
+          "median_ms": 1.5124004858080298,
+          "max_ms": 8.462655998300761
+        },
+        {
+          "cell_id": "test-n5-static-02__olsr-etx-fast",
+          "mean_ms": 0.494456475644256,
+          "median_ms": 0.285360001726076,
+          "max_ms": 5.903738987399265
+        },
+        {
+          "cell_id": "test-n5-static-03__lq-route",
+          "mean_ms": 1.386114413495913,
+          "median_ms": 1.1038424854632467,
+          "max_ms": 10.538242990151048
+        },
+        {
+          "cell_id": "test-n5-static-03__gnn-route",
+          "mean_ms": 5.277303130181584,
+          "median_ms": 3.8847645046189427,
+          "max_ms": 16.08544198097661
+        },
+        {
+          "cell_id": "test-n5-static-03__mlp-route",
+          "mean_ms": 4.645880408982824,
+          "median_ms": 3.7281544937286526,
+          "max_ms": 17.321233986876905
+        },
+        {
+          "cell_id": "test-n5-static-03__olsr-etx-fast",
+          "mean_ms": 0.8174517457518959,
+          "median_ms": 0.6694305047858506,
+          "max_ms": 5.884497018996626
+        },
+        {
+          "cell_id": "test-n5-static-04__lq-route",
+          "mean_ms": 0.8725042947238156,
+          "median_ms": 0.5033954948885366,
+          "max_ms": 8.467694977298379
+        },
+        {
+          "cell_id": "test-n5-static-04__gnn-route",
+          "mean_ms": 2.763810054117736,
+          "median_ms": 1.826211009756662,
+          "max_ms": 14.09651100402698
+        },
+        {
+          "cell_id": "test-n5-static-04__mlp-route",
+          "mean_ms": 2.2396903289821544,
+          "median_ms": 1.5717000205768272,
+          "max_ms": 16.63697400363162
+        },
+        {
+          "cell_id": "test-n5-static-04__olsr-etx-fast",
+          "mean_ms": 0.31984315343531006,
+          "median_ms": 0.2507925091776997,
+          "max_ms": 4.439460986759514
+        },
+        {
+          "cell_id": "test-n5-gradual-01__lq-route",
+          "mean_ms": 1.0656727785923674,
+          "median_ms": 0.6715535128023475,
+          "max_ms": 11.25919699552469
+        },
+        {
+          "cell_id": "test-n5-gradual-01__gnn-route",
+          "mean_ms": 3.704916762217181,
+          "median_ms": 3.0326135020004585,
+          "max_ms": 15.336921002017334
+        },
+        {
+          "cell_id": "test-n5-gradual-01__mlp-route",
+          "mean_ms": 3.673032708805598,
+          "median_ms": 3.0072204972384498,
+          "max_ms": 15.98744501825422
+        },
+        {
+          "cell_id": "test-n5-gradual-01__olsr-etx-fast",
+          "mean_ms": 0.9324154490362465,
+          "median_ms": 0.7454145088559017,
+          "max_ms": 8.965143002569675
+        },
+        {
+          "cell_id": "test-n5-gradual-02__lq-route",
+          "mean_ms": 1.1482728465731877,
+          "median_ms": 0.8031145116547123,
+          "max_ms": 8.485506026772782
+        },
+        {
+          "cell_id": "test-n5-gradual-02__gnn-route",
+          "mean_ms": 3.826609888468132,
+          "median_ms": 3.1769939814694226,
+          "max_ms": 17.06992500112392
+        },
+        {
+          "cell_id": "test-n5-gradual-02__mlp-route",
+          "mean_ms": 3.400872527223934,
+          "median_ms": 2.779168979031965,
+          "max_ms": 12.081727996701375
+        },
+        {
+          "cell_id": "test-n5-gradual-02__olsr-etx-fast",
+          "mean_ms": 0.3295367714599706,
+          "median_ms": 0.26055099442601204,
+          "max_ms": 3.432304016314447
+        },
+        {
+          "cell_id": "test-n5-gradual-03__lq-route",
+          "mean_ms": 1.1101654947803279,
+          "median_ms": 0.5407580028986558,
+          "max_ms": 55.78875500941649
+        },
+        {
+          "cell_id": "test-n5-gradual-03__gnn-route",
+          "mean_ms": 3.075771053894035,
+          "median_ms": 2.783879011985846,
+          "max_ms": 11.553035001270473
+        },
+        {
+          "cell_id": "test-n5-gradual-03__mlp-route",
+          "mean_ms": 3.198097074224885,
+          "median_ms": 2.6971469924319535,
+          "max_ms": 14.476198004558682
+        },
+        {
+          "cell_id": "test-n5-gradual-03__olsr-etx-fast",
+          "mean_ms": 0.8540620419807965,
+          "median_ms": 0.7228640024550259,
+          "max_ms": 8.891089004464447
+        },
+        {
+          "cell_id": "test-n5-gradual-04__lq-route",
+          "mean_ms": 1.3125464794332704,
+          "median_ms": 1.007702507195063,
+          "max_ms": 10.491725988686085
+        },
+        {
+          "cell_id": "test-n5-gradual-04__gnn-route",
+          "mean_ms": 3.8060786048542163,
+          "median_ms": 3.28714850184042,
+          "max_ms": 13.492305006366223
+        },
+        {
+          "cell_id": "test-n5-gradual-04__mlp-route",
+          "mean_ms": 3.5075048165405556,
+          "median_ms": 3.0546390189556405,
+          "max_ms": 13.912962982431054
+        },
+        {
+          "cell_id": "test-n5-gradual-04__olsr-etx-fast",
+          "mean_ms": 0.47290387119574007,
+          "median_ms": 0.26840298960451037,
+          "max_ms": 9.033645008457825
+        },
+        {
+          "cell_id": "test-n5-gradual-05__lq-route",
+          "mean_ms": 0.8139354253216879,
+          "median_ms": 0.5456564977066591,
+          "max_ms": 8.284420997370034
+        },
+        {
+          "cell_id": "test-n5-gradual-05__gnn-route",
+          "mean_ms": 3.565030573615028,
+          "median_ms": 2.333249503863044,
+          "max_ms": 15.333356015617028
+        },
+        {
+          "cell_id": "test-n5-gradual-05__mlp-route",
+          "mean_ms": 3.1553446908219485,
+          "median_ms": 2.108939501340501,
+          "max_ms": 13.728126010391861
+        },
+        {
+          "cell_id": "test-n5-gradual-05__olsr-etx-fast",
+          "mean_ms": 0.669276916111509,
+          "median_ms": 0.535876999492757,
+          "max_ms": 7.240075996378437
+        },
+        {
+          "cell_id": "test-n5-gradual-06__lq-route",
+          "mean_ms": 1.0811444704207436,
+          "median_ms": 0.921283513889648,
+          "max_ms": 7.622486009495333
+        },
+        {
+          "cell_id": "test-n5-gradual-06__gnn-route",
+          "mean_ms": 4.260191940314447,
+          "median_ms": 3.469284492894076,
+          "max_ms": 15.254422993166372
+        },
+        {
+          "cell_id": "test-n5-gradual-06__mlp-route",
+          "mean_ms": 3.7966352374496637,
+          "median_ms": 3.05594049859792,
+          "max_ms": 15.20342199364677
+        },
+        {
+          "cell_id": "test-n5-gradual-06__olsr-etx-fast",
+          "mean_ms": 0.443616887787357,
+          "median_ms": 0.28476500301621854,
+          "max_ms": 4.080826009158045
+        },
+        {
+          "cell_id": "test-n5-gradual-07__lq-route",
+          "mean_ms": 0.8314781536076529,
+          "median_ms": 0.5229145026532933,
+          "max_ms": 5.627070000628009
+        },
+        {
+          "cell_id": "test-n5-gradual-07__gnn-route",
+          "mean_ms": 2.9583238704314376,
+          "median_ms": 1.8715319893090054,
+          "max_ms": 13.349373999517411
+        },
+        {
+          "cell_id": "test-n5-gradual-07__mlp-route",
+          "mean_ms": 3.180877832467862,
+          "median_ms": 1.9072349969064817,
+          "max_ms": 16.40091702574864
+        },
+        {
+          "cell_id": "test-n5-gradual-07__olsr-etx-fast",
+          "mean_ms": 0.69873096702698,
+          "median_ms": 0.5742924840888008,
+          "max_ms": 5.866958003025502
+        },
+        {
+          "cell_id": "test-n5-gradual-08__lq-route",
+          "mean_ms": 1.123501682256271,
+          "median_ms": 0.9644985111663118,
+          "max_ms": 6.852733000414446
+        },
+        {
+          "cell_id": "test-n5-gradual-08__gnn-route",
+          "mean_ms": 4.066933745950034,
+          "median_ms": 3.515804506605491,
+          "max_ms": 17.035381024470553
+        },
+        {
+          "cell_id": "test-n5-gradual-08__mlp-route",
+          "mean_ms": 4.4996201952017145,
+          "median_ms": 3.3680535125313327,
+          "max_ms": 22.934438980882987
+        },
+        {
+          "cell_id": "test-n5-gradual-08__olsr-etx-fast",
+          "mean_ms": 0.4885731581453001,
+          "median_ms": 0.28839698643423617,
+          "max_ms": 7.046044018352404
+        },
+        {
+          "cell_id": "test-n5-gradual-09__lq-route",
+          "mean_ms": 0.7826554587760862,
+          "median_ms": 0.5204689950915053,
+          "max_ms": 8.152886002790183
+        },
+        {
+          "cell_id": "test-n5-gradual-09__gnn-route",
+          "mean_ms": 2.6196600300560626,
+          "median_ms": 1.804407496820204,
+          "max_ms": 18.928149016574025
+        },
+        {
+          "cell_id": "test-n5-gradual-09__mlp-route",
+          "mean_ms": 2.294852072130501,
+          "median_ms": 1.559067502967082,
+          "max_ms": 11.503745015943423
+        },
+        {
+          "cell_id": "test-n5-gradual-09__olsr-etx-fast",
+          "mean_ms": 0.7757963824891098,
+          "median_ms": 0.6664414977421984,
+          "max_ms": 7.548976980615407
+        },
+        {
+          "cell_id": "test-n5-gradual-10__lq-route",
+          "mean_ms": 1.2655235799077975,
+          "median_ms": 1.1017715005436912,
+          "max_ms": 9.868777997326106
+        },
+        {
+          "cell_id": "test-n5-gradual-10__gnn-route",
+          "mean_ms": 4.805010374305614,
+          "median_ms": 3.7037150032119825,
+          "max_ms": 29.89161800360307
+        },
+        {
+          "cell_id": "test-n5-gradual-10__mlp-route",
+          "mean_ms": 4.531295109336497,
+          "median_ms": 3.4640925005078316,
+          "max_ms": 20.653174025937915
+        },
+        {
+          "cell_id": "test-n5-gradual-10__olsr-etx-fast",
+          "mean_ms": 0.36467779961337027,
+          "median_ms": 0.26942751719616354,
+          "max_ms": 6.637018988840282
+        },
+        {
+          "cell_id": "test-n5-gradual-11__lq-route",
+          "mean_ms": 0.6375407552695833,
+          "median_ms": 0.49498601583763957,
+          "max_ms": 4.380013007903472
+        },
+        {
+          "cell_id": "test-n5-gradual-11__gnn-route",
+          "mean_ms": 2.585321621033169,
+          "median_ms": 1.7636340198805556,
+          "max_ms": 13.298164994921535
+        },
+        {
+          "cell_id": "test-n5-gradual-11__mlp-route",
+          "mean_ms": 2.251363229273314,
+          "median_ms": 1.4925834984751418,
+          "max_ms": 16.483749001054093
+        },
+        {
+          "cell_id": "test-n5-gradual-11__olsr-etx-fast",
+          "mean_ms": 0.8929176883005615,
+          "median_ms": 0.6999634933890775,
+          "max_ms": 7.346300000790507
+        },
+        {
+          "cell_id": "test-n5-gradual-12__lq-route",
+          "mean_ms": 1.2602301344789641,
+          "median_ms": 1.055968488799408,
+          "max_ms": 11.296757002128288
+        },
+        {
+          "cell_id": "test-n5-gradual-12__gnn-route",
+          "mean_ms": 5.116572795426085,
+          "median_ms": 3.423662987188436,
+          "max_ms": 79.21898801578209
+        },
+        {
+          "cell_id": "test-n5-gradual-12__mlp-route",
+          "mean_ms": 4.359993899197434,
+          "median_ms": 3.440095009864308,
+          "max_ms": 17.560441978275776
+        },
+        {
+          "cell_id": "test-n5-gradual-12__olsr-etx-fast",
+          "mean_ms": 0.35858697119692806,
+          "median_ms": 0.2626369969220832,
+          "max_ms": 4.805984004633501
+        },
+        {
+          "cell_id": "test-n5-gradual-13__lq-route",
+          "mean_ms": 0.6984317470293414,
+          "median_ms": 0.4786634963238612,
+          "max_ms": 5.371286009903997
+        },
+        {
+          "cell_id": "test-n5-gradual-13__gnn-route",
+          "mean_ms": 2.442455867640092,
+          "median_ms": 1.7106450104620308,
+          "max_ms": 9.778236009879038
+        },
+        {
+          "cell_id": "test-n5-gradual-13__mlp-route",
+          "mean_ms": 2.1885377953973753,
+          "median_ms": 1.493141011451371,
+          "max_ms": 15.18784899963066
+        },
+        {
+          "cell_id": "test-n5-gradual-13__olsr-etx-fast",
+          "mean_ms": 0.7707169902763175,
+          "median_ms": 0.6050715019227937,
+          "max_ms": 6.962968996958807
+        },
+        {
+          "cell_id": "test-n5-gradual-14__lq-route",
+          "mean_ms": 1.3391054462166114,
+          "median_ms": 1.0949095012620091,
+          "max_ms": 10.29622001806274
+        },
+        {
+          "cell_id": "test-n5-gradual-14__gnn-route",
+          "mean_ms": 5.181138945287482,
+          "median_ms": 3.9761359948897734,
+          "max_ms": 17.00366401928477
+        },
+        {
+          "cell_id": "test-n5-gradual-14__mlp-route",
+          "mean_ms": 4.872453234080846,
+          "median_ms": 3.5699605068657547,
+          "max_ms": 33.786782005336136
+        },
+        {
+          "cell_id": "test-n5-gradual-14__olsr-etx-fast",
+          "mean_ms": 0.5499069460104996,
+          "median_ms": 0.2989985077874735,
+          "max_ms": 6.950996990781277
+        },
+        {
+          "cell_id": "test-n5-gradual-15__lq-route",
+          "mean_ms": 1.0259802493237657,
+          "median_ms": 0.6169684929773211,
+          "max_ms": 8.278235996840522
+        },
+        {
+          "cell_id": "test-n5-gradual-15__gnn-route",
+          "mean_ms": 3.360521023932961,
+          "median_ms": 2.593926008557901,
+          "max_ms": 14.379711996298283
+        },
+        {
+          "cell_id": "test-n5-gradual-15__mlp-route",
+          "mean_ms": 2.826146648900855,
+          "median_ms": 1.8648815021151677,
+          "max_ms": 18.026559991994873
+        },
+        {
+          "cell_id": "test-n5-gradual-15__olsr-etx-fast",
+          "mean_ms": 0.6639672003075248,
+          "median_ms": 0.4158804949838668,
+          "max_ms": 6.959594000363722
+        },
+        {
+          "cell_id": "test-n5-gradual-16__lq-route",
+          "mean_ms": 0.9984427129287118,
+          "median_ms": 0.6656045152340084,
+          "max_ms": 9.411417006049305
+        },
+        {
+          "cell_id": "test-n5-gradual-16__gnn-route",
+          "mean_ms": 3.9642492582061095,
+          "median_ms": 3.449030002229847,
+          "max_ms": 12.927375006256625
+        },
+        {
+          "cell_id": "test-n5-gradual-16__mlp-route",
+          "mean_ms": 3.8043591870518867,
+          "median_ms": 3.2013735035434365,
+          "max_ms": 16.240823024418205
+        },
+        {
+          "cell_id": "test-n5-gradual-16__olsr-etx-fast",
+          "mean_ms": 0.6055561710430387,
+          "median_ms": 0.4421835037646815,
+          "max_ms": 7.52400400233455
+        },
+        {
+          "cell_id": "test-n5-gradual-17__lq-route",
+          "mean_ms": 1.0999188959734358,
+          "median_ms": 0.9046060004038736,
+          "max_ms": 6.781295000109822
+        },
+        {
+          "cell_id": "test-n5-gradual-17__gnn-route",
+          "mean_ms": 3.7211546550679486,
+          "median_ms": 3.2159190013771877,
+          "max_ms": 14.712492993567139
+        },
+        {
+          "cell_id": "test-n5-gradual-17__mlp-route",
+          "mean_ms": 3.2184561166407852,
+          "median_ms": 2.839789987774566,
+          "max_ms": 16.45931601524353
+        },
+        {
+          "cell_id": "test-n5-gradual-17__olsr-etx-fast",
+          "mean_ms": 0.5469743207261976,
+          "median_ms": 0.311905489070341,
+          "max_ms": 5.981544003589079
+        },
+        {
+          "cell_id": "test-n5-gradual-18__lq-route",
+          "mean_ms": 0.8788450414916346,
+          "median_ms": 0.5394475010689348,
+          "max_ms": 6.869494012789801
+        },
+        {
+          "cell_id": "test-n5-gradual-18__gnn-route",
+          "mean_ms": 3.0979435329451612,
+          "median_ms": 2.2624055127380416,
+          "max_ms": 16.578341979766265
+        },
+        {
+          "cell_id": "test-n5-gradual-18__mlp-route",
+          "mean_ms": 3.263726678536235,
+          "median_ms": 2.1125954954186454,
+          "max_ms": 16.196190990740433
+        },
+        {
+          "cell_id": "test-n5-gradual-18__olsr-etx-fast",
+          "mean_ms": 0.8266543421389846,
+          "median_ms": 0.6223810050869361,
+          "max_ms": 7.99370399909094
+        },
+        {
+          "cell_id": "test-n5-gradual-19__lq-route",
+          "mean_ms": 1.3537025002733571,
+          "median_ms": 1.0860735055757686,
+          "max_ms": 7.529027003329247
+        },
+        {
+          "cell_id": "test-n5-gradual-19__gnn-route",
+          "mean_ms": 4.254629205388483,
+          "median_ms": 3.2187619945034385,
+          "max_ms": 16.43047100515105
+        },
+        {
+          "cell_id": "test-n5-gradual-19__mlp-route",
+          "mean_ms": 4.324688983130424,
+          "median_ms": 3.304862999357283,
+          "max_ms": 30.69169700029306
+        },
+        {
+          "cell_id": "test-n5-gradual-19__olsr-etx-fast",
+          "mean_ms": 0.3684098786228181,
+          "median_ms": 0.2543619921198115,
+          "max_ms": 4.195563000394031
+        },
+        {
+          "cell_id": "test-n5-gradual-20__lq-route",
+          "mean_ms": 0.7799137367934842,
+          "median_ms": 0.5072974890936166,
+          "max_ms": 4.84713600599207
+        },
+        {
+          "cell_id": "test-n5-gradual-20__gnn-route",
+          "mean_ms": 2.496087175071201,
+          "median_ms": 1.8574950081529096,
+          "max_ms": 8.906215982278809
+        },
+        {
+          "cell_id": "test-n5-gradual-20__mlp-route",
+          "mean_ms": 2.232082476014815,
+          "median_ms": 1.6604889970039949,
+          "max_ms": 7.650383020518348
+        },
+        {
+          "cell_id": "test-n5-gradual-20__olsr-etx-fast",
+          "mean_ms": 0.7335393425213018,
+          "median_ms": 0.6765840080333874,
+          "max_ms": 6.779767019907013
+        },
+        {
+          "cell_id": "test-n7-static-01__lq-route",
+          "mean_ms": 5.249880833434872,
+          "median_ms": 4.054835007991642,
+          "max_ms": 18.27953598694876
+        },
+        {
+          "cell_id": "test-n7-static-01__gnn-route",
+          "mean_ms": 8.468761054973584,
+          "median_ms": 6.866955998702906,
+          "max_ms": 26.093207008671016
+        },
+        {
+          "cell_id": "test-n7-static-01__mlp-route",
+          "mean_ms": 7.537106824020157,
+          "median_ms": 6.349747491185553,
+          "max_ms": 26.131838996661827
+        },
+        {
+          "cell_id": "test-n7-static-01__olsr-etx-fast",
+          "mean_ms": 0.642379987766617,
+          "median_ms": 0.4227600002195686,
+          "max_ms": 7.554514013463631
+        },
+        {
+          "cell_id": "test-n7-static-02__lq-route",
+          "mean_ms": 5.861325450799389,
+          "median_ms": 4.1136080253636464,
+          "max_ms": 115.41187801049091
+        },
+        {
+          "cell_id": "test-n7-static-02__gnn-route",
+          "mean_ms": 8.081349445637898,
+          "median_ms": 6.69776251015719,
+          "max_ms": 22.958066983846948
+        },
+        {
+          "cell_id": "test-n7-static-02__mlp-route",
+          "mean_ms": 7.197825325541392,
+          "median_ms": 5.864590508281253,
+          "max_ms": 96.73249200568534
+        },
+        {
+          "cell_id": "test-n7-static-02__olsr-etx-fast",
+          "mean_ms": 0.660315970768958,
+          "median_ms": 0.41496950143482536,
+          "max_ms": 7.506268011638895
+        },
+        {
+          "cell_id": "test-n7-static-03__lq-route",
+          "mean_ms": 6.081978424238817,
+          "median_ms": 4.878807507338934,
+          "max_ms": 23.835522995796055
+        },
+        {
+          "cell_id": "test-n7-static-03__gnn-route",
+          "mean_ms": 8.845985932809223,
+          "median_ms": 7.03630450880155,
+          "max_ms": 31.873044004896656
+        },
+        {
+          "cell_id": "test-n7-static-03__mlp-route",
+          "mean_ms": 8.625129758850866,
+          "median_ms": 6.874158498249017,
+          "max_ms": 88.22282400797121
+        },
+        {
+          "cell_id": "test-n7-static-03__olsr-etx-fast",
+          "mean_ms": 0.876950888656817,
+          "median_ms": 0.7435510051436722,
+          "max_ms": 14.509612985420972
+        },
+        {
+          "cell_id": "test-n7-static-04__lq-route",
+          "mean_ms": 5.7237172338015325,
+          "median_ms": 4.2210885003441945,
+          "max_ms": 23.94817300955765
+        },
+        {
+          "cell_id": "test-n7-static-04__gnn-route",
+          "mean_ms": 8.791502800765253,
+          "median_ms": 6.876904983073473,
+          "max_ms": 49.31924500851892
+        },
+        {
+          "cell_id": "test-n7-static-04__mlp-route",
+          "mean_ms": 8.806008545070654,
+          "median_ms": 7.178535001003183,
+          "max_ms": 29.8617490043398
+        },
+        {
+          "cell_id": "test-n7-static-04__olsr-etx-fast",
+          "mean_ms": 0.6020831503216565,
+          "median_ms": 0.3742714907275513,
+          "max_ms": 4.74575100815855
+        },
+        {
+          "cell_id": "test-n7-gradual-01__lq-route",
+          "mean_ms": 5.093765319664574,
+          "median_ms": 3.9511284994659945,
+          "max_ms": 16.086267976788804
+        },
+        {
+          "cell_id": "test-n7-gradual-01__gnn-route",
+          "mean_ms": 8.056472813162449,
+          "median_ms": 6.703728489810601,
+          "max_ms": 27.520486997673288
+        },
+        {
+          "cell_id": "test-n7-gradual-01__mlp-route",
+          "mean_ms": 6.948412387767651,
+          "median_ms": 6.043470508302562,
+          "max_ms": 27.92078402126208
+        },
+        {
+          "cell_id": "test-n7-gradual-01__olsr-etx-fast",
+          "mean_ms": 0.6941641287994571,
+          "median_ms": 0.6133245042292401,
+          "max_ms": 4.544733004877344
+        },
+        {
+          "cell_id": "test-n7-gradual-02__lq-route",
+          "mean_ms": 5.074355554097565,
+          "median_ms": 3.902890006429516,
+          "max_ms": 20.592012006090954
+        },
+        {
+          "cell_id": "test-n7-gradual-02__gnn-route",
+          "mean_ms": 8.120778453424768,
+          "median_ms": 6.455734997871332,
+          "max_ms": 25.11929499451071
+        },
+        {
+          "cell_id": "test-n7-gradual-02__mlp-route",
+          "mean_ms": 7.542986404102218,
+          "median_ms": 6.238245507120155,
+          "max_ms": 34.03122999588959
+        },
+        {
+          "cell_id": "test-n7-gradual-02__olsr-etx-fast",
+          "mean_ms": 0.6693405285962702,
+          "median_ms": 0.6410845089703798,
+          "max_ms": 4.186557023786008
+        },
+        {
+          "cell_id": "test-n7-gradual-03__lq-route",
+          "mean_ms": 5.687897583751085,
+          "median_ms": 4.125029983697459,
+          "max_ms": 79.99800800462253
+        },
+        {
+          "cell_id": "test-n7-gradual-03__gnn-route",
+          "mean_ms": 9.40902564143471,
+          "median_ms": 7.035673494101502,
+          "max_ms": 90.36480999202468
+        },
+        {
+          "cell_id": "test-n7-gradual-03__mlp-route",
+          "mean_ms": 7.977375654566761,
+          "median_ms": 6.476526512415148,
+          "max_ms": 26.11968098790385
+        },
+        {
+          "cell_id": "test-n7-gradual-03__olsr-etx-fast",
+          "mean_ms": 0.5994745459853826,
+          "median_ms": 0.3731075121322647,
+          "max_ms": 7.049484993331134
+        },
+        {
+          "cell_id": "test-n7-gradual-04__lq-route",
+          "mean_ms": 5.987316580285551,
+          "median_ms": 4.548647993942723,
+          "max_ms": 25.25866497308016
+        },
+        {
+          "cell_id": "test-n7-gradual-04__gnn-route",
+          "mean_ms": 7.455253280204488,
+          "median_ms": 6.369686001562513,
+          "max_ms": 22.165105998283252
+        },
+        {
+          "cell_id": "test-n7-gradual-04__mlp-route",
+          "mean_ms": 6.529997471079696,
+          "median_ms": 5.710707497200929,
+          "max_ms": 19.697941024787724
+        },
+        {
+          "cell_id": "test-n7-gradual-04__olsr-etx-fast",
+          "mean_ms": 0.6845450438656068,
+          "median_ms": 0.5150519864400849,
+          "max_ms": 5.33385798917152
+        },
+        {
+          "cell_id": "test-n7-gradual-05__lq-route",
+          "mean_ms": 5.609246159777588,
+          "median_ms": 4.399177501909435,
+          "max_ms": 17.105775012169033
+        },
+        {
+          "cell_id": "test-n7-gradual-05__gnn-route",
+          "mean_ms": 8.190382750884359,
+          "median_ms": 6.674225995084271,
+          "max_ms": 30.136759974993765
+        },
+        {
+          "cell_id": "test-n7-gradual-05__mlp-route",
+          "mean_ms": 7.390367454596951,
+          "median_ms": 6.1826015007682145,
+          "max_ms": 24.327183986315504
+        },
+        {
+          "cell_id": "test-n7-gradual-05__olsr-etx-fast",
+          "mean_ms": 0.9122479882838282,
+          "median_ms": 0.7396260043606162,
+          "max_ms": 9.182615001918748
+        },
+        {
+          "cell_id": "test-n7-gradual-06__lq-route",
+          "mean_ms": 5.149081974862686,
+          "median_ms": 4.090556511073373,
+          "max_ms": 22.95143299852498
+        },
+        {
+          "cell_id": "test-n7-gradual-06__gnn-route",
+          "mean_ms": 8.189962743320697,
+          "median_ms": 6.662234998657368,
+          "max_ms": 24.472844001138583
+        },
+        {
+          "cell_id": "test-n7-gradual-06__mlp-route",
+          "mean_ms": 7.956654737184484,
+          "median_ms": 5.970080994302407,
+          "max_ms": 30.962800985435024
+        },
+        {
+          "cell_id": "test-n7-gradual-06__olsr-etx-fast",
+          "mean_ms": 0.6156206583303477,
+          "median_ms": 0.3606844984460622,
+          "max_ms": 7.040271011646837
+        },
+        {
+          "cell_id": "test-n7-gradual-07__lq-route",
+          "mean_ms": 5.642433951046162,
+          "median_ms": 4.034135999972932,
+          "max_ms": 25.73992099496536
+        },
+        {
+          "cell_id": "test-n7-gradual-07__gnn-route",
+          "mean_ms": 7.577377282965851,
+          "median_ms": 6.569923498318531,
+          "max_ms": 22.770879993913695
+        },
+        {
+          "cell_id": "test-n7-gradual-07__mlp-route",
+          "mean_ms": 7.197204633484944,
+          "median_ms": 5.715881503419951,
+          "max_ms": 32.2636770142708
+        },
+        {
+          "cell_id": "test-n7-gradual-07__olsr-etx-fast",
+          "mean_ms": 0.7506022921006661,
+          "median_ms": 0.6854825041955337,
+          "max_ms": 6.323279987554997
+        },
+        {
+          "cell_id": "test-n7-gradual-08__lq-route",
+          "mean_ms": 6.296343662203678,
+          "median_ms": 4.511636507231742,
+          "max_ms": 75.57521399576217
+        },
+        {
+          "cell_id": "test-n7-gradual-08__gnn-route",
+          "mean_ms": 8.823049591471014,
+          "median_ms": 7.121836984879337,
+          "max_ms": 81.64366899291053
+        },
+        {
+          "cell_id": "test-n7-gradual-08__mlp-route",
+          "mean_ms": 8.574326620995029,
+          "median_ms": 6.452184999943711,
+          "max_ms": 76.72382501186803
+        },
+        {
+          "cell_id": "test-n7-gradual-08__olsr-etx-fast",
+          "mean_ms": 0.7543355118590019,
+          "median_ms": 0.7204999856185168,
+          "max_ms": 5.132657999638468
+        },
+        {
+          "cell_id": "test-n7-gradual-09__lq-route",
+          "mean_ms": 5.47425607983314,
+          "median_ms": 4.21543451375328,
+          "max_ms": 17.371699010254815
+        },
+        {
+          "cell_id": "test-n7-gradual-09__gnn-route",
+          "mean_ms": 8.930190455066622,
+          "median_ms": 7.197107493993826,
+          "max_ms": 28.188927011797205
+        },
+        {
+          "cell_id": "test-n7-gradual-09__mlp-route",
+          "mean_ms": 8.954843104099078,
+          "median_ms": 6.937767495401204,
+          "max_ms": 30.618232995038852
+        },
+        {
+          "cell_id": "test-n7-gradual-09__olsr-etx-fast",
+          "mean_ms": 0.6152604619273916,
+          "median_ms": 0.3764904977288097,
+          "max_ms": 7.1784140018280596
+        },
+        {
+          "cell_id": "test-n7-gradual-10__lq-route",
+          "mean_ms": 4.839360395514329,
+          "median_ms": 3.8667670014547184,
+          "max_ms": 15.724689001217484
+        },
+        {
+          "cell_id": "test-n7-gradual-10__gnn-route",
+          "mean_ms": 7.357321257222793,
+          "median_ms": 5.5067009961931035,
+          "max_ms": 54.67827501706779
+        },
+        {
+          "cell_id": "test-n7-gradual-10__mlp-route",
+          "mean_ms": 6.37771113809625,
+          "median_ms": 5.535331016290002,
+          "max_ms": 18.72144200024195
+        },
+        {
+          "cell_id": "test-n7-gradual-10__olsr-etx-fast",
+          "mean_ms": 0.8543757251269805,
+          "median_ms": 0.739479495678097,
+          "max_ms": 7.637646020157263
+        },
+        {
+          "cell_id": "test-n7-gradual-11__lq-route",
+          "mean_ms": 6.108190512895817,
+          "median_ms": 4.704721010057256,
+          "max_ms": 23.357897996902466
+        },
+        {
+          "cell_id": "test-n7-gradual-11__gnn-route",
+          "mean_ms": 8.453712596504678,
+          "median_ms": 6.711779496981762,
+          "max_ms": 30.725251999683678
+        },
+        {
+          "cell_id": "test-n7-gradual-11__mlp-route",
+          "mean_ms": 8.290875795015987,
+          "median_ms": 6.561935500940308,
+          "max_ms": 32.13518200209364
+        },
+        {
+          "cell_id": "test-n7-gradual-11__olsr-etx-fast",
+          "mean_ms": 0.8424502375419252,
+          "median_ms": 0.6002234877087176,
+          "max_ms": 8.648475020891055
+        },
+        {
+          "cell_id": "test-n7-gradual-12__lq-route",
+          "mean_ms": 5.826461072138045,
+          "median_ms": 4.648574496968649,
+          "max_ms": 21.35266800178215
+        },
+        {
+          "cell_id": "test-n7-gradual-12__gnn-route",
+          "mean_ms": 8.574085168099069,
+          "median_ms": 7.14177850750275,
+          "max_ms": 26.561065984424204
+        },
+        {
+          "cell_id": "test-n7-gradual-12__mlp-route",
+          "mean_ms": 8.231895663751251,
+          "median_ms": 6.634788514929824,
+          "max_ms": 45.31498800497502
+        },
+        {
+          "cell_id": "test-n7-gradual-12__olsr-etx-fast",
+          "mean_ms": 0.6064943541180886,
+          "median_ms": 0.37586801045108587,
+          "max_ms": 4.451170010725036
+        },
+        {
+          "cell_id": "test-n7-gradual-13__lq-route",
+          "mean_ms": 4.940950492285386,
+          "median_ms": 3.5986654984299093,
+          "max_ms": 71.32147598895244
+        },
+        {
+          "cell_id": "test-n7-gradual-13__gnn-route",
+          "mean_ms": 6.766090837603163,
+          "median_ms": 5.186316484468989,
+          "max_ms": 23.644415981834754
+        },
+        {
+          "cell_id": "test-n7-gradual-13__mlp-route",
+          "mean_ms": 6.814529592278025,
+          "median_ms": 5.475715995999053,
+          "max_ms": 29.95098297833465
+        },
+        {
+          "cell_id": "test-n7-gradual-13__olsr-etx-fast",
+          "mean_ms": 0.9272744996754531,
+          "median_ms": 0.8371680014533922,
+          "max_ms": 7.4487460078671575
+        },
+        {
+          "cell_id": "test-n7-gradual-14__lq-route",
+          "mean_ms": 5.254168366567076,
+          "median_ms": 3.9405334973707795,
+          "max_ms": 17.587484006071463
+        },
+        {
+          "cell_id": "test-n7-gradual-14__gnn-route",
+          "mean_ms": 9.051523949892726,
+          "median_ms": 7.0011105126468465,
+          "max_ms": 32.31021098326892
+        },
+        {
+          "cell_id": "test-n7-gradual-14__mlp-route",
+          "mean_ms": 8.276980050019725,
+          "median_ms": 6.5005060023395345,
+          "max_ms": 28.818939987104386
+        },
+        {
+          "cell_id": "test-n7-gradual-14__olsr-etx-fast",
+          "mean_ms": 0.5939402258566892,
+          "median_ms": 0.3828755143331364,
+          "max_ms": 9.320297016529366
+        },
+        {
+          "cell_id": "test-n7-gradual-15__lq-route",
+          "mean_ms": 5.071515600017544,
+          "median_ms": 3.8230275094974786,
+          "max_ms": 18.718782026553527
+        },
+        {
+          "cell_id": "test-n7-gradual-15__gnn-route",
+          "mean_ms": 7.2534381706645945,
+          "median_ms": 5.992932987282984,
+          "max_ms": 28.927375009516254
+        },
+        {
+          "cell_id": "test-n7-gradual-15__mlp-route",
+          "mean_ms": 6.6162418829965945,
+          "median_ms": 5.481818996486254,
+          "max_ms": 25.791167019633576
+        },
+        {
+          "cell_id": "test-n7-gradual-15__olsr-etx-fast",
+          "mean_ms": 0.7941889375312409,
+          "median_ms": 0.7703355076955631,
+          "max_ms": 8.299895009258762
+        },
+        {
+          "cell_id": "test-n7-gradual-16__lq-route",
+          "mean_ms": 5.156401129594694,
+          "median_ms": 4.159939999226481,
+          "max_ms": 15.74317499762401
+        },
+        {
+          "cell_id": "test-n7-gradual-16__gnn-route",
+          "mean_ms": 8.139559817694439,
+          "median_ms": 6.657997000729665,
+          "max_ms": 30.69905497250147
+        },
+        {
+          "cell_id": "test-n7-gradual-16__mlp-route",
+          "mean_ms": 7.702124713371934,
+          "median_ms": 6.299560496699996,
+          "max_ms": 25.329089985461906
+        },
+        {
+          "cell_id": "test-n7-gradual-16__olsr-etx-fast",
+          "mean_ms": 0.7496867028142636,
+          "median_ms": 0.7303510064957663,
+          "max_ms": 6.975780997890979
+        },
+        {
+          "cell_id": "test-n7-gradual-17__lq-route",
+          "mean_ms": 4.876421874723746,
+          "median_ms": 3.9813004987081513,
+          "max_ms": 15.061573998536915
+        },
+        {
+          "cell_id": "test-n7-gradual-17__gnn-route",
+          "mean_ms": 8.180245158049123,
+          "median_ms": 6.786309997551143,
+          "max_ms": 42.808391008293256
+        },
+        {
+          "cell_id": "test-n7-gradual-17__mlp-route",
+          "mean_ms": 6.719178071095182,
+          "median_ms": 6.22708851005882,
+          "max_ms": 15.829930023755878
+        },
+        {
+          "cell_id": "test-n7-gradual-17__olsr-etx-fast",
+          "mean_ms": 0.6583349370581951,
+          "median_ms": 0.4211269988445565,
+          "max_ms": 6.872466998174787
+        },
+        {
+          "cell_id": "test-n7-gradual-18__lq-route",
+          "mean_ms": 4.553073924641164,
+          "median_ms": 3.679432498756796,
+          "max_ms": 17.461184004787356
+        },
+        {
+          "cell_id": "test-n7-gradual-18__gnn-route",
+          "mean_ms": 6.5059301329408,
+          "median_ms": 5.824186999234371,
+          "max_ms": 24.23686601105146
+        },
+        {
+          "cell_id": "test-n7-gradual-18__mlp-route",
+          "mean_ms": 6.183256741132936,
+          "median_ms": 4.780064991791733,
+          "max_ms": 20.553895010380074
+        },
+        {
+          "cell_id": "test-n7-gradual-18__olsr-etx-fast",
+          "mean_ms": 0.9171633230531976,
+          "median_ms": 0.7946605037432164,
+          "max_ms": 10.160829988308251
+        },
+        {
+          "cell_id": "test-n7-gradual-19__lq-route",
+          "mean_ms": 4.922480283251692,
+          "median_ms": 3.8487539859488606,
+          "max_ms": 18.890973005909473
+        },
+        {
+          "cell_id": "test-n7-gradual-19__gnn-route",
+          "mean_ms": 7.862392214034723,
+          "median_ms": 6.570804995135404,
+          "max_ms": 26.38164602103643
+        },
+        {
+          "cell_id": "test-n7-gradual-19__mlp-route",
+          "mean_ms": 6.865206809258477,
+          "median_ms": 6.11915199260693,
+          "max_ms": 18.853626999771222
+        },
+        {
+          "cell_id": "test-n7-gradual-19__olsr-etx-fast",
+          "mean_ms": 0.5497568419135254,
+          "median_ms": 0.3717589861480519,
+          "max_ms": 4.486300982534885
+        },
+        {
+          "cell_id": "test-n7-gradual-20__lq-route",
+          "mean_ms": 4.2388507232923684,
+          "median_ms": 3.4540509805083275,
+          "max_ms": 14.100284985033795
+        },
+        {
+          "cell_id": "test-n7-gradual-20__gnn-route",
+          "mean_ms": 6.1833286246837815,
+          "median_ms": 4.682990504079498,
+          "max_ms": 23.95765998517163
+        },
+        {
+          "cell_id": "test-n7-gradual-20__mlp-route",
+          "mean_ms": 5.738498129115517,
+          "median_ms": 4.7494704922428355,
+          "max_ms": 21.509663987671956
+        },
+        {
+          "cell_id": "test-n7-gradual-20__olsr-etx-fast",
+          "mean_ms": 1.1221950457790324,
+          "median_ms": 0.9849275083979592,
+          "max_ms": 5.209145980188623
+        }
+      ],
+      "example_traces": {
+        "lq-route": "runs/test/test-n5-gradual-01__lq-route/attempt-0/collector/episodes/lq-route/layout_3400025_radio_3500025/episode_8c6fe9a3ee76488e81c596a22bc67153/transitions.jsonl",
+        "gnn-route": "runs/test/test-n5-gradual-01__gnn-route/attempt-0/collector/episodes/gnn-route/layout_3400025_radio_3500025/episode_157668cfc6484116990900e121e847ec/transitions.jsonl",
+        "mlp-route": "runs/test/test-n5-gradual-01__mlp-route/attempt-0/collector/episodes/mlp-route/layout_3400025_radio_3500025/episode_8dc8a2f3bb87474a950cce16cafe30a4/transitions.jsonl",
+        "olsr-etx-fast": "runs/test/test-n5-gradual-01__olsr-etx-fast/attempt-0/collector/episodes/olsr-etx-fast/layout_3400025_radio_3500025/episode_5315570363174b8fb3eaec76dc4481d7/transitions.jsonl"
+      },
+      "example_selection": "Lowest layout seed among n5 gradual scenarios; all arms, regardless of outcome.",
+      "timing_note": "Measured complete controller.act latency on server CPU during four-worker simulation; not pure neural inference or UAV/control-channel latency."
+    }
+  },
+  "host": "cicd",
+  "platform": "Linux-6.8.0-149-generic-x86_64-with-glibc2.39"
+}

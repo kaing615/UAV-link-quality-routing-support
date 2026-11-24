@@ -1,0 +1,52 @@
+\chapter{Đề tài này đang giải quyết việc gì?}
+\section{Câu trả lời trong một phút}
+Đề tài tìm cách giữ cho dữ liệu truyền tốt trong một mạng có các UAV di chuyển. Nhóm đo tình trạng liên kết giữa các UAV, học một mô hình để dự báo chất lượng liên kết sắp tới, rồi kiểm tra hai cách dùng thông tin đó: chọn đường đi cho gói tin và kích hoạt di chuyển UAV trung chuyển.
+
+Nhóm đã hoàn thành cả phần dự báo lẫn thí nghiệm điều khiển trong mô phỏng. Kết quả mới nhất cho thấy dự báo GNN giúp tăng tỷ lệ gói đến đích khi dùng để chọn tuyến. Khi dùng dự báo để kích hoạt di chuyển, nhóm chưa chứng minh được lợi ích thêm so với bộ điều khiển phản ứng theo số đo hiện tại. Hai kết luận này cùng đúng vì chúng trả lời hai câu hỏi khác nhau~\cite{paper}.
+
+\remember{Nghiên cứu đánh giá dự báo cùng hành động mà dự báo phục vụ. Kết quả hiện tại thuộc môi trường mô phỏng, chưa phải thử nghiệm UAV bay thật.}
+
+\section{Nên đọc tài liệu này như thế nào?}
+Nếu chưa quen về mạng, đọc hết chương này trước. Chương~2 kể lại quá trình nghiên cứu. Chương~3 và 4 giải thích mô hình dự báo và hành động điều khiển. Chương~5 và 6 giúp đọc thiết kế thí nghiệm và kết quả. Chương~7 giải thích từng công cụ. Chương cuối chuẩn bị cách trả lời thầy.
+
+Không cần nhớ mọi con số ngay lần đầu. Trước hết hãy trả lời được ba câu: hệ thống quan sát gì, quyết định gì và nhóm đo kết quả bằng gì. Sau đó mới học các con số để trình bày chính xác.
+
+\section{UAV, relay, nguồn và đích}
+UAV là phương tiện bay không người lái. Trong đề tài, mỗi UAV là một nút mạng có thể gửi, nhận hoặc chuyển tiếp dữ liệu. \emph{Nguồn} là nơi phát luồng dữ liệu chính. \emph{Đích} là nơi cần nhận dữ liệu. Một UAV làm \emph{relay} khi chuyển tiếp dữ liệu cho nút khác.
+
+Hãy tưởng tượng nguồn và đích cách xa nhau, nói trực tiếp thì khó nghe. Một số người đứng giữa có thể truyền lời lần lượt. Relay có vai trò tương tự, nhưng truyền các gói dữ liệu bằng vô tuyến. Vai trò trung chuyển không có nghĩa UAV luôn được chọn vào tuyến đang dùng.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[node distance=7mm, every node/.style={font=\small}, box/.style={draw=inkblue,rounded corners=1mm,minimum width=23mm,minimum height=12mm,align=center}]
+\node[box] (s) {Nguồn};
+\node[box,right=of s] (a) {Relay A};
+\node[box,right=of a] (b) {Relay B};
+\node[box,right=of b] (c) {Relay C};
+\node[box,right=of c] (d) {Đích};
+\draw[-{Latex},thick] (s)--(a);\draw[-{Latex},thick] (a)--(b);\draw[-{Latex},thick] (b)--(c);\draw[-{Latex},thick] (c)--(d);
+\end{tikzpicture}
+\caption{Minh họa một đường truyền qua ba relay. Đây là sơ đồ giải thích, không phải quỹ đạo thực nghiệm.}\label{fig:relay}
+\end{figure}
+
+Hình~\ref{fig:relay} cho thấy một tuyến có nhiều chặng. Trong mạng thực tế được mô phỏng, một nút có thể nghe nhiều nút khác, nên có thể tồn tại nhiều tuyến. Định tuyến là quyết định dùng chuỗi chặng nào.
+
+\section{Gói tin, liên kết và tuyến}
+\emph{Gói tin} là một đơn vị dữ liệu. Một luồng dữ liệu gồm nhiều gói gửi liên tiếp. \emph{Liên kết} là khả năng truyền giữa một cặp nút. \emph{Tuyến} là cả đường đi gồm một hoặc nhiều liên kết từ nguồn tới đích.
+
+Chất lượng từng liên kết và chất lượng cả tuyến liên quan với nhau nhưng không giống nhau. Một tuyến có thể gặp mất gói ở bất kỳ chặng nào. Khi đánh giá mạng, nhóm cần biết gói có đến đích cuối cùng hay không, thay vì chỉ biết một vài cặp UAV vẫn nghe nhau.
+
+\example{Giả sử một tuyến có hai chặng, mỗi chặng truyền thành công với xác suất 0,9. Nếu tạm giả định hai chặng độc lập và không truyền lại, xác suất qua cả hai là $0,9\times0,9=0,81$. Đây chỉ là phép tính để hiểu cơ chế. Mạng mô phỏng còn có truyền lại, tranh chấp kênh và các giao thức khác nên không lấy công thức này thay cho số đo PDR.}
+
+\section{Vì sao UAV di chuyển làm bài toán khó hơn?}
+Khoảng cách và chuyển động tương đối làm chất lượng vô tuyến thay đổi. Kênh truyền còn dao động nên hai nút không có một ranh giới tuyệt đối kiểu ``bên trong vòng tròn luôn tốt, bên ngoài luôn mất''. Một liên kết vừa tốt ở thời điểm này có thể yếu vài giây sau.
+
+Nếu bộ định tuyến dùng thông tin cũ, nó có thể giữ đường đã kém. Nếu bộ điều khiển di chuyển relay quá sớm, UAV có thể đi thêm mà dịch vụ không tốt lên. Nếu đổi tuyến liên tục theo nhiễu nhỏ, hệ thống lại thiếu ổn định. Nghiên cứu phải cân bằng những tình huống đó.
+
+\section{Hai cách tác động lên mạng}
+\textbf{Điều khiển tuyến} thay đường đi của gói tin. Ví dụ, thay vì đi trực tiếp qua một liên kết yếu, dữ liệu đi vòng qua các relay có liên kết tốt hơn. UAV không cần đổi vị trí.
+
+\textbf{Điều khiển vị trí} thay vị trí hoặc vận tốc relay. Điều này làm thay đổi khoảng cách, và có thể làm thay đổi chất lượng liên kết. Tuy nhiên, nếu giao thức vẫn chọn một tuyến kém thì lợi ích hình học có thể không biến thành lợi ích truyền gói.
+
+\remember{Đặt UAV ở vị trí tốt và chọn đường truyền tốt là hai quyết định riêng. Nhóm kiểm tra cả hai, đồng thời tách phép so sánh để biết dự báo đóng góp vào đâu.}
+

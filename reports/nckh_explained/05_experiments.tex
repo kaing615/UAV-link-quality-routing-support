@@ -1,0 +1,51 @@
+\chapter{Nhóm kiểm chứng kết quả bằng cách nào?}
+\section{Kịch bản, seed, phương pháp và lượt chạy}
+Một \emph{kịch bản} mô tả cấu hình và tình huống mô phỏng. Một \emph{seed} giúp xác định phần ngẫu nhiên để có thể tái lập. Một \emph{phương pháp}, thường gọi là arm, là cách hệ thống ra quyết định. Một \emph{lượt chạy}, còn gọi là cell hoặc episode, là một phương pháp chạy trên một kịch bản cụ thể.
+
+Nếu có bốn phương pháp trên cùng một tình huống, ta có bốn lượt chạy nhưng chỉ một khối kịch bản để so sánh ghép cặp. Việc dùng cùng seed và điều kiện giữa các nhóm giúp giảm khả năng kết quả chỉ vì nhóm này gặp tình huống dễ hơn.
+
+V8 và v9 mỗi nghiên cứu có 80 lượt validation và 192 lượt test. Cấu trúc test mỗi nghiên cứu là:
+\[
+(20\times2\ \text{kịch bản gradual}+4\times2\ \text{kịch bản static})\times4\ \text{phương pháp}=192.
+\]
+Hai cấu hình là năm và bảy UAV. Như vậy có 40 khối gradual cho so sánh chính và tám khối static cho mô tả. Không gọi đây là 192 tình huống độc lập cho một phép so sánh.
+
+\section{Huấn luyện, validation và test có vai trò khác nhau}
+Tập học dùng để điều chỉnh trọng số. Tập chọn epoch dùng để chọn thời điểm dừng học. Hai tập này thuộc phần phát triển mô hình.
+
+Validation của nghiên cứu vòng kín kiểm tra hệ thống có chạy đúng và có đủ điều kiện để đánh giá cuối hay không. Đây là một nghĩa khác với tập validation dùng khi huấn luyện. V8 kiểm tra đủ lượt, tuyến thực thi đúng, dự báo và bộ đếm hợp lệ, không có blackout khởi động, relay không di chuyển. Go của v8 không phụ thuộc việc PDR tăng bao nhiêu.
+
+V9 còn yêu cầu kịch bản đủ khó: ít nhất 8/16 episode gradual đứng yên phải có từ năm giây mất kết nối trở lên. Thực tế 16/16 đạt điều kiện này. Go=true chỉ cho phép đi tiếp sang test theo kế hoạch, không đồng nghĩa giả thuyết khoa học đã thắng.
+
+Test dùng seed mới để đánh giá cuối theo kế hoạch đã khóa. Nếu thấy kết quả không thuận lợi, nhóm vẫn báo cáo. Muốn đổi phương pháp hoặc ngưỡng rồi kiểm tra tiếp thì phải coi đó là nghiên cứu mới.
+
+\section{Khóa trước có nghĩa là gì?}
+Trước khi chạy pha đánh giá, nhóm ghi rõ phương pháp, seed, chỉ số chính, đối chứng và cách phân tích. Mô hình và cấu hình được đóng gói, dùng SHA-256 để kiểm tra nội dung có thay đổi không. Có thể hình dung hash như dấu vân tay của tệp.
+
+Hash giống nhau hỗ trợ kiểm tra hai tệp có cùng nội dung. Nó không chứng minh phương pháp đúng về khoa học. Vì vậy vẫn cần kiểm tra thiết kế, kết quả thực thi và diễn giải thống kê. Trong các queue mới v8/v9, mỗi cell chính thức chạy một lần, không chọn lại seed vì kết quả xấu~\cite{repro}.
+
+\section{PDR, chia cắt và quãng đường}
+PDR được tính bằng số gói ứng dụng nhận ở đích chia cho số gói ứng dụng gửi. Mỗi episode mới có 15.000 gói luồng chính. PDR càng cao thì càng nhiều dữ liệu tới nơi.
+
+\example{Nếu gửi 15.000 gói và nhận 14.400 gói thì PDR bằng 96\%. Nếu một phương pháp khác nhận 14.250 gói thì PDR là 95\%. Chênh lệch là một điểm phần trăm. Tăng tương đối là khoảng 1,05\%, một cách tính khác và phải gọi đúng tên.}
+
+Chia cắt trong v9 được đo từ đồ thị probe ở ngưỡng 0,5: nguồn và đích có thuộc hai thành phần không nối được với nhau hay không. Nhóm đếm số giây rơi vào tình trạng đó. Đây là định nghĩa vận hành để so sánh nhất quán. Nó khác số giây OLSR báo không có tuyến, và khác số giây không gói dữ liệu nào đến đích.
+
+Quãng đường là tổng độ dài di chuyển của các relay. Tổng cộng trên nhiều relay có thể lớn hơn ngân sách của một relay. Mét chưa phải joule hay mức pin: muốn quy đổi cần thêm mô hình động lực và tiêu thụ năng lượng.
+
+\section{Khoảng tin cậy và bootstrap}
+Một số trung bình không nói hết độ dao động. Có thể phương pháp tốt hơn ở nhiều tình huống nhưng kém hơn ở vài tình huống. Nhóm tính chênh lệch trong từng cặp kịch bản rồi tổng hợp, cân bằng hai cấu hình năm và bảy UAV.
+
+Bootstrap lấy mẫu lại các khối kịch bản, tính lại chênh lệch nhiều lần và dùng phân bố đó để ước lượng khoảng tin cậy. V8/v9 dùng 10.000 lần lấy mẫu lại trên 40 khối gradual, giữ nguyên các phương pháp thuộc cùng khối. Các gói tin liên tiếp hoặc các frame trong cùng episode không được xem là các lần lặp độc lập để làm khoảng tin cậy nhỏ giả tạo.
+
+Nếu khoảng tin cậy của lợi ích nằm hoàn toàn trên 0, phép thử có bằng chứng theo hướng có lợi. Nếu khoảng chứa 0, dữ liệu vẫn tương thích với cả lợi ích nhỏ lẫn bất lợi nhỏ trong phạm vi khoảng ấy. Cách nói đúng là chưa đủ bằng chứng rõ theo phép thử, không phải chứng minh bằng nhau.
+
+Về mặt chặt chẽ, ``95\%'' mô tả tính chất của quy trình lập khoảng qua nhiều mẫu giả định. Không nên nói chắc rằng riêng khoảng đã tính có 95\% xác suất chứa một tham số cố định. Khi báo cáo miệng, có thể gọi ngắn là khoảng thể hiện độ bất định ước lượng qua các kịch bản.
+
+\section{Tại sao kiểm định theo thứ tự?}
+Nếu thử nhiều phép so sánh rồi chỉ chọn phép có lợi để kể, khả năng kết luận nhầm sẽ tăng. Nhóm định trước một thứ tự. Chỉ khi phép trước đạt mới tiếp tục diễn giải khẳng định cho phép sau.
+
+V8 xét PDR của GNN so với số đo hiện tại, rồi so với MLP, rồi so với OLSR-ETX nhanh. Cả ba bước đạt. V9 xét trước lợi ích về giây chia cắt của GNN so với phản ứng. Bước đầu không đạt nên các bước sau chỉ là mô tả, ngay cả khi một khoảng tin cậy riêng lẻ nhìn có vẻ thuận lợi.
+
+\remember{Go=true, đủ lượt chạy và kiểm tra kỹ thuật đạt không đồng nghĩa mô hình tốt hơn đối chứng. Câu hỏi hiệu quả phải trả lời bằng chỉ số và phép so sánh đã định trước.}
+

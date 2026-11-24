@@ -1,0 +1,26 @@
+{
+  "phase": "test",
+  "selection": "Lowest layout seed among n5 gradual scenarios; all arms, regardless of outcome.",
+  "arms": {
+    "route-only": {
+      "first_motion_step": null,
+      "disconnected_seconds": 130,
+      "trace": "reports\\uav_service_v9\\results\\runs\\test\\test-n5-gradual-01__route-only\\attempt-0\\collector\\episodes\\route-only\\layout_3600025_radio_3700025\\episode_fac22108c2134dc78ad373c9093e0163\\transitions.jsonl"
+    },
+    "reactive-motion": {
+      "first_motion_step": 91,
+      "disconnected_seconds": 68,
+      "trace": "reports\\uav_service_v9\\results\\runs\\test\\test-n5-gradual-01__reactive-motion\\attempt-0\\collector\\episodes\\reactive-motion\\layout_3600025_radio_3700025\\episode_e49608756e454e6cad1df52856344269\\transitions.jsonl"
+    },
+    "gnn-motion": {
+      "first_motion_step": 90,
+      "disconnected_seconds": 65,
+      "trace": "reports\\uav_service_v9\\results\\runs\\test\\test-n5-gradual-01__gnn-motion\\attempt-0\\collector\\episodes\\gnn-motion\\layout_3600025_radio_3700025\\episode_041dc59579e04bff8c51b6b90b54ca66\\transitions.jsonl"
+    },
+    "mlp-motion": {
+      "first_motion_step": 87,
+      "disconnected_seconds": 66,
+      "trace": "reports\\uav_service_v9\\results\\runs\\test\\test-n5-gradual-01__mlp-motion\\attempt-0\\collector\\episodes\\mlp-motion\\layout_3600025_radio_3700025\\episode_c0d0971ed1e9466c9f51c4b873e5d319\\transitions.jsonl"
+    }
+  }
+}

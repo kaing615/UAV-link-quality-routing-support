@@ -1,0 +1,62 @@
+\chapter{Dữ liệu và GNN hoạt động như thế nào?}
+\section{Hệ thống đo được gì ở mỗi thời điểm?}
+Ở hai nghiên cứu mới, hệ thống lấy quan sát theo cửa sổ một giây. Nhóm có vị trí và vận tốc của từng UAV, chất lượng thu giữa các cặp nút, thông tin tuyến và bộ đếm gói. Đây là bức tranh tại thời điểm đang xét, kèm các giá trị quá khứ đã tổng hợp.
+
+Probe là gói thăm dò phát định kỳ. Nếu A phát nhiều probe nhưng B chỉ nhận được một phần, tỷ lệ nhận phản ánh chất lượng hướng A tới B trong cửa sổ đo. Probe phát cách nhau 0,05 giây. Đừng nhầm tỷ lệ nhận probe trên một liên kết với PDR của luồng dữ liệu chính qua cả tuyến.
+
+\example{Trong một cửa sổ giả định, A phát 20 probe và B nhận 16, tỷ lệ nhận là $16/20=0,8$. Con số này không nói rằng 80\% gói ứng dụng chắc chắn đến đích, vì gói ứng dụng có thể đi qua nhiều chặng và chịu điều kiện truyền khác.}
+
+\section{Đặc trưng là gì?}
+Đặc trưng là các con số mô tả tình huống để mô hình có thể học. Mô hình mới dùng tám đặc trưng nút và bảy đặc trưng cạnh. Các tọa độ và vận tốc có nhiều thành phần nên số lượng đặc trưng không bằng số tên gọi thông thường.
+
+\begin{table}[htbp]
+\centering
+\begin{tabularx}{\linewidth}{@{}p{30mm}YY@{}}
+\toprule Nhóm & Thông tin điển hình & Giúp mô hình hiểu gì?\\\midrule
+Nút UAV & Vị trí so với tâm đội hình, vận tốc, bậc hàng xóm, tỷ lệ nhận trung bình & UAV ở đâu, đang đi thế nào và đang kết nối với xung quanh ra sao.\\
+Cạnh liên kết & Khoảng cách, RSSI, tỷ lệ nhận hiện tại và đã làm mượt, mức thay đổi, vận tốc tương đối & Hai UAV đang nghe nhau tốt không và có xu hướng tách xa không.\\\bottomrule
+\end{tabularx}
+\caption{Ý nghĩa của đầu vào mô hình hồi quy v8/v9. RSSI là chỉ báo cường độ tín hiệu nhận.}\label{tab:features}
+\end{table}
+
+Thông tin trong Bảng~\ref{tab:features} được đưa về thang đo phù hợp trước khi học. Chẳng hạn khoảng cách và vận tốc có đơn vị rất khác nhau. Việc chuẩn hóa giúp phép tính không bị một đại lượng có số lớn lấn át chỉ vì đơn vị của nó.
+
+EWMA là cách làm mượt số đo: kết hợp giá trị mới với giá trị đã tích lũy trước đó. Cách này giảm dao động nhỏ nhưng có thể phản ứng chậm với thay đổi đột ngột. Hệ số 0,5 trong nghiên cứu mới cho số đo mới và trạng thái làm mượt trước đó trọng số bằng nhau trong lần cập nhật.
+
+\section{Đồ thị và truyền thông điệp}
+Một đồ thị gồm các nút và các cạnh. Đặt một nút cho mỗi UAV và một cạnh cho mỗi quan hệ liên kết, ta có cách biểu diễn tự nhiên của mạng. GNN học cách tổng hợp thông tin hàng xóm để tạo biểu diễn của từng nút và liên kết.
+
+Hãy hình dung đánh giá một đoạn đường. Ngoài tình trạng chính đoạn đó, ta còn quan tâm các đường xung quanh và hướng di chuyển của phương tiện. GNN cũng dùng bối cảnh lân cận theo cách học được từ dữ liệu. Đây chỉ là phép so sánh để hiểu ý tưởng, không phải mô hình giao thông được dùng trong đề tài.
+
+Trong mô hình mới, hai lớp tổng hợp trung bình có đặc trưng cạnh tạo ra biểu diễn 64 chiều. Bộ giải mã dùng biểu diễn của cặp UAV và thông tin liên kết để tạo dự báo. Từ ``truyền thông điệp'' ở đây chỉ phép tính bên trong mô hình. Không nên hiểu rằng mỗi lớp GNN đã được triển khai thành một vòng UAV thật gửi gói cho nhau.
+
+\section{Mô hình mới dự báo điều gì?}
+Đầu ra là tỷ lệ nhận probe trung bình trong năm giây kế tiếp cho liên kết được xét. Đầu ra nằm trong khoảng từ 0 tới 1. Đây là bài toán \emph{hồi quy}: dự đoán một giá trị số.
+
+\example{Giả sử số đo hiện tại là 0,9 nhưng hai UAV đang tách xa. Mô hình có thể dự báo trung bình năm giây tới còn 0,65. Những con số này chỉ minh họa cách dùng dự báo. Chúng không phải một mẫu lấy từ thí nghiệm và không chứng minh mô hình luôn đoán đúng.}
+
+Mô hình không dự báo trực tiếp vị trí tối ưu cần bay tới, không tối ưu cả quỹ đạo và không trả lời mọi câu hỏi về tình trạng mạng. Nó cung cấp một đại lượng cụ thể cho bộ điều khiển đã định nghĩa trước.
+
+\section{Học có giám sát diễn ra như thế nào?}
+Một mẫu huấn luyện có hai phần: quan sát tại thời điểm $t$ và kết quả thực tế xuất hiện sau đó. Với dữ liệu lịch sử đã hoàn tất, nhóm có thể nhìn lại năm giây sau $t$ để tạo nhãn đúng. Mô hình thử dự báo, so với nhãn và điều chỉnh trọng số để giảm sai số.
+
+MSE là trung bình bình phương sai lệch giữa dự báo và nhãn. Sai lệch lớn bị phạt mạnh hơn sai lệch nhỏ. Adam là phương pháp cập nhật trọng số trong quá trình học. Một epoch là một lượt đi qua tập dữ liệu huấn luyện. Early stopping là dừng hoặc chọn mô hình theo tập dùng để theo dõi học, nhằm tránh chỉ học thuộc tập huấn luyện.
+
+Mô hình mới học từ 48 trace HOLD cũ của v7 và dùng 20 trace HOLD cũ khác để chọn epoch. Mỗi trace có 236 gốc dự báo hợp lệ, tạo 11.328 mẫu fit và 4.720 mẫu chọn epoch. Các mẫu sát nhau trong cùng lượt có tương quan, nên không được coi hơn mười nghìn mẫu này là hơn mười nghìn thí nghiệm mạng độc lập.
+
+GNN chọn epoch 58, MLP chọn epoch 59. Cả hai dùng seed huấn luyện 20261123. Sau khi chọn, trọng số được khóa. Nhóm không chỉnh lại mô hình để làm kết quả test đẹp hơn.
+
+\section{Vì sao biết tương lai để học mà vẫn không gian lận?}
+Trong dữ liệu cũ, kết quả tương lai đóng vai trò đáp án để dạy mô hình. Khi mô hình làm bài kiểm tra mới, nó chỉ nhận dữ liệu hiện tại và quá khứ. Đây là ranh giới giữa tạo nhãn huấn luyện hợp lệ và đưa đáp án vào đầu vào đánh giá.
+
+Dữ liệu cũ từng mang tên ``test v7'' vẫn có thể dùng làm dữ liệu phát triển cho một nghiên cứu mới, miễn là công bố việc dùng lại đó và đánh giá mới dùng seed độc lập. Không được tiếp tục coi dữ liệu đã học là tập kiểm tra chưa từng thấy của v8.
+
+\section{MLP và các đối chứng giúp trả lời điều gì?}
+MLP là mạng nơ-ron nhiều lớp thông thường. Trong phép đối chứng mới, MLP bỏ các nhánh truyền thông điệp học được. So sánh với MLP giúp hỏi xem cấu hình GNN có lợi hơn một mô hình dự báo đơn giản hơn không.
+
+Tuy nhiên MLP vẫn có đặc trưng bậc nút và có 13.505 tham số, còn GNN có 19.137 tham số. Vì vậy không thể nói phép thử đã chứng minh toàn bộ chênh lệch chỉ do cấu trúc đồ thị. Muốn tách riêng nguyên nhân đó cần các đối chứng bổ sung phù hợp.
+
+Đối chứng số đo hiện tại trả lời câu hỏi khác: có cần dự báo hay chỉ cần dùng trạng thái đang đo được? OLSR-ETX nhanh lại là đối chứng hệ thống định tuyến. So sánh GNN với OLSR-ETX nhanh bao gồm nhiều khác biệt hơn việc có hay không có GNN.
+
+\remember{GNN học dự báo từ đáp án lịch sử. Bộ điều khiển vẫn theo luật cố định. V8/v9 chưa dùng học tăng cường và chưa huấn luyện một chính sách bay.}
+

@@ -1,0 +1,52 @@
+\chapter{Mỗi bước dùng công cụ gì?}
+\section{Nhìn bộ công cụ theo công việc}
+Tech stack là tập hợp công cụ cùng phục vụ một quy trình. Trong đề tài này, công cụ tạo ra môi trường mạng, công cụ học từ dữ liệu và công cụ phân tích kết quả có nhiệm vụ khác nhau. Bảng~\ref{tab:tools} nối từng bước với đầu vào và sản phẩm của nó.
+
+\begin{table}[htbp]\centering\small
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{25mm}>{\raggedright\arraybackslash}p{29mm}YY@{}}
+\toprule Bước & Công cụ & Nhận vào & Tạo ra\\\midrule
+Dựng mạng & ns-3.45 & Số UAV, chuyển động, kênh vô tuyến, lưu lượng & Mạng mô phỏng có gói gửi, nhận, mất và chuyển tiếp.\\
+Thu và chuẩn bị dữ liệu & Python, NumPy & Quan sát theo thời gian từ mô phỏng & Đặc trưng hiện tại và nhãn tương lai để học.\\
+Huấn luyện & PyTorch & Dữ liệu phát triển và cấu hình GNN/MLP & Trọng số mô hình dự báo đã chọn.\\
+Ra quyết định & Python, NumPy & Quan sát mới và trọng số đã khóa & Tuyến cần dùng hoặc vận tốc relay trong mô phỏng.\\
+Chạy thí nghiệm & Server Ubuntu & Kế hoạch kịch bản, seed, phương pháp & Kết quả từng lượt và nhật ký kiểm tra.\\
+Phân tích & Python, NumPy & Kết quả các phương pháp cùng kịch bản & Chênh lệch, khoảng tin cậy và thống kê mô tả.\\
+Trình bày & Matplotlib, LaTeX & Số liệu đã đối chiếu và diễn giải & Biểu đồ, bảng và báo cáo PDF.\\\bottomrule
+\end{tabularx}
+\caption{Bộ công cụ và vai trò trong nghiên cứu. Công cụ tự nó không phải bằng chứng phương pháp có hiệu quả.}\label{tab:tools}
+\end{table}
+
+\section{ns-3 là nơi giả lập mạng hoạt động}
+ns-3 xử lý các sự kiện truyền thông theo thời gian mô phỏng. Nhóm đặt vị trí nút, chuyển động, cấu hình Wi-Fi và luồng dữ liệu. Bộ mô phỏng tính quá trình truyền, thu, tranh chấp kênh và chuyển tiếp theo các mô hình đã cấu hình. Nhờ đó nhóm có thể lặp một tình huống và thay phương pháp điều khiển để so sánh.
+
+Wi-Fi 802.11g quy định phần truy nhập vô tuyến của mạng được thử. OLSR là giao thức xây dựng thông tin định tuyến; OLSR-ETX là đối chứng có dùng chất lượng liên kết trong nghiên cứu. UDP là giao thức của luồng dữ liệu thử nghiệm. Ba tên này nằm ở các vai trò khác nhau, không phải ba tên thay thế cho bộ mô phỏng.
+
+Tình huống mô phỏng có cả kênh suy hao và dao động truyền dẫn. Vì vậy chất lượng liên kết không chỉ do một phép kiểm tra khoảng cách. Tuy nhiên độ sát thực vẫn phụ thuộc mô hình và cấu hình đã chọn. Nhóm chưa có dữ liệu bay thật để xác nhận mọi giả định đó trong môi trường ngoài trời.
+
+\section{PyTorch dùng khi học; NumPy dùng khi chạy mô hình đã học}
+Trong huấn luyện, PyTorch tính dự báo, tính sai số so với nhãn rồi hỗ trợ cập nhật trọng số. GNN và MLP là hai cấu trúc mô hình được huấn luyện bằng công cụ đó. PyTorch là công cụ; GNN là loại mô hình. Gọi hai thứ này cùng là ``thuật toán của đề tài'' sẽ làm người nghe khó phân biệt.
+
+Khi học xong, mô hình đã có một bộ trọng số cố định. Nhóm xuất trọng số để NumPy thực hiện các phép tính dự báo trong vòng điều khiển. Bước xuất này giúp tách quá trình học khỏi quá trình suy luận, tức dùng mô hình để dự báo một quan sát mới.
+
+Nhóm kiểm tra hai cách tính trên 40 snapshot, sai lệch lớn nhất khoảng $1,19\times10^{-7}$. Kiểm tra này cho thấy bản mô hình dùng trong thí nghiệm khớp bản PyTorch ở các mẫu đã đối chiếu. Nó không đo độ chính xác so với tương lai thật; việc đó cần so dự báo với nhãn và đánh giá trên dữ liệu mới~\cite{paper}.
+
+\section{Python nối các bước; Ubuntu là môi trường thực thi}
+Python tổ chức các lượt chạy, nhận quan sát, chuẩn bị đầu vào dự báo, tính quyết định và tổng hợp kết quả. NumPy hỗ trợ phép tính trên mảng số. Có thể hình dung Python điều phối các bộ phận, còn ns-3 tạo thế giới mạng đang được quan sát và tác động.
+
+Server Ubuntu chạy các lượt mô phỏng đã lên kế hoạch. Các pha v8/v9 dùng bốn worker, tức tối đa bốn tiến trình làm việc đồng thời theo queue. Điều đó giúp rút ngắn thời gian chờ, không biến bốn lượt trong cùng kịch bản thành bốn kịch bản độc lập.
+
+Máy tính thực hiện nghiên cứu và thời gian của mạng mô phỏng là hai hệ quy chiếu. Một episode dài 240 giây mô phỏng không nhất thiết mất đúng 240 giây ngoài đời. Tương tự, vài mili giây tính quyết định trên server chưa bao gồm thời gian UAV gửi số đo, nhận lệnh và thực hiện chuyển động.
+
+\section{Từ số đo tới kết luận rồi mới tới hình vẽ}
+Sau mỗi lượt, nhóm kiểm tra tính hợp lệ trước khi tổng hợp hiệu quả: đủ số gói gửi theo thiết kế, tuyến thực thi đúng, có lưu lượng nền, dự báo hợp lệ và các giới hạn chuyển động được tôn trọng. Một file kết quả tồn tại chưa đủ để kết luận lượt chạy đúng.
+
+Phân tích ghép cặp lấy kết quả các phương pháp trên cùng khối kịch bản để tính chênh lệch. Sau đó bootstrap ở cấp khối cho khoảng tin cậy. Matplotlib vẽ các con số này thành hình để người đọc nhìn mức chênh và độ bất định. Hình đẹp không thay thế việc kiểm tra số liệu nguồn.
+
+LaTeX dàn trang phần giải thích, công thức, bảng, hình và dẫn nguồn thành PDF. Báo cáo dài lưu chi tiết để kiểm tra, còn slide chọn các ý cần nói trong một buổi trình bày. Tài liệu bạn đang đọc là bản diễn giải của hồ sơ đó, không phải một thực nghiệm mới.
+
+\section{Đi một vòng bằng ví dụ dễ hình dung}
+\example{Ở một thời điểm giả định, nguồn đang tách xa relay A. Bộ mô phỏng ghi nhận vị trí, vận tốc và các probe gần đây. Những số đo này đi vào GNN đã học để dự báo chất lượng năm giây tới. Trong v8, bộ chọn tuyến dùng dự báo để cân nhắc một đường khác rồi áp dụng tuyến nếu đủ điều kiện. Mạng tiếp tục truyền gói, và nhóm đếm số gói đến đích. Trong v9, tuyến vẫn dùng chất lượng hiện tại; dự báo có thể bổ sung tín hiệu bắt đầu một đợt di chuyển theo luật hình học. Đây là hai thí nghiệm riêng, không phải đồng thời đổi cả tuyến theo dự báo và vị trí rồi gán toàn bộ lợi ích cho GNN.}
+
+Trong ví dụ ấy, ns-3 tạo và cập nhật trạng thái mạng; Python và NumPy tính dự báo cùng quyết định; PyTorch đã làm việc ở giai đoạn học trước đó. Công cụ phân tích chỉ tổng hợp sau khi có các lượt đánh giá hợp lệ.
+
+\remember{Khi thầy hỏi ``dùng gì để làm?'', hãy trả lời theo công việc: ns-3 mô phỏng mạng, PyTorch học dự báo, Python/NumPy điều khiển và phân tích, Ubuntu chạy thí nghiệm, Matplotlib/LaTeX trình bày kết quả. Sau mỗi tên công cụ, nói rõ nó nhận gì và tạo ra gì.}

@@ -1,0 +1,55 @@
+\chapter{Nhóm đã làm gì từ đầu đến cuối?}
+\section{Bắt đầu bằng bài toán dự báo}
+Mục tiêu ban đầu là dự đoán chất lượng liên kết ở nhiều mốc tương lai bằng mạng nơ-ron đồ thị, gọi tắt là GNN. Giai đoạn đầu dùng 210 lượt mô phỏng, mỗi lượt có 20 UAV. Ma trận gồm 21 điều kiện, mỗi điều kiện có 10 seed. Các điều kiện thay đổi chuyển động, tầm phủ danh định, sự kiện chia tách và tải mạng~\cite{report}.
+
+Nhóm tạo hai dạng nhãn. Nhãn \emph{QoS} mô tả liên kết còn kết nối và đạt các ngưỡng chất lượng ở một mốc tương lai. Nhãn \emph{survival} mô tả liên kết tồn tại liên tục trong khoảng dự báo. Các mốc là 1, 2, 3 và 5 bước. Không tự đổi đơn vị ``bước'' của giai đoạn này thành ``giây'' của nghiên cứu mới.
+
+Nhóm so sánh Edge-SAGE với XGBoost, Logistic Regression và cách giữ nguyên trạng thái gần nhất. Khi kiểm tra, nhóm giữ riêng toàn bộ các lượt thuộc một seed để tránh trộn các lát thời gian của cùng tình huống vào cả phần học và phần đánh giá.
+
+\section{Kết quả dự báo tạo ra câu hỏi tiếp theo}
+GNN đạt Macro-F1 cao hơn các đối chứng ở các tổ hợp nhãn và mốc được tổng hợp. Chẳng hạn, QoS tại mốc 5 bước có Macro-F1 0,845 với GNN và 0,784 với XGBoost. Macro-F1 đo chất lượng phân loại, không đo số gói ứng dụng đã tới đích.
+
+Một điểm cần giữ trong báo cáo là lỗi \emph{false-stable}: mô hình báo liên kết ổn định nhưng nó thực tế không ổn định. GNN có tỷ lệ lỗi này cao hơn XGBoost ở 7/8 tổ hợp nhãn và mốc. Nghĩa là một chỉ số tổng hợp tốt hơn chưa đủ bảo đảm quyết định định tuyến an toàn hơn.
+
+Vì vậy nhóm chuyển sang câu hỏi: nếu thật sự dùng thông tin dự báo để ra quyết định, mạng có truyền gói tốt hơn không? Để trả lời, cần đưa quyết định trở lại bộ mô phỏng và quan sát hệ quả, tức là đánh giá vòng kín.
+
+\section{V2 và v3: thử dự báo để di chuyển relay}
+V2 dùng bộ dự báo nguy cơ suy giảm dịch vụ trong 10 và 20 giây tới. Bộ dự báo ở đây là logistic, không phải mô hình GNN của giai đoạn đầu. Khi rủi ro đủ lớn, hệ thống kích hoạt một đợt di chuyển có ràng buộc.
+
+Kết quả chính v2 không đạt: phương pháp có dự báo làm PDR giảm khoảng 0,99 điểm phần trăm so với bản bỏ dự báo, đồng thời relay đi thêm khoảng 41,2 m. V3 thử chọn ngưỡng và thêm một cổng ước lượng lợi ích của hành động. V3 dừng ở validation vì không đạt điều kiện tiếp tục. Nhóm không có test v3 để tuyên bố thành công.
+
+Những vòng này cho thấy dự báo có thể phát hiện nguy cơ nhưng hành động đi kèm vẫn không giúp ích. Nhóm cần tìm hiểu gói tin mất ở đâu, đường đi nào đang được chọn và relay có thực sự nằm trên đường ấy không.
+
+\section{V4 đến v7: kiểm tra và củng cố định tuyến}
+Phân tích các kịch bản đã xét cho thấy nhiều tổn thất gắn với việc OLSR chọn đường trực tiếp theo số chặng, dù liên kết đó đã kém. Nhóm đặt giả thuyết rằng chọn tuyến theo chất lượng liên kết có thể hữu ích hơn chỉ bố trí relay.
+
+V4 thử phương pháp ghim tuyến theo ETX, có quy tắc giữ tuyến để tránh đổi quá thường xuyên. V5 bổ sung đối chứng OLSR-ETX phân tán. Trong quá trình kiểm tra, nhóm phát hiện trạng thái ``dead'' trong bộ nhớ ARP của môi trường mô phỏng có thể giữ 100 giây sau một lần phân giải thất bại. Nói dễ hiểu, hệ thống tạm ghi nhớ một địa chỉ không dùng được quá lâu, làm gói bị loại dù điều kiện liên kết đã thay đổi. V6 dùng thời hạn một giây ở mọi nhóm và kiểm tra lại trên nghiên cứu riêng.
+
+V7 kiểm tra đối chứng cập nhật nhanh hơn, độ trễ điều khiển hai giây, chuỗi bảy UAV và lưu lượng nền. Các kiểm tra này làm nền tảng cho câu hỏi cuối: khi bộ chọn tuyến đã hoạt động ổn định, dự báo GNN có tạo lợi ích thêm không?
+
+\begin{table}[htbp]
+\centering\small
+\begin{tabularx}{\linewidth}{@{}p{14mm}YY@{}}
+\toprule Vòng & Câu hỏi chính & Kết quả cần nhớ\\\midrule
+v2 & Dự báo rồi di chuyển có giúp hơn phục hồi? & Không đạt, PDR giảm và quãng đường tăng.\\
+v3 & Cổng lợi ích có chọn được hành động tốt? & No-go ở validation.\\
+v4 & Chọn tuyến theo chất lượng có giúp hơn OLSR? & Test tăng 4,18 điểm phần trăm PDR.\\
+v5 & Có hơn OLSR-ETX phân tán không? & Chưa đạt endpoint chính, có nhiễu ARP.\\
+v6 & Sau sửa cấu hình ARP, lợi ích còn không? & Tăng 4,57 điểm phần trăm so với OLSR-ETX.\\
+v7 & Có còn lợi ích với đối chứng nhanh và điều kiện rộng hơn? & Tăng 5,06 điểm phần trăm so với OLSR-ETX nhanh.\\
+v8 & Dự báo GNN có giúp thêm cho chọn tuyến? & Tăng 0,66 điểm phần trăm so với số đo hiện tại.\\
+v9 & Dự báo có giúp thêm cho kích hoạt vị trí? & Chưa có bằng chứng rõ ở chỉ số chính.\\\bottomrule
+\end{tabularx}
+\caption{Các vòng nghiên cứu trả lời những câu hỏi khác nhau. Không cộng các mức tăng vì đối chứng và bối cảnh khác nhau.}\label{tab:history}
+\end{table}
+
+\section{V8 và v9: nối dự báo với hành động cụ thể}
+V8 huấn luyện một mô hình GNN hồi quy mới để dự báo tỷ lệ nhận probe trung bình năm giây tới. Nhóm đưa đầu ra này vào cùng luật chọn tuyến, giữ relay đứng yên. V9 giữ nguyên trọng số đã học, rồi dùng dự báo làm một điều kiện bổ sung để kích hoạt di chuyển.
+
+Mô hình GNN phân loại đa thời điểm ban đầu và mô hình GNN hồi quy năm giây sau này có cùng họ ý tưởng tổng hợp hàng xóm, nhưng là hai bài toán, hai cấu hình và hai bộ trọng số khác nhau. Không nên nói nhóm chỉ lấy nguyên mô hình ban đầu gắn vào tất cả các vòng.
+
+\section{Cuối cùng nhóm lưu lại những gì?}
+Nhóm tổng hợp báo cáo 51 trang và bản bài báo 7 trang. Hồ sơ đi kèm giữ kế hoạch thí nghiệm, mô hình đã khóa, số đo kết quả, nhật ký kiểm tra và dấu kiểm nội dung tệp. Các pha chính thức v2--v9 có tổng cộng 2.524 lượt hợp lệ. Con số này không cộng 210 lượt ngoại tuyến ban đầu, các lượt kiểm tra nhanh hay lượt tái hiện chẩn đoán~\cite{report,repro}.
+
+\remember{Bảng~\ref{tab:history} là quá trình học từ cả kết quả đạt và không đạt. Đóng góp không phải mọi phiên bản đều tốt hơn phiên bản trước, mà là các câu hỏi đã được kiểm tra với đối chứng và giới hạn rõ.}
+

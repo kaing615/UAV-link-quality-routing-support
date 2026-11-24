@@ -1,0 +1,41 @@
+\section{Phân tích thăm dò sau test}\label{sec:posthoc}
+Ba phân tích dưới đây được làm \emph{sau} khi đã có kết quả test v8 và v9, không được đăng ký trước và không thay đổi kết luận chính thức của hai vòng. Chúng nhằm trả lời ba câu hỏi phản biện: phần chia cắt còn lại ở v9 có tránh được không, lợi ích định tuyến của GNN có phải chỉ do làm mượt, và kết quả GNN có phụ thuộc seed huấn luyện không. Dữ liệu và mã nằm ở \code{evidence/exploratory/}, \code{scripts/analysis/v9_geometric_bound.py}, \code{scripts/train/multiseed_service_v8.py} và \code{src/control/service_v8x/}.
+
+\subsection{Giới hạn hình học của điều khiển vị trí (v9)}
+Từ mọi cặp nút trong 192 trace test v9, nhóm ước lượng xác suất một cạnh có tỷ lệ nhận ít nhất 0,5 theo khoảng cách 3D (bin 5 m, ép đơn điệu giảm); xác suất này xuống dưới 0,5 từ khoảng 180 m. Một bộ điều khiển lý tưởng đặt relay cách đều trên đoạn nối hai đầu mút, tức thời, không tốn quãng đường. Với quỹ đạo đầu mút thực tế của từng khối gradual, số giây chia cắt kỳ vọng của bộ điều khiển này là $\sum_t 1-p(D_t/(n-1))^{\,n-1}$, giả định các hop fading độc lập.
+\begin{table}[H]
+\centering\small
+\begin{tabularx}{\linewidth}{@{}YR{2.2cm}R{2.2cm}R{2.4cm}@{}}
+\toprule\textbf{Số giây chia cắt (gradual, test v9)}&\textbf{n5}&\textbf{n7}&\textbf{Cân bằng}\\\midrule
+Relay lý tưởng cách đều (kỳ vọng)&48,68&3,51&26,09\\
+Cận dưới tất định ($D_t/(n-1)>180$ m)&35,65&0,00&17,82\\
+\code{reactive-motion}&53,45&9,45&31,45\\
+\code{gnn-motion}&53,80&8,70&31,25\\
+\code{route-only}&123,45&123,40&123,43\\\bottomrule
+\end{tabularx}
+\caption{Thăm dò: chia cắt thực tế so với giới hạn hình học. Số của các arm khớp Bảng~\ref{tab:v9means}.}\label{tab:posthoc-geo}
+\end{table}
+Trigger reactive đã đạt khoảng 94\% mức giảm chia cắt có thể có so với đứng yên; phần còn có thể giảm thêm chỉ khoảng 5 giây mỗi episode, và một phần trong đó là fading không dự đoán được. Điều này giải thích hợp lý vì sao dự báo năm giây chỉ giảm 0,20 giây: trong họ kịch bản v9, chuỗi relay chủ yếu bị giới hạn bởi tầm phủ, không phải bởi thời điểm kích hoạt. Ước lượng này phụ thuộc mô hình kênh, giả định độc lập giữa các hop và topology chuỗi.
+
+\subsection{Lợi ích định tuyến của GNN có phải do làm mượt?}
+V8 so sánh GNN với EWMA hệ số 0,5, đồng thời ghi nhận GNN đổi tuyến ít hơn hẳn. Để tách hai yếu tố, nhóm chạy một nghiên cứu thăm dò \code{v8x} với 200 episode trên 40 khối gradual mới (n5/n7, seed được kiểm toán không trùng mọi vòng trước). Nghiên cứu dùng cùng binary, cờ, collector, margin và luật ghim tuyến như v8, và chỉ đổi cách làm mượt chất lượng: EWMA 0,2, EWMA 0,1, hoặc giữ EWMA 0,5 nhưng tăng dwell lên 15 giây. \code{gnn-route} dùng nguyên trọng số đã khóa. Kết quả: 200/200 cell hợp lệ, toàn vẹn tuyến đạt ở mọi episode, không có mất trắng.
+\begin{table}[H]
+\centering\small
+\begin{tabularx}{\linewidth}{@{}YR{4.0cm}R{2.2cm}@{}}
+\toprule\textbf{So sánh (gradual, v8x)}&\textbf{Chênh PDR (điểm \%), CI 95\%}&\textbf{Đổi tuyến / episode}\\\midrule
+\code{gnn-route} $-$ \code{lq-route} (EWMA 0,5)&$+0{,}78$ [0,40; 1,17]&$-7{,}3$\\
+EWMA 0,2 $-$ \code{lq-route}&$+0{,}78$ [0,42; 1,14]&$-6{,}0$\\
+EWMA 0,1 $-$ \code{lq-route}&$+1{,}09$ [0,76; 1,43]&$-8{,}0$\\
+Dwell 15 s $-$ \code{lq-route}&$-0{,}02$ [$-0{,}31$; 0,27]&$-4{,}4$\\
+\code{gnn-route} $-$ EWMA 0,2&$0{,}00$ [$-0{,}33$; 0,33]&$-1{,}3$\\
+\code{gnn-route} $-$ EWMA 0,1&$-0{,}31$ [$-0{,}61$; $-0{,}04$]&$+0{,}7$\\\bottomrule
+\end{tabularx}
+\caption{Thăm dò v8x: bootstrap 10.000 lần theo khối, cân bằng n5/n7; CI chỉ mang tính mô tả.}\label{tab:posthoc-smooth}
+\end{table}
+Lợi ích của GNN so với EWMA 0,5 lặp lại trên seed mới, nhưng một EWMA mượt hơn, không dùng mô hình học, đạt mức tương đương (0,2) hoặc cao hơn (0,1). Tăng dwell thì không có tác dụng, nên điều quan trọng là ước lượng chất lượng ít nhiễu, không chỉ là ít đổi tuyến. Lợi ích PDR cũng không theo độ chính xác dự báo: trên cùng trace test v8, MSE năm giây của EWMA là 0,00127 (hệ số 0,5), 0,00106 (0,3), 0,00109 (0,2) và 0,00165 (0,1), so với 0,00078 của GNN. EWMA 0,1 là bộ dự báo kém nhất nhưng cho PDR cao nhất. Vì vậy kết quả v8 nên được hiểu là: bộ ghim tuyến hưởng lợi từ một ước lượng chất lượng ổn định hơn, và GNN là một cách đạt điều đó; v8 chưa chứng minh rằng thông tin dự báo của GNN có giá trị riêng vượt một bộ lọc đơn giản đã chỉnh hệ số. Hệ số 0,1 và 0,2 được chọn trước khi chạy v8x nhưng sau khi xem v8, nên cần một vòng đăng ký trước riêng nếu muốn dùng làm baseline chính thức.
+
+\subsection{Biến thiên theo seed huấn luyện}
+GNN và MLP được huấn luyện lại bằng đúng công thức v8 với năm seed (seed đã khóa và bốn seed mới), rồi đánh giá MSE trên cùng 40 trace \code{lq-route} gradual của test v8. Seed đã khóa tái lập đúng MSE của Bảng~\ref{tab:v8mse}. Trên năm seed, MSE của GNN là $0{,}000778\pm0{,}000035$ (độ lệch chuẩn; khoảng 0,000724--0,000814), của MLP là $0{,}001111\pm0{,}000038$ (0,001058--0,001163); GNN thấp hơn MLP và EWMA ở cả 5/5 seed. Thứ tự MSE giữa các mô hình vì vậy không phụ thuộc seed. Đây chỉ là đánh giá ngoại tuyến; PDR vòng kín của các seed mới chưa được đo. Epoch tốt nhất nằm trong khoảng 57--60 trên tối đa 60, nên có thể mô hình chưa hội tụ hết.
+
+\subsection{Hệ quả cho hướng học tăng cường}
+Hai phân tích đầu cho thấy họ kịch bản hiện tại để lại ít dư địa cho một chính sách học được. Ở điều khiển vị trí, luật bố trí cách đều đã gần giới hạn hình học. Ở định tuyến, một bộ lọc một tham số đã ngang hoặc hơn GNN. Một nghiên cứu học tăng cường chỉ có ý nghĩa khi kịch bản có đánh đổi mà luật cố định khó xử lý, ví dụ ngân sách bay hoặc năng lượng thực sự ràng buộc, nhiều luồng tranh chấp vị trí relay, topology không phải chuỗi, hoặc chọn tần số probe để giảm chi phí báo hiệu. Kể cả khi đó, baseline cần được chỉnh tham số trên tập tuning riêng trước.

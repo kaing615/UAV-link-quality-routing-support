@@ -1,0 +1,892 @@
+{
+  "version": "v8",
+  "phase": "test",
+  "validation_go": {
+    "criteria": {
+      "background_ok": {
+        "passed": true
+      },
+      "flags_ok": {
+        "passed": true
+      },
+      "forecast_traces_ok": {
+        "passed": true
+      },
+      "no_startup_blackout": {
+        "cells": [],
+        "passed": true
+      },
+      "relays_stationary": {
+        "passed": true
+      },
+      "route_integrity_ok": {
+        "passed": true
+      },
+      "transmissions_ok": {
+        "passed": true
+      }
+    },
+    "go": true
+  },
+  "counts": {
+    "validation": 80,
+    "test": 192
+  },
+  "analysis_sha256": "1231a365990a73236079a300f24442a697303dccdd7ccc933424e325a459932e",
+  "fixed_sequence": [
+    {
+      "contrast": {
+        "arm": "gnn-route",
+        "ci95": [
+          0.0037781250000000033,
+          0.00998512500000001
+        ],
+        "comparator": "lq-route",
+        "metric": "actual_udp_pdr",
+        "point": 0.006616666666666668,
+        "regimes": {
+          "n5": {
+            "complete": 20,
+            "missing_sensitivity": [
+              0.005759999999999999,
+              0.005759999999999999
+            ],
+            "planned": 20,
+            "point": 0.005759999999999999
+          },
+          "n7": {
+            "complete": 20,
+            "missing_sensitivity": [
+              0.007473333333333337,
+              0.007473333333333337
+            ],
+            "planned": 20,
+            "point": 0.007473333333333337
+          }
+        }
+      },
+      "interpretable": true,
+      "name": "pdr_gnn-route_vs_lq-route",
+      "rule": "lower_gt_0",
+      "success": true
+    },
+    {
+      "contrast": {
+        "arm": "gnn-route",
+        "ci95": [
+          0.00115658333333335,
+          0.00666020833333333
+        ],
+        "comparator": "mlp-route",
+        "metric": "actual_udp_pdr",
+        "point": 0.003781666666666672,
+        "regimes": {
+          "n5": {
+            "complete": 20,
+            "missing_sensitivity": [
+              0.00499333333333335,
+              0.00499333333333335
+            ],
+            "planned": 20,
+            "point": 0.00499333333333335
+          },
+          "n7": {
+            "complete": 20,
+            "missing_sensitivity": [
+              0.0025699999999999946,
+              0.0025699999999999946
+            ],
+            "planned": 20,
+            "point": 0.0025699999999999946
+          }
+        }
+      },
+      "interpretable": true,
+      "name": "pdr_gnn-route_vs_mlp-route",
+      "rule": "lower_gt_0",
+      "success": true
+    },
+    {
+      "contrast": {
+        "arm": "gnn-route",
+        "ci95": [
+          0.05072824999999999,
+          0.06446008333333333
+        ],
+        "comparator": "olsr-etx-fast",
+        "metric": "actual_udp_pdr",
+        "point": 0.05750833333333332,
+        "regimes": {
+          "n5": {
+            "complete": 20,
+            "missing_sensitivity": [
+              0.058209999999999984,
+              0.058209999999999984
+            ],
+            "planned": 20,
+            "point": 0.058209999999999984
+          },
+          "n7": {
+            "complete": 20,
+            "missing_sensitivity": [
+              0.05680666666666666,
+              0.05680666666666666
+            ],
+            "planned": 20,
+            "point": 0.05680666666666666
+          }
+        }
+      },
+      "interpretable": true,
+      "name": "pdr_gnn-route_vs_olsr-etx-fast",
+      "rule": "lower_gt_0",
+      "success": true
+    }
+  ],
+  "means": {
+    "static": {
+      "gnn-route": {
+        "actual_udp_pdr": 0.9999833333333333,
+        "background_pdr": 0.9986970521843048,
+        "disconnected_seconds": 0.0,
+        "no_olsr_route_seconds": 0.0,
+        "total_relay_travel_m": 0.0
+      },
+      "lq-route": {
+        "actual_udp_pdr": 0.9999833333333333,
+        "background_pdr": 0.9986970521843048,
+        "disconnected_seconds": 0.0,
+        "no_olsr_route_seconds": 0.0,
+        "total_relay_travel_m": 0.0
+      },
+      "mlp-route": {
+        "actual_udp_pdr": 0.9999833333333333,
+        "background_pdr": 0.9986970521843048,
+        "disconnected_seconds": 0.0,
+        "no_olsr_route_seconds": 0.0,
+        "total_relay_travel_m": 0.0
+      },
+      "olsr-etx-fast": {
+        "actual_udp_pdr": 0.9999750000000001,
+        "background_pdr": 0.9986970521843048,
+        "disconnected_seconds": 0.0,
+        "no_olsr_route_seconds": 0.0,
+        "total_relay_travel_m": 0.0
+      }
+    },
+    "gradual": {
+      "gnn-route": {
+        "actual_udp_pdr": 0.9601433333333335,
+        "background_pdr": 0.9745136768025496,
+        "disconnected_seconds": 31.65,
+        "no_olsr_route_seconds": 14.75,
+        "total_relay_travel_m": 0.0
+      },
+      "lq-route": {
+        "actual_udp_pdr": 0.9535266666666665,
+        "background_pdr": 0.9744622228123756,
+        "disconnected_seconds": 31.775,
+        "no_olsr_route_seconds": 13.625,
+        "total_relay_travel_m": 0.0
+      },
+      "mlp-route": {
+        "actual_udp_pdr": 0.9563616666666667,
+        "background_pdr": 0.9741402204222546,
+        "disconnected_seconds": 31.775,
+        "no_olsr_route_seconds": 15.975,
+        "total_relay_travel_m": 0.0
+      },
+      "olsr-etx-fast": {
+        "actual_udp_pdr": 0.9026349999999999,
+        "background_pdr": 0.9607256672420661,
+        "disconnected_seconds": 35.9,
+        "no_olsr_route_seconds": 24.15,
+        "total_relay_travel_m": 0.0
+      }
+    }
+  },
+  "episode_sd": {
+    "static": {
+      "gnn-route": {
+        "actual_udp_pdr": 3.086066999241498e-05,
+        "background_pdr": 0.003685292944040881,
+        "disconnected_seconds": 0.0,
+        "no_olsr_route_seconds": 0.0,
+        "total_relay_travel_m": 0.0
+      },
+      "lq-route": {
+        "actual_udp_pdr": 3.086066999241498e-05,
+        "background_pdr": 0.003685292944040881,
+        "disconnected_seconds": 0.0,
+        "no_olsr_route_seconds": 0.0,
+        "total_relay_travel_m": 0.0
+      },
+      "mlp-route": {
+        "actual_udp_pdr": 3.086066999241498e-05,
+        "background_pdr": 0.003685292944040881,
+        "disconnected_seconds": 0.0,
+        "no_olsr_route_seconds": 0.0,
+        "total_relay_travel_m": 0.0
+      },
+      "olsr-etx-fast": {
+        "actual_udp_pdr": 3.450327796711392e-05,
+        "background_pdr": 0.003685292944040881,
+        "disconnected_seconds": 0.0,
+        "no_olsr_route_seconds": 0.0,
+        "total_relay_travel_m": 0.0
+      }
+    },
+    "gradual": {
+      "gnn-route": {
+        "actual_udp_pdr": 0.02578737759650724,
+        "background_pdr": 0.017138593970951563,
+        "disconnected_seconds": 15.061497865375738,
+        "no_olsr_route_seconds": 10.654841201333834,
+        "total_relay_travel_m": 0.0
+      },
+      "lq-route": {
+        "actual_udp_pdr": 0.02924207950326402,
+        "background_pdr": 0.01689873055097628,
+        "disconnected_seconds": 15.2155242922214,
+        "no_olsr_route_seconds": 10.601614535967189,
+        "total_relay_travel_m": 0.0
+      },
+      "mlp-route": {
+        "actual_udp_pdr": 0.026802401931314845,
+        "background_pdr": 0.01587633094161965,
+        "disconnected_seconds": 15.443009371930668,
+        "no_olsr_route_seconds": 11.060411037013603,
+        "total_relay_travel_m": 0.0
+      },
+      "olsr-etx-fast": {
+        "actual_udp_pdr": 0.043812727567067736,
+        "background_pdr": 0.01790953053231742,
+        "disconnected_seconds": 14.542246149647001,
+        "no_olsr_route_seconds": 9.2668419094295,
+        "total_relay_travel_m": 0.0
+      }
+    }
+  },
+  "technical": {
+    "route_integrity_ok": true,
+    "flags_ok": true,
+    "transmissions_ok": true,
+    "background_ok": true,
+    "forecast_traces_ok": true,
+    "relays_stationary": true,
+    "startup_blackouts": []
+  },
+  "route_integrity_count": 144,
+  "route_changes": {
+    "gnn-route": {
+      "episodes": 48,
+      "commanded_changes": 95,
+      "override_seconds": 5765
+    },
+    "lq-route": {
+      "episodes": 48,
+      "commanded_changes": 359,
+      "override_seconds": 5653
+    },
+    "mlp-route": {
+      "episodes": 48,
+      "commanded_changes": 208,
+      "override_seconds": 5805
+    },
+    "olsr-etx-fast": {
+      "episodes": 0,
+      "commanded_changes": 0,
+      "override_seconds": 0
+    }
+  },
+  "forecast_evaluation": {
+    "balanced_gradual_mse": {
+      "ewma": 0.0012738321631128903,
+      "gnn": 0.0007845681409712583,
+      "mlp": 0.0011143371422349523
+    },
+    "episodes": [
+      {
+        "cell_id": "test-n5-static-01__lq-route",
+        "context": "static",
+        "mse": {
+          "ewma": 0.00034869235598990997,
+          "gnn": 0.0003807422452844507,
+          "mlp": 0.0009089218594539375
+        },
+        "origins": 236,
+        "regime": "n5"
+      },
+      {
+        "cell_id": "test-n5-static-02__lq-route",
+        "context": "static",
+        "mse": {
+          "ewma": 0.00033963263168106464,
+          "gnn": 0.00037586189381867555,
+          "mlp": 0.0009360358521116821
+        },
+        "origins": 236,
+        "regime": "n5"
+      },
+      {
+        "cell_id": "test-n5-static-03__lq-route",
+        "context": "static",
+        "mse": {
+          "ewma": 0.0002647942915385026,
+          "gnn": 0.0004364566769952958,
+          "mlp": 0.0009637370236712567
+        },
+        "origins": 236,
+        "regime": "n5"
+      },
+      {
+        "cell_id": "test-n5-static-04__lq-route",
+        "context": "static",
+        "mse": {
+          "ewma": 0.00027325971000204596,
+          "gnn": 0.00046786766031822345,
+          "mlp": 0.000988875304049236
+        },
+        "origins": 236,
+        "regime": "n5"
+      },
+      {
+        "cell_id": "test-n5-gradual-01__lq-route",
+        "context": "gradual",
+        "mse": {
+          "ewma": 0.0014851837798327467,
+          "gnn": 0.0007946939124614759,
+          "mlp": 0.0009809828806121908
+        },
+        "origins": 236,
+        "regime": "n5"
+      },
+      {
+        "cell_id": "test-n5-gradual-02__lq-route",
+        "context": "gradual",
+        "mse": {
+          "ewma": 0.0011821310131802179,
+          "gnn": 0.0006393238893379115,
+          "mlp": 0.0008854433991861584
+        },
+        "origins": 236,
+        "regime": "n5"
+      },
+      {
+        "cell_id": "test-n5-gradual-03__lq-route",
+        "context": "gradual",
+        "mse": {
+          "ewma": 0.0014193642572758076,
+          "gnn": 0.0007268613360893056,
+          "mlp": 0.0010003419133652071
+        },
+        "origins": 236,
+        "regime": "n5"
+      },
+      {
+        "cell_id": "test-n5-gradual-04__lq-route",
+        "context": "gradual",
+        "mse": {
+          "ewma": 0.0012461334531521642,
+          "gnn": 0.000668392636745058,
+          "mlp": 0.0009030286702328562
+        },
+        "origins": 236,
+        "regime": "n5"
+      },
+      {
+        "cell_id": "test-n5-gradual-05__lq-route",
+        "context": "gradual",
+        "mse": {
+          "ewma": 0.0013701191899320596,
+          "gnn": 0.0006699941830738566,
+          "mlp": 0.000940410140164434
+        },
+        "origins": 236,
+        "regime": "n5"
+      },
+      {
+        "cell_id": "test-n5-gradual-06__lq-route",
+        "context": "gradual",
+        "mse": {
+          "ewma": 0.0013781761101551526,
+          "gnn": 0.0007096470678779407,
+          "mlp": 0.0008887094682973208
+        },
+        "origins": 236,
+        "regime": "n5"
+      },
+      {
+        "cell_id": "test-n5-gradual-07__lq-route",
+        "context": "gradual",
+        "mse": {
+          "ewma": 0.0013211084466212845,
+          "gnn": 0.0006876197560581641,
+          "mlp": 0.0009471535793145566
+        },
+        "origins": 236,
+        "regime": "n5"
+      },
+      {
+        "cell_id": "test-n5-gradual-08__lq-route",
+        "context": "gradual",
+        "mse": {
+          "ewma": 0.0013691805302189265,
+          "gnn": 0.0007615507972633643,
+          "mlp": 0.0009906204337867908
+        },
+        "origins": 236,
+        "regime": "n5"
+      },
+      {
+        "cell_id": "test-n5-gradual-09__lq-route",
+        "context": "gradual",
+        "mse": {
+          "ewma": 0.0011365812558291565,
+          "gnn": 0.0006816802702412164,
+          "mlp": 0.0008800906555269281
+        },
+        "origins": 236,
+        "regime": "n5"
+      },
+      {
+        "cell_id": "test-n5-gradual-10__lq-route",
+        "context": "gradual",
+        "mse": {
+          "ewma": 0.0012712443604329631,
+          "gnn": 0.0006518604766789037,
+          "mlp": 0.0009094208168933856
+        },
+        "origins": 236,
+        "regime": "n5"
+      },
+      {
+        "cell_id": "test-n5-gradual-11__lq-route",
+        "context": "gradual",
+        "mse": {
+          "ewma": 0.001264843301880774,
+          "gnn": 0.0006580486573257099,
+          "mlp": 0.0009233259752716171
+        },
+        "origins": 236,
+        "regime": "n5"
+      },
+      {
+        "cell_id": "test-n5-gradual-12__lq-route",
+        "context": "gradual",
+        "mse": {
+          "ewma": 0.0011471316097847342,
+          "gnn": 0.0006524980213863415,
+          "mlp": 0.0008618736523267343
+        },
+        "origins": 236,
+        "regime": "n5"
+      },
+      {
+        "cell_id": "test-n5-gradual-13__lq-route",
+        "context": "gradual",
+        "mse": {
+          "ewma": 0.0012182464593087502,
+          "gnn": 0.0006906056438401923,
+          "mlp": 0.0009097596599292405
+        },
+        "origins": 236,
+        "regime": "n5"
+      },
+      {
+        "cell_id": "test-n5-gradual-14__lq-route",
+        "context": "gradual",
+        "mse": {
+          "ewma": 0.0012069929884761215,
+          "gnn": 0.0006054800574532489,
+          "mlp": 0.0008628256114036158
+        },
+        "origins": 236,
+        "regime": "n5"
+      },
+      {
+        "cell_id": "test-n5-gradual-15__lq-route",
+        "context": "gradual",
+        "mse": {
+          "ewma": 0.0014318938826466115,
+          "gnn": 0.0007258071575868703,
+          "mlp": 0.0009305425313169286
+        },
+        "origins": 236,
+        "regime": "n5"
+      },
+      {
+        "cell_id": "test-n5-gradual-16__lq-route",
+        "context": "gradual",
+        "mse": {
+          "ewma": 0.0013750359074645362,
+          "gnn": 0.0007264745189429034,
+          "mlp": 0.0009392228224682219
+        },
+        "origins": 236,
+        "regime": "n5"
+      },
+      {
+        "cell_id": "test-n5-gradual-17__lq-route",
+        "context": "gradual",
+        "mse": {
+          "ewma": 0.001356855072582969,
+          "gnn": 0.0006775749393813801,
+          "mlp": 0.0009034753715732283
+        },
+        "origins": 236,
+        "regime": "n5"
+      },
+      {
+        "cell_id": "test-n5-gradual-18__lq-route",
+        "context": "gradual",
+        "mse": {
+          "ewma": 0.0013712046826936744,
+          "gnn": 0.0007237824757328041,
+          "mlp": 0.0009599319619561178
+        },
+        "origins": 236,
+        "regime": "n5"
+      },
+      {
+        "cell_id": "test-n5-gradual-19__lq-route",
+        "context": "gradual",
+        "mse": {
+          "ewma": 0.0014749795353156464,
+          "gnn": 0.0008084267968665922,
+          "mlp": 0.0010033933515047916
+        },
+        "origins": 236,
+        "regime": "n5"
+      },
+      {
+        "cell_id": "test-n5-gradual-20__lq-route",
+        "context": "gradual",
+        "mse": {
+          "ewma": 0.0012866932590015676,
+          "gnn": 0.0007078795341444225,
+          "mlp": 0.000921596233565934
+        },
+        "origins": 236,
+        "regime": "n5"
+      },
+      {
+        "cell_id": "test-n7-static-01__lq-route",
+        "context": "static",
+        "mse": {
+          "ewma": 0.0004860298485066965,
+          "gnn": 0.00043557433250731214,
+          "mlp": 0.0007431247424190835
+        },
+        "origins": 236,
+        "regime": "n7"
+      },
+      {
+        "cell_id": "test-n7-static-02__lq-route",
+        "context": "static",
+        "mse": {
+          "ewma": 0.00033472893453753455,
+          "gnn": 0.0004907161480542596,
+          "mlp": 0.0007915696087813156
+        },
+        "origins": 236,
+        "regime": "n7"
+      },
+      {
+        "cell_id": "test-n7-static-03__lq-route",
+        "context": "static",
+        "mse": {
+          "ewma": 0.0004295370173667609,
+          "gnn": 0.0004832358309171977,
+          "mlp": 0.0007460040843877178
+        },
+        "origins": 236,
+        "regime": "n7"
+      },
+      {
+        "cell_id": "test-n7-static-04__lq-route",
+        "context": "static",
+        "mse": {
+          "ewma": 0.00037145878948367333,
+          "gnn": 0.0004556779446978495,
+          "mlp": 0.0007651887604250776
+        },
+        "origins": 236,
+        "regime": "n7"
+      },
+      {
+        "cell_id": "test-n7-gradual-01__lq-route",
+        "context": "gradual",
+        "mse": {
+          "ewma": 0.0012388198760960388,
+          "gnn": 0.0009100326665989316,
+          "mlp": 0.0013433645544213798
+        },
+        "origins": 236,
+        "regime": "n7"
+      },
+      {
+        "cell_id": "test-n7-gradual-02__lq-route",
+        "context": "gradual",
+        "mse": {
+          "ewma": 0.0012593224703365362,
+          "gnn": 0.0009424816030194882,
+          "mlp": 0.0013501928862555033
+        },
+        "origins": 236,
+        "regime": "n7"
+      },
+      {
+        "cell_id": "test-n7-gradual-03__lq-route",
+        "context": "gradual",
+        "mse": {
+          "ewma": 0.001317106149070455,
+          "gnn": 0.0009008997815485907,
+          "mlp": 0.0013126272546177794
+        },
+        "origins": 236,
+        "regime": "n7"
+      },
+      {
+        "cell_id": "test-n7-gradual-04__lq-route",
+        "context": "gradual",
+        "mse": {
+          "ewma": 0.0015584984437043295,
+          "gnn": 0.0009401329226836137,
+          "mlp": 0.0013790308539495051
+        },
+        "origins": 236,
+        "regime": "n7"
+      },
+      {
+        "cell_id": "test-n7-gradual-05__lq-route",
+        "context": "gradual",
+        "mse": {
+          "ewma": 0.0011352202687789003,
+          "gnn": 0.0008855208076226,
+          "mlp": 0.0013666275699067054
+        },
+        "origins": 236,
+        "regime": "n7"
+      },
+      {
+        "cell_id": "test-n7-gradual-06__lq-route",
+        "context": "gradual",
+        "mse": {
+          "ewma": 0.001181918297839857,
+          "gnn": 0.0007814487789121224,
+          "mlp": 0.001229101168299578
+        },
+        "origins": 236,
+        "regime": "n7"
+      },
+      {
+        "cell_id": "test-n7-gradual-07__lq-route",
+        "context": "gradual",
+        "mse": {
+          "ewma": 0.001160952623910625,
+          "gnn": 0.0009109190173412063,
+          "mlp": 0.0013480753391588904
+        },
+        "origins": 236,
+        "regime": "n7"
+      },
+      {
+        "cell_id": "test-n7-gradual-08__lq-route",
+        "context": "gradual",
+        "mse": {
+          "ewma": 0.0011614546676493968,
+          "gnn": 0.0008007582631297448,
+          "mlp": 0.00117902722919004
+        },
+        "origins": 236,
+        "regime": "n7"
+      },
+      {
+        "cell_id": "test-n7-gradual-09__lq-route",
+        "context": "gradual",
+        "mse": {
+          "ewma": 0.001214115763630486,
+          "gnn": 0.0008341817053453972,
+          "mlp": 0.001236025827192424
+        },
+        "origins": 236,
+        "regime": "n7"
+      },
+      {
+        "cell_id": "test-n7-gradual-10__lq-route",
+        "context": "gradual",
+        "mse": {
+          "ewma": 0.0011713492029940035,
+          "gnn": 0.0007917800195570872,
+          "mlp": 0.0012298792082562947
+        },
+        "origins": 236,
+        "regime": "n7"
+      },
+      {
+        "cell_id": "test-n7-gradual-11__lq-route",
+        "context": "gradual",
+        "mse": {
+          "ewma": 0.0011757745014627959,
+          "gnn": 0.0008848976885660345,
+          "mlp": 0.0013371737659204543
+        },
+        "origins": 236,
+        "regime": "n7"
+      },
+      {
+        "cell_id": "test-n7-gradual-12__lq-route",
+        "context": "gradual",
+        "mse": {
+          "ewma": 0.0013521384991039454,
+          "gnn": 0.0008393027263862446,
+          "mlp": 0.00123944384528091
+        },
+        "origins": 236,
+        "regime": "n7"
+      },
+      {
+        "cell_id": "test-n7-gradual-13__lq-route",
+        "context": "gradual",
+        "mse": {
+          "ewma": 0.0011903681993768456,
+          "gnn": 0.0008106871441408295,
+          "mlp": 0.0012457820177145529
+        },
+        "origins": 236,
+        "regime": "n7"
+      },
+      {
+        "cell_id": "test-n7-gradual-14__lq-route",
+        "context": "gradual",
+        "mse": {
+          "ewma": 0.0013554493800240657,
+          "gnn": 0.0009484890444323378,
+          "mlp": 0.0013259288488304331
+        },
+        "origins": 236,
+        "regime": "n7"
+      },
+      {
+        "cell_id": "test-n7-gradual-15__lq-route",
+        "context": "gradual",
+        "mse": {
+          "ewma": 0.0012190080201561152,
+          "gnn": 0.0008794469108500918,
+          "mlp": 0.0013705844142844808
+        },
+        "origins": 236,
+        "regime": "n7"
+      },
+      {
+        "cell_id": "test-n7-gradual-16__lq-route",
+        "context": "gradual",
+        "mse": {
+          "ewma": 0.0012044648300383555,
+          "gnn": 0.0009102727503190463,
+          "mlp": 0.0013322424026778487
+        },
+        "origins": 236,
+        "regime": "n7"
+      },
+      {
+        "cell_id": "test-n7-gradual-17__lq-route",
+        "context": "gradual",
+        "mse": {
+          "ewma": 0.0011991115765756005,
+          "gnn": 0.0008313835330999731,
+          "mlp": 0.0012917847573059313
+        },
+        "origins": 236,
+        "regime": "n7"
+      },
+      {
+        "cell_id": "test-n7-gradual-18__lq-route",
+        "context": "gradual",
+        "mse": {
+          "ewma": 0.00111595197762286,
+          "gnn": 0.0008802893239031213,
+          "mlp": 0.001339211676310776
+        },
+        "origins": 236,
+        "regime": "n7"
+      },
+      {
+        "cell_id": "test-n7-gradual-19__lq-route",
+        "context": "gradual",
+        "mse": {
+          "ewma": 0.0011624286155060594,
+          "gnn": 0.0008516479427970122,
+          "mlp": 0.001325657624556941
+        },
+        "origins": 236,
+        "regime": "n7"
+      },
+      {
+        "cell_id": "test-n7-gradual-20__lq-route",
+        "context": "gradual",
+        "mse": {
+          "ewma": 0.0012667340648524837,
+          "gnn": 0.0008799508801091997,
+          "mlp": 0.001249575316571409
+        },
+        "origins": 236,
+        "regime": "n7"
+      }
+    ],
+    "horizon_seconds": 5,
+    "unit": "episode; both learned predictors and EWMA evaluated on the same lq-route observations"
+  },
+  "timings": {
+    "lq-route": {
+      "n": 11520,
+      "mean_ms": 3.19083402098891,
+      "median_ms": 2.997897012392059,
+      "p95_ms": 9.106407989747822,
+      "max_ms": 115.41187801049091
+    },
+    "gnn-route": {
+      "n": 11520,
+      "mean_ms": 5.853124920493731,
+      "median_ms": 4.921043509966694,
+      "p95_ms": 13.83143398561515,
+      "max_ms": 90.36480999202468
+    },
+    "mlp-route": {
+      "n": 11520,
+      "mean_ms": 5.417716589421515,
+      "median_ms": 4.553166014375165,
+      "p95_ms": 12.684735003858805,
+      "max_ms": 96.73249200568534
+    },
+    "olsr-etx-fast": {
+      "n": 11520,
+      "mean_ms": 0.673324731443851,
+      "median_ms": 0.47795150021556765,
+      "p95_ms": 1.373323000734672,
+      "max_ms": 14.509612985420972
+    }
+  },
+  "timing_note": "Measured complete controller.act latency on server CPU during four-worker simulation; not pure neural inference or UAV/control-channel latency.",
+  "hashes": {
+    "analysis/test/analysis.json": "1231a365990a73236079a300f24442a697303dccdd7ccc933424e325a459932e",
+    "analysis/validation/analysis.json": "ecb6540c0512f5e582372198c71a28616c7c60d60814f7dcaa3b76dd618b41e9",
+    "analysis/validation/go.json": "4d27c5094d159eda0c461b385f68bc34ab14c5f5bb13d9c918d51f8a203d56d6",
+    "packages/test/freeze.json": "b96d0130b5fde7e6f88a91b322fd2b2c83b5392461a2172362622109bb82dae4",
+    "packages/test/go.json": "4d27c5094d159eda0c461b385f68bc34ab14c5f5bb13d9c918d51f8a203d56d6",
+    "packages/validation/freeze.json": "a8ab761887656fbd85a9ef5eec23676ffab6ead01f2e6d6017df12edc02918bf"
+  },
+  "queue_completions": {
+    "validation": {
+      "cells": 80,
+      "wrapper_exit_zero": 80,
+      "note": "Wrapper completion is not collection validation; validate every frozen cell separately."
+    },
+    "test": {
+      "cells": 192,
+      "wrapper_exit_zero": 192,
+      "note": "Wrapper completion is not collection validation; validate every frozen cell separately."
+    }
+  }
+}

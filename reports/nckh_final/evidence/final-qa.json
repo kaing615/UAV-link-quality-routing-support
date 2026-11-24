@@ -1,0 +1,33 @@
+{
+  "nckh_final": {
+    "pages": 54,
+    "bytes": 1806381,
+    "sha256": "33b8ea8fcb21af400cb3c139ac3a30d308f8c26e8fa7e6902e55fdfc16afeea4",
+    "compiler": "XeLaTeX + latexmk",
+    "missing_glyphs": false,
+    "unresolved_references": false,
+    "overfull_boxes": false
+  },
+  "nckh_paper": {
+    "pages": 7,
+    "bytes": 215563,
+    "sha256": "c221d6fe17de567fd289e5d756c88182d3c5f14941183673afefabb9f51f94fc",
+    "compiler": "XeLaTeX + latexmk",
+    "missing_glyphs": false,
+    "unresolved_references": false,
+    "overfull_boxes": false
+  },
+  "studies": {
+    "new_formal_cells": 544,
+    "all_valid": true,
+    "automatic_cell_retries": 0,
+    "v8_primary_passed": true,
+    "v9_primary_passed": false
+  },
+  "editorial_notes": [
+    "Visual review covered title/abstract, methods, result tables/figures, conclusion and provenance pages.",
+    "Chktex style warnings for half-open intervals/function parentheses do not indicate compilation failures.",
+    "Detailed member task assignment in the full report is explicitly proposed and should be checked by the group before submission.",
+    "No venue template or institutional submission form has been supplied; the article uses a general format."
+  ]
+}

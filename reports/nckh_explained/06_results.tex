@@ -1,0 +1,72 @@
+\chapter{Kết quả nói được gì và chưa nói được gì?}
+\section{V8: dự báo giúp thêm cho định tuyến}
+V8 có 80/80 lượt validation và 192/192 lượt test hợp lệ. Kết quả chính tính trên 40 khối gradual mới. Bảng~\ref{tab:routingmeans} cho thấy PDR trung bình của bốn nhóm.
+
+\begin{table}[htbp]\centering
+\begin{tabularx}{\linewidth}{@{}Yr@{}}\toprule
+Phương pháp & PDR trung bình (\%)\\\midrule
+Dự báo GNN cho định tuyến & 96,01\\
+Dự báo MLP cho định tuyến & 95,64\\
+Chất lượng hiện tại cho định tuyến & 95,35\\
+OLSR-ETX nhanh & 90,26\\\bottomrule
+\end{tabularx}
+\caption{Trung bình gradual test v8. Các giá trị làm tròn, chênh lệch và khoảng tin cậy tính từ dữ liệu gốc.}\label{tab:routingmeans}
+\end{table}
+
+GNN trừ nhóm dùng chất lượng hiện tại có chênh PDR 0,66 điểm phần trăm, khoảng tin cậy 95\% từ 0,38 đến 1,00. Phép so sánh này giữ cùng luật chọn tuyến, nên phù hợp để kiểm tra giá trị bổ sung của dự báo trong cấu hình ấy.
+
+GNN trừ MLP tăng 0,38 điểm phần trăm, khoảng từ 0,12 đến 0,67. GNN trừ OLSR-ETX nhanh tăng 5,75 điểm phần trăm, khoảng từ 5,07 đến 6,45. Không gán toàn bộ 5,75 điểm này cho GNN, vì đối chứng OLSR-ETX nhanh còn khác kiến trúc quyết định và nguồn thông tin.
+
+GNN thắng nhóm hiện tại ở 31/40 khối gradual. Điều này giúp giải thích rằng lợi ích trung bình không đồng nghĩa thắng trong mọi tình huống. Với tám khối static, GNN và nhóm hiện tại có PDR giống nhau và gần 100\%.
+
+\section{Mức tăng 0,66 điểm phần trăm có ý nghĩa thế nào?}
+Ở nền PDR đã trên 95\%, mức tăng 0,66 điểm phần trăm là lợi ích bổ sung nhỏ. Với 15.000 gói, nếu nhân chênh lệch trung bình khoảng 0,0066167 với số gói thì tương đương xấp xỉ 99 gói thêm mỗi episode trung bình. Đây là quy đổi từ chênh lệch trung bình để hình dung, không phải mọi lượt đều nhận thêm đúng 99 gói.
+
+Mức tăng có bằng chứng thống kê trong phép thử không tự quyết định có đáng triển khai hay không. Triển khai còn phụ thuộc chi phí xử lý, truyền số đo, độ trễ và yêu cầu ứng dụng. Thời gian toàn bộ quyết định GNN trung vị khoảng 4,92 ms trên server so với khoảng 3,00 ms của nhóm hiện tại. Số đo này chưa gồm việc truyền số đo và lệnh trên một mạng UAV thật.
+
+\section{Dự báo chính xác hơn và ít đổi tuyến hơn}
+Trên cùng các trace test của nhóm chất lượng hiện tại, MSE lần lượt là khoảng 0,0007846 cho GNN, 0,0011143 cho MLP và 0,0012738 cho EWMA. MSE thấp hơn cho thấy dự báo gần nhãn hơn theo tiêu chuẩn sai số đó.
+
+Số lệnh đổi tuyến trên toàn test là 95 với GNN, 208 với MLP và 359 với chất lượng hiện tại. Việc ít đổi tuyến hơn là một giải thích khả dĩ cho hiệu quả dịch vụ, nhưng nghiên cứu chưa có phép can thiệp riêng để chứng minh đây là nguyên nhân duy nhất.
+
+V8 cũng chưa cho thấy lợi ích giảm chia cắt rõ ràng so với nhóm hiện tại. Vì vậy không kéo kết luận PDR sang mọi chỉ số khác. Kết quả chính là cải thiện tỷ lệ gói đến đích trong cấu hình đã thử~\cite{paper}.
+
+\section{V9: chưa chứng minh dự báo hơn phản ứng}
+V9 cũng có 80/80 lượt validation và 192/192 lượt test hợp lệ. Các kiểm tra kỹ thuật và an toàn mô phỏng đạt. Tuy nhiên giả thuyết chính về lợi ích dự báo không đạt.
+
+Nhóm phản ứng có trung bình 31,45 giây chia cắt, nhóm GNN có 31,25 giây. Lợi ích theo cách lấy phản ứng trừ GNN là 0,20 giây. Khoảng tin cậy 95\% là $[-1,05;1,45]$ giây. Khoảng chứa 0, nên chưa đủ bằng chứng rằng GNN giảm thời gian chia cắt hơn phản ứng.
+
+PDR GNN trừ phản ứng có chênh khoảng 0,34 điểm phần trăm với khoảng từ $-0,32$ đến 1,04. So sánh MLP trừ GNN về thời gian chia cắt có chênh khoảng 1,23 giây và khoảng riêng lẻ thuận lợi. Cả hai vẫn chỉ là mô tả vì phép kiểm định đầu tiên đã không đạt.
+
+\section{Di chuyển có ích không?}
+Bảng~\ref{tab:motionmeans} cho thấy các nhóm di chuyển có ít thời gian chia cắt hơn rõ về mặt trung bình so với đứng yên trong kịch bản v9. Nhưng các nhóm này cũng đi thêm hàng trăm mét cộng trên các relay.
+
+\begin{table}[htbp]\centering\small
+\begin{tabularx}{\linewidth}{@{}Yrrr@{}}\toprule
+Phương pháp & PDR (\%) & Chia cắt (s) & Tổng đường (m)\\\midrule
+Đứng yên & 59,89 & 123,43 & 0,00\\
+Di chuyển phản ứng & 88,26 & 31,45 & 637,48\\
+Di chuyển với GNN & 88,60 & 31,25 & 636,76\\
+Di chuyển với MLP & 88,08 & 32,48 & 638,97\\\bottomrule
+\end{tabularx}
+\caption{Trung bình gradual test v9, chỉ dùng mô tả. Quãng đường cộng trên các relay của một lượt. Giá trị 123,425 s được trình bày thành 123,43 s.}\label{tab:motionmeans}
+\end{table}
+
+Không dùng chênh lệch giữa GNN và đứng yên để tuyên bố toàn bộ lợi ích thuộc về dự báo. Phương pháp phản ứng cũng đã đạt phần lớn lợi ích đó. Muốn đo phần riêng của dự báo, cần so GNN với phản ứng có cùng luật di chuyển.
+
+Không có episode mới nào vi phạm các kiểm tra an toàn đã quy định, không relay nào dùng hết ngân sách, và quãng đường lớn nhất của một relay khoảng 319,32 m. Kết luận này chỉ nói về các kiểm tra và kịch bản đã chạy. Nó không bảo đảm an toàn vật lý khi bay.
+
+\section{Tại sao GNN giúp định tuyến nhưng chưa giúp vị trí?}
+Có vài cách giải thích hợp lý nhưng chưa được kiểm tra riêng. Chọn tuyến có thể hưởng lợi từ dự báo ngắn hạn về liên kết. Trong v9, bộ phản ứng đã kích hoạt ở ngưỡng 0,70, trước khi đồ thị bị chia cắt theo ngưỡng 0,5. Dự báo năm giây có thể còn ít dư địa tạo khác biệt.
+
+Một vấn đề khác là điều kiện v9 khác dữ liệu học: đầu mút nhanh hơn và relay bắt đầu di chuyển. Mô hình được học từ relay đứng yên có thể chưa thích hợp cho mọi trạng thái đó. Ngoài ra, các nhóm chuyển động đều đi tới cùng kiểu vị trí. Dự báo chỉ thay thời điểm kích hoạt, chưa khai thác khả năng chọn một hành động khác.
+
+Các ý trên là giả thuyết để nghiên cứu tiếp. Báo cáo không chọn một ý làm nguyên nhân chắc chắn chỉ từ kết quả hiện có.
+
+\section{Những giới hạn phải nói khi bảo vệ}
+Hai nghiên cứu mới chủ yếu xét họ cấu trúc chuỗi năm hoặc bảy UAV. Quan sát và lệnh điều khiển tập trung chưa được truyền thành lưu lượng tranh chấp kênh đầy đủ. Chưa có lỗi mất lệnh và giới hạn tính toán trên thiết bị bay được đánh giá toàn diện. Chưa có mô hình năng lượng bay, thử nghiệm autopilot hay bay thật.
+
+Mỗi mô hình mới chỉ có một seed huấn luyện. Khoảng tin cậy bootstrap điều kiện trên trọng số đã khóa, chưa biểu diễn biến thiên giữa nhiều lần học. MLP không khớp hoàn toàn số tham số với GNN. Những điều này giới hạn phạm vi kết luận, không làm số liệu đã đo biến mất.
+
+\remember{Cách báo cáo đúng là: GNN cải thiện định tuyến trong phạm vi thử nghiệm; phần kích hoạt vị trí chưa cho thấy lợi ích thêm rõ so với phản ứng. Không biến kết quả chưa rõ thành thành công, cũng không coi nó là bằng chứng GNN luôn vô ích.}
+

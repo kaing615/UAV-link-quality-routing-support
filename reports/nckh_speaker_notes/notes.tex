@@ -1,0 +1,310 @@
+\needspace{8\baselineskip}
+
+\section*{Slide 1. Dự báo liên kết cho mạng UAV}
+
+\addcontentsline{toc}{section}{Slide 1: Dự báo liên kết cho mạng UAV}
+
+Thưa thầy, đề tài của nhóm nghiên cứu cách dùng thông tin chất lượng liên kết để duy trì truyền dữ liệu trong mạng UAV. Nhóm làm hai việc: chọn đường đi cho gói tin và thử điều chỉnh vị trí UAV trung chuyển. Toàn bộ kết quả hiện tại đến từ mô phỏng. Em sẽ trình bày quá trình từ tạo dữ liệu, học dự báo đến kiểm tra tác động thực tế trong mô phỏng, rồi phân biệt phần nào đã có bằng chứng và phần nào chưa đạt.
+
+{\small\textcolor{gray}{Nguồn đối chiếu: nckh\_paper/main.tex.}}
+
+
+
+\needspace{8\baselineskip}
+
+\section*{Slide 2. Nghiên cứu gồm bốn chặng}
+
+\addcontentsline{toc}{section}{Slide 2: Nghiên cứu gồm bốn chặng}
+
+Để dễ theo dõi, em chia nghiên cứu thành bốn chặng. Trước hết là vì sao mạng UAV có thể mất liên lạc. Tiếp theo là mô hình học từ dữ liệu như thế nào. Sau đó là cách đưa dự báo vào quyết định chọn tuyến hoặc di chuyển. Cuối cùng, nhóm so sánh các phương pháp trong cùng điều kiện để xem dịch vụ mạng có tốt hơn hay không. Các tên v2 đến v9 là các vòng thí nghiệm kế tiếp nhau, không phải chín mô hình GNN.
+
+{\small\textcolor{gray}{Nguồn đối chiếu: nckh\_final/main.tex, chương 1–7.}}
+
+
+
+\needspace{8\baselineskip}
+
+\section*{Slide 3. UAV tách xa có thể làm mất liên lạc}
+
+\addcontentsline{toc}{section}{Slide 3: UAV tách xa có thể làm mất liên lạc}
+
+Có thể hình dung mỗi UAV trung chuyển như một người chuyền thư. Nguồn gửi thư qua các trạm rồi đến đích. Khi các UAV di chuyển, một cặp ở xa hơn hoặc chịu kênh truyền kém hơn, thư có thể thất lạc ở chặng đó. Một mạng vẫn có đường nối trên sơ đồ chưa chắc truyền gói tốt. Vì thế nhóm đo cả chất lượng từng liên kết và số gói thực sự đến đích. UAV trung chuyển còn gọi là relay.
+
+{\small\textcolor{gray}{Nguồn đối chiếu: nckh\_final/main.tex, bối cảnh.}}
+
+
+
+\needspace{8\baselineskip}
+
+\section*{Slide 4. Có thể đổi tuyến hoặc đổi vị trí}
+
+\addcontentsline{toc}{section}{Slide 4: Có thể đổi tuyến hoặc đổi vị trí}
+
+Đổi tuyến nghĩa là UAV vẫn ở vị trí hiện tại nhưng gói tin đi qua một chuỗi trung chuyển khác. Đổi vị trí nghĩa là cho relay di chuyển để cải thiện kết nối. Hai hành động có thể cùng tác động đến kết quả. Nếu thay cả hai cùng lúc, rất khó biết phần nào tạo lợi ích. Vì vậy ở nghiên cứu cuối, nhóm tách thành hai phép thử. V8 xét dự báo cho định tuyến. V9 xét dự báo cho thời điểm bắt đầu di chuyển.
+
+{\small\textcolor{gray}{Nguồn đối chiếu: nckh\_paper/methods.tex.}}
+
+
+
+\needspace{8\baselineskip}
+
+\section*{Slide 5. Dữ liệu dẫn tới dự báo và hành động}
+
+\addcontentsline{toc}{section}{Slide 5: Dữ liệu dẫn tới dự báo và hành động}
+
+Luồng tổng thể bắt đầu từ một kịch bản mạng do nhóm đặt ra. Bộ mô phỏng cho các nút truyền gói và ghi lại số đo. Dữ liệu cũ dùng để huấn luyện mô hình. Khi đánh giá mô hình đã học, hệ thống chỉ nhìn hiện tại và quá khứ để dự báo tương lai. Bộ điều khiển dùng thông tin đó chọn hành động. Mô phỏng tiếp tục chạy sau hành động, rồi nhóm đo lượng gói nhận được và tình trạng kết nối. Đây là một vòng phản hồi.
+
+{\small\textcolor{gray}{Nguồn đối chiếu: nckh\_final/main.tex; nckh\_paper/methods.tex.}}
+
+
+
+\needspace{8\baselineskip}
+
+\section*{Slide 6. Nhóm tạo dữ liệu trong nhiều điều kiện}
+
+\addcontentsline{toc}{section}{Slide 6: Nhóm tạo dữ liệu trong nhiều điều kiện}
+
+Giai đoạn đầu dùng 210 lượt mô phỏng, mỗi lượt có 20 UAV. Nhóm thay đổi 21 điều kiện về chuyển động, mật độ, sự kiện chia tách và tải mạng. Mỗi điều kiện lặp với 10 seed. Seed có thể hiểu là mã tạo một tình huống ngẫu nhiên có thể tái lập. Mục đích giai đoạn này là kiểm tra mô hình dự báo trong nhiều điều kiện, chưa phải chứng minh bộ điều khiển giúp truyền gói tốt hơn.
+
+{\small\textcolor{gray}{Nguồn đối chiếu: nckh\_final/main.tex, giai đoạn 1.}}
+
+
+
+\needspace{8\baselineskip}
+
+\section*{Slide 7. GNN dự báo tốt hơn ở phép thử ban đầu}
+
+\addcontentsline{toc}{section}{Slide 7: GNN dự báo tốt hơn ở phép thử ban đầu}
+
+Trong phép đánh giá ban đầu, GNN đạt Macro-F1 0,845 ở bài toán chất lượng dịch vụ sau năm bước, so với 0,784 của XGBoost. Macro-F1 là điểm cân bằng khả năng phân loại các nhóm, không phải tỷ lệ gói đến đích. GNN có điểm chung tốt hơn nhưng vẫn có trường hợp báo một liên kết là ổn định trong khi thực tế không ổn định. Đây là lý do nhóm không dừng ở độ chính xác dự báo mà tiếp tục kiểm tra tác động lên mạng. Năm bước ở giai đoạn này không được tự đồng nhất với năm giây của mô hình mới.
+
+{\small\textcolor{gray}{Nguồn đối chiếu: nckh\_final/main.tex, bảng Macro-F1 và hạn chế giai đoạn 1.}}
+
+
+
+\needspace{8\baselineskip}
+
+\section*{Slide 8. Di chuyển sớm chưa đủ để tăng truyền gói}
+
+\addcontentsline{toc}{section}{Slide 8: Di chuyển sớm chưa đủ để tăng truyền gói}
+
+Nhóm từng thử dự báo nguy cơ suy giảm dịch vụ rồi di chuyển relay ở v2 và v3. Những thử nghiệm này không đạt mục tiêu. Khi xem lại đường đi thực tế của gói tin, nhóm nhận ra việc đặt relay ở vị trí thuận lợi chưa bảo đảm giao thức chọn đường qua chúng. Vì vậy v4 đến v7 tập trung vào định tuyến theo chất lượng, bổ sung đối chứng mạnh hơn và kiểm tra độ trễ. Nhóm cũng phát hiện một trạng thái lưu tạm của môi trường mô phỏng gây mất gói kéo dài, rồi kiểm tra lại trong nghiên cứu mới sau khi sửa cấu hình đó.
+
+{\small\textcolor{gray}{Nguồn đối chiếu: nckh\_final/main.tex, phương pháp và tổng quan v2–v7.}}
+
+
+
+\needspace{8\baselineskip}
+
+\section*{Slide 9. Hai thí nghiệm tách giá trị của dự báo}
+
+\addcontentsline{toc}{section}{Slide 9: Hai thí nghiệm tách giá trị của dự báo}
+
+V8 và v9 dùng cùng mô hình dự báo năm giây nhưng đặt câu hỏi khác nhau. Trong v8, relay đứng yên, các phương pháp dùng cùng luật chọn tuyến, chỉ thay cách đánh giá chất lượng liên kết. Trong v9, tất cả dùng định tuyến theo chất lượng hiện tại. Các nhóm di chuyển cùng theo một luật bố trí relay, nhưng khác điều kiện kích hoạt. Thiết kế này giúp phân biệt lợi ích của dự báo với lợi ích vốn có của đổi tuyến hoặc di chuyển.
+
+{\small\textcolor{gray}{Nguồn đối chiếu: nckh\_paper/methods.tex.}}
+
+
+
+\needspace{8\baselineskip}
+
+\section*{Slide 10. Mạng thử nghiệm có 5 hoặc 7 UAV}
+
+\addcontentsline{toc}{section}{Slide 10: Mạng thử nghiệm có 5 hoặc 7 UAV}
+
+Hai nghiên cứu mới dùng chuỗi năm hoặc bảy UAV, gồm nguồn, đích và các relay. Mỗi lượt mô phỏng dài 240 giây. Có kịch bản đứng yên và kịch bản hai đầu mút tách xa. Ngoài luồng dữ liệu chính, nhóm thêm hai luồng nền để mạng còn có lưu lượng khác. ns-3 mô phỏng quá trình truyền gói, kênh vô tuyến và giao thức mạng. Nó không phải phần mềm huấn luyện GNN hay bộ điều khiển bay thật.
+
+{\small\textcolor{gray}{Nguồn đối chiếu: nckh\_paper/methods.tex.}}
+
+
+
+\needspace{8\baselineskip}
+
+\section*{Slide 11. GNN dự báo chất lượng năm giây tới}
+
+\addcontentsline{toc}{section}{Slide 11: GNN dự báo chất lượng năm giây tới}
+
+Đầu vào gồm vị trí, vận tốc và số đo liên kết như khoảng cách, cường độ tín hiệu, tỷ lệ nhận gần đây. Probe là gói thăm dò nhỏ để biết hai nút còn nghe nhau tốt đến đâu. Đầu ra mô hình mới là tỷ lệ nhận probe trung bình dự kiến trong năm giây tiếp theo. Đây không phải xác suất UAV sống sót hoặc xác suất cả mạng chắc chắn không đứt. Tại thời điểm ra quyết định, mô hình không được xem quỹ đạo hay số đo tương lai.
+
+{\small\textcolor{gray}{Nguồn đối chiếu: nckh\_paper/methods.tex, dự báo liên kết.}}
+
+
+
+\needspace{8\baselineskip}
+
+\section*{Slide 12. Mỗi liên kết được xét cùng các hàng xóm}
+
+\addcontentsline{toc}{section}{Slide 12: Mỗi liên kết được xét cùng các hàng xóm}
+
+Mạng UAV tự nhiên là một đồ thị: nút biểu diễn UAV, cạnh biểu diễn liên kết. GNN tổng hợp thông tin từ các hàng xóm để hiểu một liên kết trong bối cảnh xung quanh. Mô hình đối chứng MLP vẫn nhận các đặc trưng đã chuẩn bị nhưng bỏ các nhánh trao đổi thông tin học được. Cần nói rõ MLP vẫn có đặc trưng bậc nút và có ít tham số hơn. Vì vậy phép so sánh ủng hộ cấu hình GNN đã thử, chưa cô lập hoàn toàn ảnh hưởng riêng của cấu trúc đồ thị.
+
+{\small\textcolor{gray}{Nguồn đối chiếu: nckh\_paper/methods.tex.}}
+
+
+
+\needspace{8\baselineskip}
+
+\section*{Slide 13. Dữ liệu học tách khỏi thí nghiệm mới}
+
+\addcontentsline{toc}{section}{Slide 13: Dữ liệu học tách khỏi thí nghiệm mới}
+
+Mô hình mới học trên 48 lượt cũ của v7 và dùng 20 lượt cũ khác để chọn thời điểm dừng học. Các dữ liệu cũ được coi là dữ liệu phát triển. Sau đó nhóm khóa trọng số, rồi đánh giá trên seed mới của v8 và v9. Điều này giống việc ôn từ bộ bài tập và làm một đề kiểm tra mới. Đáp án tương lai trong dữ liệu cũ dùng để dạy mô hình; đáp án tương lai của lượt đang chạy không được đưa vào quyết định.
+
+{\small\textcolor{gray}{Nguồn đối chiếu: nckh\_paper/methods.tex; nckh\_final/REPRODUCIBILITY.md.}}
+
+
+
+\needspace{8\baselineskip}
+
+\section*{Slide 14. Mạng phản hồi sau mỗi quyết định}
+
+\addcontentsline{toc}{section}{Slide 14: Mạng phản hồi sau mỗi quyết định}
+
+Mỗi giây mô phỏng, hệ thống nhận một ảnh chụp trạng thái mạng. Mô hình tạo dự báo, bộ điều khiển chọn hành động và bộ mô phỏng áp dụng hành động đó. Trạng thái mạng sau đó thay đổi và trở thành đầu vào của vòng tiếp theo. Vì quyết định có thể làm thay đổi dữ liệu về sau, đây là kiểm tra vòng kín. Một giây ở đây là thời gian trong mô phỏng, không có nghĩa máy tính mất đúng một giây ngoài đời để tính mỗi quyết định.
+
+{\small\textcolor{gray}{Nguồn đối chiếu: nckh\_final/main.tex, kiến trúc vòng kín; nckh\_paper/methods.tex.}}
+
+
+
+\needspace{8\baselineskip}
+
+\section*{Slide 15. v8 thay thông tin cho cùng luật chọn tuyến}
+
+\addcontentsline{toc}{section}{Slide 15: v8 thay thông tin cho cùng luật chọn tuyến}
+
+Ba nhóm chính dùng cùng luật chọn tuyến, nhưng đầu vào là số đo hiện tại, dự báo GNN hoặc dự báo MLP. Nhóm thứ tư là OLSR-ETX cập nhật nhanh, làm đối chứng định tuyến. ETX có thể hiểu là chi phí truyền kỳ vọng: đường tốt hơn cần ít lần truyền lại hơn. Hệ thống giữ tuyến một thời gian và chỉ đổi khi lợi ích đủ lớn để tránh đổi liên tục. Cơ chế xử lý liên kết hỏng vẫn dựa vào số đo hiện tại. Tất cả relay đứng yên trong phép thử này.
+
+{\small\textcolor{gray}{Nguồn đối chiếu: nckh\_paper/methods.tex, v8.}}
+
+
+
+\needspace{8\baselineskip}
+
+\section*{Slide 16. v9 thay thời điểm bắt đầu di chuyển}
+
+\addcontentsline{toc}{section}{Slide 16: v9 thay thời điểm bắt đầu di chuyển}
+
+Ở v9, nhóm so sánh đứng yên với ba cách kích hoạt chuyển động: phản ứng theo số đo, thêm dự báo GNN và thêm dự báo MLP. Khi cần di chuyển, relay hướng về các điểm chia đều giữa vị trí hiện tại của nguồn và đích. Luật hình học này đã cố định, GNN không tự học nơi cần bay tới. Mỗi relay có giới hạn tốc độ tám mét mỗi giây, ngân sách 400 mét và kiểm tra khoảng cách an toàn. Bộ phản ứng đã hành động khi chất lượng giảm, không chờ mạng đứt hẳn.
+
+{\small\textcolor{gray}{Nguồn đối chiếu: nckh\_paper/methods.tex, v9.}}
+
+
+
+\needspace{8\baselineskip}
+
+\section*{Slide 17. Mỗi công cụ đảm nhiệm một phần nghiên cứu}
+
+\addcontentsline{toc}{section}{Slide 17: Mỗi công cụ đảm nhiệm một phần nghiên cứu}
+
+Tech stack là bộ công cụ phục vụ từng việc. ns-3 tạo mạng và hành vi truyền gói. PyTorch huấn luyện mô hình GNN và MLP. Python tổ chức thí nghiệm, nhận quan sát và tính quyết định; NumPy hỗ trợ tính toán và suy luận mô hình đã xuất. Server Ubuntu chạy các lượt mô phỏng. Matplotlib tạo biểu đồ, còn LaTeX dàn trang báo cáo. Các tên này không phải năm phương pháp cạnh tranh. Chúng là các phần phối hợp trong cùng quy trình.
+
+{\small\textcolor{gray}{Nguồn đối chiếu: nckh\_final/REPRODUCIBILITY.md; nckh\_paper/methods.tex; công cụ tạo báo cáo.}}
+
+
+
+\needspace{8\baselineskip}
+
+\section*{Slide 18. Các phương pháp chạy trên cùng tình huống}
+
+\addcontentsline{toc}{section}{Slide 18: Các phương pháp chạy trên cùng tình huống}
+
+V8 và v9 mỗi nghiên cứu có 80 lượt kiểm tra kỹ thuật và 192 lượt đánh giá cuối. Một lượt là một phương pháp chạy trên một kịch bản. Vì mỗi kịch bản chạy bốn phương pháp, 192 lượt tương ứng 48 khối, gồm 40 khối tách xa và tám khối đứng yên. So sánh chính dùng 40 khối tách xa với cùng seed giữa các phương pháp. Khoảng tin cậy cho biết độ bất định của chênh lệch qua các kịch bản, thay vì chỉ báo một số trung bình.
+
+{\small\textcolor{gray}{Nguồn đối chiếu: nckh\_paper/methods.tex, thiết kế và thống kê.}}
+
+
+
+\needspace{8\baselineskip}
+
+\section*{Slide 19. Ba chỉ số trả lời ba câu hỏi khác nhau}
+
+\addcontentsline{toc}{section}{Slide 19: Ba chỉ số trả lời ba câu hỏi khác nhau}
+
+PDR là số gói đến đích chia cho số gói gửi. Thời gian chia cắt trong nghiên cứu vị trí là số giây nguồn và đích không còn đường nối trong đồ thị thăm dò ở ngưỡng đã quy định. Đây là một phép đo mạng, khác với khẳng định không gói vô tuyến nào có thể lọt qua. Quãng đường là tổng độ dài relay di chuyển. Nó cho thấy chi phí hình học, nhưng chưa thể đổi thành phần trăm pin hoặc năng lượng nếu chưa có mô hình tiêu thụ.
+
+{\small\textcolor{gray}{Nguồn đối chiếu: nckh\_paper/methods.tex.}}
+
+
+
+\needspace{8\baselineskip}
+
+\section*{Slide 20. GNN tăng tỷ lệ gói đến đích}
+
+\addcontentsline{toc}{section}{Slide 20: GNN tăng tỷ lệ gói đến đích}
+
+Kết quả chính của v8 là GNN tăng PDR trung bình khoảng 0,66 điểm phần trăm so với dùng chất lượng hiện tại. PDR hai nhóm lần lượt khoảng 96,01\% và 95,35\%. Khoảng tin cậy từ 0,38 đến 1,00 điểm phần trăm nằm trên không, nên có bằng chứng lợi ích trong phạm vi phép thử. Mức tăng khá nhỏ và cần nói đúng đơn vị điểm phần trăm. Nó không phải tăng 66\%, cũng không bảo đảm mọi kịch bản đều tốt hơn. GNN cũng vượt MLP và OLSR-ETX nhanh trong chuỗi kiểm định đã khóa.
+
+{\small\textcolor{gray}{Nguồn đối chiếu: nckh\_paper/results.tex, v8.}}
+
+
+
+\needspace{8\baselineskip}
+
+\section*{Slide 21. Lợi ích thêm của GNN chưa rõ}
+
+\addcontentsline{toc}{section}{Slide 21: Lợi ích thêm của GNN chưa rõ}
+
+Ở v9, GNN giảm trung bình 0,20 giây chia cắt so với bộ phản ứng, nhưng khoảng tin cậy đi từ âm 1,05 đến dương 1,45 giây. Vì khoảng này chứa không, kết quả chưa chứng minh GNN tốt hơn. Cũng không được kết luận hai phương pháp tương đương. Phép kiểm định chính không đạt nên các so sánh phía sau chỉ có tính mô tả. Đây là kết quả cần báo cáo đầy đủ, không nên bỏ đi hoặc đổi ngưỡng sau khi nhìn thấy test.
+
+{\small\textcolor{gray}{Nguồn đối chiếu: nckh\_paper/results.tex, v9.}}
+
+
+
+\needspace{8\baselineskip}
+
+\section*{Slide 22. Di chuyển giúp kết nối nhưng có chi phí}
+
+\addcontentsline{toc}{section}{Slide 22: Di chuyển giúp kết nối nhưng có chi phí}
+
+Nếu so với relay đứng yên, nhóm di chuyển phản ứng có thời gian chia cắt thấp hơn nhiều: khoảng 31,45 giây so với 123,43 giây. Nhưng tổng quãng đường relay khoảng 637,48 mét cho mỗi lượt trung bình. Đây là so sánh mô tả. Nó cho thấy di chuyển có ích trong kịch bản đã thử, nhưng không chứng minh lợi ích riêng của GNN. Tổng quãng đường cộng trên nhiều relay, vì vậy lớn hơn 400 mét vẫn có thể hoàn toàn đúng giới hạn 400 mét cho từng relay.
+
+{\small\textcolor{gray}{Nguồn đối chiếu: nckh\_paper/results.tex; trung bình chính xác v9.}}
+
+
+
+\needspace{8\baselineskip}
+
+\section*{Slide 23. Kết quả hiện tại thuộc môi trường mô phỏng}
+
+\addcontentsline{toc}{section}{Slide 23: Kết quả hiện tại thuộc môi trường mô phỏng}
+
+Nhóm đã có điều khiển vị trí, nhưng đó là điều khiển vận tốc relay bên trong bộ mô phỏng. Hệ thống chưa nối với autopilot để điều khiển UAV thật. Mô hình học có giám sát, còn luật hành động được đặt trước, nên chưa dùng reinforcement learning. Ngoài ra, mô hình mới chỉ được huấn luyện với một seed. Các khoảng tin cậy phản ánh biến động giữa kịch bản với trọng số đã khóa, chưa phản ánh toàn bộ biến động giữa nhiều lần huấn luyện.
+
+{\small\textcolor{gray}{Nguồn đối chiếu: nckh\_paper/discussion trong main.tex; REPRODUCIBILITY.md.}}
+
+
+
+\needspace{8\baselineskip}
+
+\section*{Slide 24. Kết luận phải gắn với đúng phép so sánh}
+
+\addcontentsline{toc}{section}{Slide 24: Kết luận phải gắn với đúng phép so sánh}
+
+Có ba bước suy luận cần tránh. Điểm dự báo tốt không tự chứng minh PDR cao. PDR cao trong mô phỏng chưa chứng minh triển khai bay thật thành công. Di chuyển có ích so với đứng yên cũng chưa chứng minh dự báo GNN tạo ra phần lợi ích đó. Nhóm thiết kế các đối chứng để tách những câu hỏi này. Với khoảng tin cậy chứa không, cách nói đúng là chưa đủ bằng chứng về khác biệt theo phép thử, không phải chắc chắn không có tác dụng.
+
+{\small\textcolor{gray}{Nguồn đối chiếu: nckh\_paper/main.tex, thảo luận.}}
+
+
+
+\needspace{8\baselineskip}
+
+\section*{Slide 25. Nhóm đã có mô hình và hồ sơ kiểm chứng}
+
+\addcontentsline{toc}{section}{Slide 25: Nhóm đã có mô hình và hồ sơ kiểm chứng}
+
+Sản phẩm của đề tài gồm mô hình dự báo, quy trình điều khiển trong mô phỏng, các thí nghiệm có đối chứng và hồ sơ kết quả để kiểm tra lại. Nhóm đã tổng hợp thành báo cáo 51 trang và bản bài báo bảy trang. Trong các pha chính thức v2 đến v9 có 2.524 lượt hợp lệ, ngoài 210 lượt ngoại tuyến ban đầu. Những số lượng này thể hiện phạm vi công việc, còn kết luận khoa học vẫn phải dựa vào từng phép so sánh cụ thể.
+
+{\small\textcolor{gray}{Nguồn đối chiếu: nckh\_final/main.pdf; nckh\_paper/main.pdf; nckh\_submission/manifest.json.}}
+
+
+
+\needspace{8\baselineskip}
+
+\section*{Slide 26. Dự báo có ích khi gắn với đúng hành động}
+
+\addcontentsline{toc}{section}{Slide 26: Dự báo có ích khi gắn với đúng hành động}
+
+Điều nhóm rút ra là phải đánh giá dự báo cùng hành động mà nó phục vụ. Trong cấu hình đã thử, GNN cải thiện định tuyến. Với kích hoạt vị trí, lợi ích thêm so với phản ứng chưa rõ. Hướng tiếp theo có cơ sở là bổ sung dữ liệu có relay di chuyển, kiểm tra độ trễ và chi phí truyền thông điều khiển. Nếu mở rộng sang RL, nhóm cần một nghiên cứu mới với kế hoạch huấn luyện và đánh giá riêng. Nhóm giữ nguyên kết quả hiện tại để báo cáo cả mặt đạt và chưa đạt.
+
+{\small\textcolor{gray}{Nguồn đối chiếu: nckh\_paper/main.tex, kết luận và thảo luận.}}
+

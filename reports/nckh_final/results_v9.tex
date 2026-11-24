@@ -1,0 +1,82 @@
+\section{Vòng v9: Dự báo kích hoạt điều khiển vị trí}\label{sec:r9}
+
+Validation hợp lệ 80/80 cell và đạt go; test hợp lệ 192/192 cell. Các kết quả dưới đây dùng 40 khối gradual và tám khối static của test mới, không dùng kết quả chọn epoch.
+
+Các kiểm tra kỹ thuật đều đạt. Toàn vẹn tuyến đúng ở 192/192 episode có kiểm tra tuyến.
+
+Bảng~\ref{tab:v9sequence} trình bày các so sánh theo thứ tự; Hình~\ref{fig:v9paired} cho thấy chênh lệch theo từng seed.
+
+\begin{table}[htbp]
+\centering\small
+\begin{tabularx}{\linewidth}{@{}Yp{3.5cm}p{2.3cm}p{2cm}@{}}
+\toprule
+\textbf{So sánh theo thứ tự}&\textbf{Chênh lệch [CI 95\%]}&\textbf{n5 / n7}&\textbf{Diễn giải}\\\midrule
+H1: \code{reactive-motion} $-$ \code{gnn-motion}&0,20 [-1,05; 1,45]&-0,35 / 0,75&Không đạt\\
+H2: \code{gnn-motion} $-$ \code{reactive-motion}&0,34 [-0,32; 1,04]&0,19 / 0,49&Chỉ mô tả\\
+H3: \code{mlp-motion} $-$ \code{gnn-motion}&1,23 [0,10; 2,52]&0,70 / 1,75&Chỉ mô tả\\
+\bottomrule
+\end{tabularx}
+\caption{Test v9: H1/H3 tính bằng giây, H2 bằng điểm phần trăm. Bước sau chỉ được khẳng định nếu mọi bước trước đạt.}\label{tab:v9sequence}
+\end{table}
+
+
+Endpoint chính không đạt quy tắc cận dưới CI dương. Do đó các so sánh sau chỉ mô tả, kể cả nếu CI riêng lẻ không chứa 0; không đổi kết luận chính sang baseline thuận lợi hơn.
+
+\Fig{fig_v9_paired}{Chênh lệch endpoint chính theo từng khối seed test; đường ngang là không chênh lệch.}{fig:v9paired}
+
+Bảng~\ref{tab:v9means} mô tả mức dịch vụ và chi phí di chuyển theo arm.
+
+\begin{table}[htbp]
+\centering\small
+\begin{tabularx}{\linewidth}{@{}Yp{3.7cm}p{2.5cm}p{2.5cm}@{}}
+\toprule
+\textbf{Arm}&\textbf{PDR (\%, TB $\pm$ SD)}&\textbf{Mất kết nối (s)}&\textbf{Quãng đường (m)}\\\midrule
+\code{gnn-motion}&88,60 $\pm$ 4,27&31,25&636,76\\
+\code{mlp-motion}&88,08 $\pm$ 4,93&32,48&638,97\\
+\code{reactive-motion}&88,26 $\pm$ 4,39&31,45&637,48\\
+\code{route-only}&59,89 $\pm$ 4,91&123,42&0,00\\
+\bottomrule
+\end{tabularx}
+\caption{Mô tả gradual test v9: PDR trung bình và độ lệch chuẩn theo episode; các cột còn lại là trung bình. Quãng đường cộng trên toàn bộ relay; không phải năng lượng.}\label{tab:v9means}
+\end{table}
+
+
+Bảng~\ref{tab:v9timing} ghi thời gian tính quyết định; Bảng~\ref{tab:v9secondary} ghi các so sánh mô tả bổ sung.
+
+\begin{table}[htbp]
+\centering\small
+\begin{tabularx}{\linewidth}{@{}Yp{3cm}p{4cm}@{}}
+\toprule
+\textbf{Arm}&\textbf{Trung vị (ms)}&\textbf{Phân vị 95\% (ms)}\\\midrule
+\code{route-only}&3,080&8,746\\
+\code{reactive-motion}&3,241&9,450\\
+\code{gnn-motion}&5,425&13,855\\
+\code{mlp-motion}&5,171&13,278\\
+\bottomrule
+\end{tabularx}
+\caption{Thời gian toàn bộ quyết định test v9 trên CPU server, bốn worker đồng thời. Bao gồm dự báo nếu có và luật hành động, chưa gồm truyền telemetry/lệnh.}\label{tab:v9timing}
+\end{table}
+
+
+\begin{table}[htbp]
+\centering\small
+\begin{tabularx}{\linewidth}{@{}p{1.8cm}Yp{2cm}p{3.8cm}@{}}
+\toprule
+\textbf{Bối cảnh}&\textbf{Chỉ số}&\textbf{Chênh lệch}&\textbf{CI 95\%}\\\midrule
+gradual&Không có tuyến OLSR (s)&0,95&[-3,30; 5,07]\\
+gradual&PDR luồng nền (điểm \%)&0,28&[-0,63; 1,19]\\
+static&PDR (điểm \%)&0,00&[0,00; 0,00]\\
+static&Mất kết nối (s)&0,00&[0,00; 0,00]\\
+\bottomrule
+\end{tabularx}
+\caption{So sánh mô tả test v9: gnn-motion trừ reactive-motion. Không nằm trong thứ tự kiểm định khẳng định.}\label{tab:v9secondary}
+\end{table}
+
+
+Tổng số lệnh đổi tuyến trên mọi episode: \code{gnn-motion}: 201; \code{mlp-motion}: 190; \code{reactive-motion}: 193; \code{route-only}: 1155.
+
+Kiểm tra chuyển động gradual: \code{gnn-motion}: 40/40 episode có chuyển động, quãng đường relay lớn nhất 319,32 m; \code{mlp-motion}: 40/40 episode có chuyển động, quãng đường relay lớn nhất 319,32 m; \code{reactive-motion}: 40/40 episode có chuyển động, quãng đường relay lớn nhất 319,32 m; \code{route-only}: 0/40 episode có chuyển động, quãng đường relay lớn nhất 0,00 m.
+
+Số quyết định bị chặn bởi kiểm tra an toàn / số frame simulator từ chối chuyển động: \code{gnn-motion}: 0 / 0; \code{mlp-motion}: 0 / 0; \code{reactive-motion}: 0 / 0; \code{route-only}: 0 / 0. Số episode có relay chạm ngân sách 400 m: \code{gnn-motion}: 0; \code{mlp-motion}: 0; \code{reactive-motion}: 0; \code{route-only}: 0.
+
+Chỉ số thời điểm can thiệp là mô tả: trong các episode vừa có chuyển động vừa có mất kết nối, \code{gnn-motion} bắt đầu di chuyển trước outage ở 39/39 episode; \code{mlp-motion} bắt đầu di chuyển trước outage ở 40/40 episode; \code{reactive-motion} bắt đầu di chuyển trước outage ở 40/40 episode. Không diễn giải tỷ lệ này như hiệu quả trên toàn tập hoặc bằng chứng nhân quả riêng cho trigger.

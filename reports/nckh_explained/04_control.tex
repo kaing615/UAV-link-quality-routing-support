@@ -1,0 +1,57 @@
+\chapter{Dự báo biến thành hành động ra sao?}
+\section{Vòng điều khiển mỗi giây}
+Hình~\ref{fig:loop} mô tả quá trình lặp. Bộ mô phỏng phát sinh trạng thái, bộ dự báo xử lý quan sát, bộ điều khiển chọn hành động và bộ mô phỏng áp dụng hành động. Trạng thái sau hành động lại trở thành đầu vào mới.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[every node/.style={font=\small}, box/.style={draw=inkblue,align=center,minimum width=34mm,minimum height=13mm}]
+\node[box] (a) at (0,0) {Quan sát mạng};
+\node[box] (b) at (5,0) {Dự báo liên kết};
+\node[box] (c) at (5,-2) {Chọn hành động};
+\node[box] (d) at (0,-2) {Thực thi và đo lại};
+\draw[-{Latex},thick] (a)--(b);\draw[-{Latex},thick] (b)--(c);\draw[-{Latex},thick] (c)--(d);\draw[-{Latex},thick] (d)--(a);
+\end{tikzpicture}
+\caption{Vòng phản hồi trong mô phỏng. Chu kỳ quan sát là một giây thời gian mô phỏng.}\label{fig:loop}
+\end{figure}
+
+Mỗi giây ở đây là thời gian của kịch bản. Máy tính có thể chạy một lượt mô phỏng nhanh hơn hoặc chậm hơn thời gian đó. Cũng không nên lấy thời gian tính toán trên server làm thời gian điều khiển đầu cuối của một UAV thật.
+
+\section{V8: chọn đường đi bằng ETX}
+ETX mô tả số lần truyền kỳ vọng để chuyển gói qua một liên kết. Với tỷ lệ nhận hai chiều là $q_{ab}$ và $q_{ba}$, chi phí liên kết dùng trong nghiên cứu có dạng:
+\[
+\mathrm{ETX}(a,b)=\frac{1}{q_{ab}q_{ba}}.
+\]
+Tổng chi phí các chặng giúp so sánh đường đi. Chất lượng thấp làm ETX tăng, nghĩa là đường đó kém hấp dẫn hơn. Trong hệ thống thực nghiệm còn có chặn giá trị và các điều kiện để một liên kết được coi là dùng được.
+
+\example{Liên kết có chất lượng hai chiều đều 0,9 cho ETX xấp xỉ $1/0,81=1,23$. Nếu cả hai chiều chỉ 0,5, ETX bằng 4. Một đường nhiều chặng tốt có thể có tổng ETX thấp hơn một đường trực tiếp rất kém. Ví dụ chỉ giải thích ý nghĩa chi phí, không thay cho mô phỏng truyền gói.}
+
+Ba nhóm ghim tuyến của v8 giữ cùng luật quyết định: nhóm hiện tại dùng chất lượng làm mượt, nhóm GNN dùng dự báo GNN và nhóm MLP dùng dự báo MLP. Nhóm thứ tư là OLSR-ETX nhanh. Relay đứng yên trong tất cả nhóm v8.
+
+\section{Ghim tuyến và tránh đổi tuyến quá thường xuyên}
+Ghim tuyến nghĩa là tạm yêu cầu dữ liệu đi theo một tuyến đã chọn. Bộ điều khiển không đổi tuyến chỉ vì một dao động rất nhỏ. Margin yêu cầu đường mới tốt hơn một mức nhất định. Dwell yêu cầu giữ tuyến trong một khoảng thời gian trước lần đổi thông thường tiếp theo. Cách làm này giống việc không đổi làn xe liên tục chỉ vì làn bên cạnh vừa nhích nhanh hơn một chút.
+
+V8 giữ margin 1,0, thời gian khởi động ba bước và dwell năm giây. Khi số đo hiện tại báo một liên kết hỏng dưới ngưỡng 0,1, cơ chế xử lý hỏng được ưu tiên. Do đó dự báo không được phép che khuất tình trạng hỏng đang quan sát được.
+
+Nhóm kiểm tra cả lệnh đã phát và tuyến mà bộ mô phỏng thực sự áp dụng. Nếu chỉ lưu ``tôi đã yêu cầu đổi tuyến'' mà không kiểm tra việc đổi có xảy ra, không thể tin rằng phép thử đang đánh giá đúng phương pháp dự định.
+
+\section{V9: quyết định khi nào di chuyển}
+Trong v9, mọi nhóm giữ cùng luật định tuyến dựa trên chất lượng hiện tại. Nhóm đứng yên cung cấp mốc đối chiếu. Các nhóm chuyển động dùng cùng luật bố trí nhưng khác trigger, tức điều kiện kích hoạt.
+
+Để đánh giá một tuyến, hệ thống nhìn liên kết yếu nhất trên tuyến đó. Sau đó chọn tuyến có ``mắt xích yếu nhất'' tốt nhất. Đại lượng này cho biết mạng còn một đường nối khá tốt hay không, thay vì chỉ nhìn trung bình mọi liên kết.
+
+Nhóm phản ứng kích hoạt khi chất lượng đường theo số đo đã làm mượt dưới 0,70 trong hai frame liên tiếp, sau thời gian khởi động. Nhóm GNN và MLP bổ sung điều kiện tương tự dựa trên dự báo. Chúng vẫn có điều kiện bảo vệ từ trạng thái hiện tại. Phản ứng ở đây có thể xảy ra trước khi mạng chia cắt theo ngưỡng 0,5, nên không gọi nhóm này là ``đợi mất mạng rồi mới cứu''.
+
+\section{Relay di chuyển tới đâu?}
+Các relay được xếp theo vị trí trên hướng nối hai đầu mút hiện tại, rồi hướng tới các điểm chia đều đoạn nối đó. Đây là luật hình học cố định. GNN chỉ góp phần quyết định lúc bắt đầu hoặc duy trì đợt chuyển động theo điều kiện đã đặt.
+
+\example{Giả sử nguồn ở mốc 0 m, đích ở 400 m trên một đường thẳng và có ba relay. Các vị trí chia đều là 100 m, 200 m và 300 m. Relay hướng về các mốc tương ứng, có giới hạn tốc độ và quãng đường. Đây là ví dụ đơn giản, không phải tọa độ cụ thể của một episode.}
+
+Luật có giới hạn tốc độ 8 m/s, ngân sách 400 m cho từng relay, khoảng chết 1 m để tránh chuyển động quá nhỏ, tối đa mười bước mỗi đợt và nghỉ năm bước. Có thể dừng sớm sau ba frame đạt ngưỡng phục hồi 0,80 theo điều kiện của phương pháp. Kiểm tra khoảng cách trong bước yêu cầu ít nhất 5 m. Những ràng buộc này là điều kiện an toàn trong mô phỏng, chưa chứng nhận an toàn bay thật.
+
+\section{Vì sao v9 dùng đầu mút tách xa nhanh hơn?}
+V8 dùng tốc độ đầu mút danh định 1 m/s. V9 tăng danh định lên 2 m/s để tạo thách thức chia cắt đủ rõ. Trong cả hai, tốc độ cụ thể còn nhân hệ số từ 0,85 đến 1,15 theo seed bố trí. Thay đổi này được đặt trong kế hoạch v9 trước pha đánh giá, không phải chỉnh sau khi thấy test.
+
+Đổi tốc độ cũng tạo một giới hạn: dữ liệu học của mô hình mới đến từ các trace có relay đứng yên và tốc độ đầu mút danh định 1 m/s. V9 dùng relay di chuyển và đầu mút nhanh hơn. Mô hình gặp điều kiện khác lúc học. Đây là một khả năng cần kiểm tra để hiểu kết quả v9, chưa phải nguyên nhân đã được chứng minh riêng.
+
+\remember{V8 hỏi liệu dự báo giúp chọn tuyến. V9 hỏi liệu dự báo giúp chọn thời điểm di chuyển theo một luật đã có. Cả hai đều chưa học quỹ đạo tối ưu và chưa dùng RL.}
+

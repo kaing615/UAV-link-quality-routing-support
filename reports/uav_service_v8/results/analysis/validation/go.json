@@ -1,0 +1,29 @@
+{
+  "criteria": {
+    "background_ok": {
+      "passed": true
+    },
+    "flags_ok": {
+      "passed": true
+    },
+    "forecast_traces_ok": {
+      "passed": true
+    },
+    "no_startup_blackout": {
+      "cells": [],
+      "passed": true
+    },
+    "relays_stationary": {
+      "passed": true
+    },
+    "route_integrity_ok": {
+      "passed": true
+    },
+    "transmissions_ok": {
+      "passed": true
+    }
+  },
+  "go": true,
+  "schema": "service-v8-go-v1",
+  "validation_freeze_sha256": "a8ab761887656fbd85a9ef5eec23676ffab6ead01f2e6d6017df12edc02918bf"
+}

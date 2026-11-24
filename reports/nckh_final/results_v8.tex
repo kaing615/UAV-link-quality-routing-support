@@ -1,0 +1,91 @@
+\section{Vòng v8: Dự báo GNN trong lựa chọn tuyến}\label{sec:r8}
+
+Validation hợp lệ 80/80 cell và đạt go; test hợp lệ 192/192 cell. Các kết quả dưới đây dùng 40 khối gradual và tám khối static của test mới, không dùng kết quả chọn epoch.
+
+Các kiểm tra kỹ thuật đều đạt. Toàn vẹn tuyến đúng ở 144/144 episode có kiểm tra tuyến.
+
+Bảng~\ref{tab:v8sequence} trình bày các so sánh theo thứ tự; Hình~\ref{fig:v8paired} cho thấy chênh lệch theo từng seed.
+
+\begin{table}[htbp]
+\centering\small
+\begin{tabularx}{\linewidth}{@{}Yp{3.5cm}p{2.3cm}p{2cm}@{}}
+\toprule
+\textbf{So sánh theo thứ tự}&\textbf{Chênh lệch [CI 95\%]}&\textbf{n5 / n7}&\textbf{Diễn giải}\\\midrule
+H1: \code{gnn-route} $-$ \code{lq-route}&0,66 [0,38; 1,00]&0,58 / 0,75&Đạt\\
+H2: \code{gnn-route} $-$ \code{mlp-route}&0,38 [0,12; 0,67]&0,50 / 0,26&Đạt\\
+H3: \code{gnn-route} $-$ \code{olsr-etx-fast}&5,75 [5,07; 6,45]&5,82 / 5,68&Đạt\\
+\bottomrule
+\end{tabularx}
+\caption{Test v8: PDR tính bằng điểm phần trăm. Bước sau chỉ được khẳng định nếu mọi bước trước đạt.}\label{tab:v8sequence}
+\end{table}
+
+
+Endpoint chính đạt theo quy tắc đã định trước; các bước sau được diễn giải theo cổng thứ tự trong bảng.
+
+\Fig{fig_v8_paired}{Chênh lệch endpoint chính theo từng khối seed test; đường ngang là không chênh lệch.}{fig:v8paired}
+
+Bảng~\ref{tab:v8means} mô tả mức dịch vụ và chi phí di chuyển theo arm.
+
+\begin{table}[htbp]
+\centering\small
+\begin{tabularx}{\linewidth}{@{}Yp{3.7cm}p{2.5cm}p{2.5cm}@{}}
+\toprule
+\textbf{Arm}&\textbf{PDR (\%, TB $\pm$ SD)}&\textbf{Mất kết nối (s)}&\textbf{Quãng đường (m)}\\\midrule
+\code{gnn-route}&96,01 $\pm$ 2,58&31,65&0,00\\
+\code{lq-route}&95,35 $\pm$ 2,92&31,77&0,00\\
+\code{mlp-route}&95,64 $\pm$ 2,68&31,77&0,00\\
+\code{olsr-etx-fast}&90,26 $\pm$ 4,38&35,90&0,00\\
+\bottomrule
+\end{tabularx}
+\caption{Mô tả gradual test v8: PDR trung bình và độ lệch chuẩn theo episode; các cột còn lại là trung bình. Quãng đường cộng trên toàn bộ relay; không phải năng lượng.}\label{tab:v8means}
+\end{table}
+
+
+Bảng~\ref{tab:v8mse} đánh giá riêng sai số dự báo trên cùng các quan sát.
+
+\begin{table}[htbp]
+\centering\small
+\begin{tabularx}{\linewidth}{@{}Yp{4cm}@{}}
+\toprule
+\textbf{Dự báo}&\textbf{MSE}\\\midrule
+EWMA&0,0012738\\
+GNN&0,0007846\\
+MLP&0,0011143\\
+\bottomrule
+\end{tabularx}
+\caption{MSE năm giây tương lai trên cùng trace lq-route gradual test v8, cân bằng n5/n7. Đây là đánh giá dự báo riêng, không thay thế PDR vòng kín.}\label{tab:v8mse}
+\end{table}
+
+
+Bảng~\ref{tab:v8timing} ghi thời gian tính quyết định; Bảng~\ref{tab:v8secondary} ghi các so sánh mô tả bổ sung.
+
+\begin{table}[htbp]
+\centering\small
+\begin{tabularx}{\linewidth}{@{}Yp{3cm}p{4cm}@{}}
+\toprule
+\textbf{Arm}&\textbf{Trung vị (ms)}&\textbf{Phân vị 95\% (ms)}\\\midrule
+\code{lq-route}&2,998&9,106\\
+\code{gnn-route}&4,921&13,831\\
+\code{mlp-route}&4,553&12,685\\
+\code{olsr-etx-fast}&0,478&1,373\\
+\bottomrule
+\end{tabularx}
+\caption{Thời gian toàn bộ quyết định test v8 trên CPU server, bốn worker đồng thời. Bao gồm dự báo nếu có và luật hành động, chưa gồm truyền telemetry/lệnh.}\label{tab:v8timing}
+\end{table}
+
+
+\begin{table}[htbp]
+\centering\small
+\begin{tabularx}{\linewidth}{@{}p{1.8cm}Yp{2cm}p{3.8cm}@{}}
+\toprule
+\textbf{Bối cảnh}&\textbf{Chỉ số}&\textbf{Chênh lệch}&\textbf{CI 95\%}\\\midrule
+gradual&Không có tuyến OLSR (s)&1,12&[-1,88; 4,22]\\
+gradual&PDR luồng nền (điểm \%)&0,01&[-0,12; 0,12]\\
+static&PDR (điểm \%)&0,00&[0,00; 0,00]\\
+\bottomrule
+\end{tabularx}
+\caption{So sánh mô tả test v8: gnn-route trừ lq-route. Không nằm trong thứ tự kiểm định khẳng định.}\label{tab:v8secondary}
+\end{table}
+
+
+Tổng số lệnh đổi tuyến trên mọi episode: \code{gnn-route}: 95; \code{lq-route}: 359; \code{mlp-route}: 208.

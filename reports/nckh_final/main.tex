@@ -29,7 +29,7 @@
 \newcommand{\GiangVien}{ThS. Đặng Lê Bảo Chương}
 \newcommand{\Khoa}{KHOA MẠNG MÁY TÍNH VÀ TRUYỀN THÔNG}
 \newcommand{\NgayBaoCao}{11/2026}
-\newcommand{\TenDeTai}{Dự đoán chất lượng liên kết đa thời điểm và hỗ trợ định tuyến trong mạng UAV bằng Graph Neural Network}
+\newcommand{\TenDeTai}{Dự báo chất lượng liên kết bằng mạng nơ-ron đồ thị cho định tuyến và bố trí UAV}
 \hypersetup{pdftitle={Báo cáo tổng kết NCKH -- UAV Link Quality Routing Support},pdfauthor={\HoTenA, \HoTenB}}
 
 \renewcommand{\chaptername}{Chương}
@@ -114,12 +114,11 @@
 
 {\large\textbf{Đề tài:}}\\[.4cm]
 {\fontsize{18pt}{24pt}\selectfont\bfseries
-DỰ ĐOÁN CHẤT LƯỢNG LIÊN KẾT\\
-ĐA THỜI ĐIỂM VÀ HỖ TRỢ ĐỊNH TUYẾN\\
-TRONG MẠNG UAV BẰNG\\
-GRAPH NEURAL NETWORK\par}
+DỰ BÁO CHẤT LƯỢNG LIÊN KẾT\\
+BẰNG MẠNG NƠ-RON ĐỒ THỊ\\
+CHO ĐỊNH TUYẾN VÀ BỐ TRÍ UAV\par}
 \vspace{.35cm}
-{\large\itshape Nội dung tổng kết: từ dự báo suy giảm dịch vụ đến\\điều khiển định tuyến theo chất lượng liên kết\par}
+{\large\itshape Đánh giá ngoại tuyến và điều khiển vòng kín\\trong mô phỏng ns-3\par}
 \vspace{.5cm}
 \rule{.7\textwidth}{.4pt}
 \vspace{.7cm}
@@ -160,10 +159,10 @@ Tp. Hồ Chí Minh, \NgayBaoCao
 \begin{tabularx}{\linewidth}{|P{.8cm}|P{3cm}|P{1.8cm}|Y|}
 \hline
 \textbf{STT}&\textbf{Họ và tên}&\textbf{MSSV}&\textbf{Nhiệm vụ}\\\hline
-1&\HoTenA&\MSSVA&\textit{[Nhóm điền nhiệm vụ.]}\\\hline
-2&\HoTenB&\MSSVB&\textit{[Nhóm điền nhiệm vụ.]}\\\hline
+1&\HoTenA&\MSSVA&Thực hiện chính: thiết kế nghiên cứu, mô hình dự báo, tích hợp mô phỏng, phân tích kết quả và bản thảo chính.\\\hline
+2&\HoTenB&\MSSVB&Hỗ trợ tổng hợp tài liệu, kiểm tra dữ liệu/kết quả, chuẩn bị hình/bảng và rà soát trình bày.\\\hline
 \end{tabularx}
-\caption{Phân công nhiệm vụ trong nhóm.}\label{tab:phancong}
+\caption{Phân công nhiệm vụ đề xuất. Vai trò thực hiện chính của Nguyễn Đình Tâm đã được xác nhận; nhiệm vụ chi tiết cần nhóm đối chiếu trước khi nộp.}\label{tab:phancong}
 \end{table}
 \clearpage
 
@@ -173,15 +172,9 @@ Tp. Hồ Chí Minh, \NgayBaoCao
 \pagenumbering{roman}
 \chapter*{TÓM TẮT NỘI DUNG}
 \addcontentsline{toc}{chapter}{TÓM TẮT NỘI DUNG}
-Đề tài nghiên cứu cách dùng thông tin về chất lượng liên kết để duy trì dịch vụ truyền dữ liệu qua chuỗi UAV làm relay khi hai đầu mút tách xa nhau. Giai đoạn 1 dự đoán chất lượng liên kết bằng Graph Neural Network: trên 210 lượt mô phỏng ns-3 (20 UAV, 21 điều kiện, đánh giá trên seed giữ lại), mô hình Edge-SAGE đạt Macro-F1 cao hơn XGBoost, Logistic Regression và persistence ở cả hai loại nhãn và bốn mốc dự báo, với khoảng cách lớn nhất khi dự báo xa (+6,1 điểm phần trăm so với XGBoost ở mốc 5 bước). Tuy vậy, Edge-SAGE có tỷ lệ dự đoán nhầm liên kết hỏng thành ổn định cao hơn XGBoost ở 7/8 tổ hợp, và các chỉ số định tuyến khi đó chỉ được tính ngoại tuyến. Vì vậy giai đoạn 2 chuyển sang câu hỏi then chốt: thông tin chất lượng liên kết có thực sự cải thiện dịch vụ trong một hệ thống vòng kín hay không. Các thí nghiệm giai đoạn 2 được thực hiện trên ns-3.45 với OLSR, bằng sáu vòng thí nghiệm (v2--v7) có giao thức đăng ký trước: hạt giống mới được kiểm toán, mã nguồn và mô hình được khóa bằng hash, tiêu chí go/no-go và phép bootstrap theo khối kịch bản được cố định trước khi chạy.
+Đề tài nghiên cứu việc dùng chất lượng liên kết để hỗ trợ định tuyến và điều khiển vị trí trong mạng phương tiện bay không người lái (UAV). Dự báo chính xác chưa bảo đảm hành động điều khiển có ích, nên nghiên cứu đánh giá riêng dự báo ngoại tuyến và dịch vụ mạng vòng kín. Giai đoạn đầu dùng mạng nơ-ron đồ thị trên 210 lượt mô phỏng và cho thấy ưu thế Macro-F1, đồng thời ghi nhận lỗi dự đoán liên kết hỏng thành ổn định. Các vòng tiếp theo phát triển ghim tuyến theo chất lượng hiện tại; ở vòng kiểm tra độ bền, phương pháp tăng tỷ lệ gói đến đích (PDR) 5,06 điểm phần trăm so với OLSR-ETX đã tinh chỉnh, với chi phí báo hiệu cao hơn. Hai nghiên cứu bổ sung dùng bộ hồi quy đồ thị mới dự báo tỷ lệ nhận probe trung bình năm giây tới, học từ dữ liệu lịch sử và khóa trước mô phỏng mới. Mỗi nghiên cứu có 80 lượt validation và 192 lượt test trên chuỗi năm hoặc bảy UAV; phân tích bootstrap theo khối seed, giữ các nhóm so sánh ghép cặp. Khi giữ relay đứng yên và cùng luật chọn tuyến, dự báo đồ thị tăng PDR 0,66 điểm phần trăm so với chất lượng hiện tại, khoảng tin cậy 95\% [0,38; 1,00], và tăng 0,38 điểm so với mô hình bỏ truyền thông điệp; thăm dò sau test cho thấy một EWMA làm mượt mạnh hơn đạt mức tương đương, nên lợi ích chưa thể quy cho riêng thông tin dự báo. Khi giữ cùng định tuyến và luật bố trí relay, kích hoạt chuyển động bằng dự báo chỉ giảm 0,20 giây chia cắt so với kích hoạt theo chất lượng hiện tại, khoảng tin cậy [$-1,05$; $1,45$]; endpoint chính không đạt. Di chuyển giảm chia cắt rõ trong so sánh mô tả với đứng yên, nhưng cần khoảng 637 m tổng quãng đường relay mỗi lượt. Phần lớn chia cắt còn lại vượt quá tầm phủ của chuỗi relay ngay cả khi relay được đặt lý tưởng. Kết quả ủng hộ lợi ích của ước lượng chất lượng ổn định hơn cho định tuyến trong phạm vi đã xét, chưa chứng minh lợi ích thêm của dự báo cho trigger vị trí. Hệ thống mới được kiểm tra trong ns-3, chưa tích hợp UAV thật; telemetry tập trung chưa cạnh tranh kênh, chỉ có một seed huấn luyện và một họ topology. Dữ liệu, mã nguồn đóng gói và kết quả được liên kết bằng hash để kiểm tra tái lập.
 
-Vòng v2 (384 episode) cho thấy thêm dự báo suy giảm vào bộ điều khiển di chuyển relay làm PDR giảm 0,99 điểm phần trăm (CI 95\%: $-1{,}99$ đến $-0{,}02$) và tăng 41,2 m quãng đường. Vòng v3 thêm ngưỡng chọn trên dữ liệu tuning và cổng giá trị hành động, nhưng dừng ở validation vì mô hình lợi ích không dự đoán được tác động của chuyển động (Spearman $-0{,}19$). Phân tích chẩn đoán trên dữ liệu v2 chỉ ra nguyên nhân: OLSR chọn tuyến theo số hop nên giữ liên kết trực tiếp chất lượng kém khoảng 59\% thời gian, chiếm 52\% số gói bị mất, phần mà việc di chuyển relay không tác động tới.
-
-Từ đó, vòng v4 đề xuất ghim tuyến dữ liệu sang đường qua relay khi ETX của đường đó tốt hơn rõ rệt lựa chọn của OLSR. Trên 192 episode của pha test đã khóa, phương pháp tăng PDR thêm 4,18 điểm phần trăm so với OLSR thuần (CI 95\%: 1,14 đến 6,36) mà không cần di chuyển UAV; cả ba bước kiểm định theo thứ tự cố định đều đạt, 96/96 episode có tuyến được simulator áp dụng đúng như lệnh.
-
-Để tách lợi ích của ETX khỏi lợi ích của điều khiển tập trung, nhóm cài đặt OLSR-ETX phân tán (LQ\_HELLO/LQ\_TC theo olsrd) vào ns-3. Vòng v5 không đạt endpoint chính (CI chứa 0). Chẩn đoán sau đó chỉ ra một lỗi mô phỏng: khi lần phân giải ARP đầu tiên thất bại, ns-3 bỏ mọi gói tới hop đó trong 100 giây, làm nhiễu mạnh một số kịch bản. Vòng v6 lặp lại đúng thiết kế v5 với thời hạn ARP 1 giây trên hạt giống mới: ghim tuyến tập trung hơn OLSR-ETX 4,57 điểm phần trăm (CI 95\%: 3,60 đến 5,55) và hơn ở 39/40 kịch bản; OLSR-ETX hơn OLSR thuần 1,01 điểm (0,10 đến 1,91). Vòng v7 (412 episode) kiểm tra độ bền của kết quả trên chuỗi 5 và 7 UAV có thêm hai luồng nền: ghim tuyến vẫn hơn OLSR-ETX đã được chọn chu kỳ HELLO tốt nhất 5,06 điểm phần trăm (CI 95\%: 4,21 đến 5,91), vẫn hơn 4,82 điểm khi lệnh điều khiển trễ 2 giây, và cũng làm tăng PDR của các luồng nền. Đổi lại, ghim tuyến tốn báo hiệu khoảng 5,6 kB/s, gấp khoảng 3 lần OLSR-ETX, chủ yếu do probe đo liên kết. Hạn chế chính: điều khiển tập trung chưa mô hình hóa mất thông điệp điều khiển, OLSR-ETX là bản cài đặt của nhóm, và chỉ một họ kịch bản chuỗi relay.
-
-\noindent\textbf{Từ khóa:} UAV, FANET, OLSR, ETX, chất lượng liên kết, định tuyến, ns-3, thí nghiệm đăng ký trước, bootstrap.
+\noindent\textbf{Từ khóa:} mạng UAV; mạng nơ-ron đồ thị; chất lượng liên kết; định tuyến; điều khiển vị trí.
 \clearpage
 \tableofcontents
 \clearpage
@@ -234,12 +227,12 @@ Margin, dwell&Mức ETX mà đường mới phải tốt hơn để được ghi
 Probe&Gói broadcast nhỏ mỗi nút phát mỗi 0,05 giây để đo tỷ lệ nhận gói trên từng liên kết.\\
 Toàn vẹn tuyến&Kiểm tra chuỗi tuyến bộ điều khiển ra lệnh trùng khớp hoàn toàn với tuyến simulator đã áp dụng.\\
 Mất trắng&Episode có PDR dưới 5\% trong giây 10--60 dù mọi liên kết còn tốt; ở đề tài do lỗi ARP của ns-3.\\
-Đăng ký trước&Cố định giả thuyết, tham số, tiêu chí và phép phân tích trước khi chạy thí nghiệm.\\
+Đăng ký trước&Cố định giả thuyết, tham số, tiêu chí và phân tích trước từng vòng; ở đây lưu bằng commit/protocol và freeze, không hàm ý đăng ký trên một registry độc lập.\\
 Freeze&Đóng gói mã nguồn, mô hình và kế hoạch hạt giống của một pha, khóa bằng SHA-256 trước khi chạy.\\
 Tuning, validation, test&Ba pha dùng hạt giống riêng: chọn tham số; quyết định go/no-go; phân tích đã khóa cho kết luận chính thức.\\
 Go / no-go&Quyết định có chạy pha test hay không, dựa trên các tiêu chí đăng ký trước ở pha validation.\\
 Endpoint chính&So sánh duy nhất quyết định kết luận chính của một vòng.\\
-Kiểm định theo thứ tự cố định&Các bước được xét lần lượt; một bước chỉ được diễn giải khi mọi bước trước đã thành công, nên không cần hiệu chỉnh đa so sánh.\\
+Kiểm định theo thứ tự cố định&Các bước được xét lần lượt; một bước chỉ được diễn giải khi mọi bước trước đã thành công, để hạn chế chọn kết quả thuận lợi; các so sánh ngoài thứ tự này chỉ được diễn giải mô tả.\\
 Bootstrap theo khối&Lấy mẫu lại theo kịch bản, giữ nguyên mọi arm của cùng kịch bản, để tính khoảng tin cậy của chênh lệch ghép cặp.\\
 Điểm phần trăm&Chênh lệch tuyệt đối giữa hai tỷ lệ, ví dụ PDR 0,941 so với 0,890 là $+5{,}1$ điểm phần trăm.\\
 Held-seed&Cách đánh giá ở giai đoạn 1: giữ riêng toàn bộ lượt mô phỏng của một seed để kiểm tra, không dùng để huấn luyện.\\
@@ -266,26 +259,30 @@ Trong mạng UAV (FANET), các UAV có thể làm relay để nối hai đầu m
   \item \textbf{CH1.} Dự báo suy giảm dịch vụ kết hợp di chuyển relay có làm tăng PDR so với bộ điều khiển chỉ phục hồi khi đã suy giảm hay không? (vòng v2, v3)
   \item \textbf{CH2.} Nếu không, gói tin thực sự bị mất ở đâu và vì sao? (phân tích chẩn đoán)
   \item \textbf{CH3.} Điều khiển tuyến dữ liệu theo chất lượng liên kết (ETX) có làm tăng PDR so với OLSR thuần hay không? (vòng v4)
-  \item \textbf{CH4.} Lợi ích đó đến từ việc dùng ETX hay từ điều khiển tập trung, tức là ghim tuyến có tốt hơn OLSR-ETX phân tán hay không? (vòng v5, v6)
+  \item \textbf{CH4.} Hệ thống ghim tuyến có tốt hơn bản OLSR-ETX phân tán trong cùng môi trường hay không? So sánh này chưa cô lập riêng tác động của tính tập trung. (vòng v5, v6)
   \item \textbf{CH5.} Lợi ích có còn khi OLSR-ETX được tăng tốc độ thông tin, khi lệnh điều khiển bị trễ, với nhiều UAV hơn và có luồng nền hay không, và phải trả bao nhiêu báo hiệu? (vòng v7)
+  \item \textbf{CH6.} Khi giữ cùng luật chọn tuyến, dự báo GNN có tăng PDR so với chất lượng hiện tại và mô hình bỏ truyền thông điệp hay không? (vòng v8)
+  \item \textbf{CH7.} Khi giữ cùng luật định tuyến và bố trí relay, kích hoạt chuyển động bằng dự báo có giảm thời gian chia cắt so với kích hoạt theo số đo hiện tại hay không? (vòng v9)
 \end{itemize}
 
 \section{Đối chiếu với thuyết minh và điều chỉnh hướng}
-Thuyết minh ban đầu đặt mục tiêu dự đoán chất lượng liên kết đa thời điểm bằng Graph Neural Network và dùng dự đoán đó hỗ trợ định tuyến. Giai đoạn đầu (báo cáo tiến độ ngày 31/10/2026~\cite{tiendo}) tập trung vào bài toán dự đoán ngoại tuyến. Trong giai đoạn tổng kết, nhóm chuyển trọng tâm sang câu hỏi mà dự đoán cuối cùng phục vụ: \emph{hành động điều khiển nào làm dịch vụ tốt hơn trong một hệ thống vòng kín}. Lý do: một dự báo chính xác chưa chắc đem lại lợi ích mạng nếu hành động đi kèm sai, và chỉ thí nghiệm vòng kín mới trả lời được điều này. Kết quả v4 quay trở lại đúng mục tiêu ``hỗ trợ định tuyến'' của thuyết minh, nhưng với chất lượng liên kết đo được; thay bằng chất lượng liên kết dự báo (GNN) là bước phát triển tiếp theo (Chương~\ref{chap:conclusion}).
+Thuyết minh ban đầu đặt mục tiêu dự đoán chất lượng liên kết đa thời điểm bằng Graph Neural Network và dùng dự đoán đó hỗ trợ định tuyến. Giai đoạn đầu (báo cáo tiến độ ngày 31/10/2026~\cite{tiendo}) tập trung vào bài toán dự đoán ngoại tuyến. Trong giai đoạn tổng kết, nhóm chuyển trọng tâm sang câu hỏi mà dự đoán cuối cùng phục vụ: \emph{hành động điều khiển nào làm dịch vụ tốt hơn trong một hệ thống vòng kín}. Lý do: một dự báo chính xác chưa chắc đem lại lợi ích mạng nếu hành động đi kèm sai, và chỉ thí nghiệm vòng kín mới trả lời được điều này. V4--v7 kiểm tra hỗ trợ định tuyến bằng chất lượng liên kết đo được. V8 bổ sung một GNN hồi quy tương thích quan sát trực tuyến để so sánh dự báo với số đo hiện tại; v9 kiểm tra riêng dự báo cho kích hoạt bố trí lại relay. Hai nghiên cứu mới giữ các phép so sánh độc lập và không đồng nhất mô hình hồi quy với checkpoint phân loại đa thời điểm của giai đoạn 1.
 
 \section{Phạm vi}
-Mô phỏng ns-3.45, Wi-Fi 802.11g, OLSR; chuỗi 4 hoặc 5 UAV (2 hoặc 3 relay); hai bối cảnh: \emph{gradual} (hai đầu mút tách xa dần) và \emph{static}; mỗi episode 240 giây với luồng UDP 15.000 gói. Không thử nghiệm trên phần cứng thật.
+Mô phỏng ns-3.45, Wi-Fi 802.11g, OLSR; chuỗi 4--7 UAV (2--5 relay); hai bối cảnh: \emph{gradual} (hai đầu mút tách xa dần) và \emph{static}; mỗi episode 240 giây với luồng UDP 15.000 gói. Giai đoạn dự đoán ngoại tuyến dùng mạng 20 UAV. Bộ điều khiển tác động lên tuyến dữ liệu hoặc vận tốc relay trong simulator; chưa thử nghiệm UAV thật, chưa tích hợp autopilot và chưa đo năng lượng bay.
 
 \section{Đóng góp}
 \begin{itemize}
   \item Một mô hình GNN có đặc trưng cạnh (Edge-SAGE) dự đoán chất lượng và sự tồn tại của liên kết UAV ở bốn mốc dự báo, vượt các mô hình đối chứng về Macro-F1 trên seed giữ lại (giai đoạn 1).
-  \item Một quy trình thí nghiệm vòng kín có đăng ký trước, khóa bằng hash, tái lập được, áp dụng cho sáu vòng v2--v7 (tổng cộng 2.284 episode có dữ liệu hợp lệ, không ô nào thiếu).
+  \item Một quy trình thí nghiệm vòng kín có đăng ký trước, khóa bằng hash, tái lập được, áp dụng cho tám vòng v2--v9 (2.524 episode hợp lệ trong các pha chính thức; không cộng 210 lượt ngoại tuyến, smoke hoặc các lần tái hiện chẩn đoán).
   \item Hai kết quả âm có kiểm soát: dự báo cộng di chuyển relay (v2) và cổng giá trị hành động (v3) không cải thiện PDR.
-  \item Chẩn đoán định lượng nguyên nhân: lựa chọn tuyến min-hop của OLSR là nguồn mất gói chính, không phải vị trí relay.
+  \item Chẩn đoán định lượng: phần lớn tổn thất trong các kịch bản đã xét gắn với tuyến trực tiếp do OLSR chọn theo số hop; từ đó đặt giả thuyết kiểm tra điều khiển tuyến.
   \item Một phương pháp ghim tuyến theo ETX có trễ (hysteresis) kèm cơ chế kiểm tra toàn vẹn giữa lệnh và tuyến simulator áp dụng; tăng PDR có ý nghĩa thống kê trên pha test đã khóa.
   \item Một bản cài đặt OLSR-ETX phân tán cho ns-3.45 (bản vá công khai, mặc định tắt, kiểm chứng không đổi hành vi khi tắt) và so sánh có đăng ký trước: ghim tuyến tập trung hơn OLSR-ETX 4,57 điểm phần trăm.
   \item Phát hiện, tái hiện và sửa một lỗi mô phỏng (thời hạn ARP 100 giây của ns-3) làm nhiễu các so sánh định tuyến.
-  \item Kiểm tra độ bền (v7): lợi ích của ghim tuyến giữ nguyên trước baseline OLSR-ETX đã được tinh chỉnh chu kỳ HELLO, trước độ trễ điều khiển 2 giây, trên chuỗi 7 UAV và khi có luồng nền; kèm đo chi phí báo hiệu của từng phương pháp.
+  \item Kiểm tra độ bền (v7): lợi ích của ghim tuyến còn quan sát được trước baseline OLSR-ETX đã được tinh chỉnh chu kỳ HELLO, trước độ trễ điều khiển 2 giây, trên chuỗi 7 UAV và khi có luồng nền; kèm đo chi phí báo hiệu của từng phương pháp.
+  \item Tích hợp GNN hồi quy vào luật chọn tuyến và kiểm tra bằng seed mới: tăng PDR 0,66 điểm phần trăm so với số đo hiện tại; mô hình xuất NumPy, truy vết dự báo và kiểm tra lệnh thực thi. Thăm dò sau test (200 episode mới) cho thấy EWMA mượt hơn đạt mức tương đương, nên đóng góp được xác định là ước lượng chất lượng ổn định hơn, chưa phải giá trị riêng của dự báo.
+  \item Bộ điều khiển vị trí relay với cùng luật bố trí và ba trigger đối chiếu; công bố kết quả không đạt về lợi ích thêm của dự báo, cùng số giây chia cắt, quãng đường và kiểm tra an toàn mô phỏng.
 \end{itemize}
 
 \section{Cấu trúc báo cáo}
@@ -316,7 +313,7 @@ GNN học biểu diễn của nút bằng cách lặp lại việc tổng hợp 
 
 \section{Các công trình liên quan}
 \subsection{Định tuyến trong FANET}
-Các khảo sát về mạng UAV~\cite{gupta,hayat} nhấn mạnh rằng tính di động cao làm các giao thức MANET/VANET kém phù hợp. Các khảo sát chuyên về định tuyến~\cite{arafat,lakew} phân loại giao thức FANET thành dựa trên topology (chủ động như OLSR, phản ứng như AODV), dựa trên vị trí, phân cấp và lai. Phần lớn công trình đánh giá giao thức theo số hop hoặc vị trí; chất lượng liên kết đo được ít khi là tiêu chí chọn tuyến chính.
+Các khảo sát về mạng UAV~\cite{gupta,hayat} nhấn mạnh rằng tính di động cao làm các giao thức MANET/VANET kém phù hợp. Các khảo sát chuyên về định tuyến~\cite{arafat,lakew} phân loại giao thức FANET thành dựa trên topology (chủ động như OLSR, phản ứng như AODV), dựa trên vị trí, phân cấp và lai. Định tuyến theo chất lượng hoặc độ bền liên kết là một hướng đã có; đóng góp của đề tài cần được đối chiếu ở mức cơ chế và bằng chứng thực nghiệm cụ thể.
 
 \subsection{Định tuyến theo chất lượng liên kết}
 ETX~\cite{decouto} và ETT~\cite{draves} thay số hop bằng chi phí phản ánh tổn thất và băng thông của liên kết; olsrd đưa ETX vào OLSR~\cite{olsrd}. Ước lượng chất lượng liên kết là một hướng riêng, từ các bộ ước lượng dựa trên thống kê gói~\cite{baccour} đến các mô hình học máy~\cite{cerar}. Khảo sát~\cite{cerar} chỉ ra rằng phần lớn mô hình được đánh giá ngoại tuyến bằng độ chính xác phân loại, ít khi được đặt vào vòng định tuyến để đo lợi ích dịch vụ.
@@ -329,6 +326,20 @@ RouteNet~\cite{routenet} dùng GNN để dự đoán trễ và mất gói của 
 
 \subsection{Đặt vị trí relay}
 Hướng tối ưu quỹ đạo relay~\cite{zeng} điều khiển vị trí UAV để tối đa thông lượng, thường với mô hình kênh giải tích và giả định tuyến đi qua relay được chọn.
+
+\subsection{Các phương pháp gần với câu hỏi nghiên cứu}
+Predictive-OLSR~\cite{rosati2013} dùng GPS và vận tốc tương đối để điều chỉnh ETX. OLSR-LCN~\cite{liu2025} kết hợp tuổi thọ liên kết, nhiễu và tải nút, đồng thời mở rộng HELLO/TC và cách chọn MPR/tuyến. Các hướng này cho thấy dự báo và chất lượng liên kết đã được dùng cho định tuyến UAV. Bảng~\ref{tab:related} chỉ đối chiếu cơ chế; chưa có thí nghiệm chung để xếp hạng hiệu năng giữa chúng và đề tài.
+\begin{table}[H]
+\centering\small
+\begin{tabularx}{\linewidth}{@{}P{2.7cm}YY@{}}
+\toprule\textbf{Phương pháp}&\textbf{Thông tin và cơ chế}&\textbf{Đối chiếu với đề tài}\\\midrule
+OLSR-ETX~\cite{olsrd}&Quảng bá chất lượng liên kết; chọn tổng ETX nhỏ.&Baseline phân tán do nhóm cài đặt; chưa phải olsrd chạy trên UAV thật.\\
+Predictive-OLSR~\cite{rosati2013}&GPS, vận tốc tương đối; điều chỉnh trọng số ETX.&Dự báo theo chuyển động; chưa so sánh trực tiếp trong đề tài.\\
+OLSR-LCN~\cite{liu2025}&Tuổi thọ liên kết, nhiễu, tải; thay đổi MPR và tuyến.&Khác cơ chế và môi trường; chưa thể tuyên bố vượt phương pháp này.\\
+Ghim tuyến v4--v7&Probe, EWMA, ETX, hysteresis; tập trung cài tuyến.&PDR vòng kín, kiểm tra lệnh/tuyến, seed riêng và đối chứng HELLO nhanh.\\\bottomrule
+\end{tabularx}
+\caption{Đối chiếu cơ chế với công trình liên quan.}\label{tab:related}
+\end{table}
 
 \section{Khoảng trống}
 Các công trình về đặt vị trí relay thường giả định tuyến đi theo chuỗi hình học mà bộ điều khiển chọn. Trong hệ thống có OLSR thật, giả định này không chắc đúng. Các mô hình dự đoán chất lượng liên kết, kể cả GNN, phần lớn được đánh giá ngoại tuyến. Đề tài (1) đánh giá GNN dự đoán liên kết so với baseline mạnh trên seed giữ lại, (2) kiểm chứng trong vòng kín giả định về điều khiển vị trí, và (3) đo trực tiếp lợi ích của điều khiển tuyến theo chất lượng liên kết, so với cả OLSR thuần và OLSR-ETX phân tán.
@@ -401,7 +412,7 @@ $k$&$\Delta$&CI 95\%&T/H/T&$k$&$\Delta$&CI 95\%&T/H/T\\\midrule
 \end{itemize}
 
 \section{Từ dự đoán sang điều khiển vòng kín}
-Hạn chế cuối là lý do đề tài đổi trọng tâm. Một mô hình dự đoán tốt hơn chỉ có giá trị nếu nó giúp chọn hành động làm dịch vụ tốt hơn, và điều đó chỉ đo được trong vòng kín, với lưu lượng thật đi qua mạng. Giai đoạn 2 (các chương sau) vì vậy bắt đầu từ câu hỏi: thông tin chất lượng liên kết, dù dự đoán hay đo được, nên điều khiển biến nào và có cải thiện PDR không. Kết quả giai đoạn 2 cho thấy biến đúng là tuyến dữ liệu; đưa dự đoán của Edge-SAGE vào bộ ghim tuyến là bước nối hai giai đoạn (Mục~\ref{sec:plan}).
+Hạn chế cuối là lý do đề tài đổi trọng tâm. Một mô hình dự đoán tốt hơn chỉ có giá trị nếu nó giúp chọn hành động làm dịch vụ tốt hơn, và điều đó chỉ đo được trong vòng kín, với lưu lượng thật đi qua mạng. Giai đoạn 2 (các chương sau) vì vậy bắt đầu từ câu hỏi: thông tin chất lượng liên kết, dù dự đoán hay đo được, nên điều khiển biến nào và có cải thiện PDR không. Trong các kịch bản đã xét, kết quả giai đoạn 2 tạo cơ sở tiếp tục kiểm tra điều khiển tuyến; đưa dự đoán của Edge-SAGE vào bộ ghim tuyến là bước nối hai giai đoạn (Mục~\ref{sec:plan}).
 
 % ============================================================
 %  CHUONG 3
@@ -414,10 +425,10 @@ Hạn chế cuối là lý do đề tài đổi trọng tâm. Một mô hình d�
 \toprule\textbf{Thành phần}&\textbf{Cấu hình}\\\midrule
 Simulator&ns-3.45~\cite{ns3}, chương trình \code{uav-olsr-dataset} của đề tài.\\
 Lớp vật lý/MAC&802.11g, tốc độ cố định 6 Mbps cho dữ liệu và điều khiển.\\
-Định tuyến&OLSR (RFC 3626) của ns-3; v5, v6 thêm arm OLSR-ETX (bản vá của nhóm, Mục~\ref{sec:m56}).\\
-ARP&Cache ARP của ns-3; v2--v5 dùng mặc định (\code{DeadTimeout} 100 s), v6 dùng 1 s (Mục~\ref{sec:arpfix}).\\
-Topology&Chuỗi n4 (2 relay) hoặc n5 (3 relay); tầm phủ danh định 240 m; vùng 1800 m.\\
-Bối cảnh&\emph{gradual}: từ giây 30 hai đầu mút di chuyển ngược chiều 1 m/s; \emph{static}: không di chuyển.\\
+Định tuyến&OLSR (RFC 3626) của ns-3; v5--v7 thêm arm OLSR-ETX (bản vá của nhóm, Mục~\ref{sec:m56}).\\
+ARP&Cache ARP của ns-3; v2--v5 dùng mặc định (\code{DeadTimeout} 100 s), v6--v7 dùng 1 s (Mục~\ref{sec:arpfix}).\\
+Topology&Chuỗi n4/n5; v7 dùng n5/n7 (3/5 relay); tầm phủ danh định 240 m; vùng $1800\times1200$ m, độ cao 50--150 m.\\
+Bối cảnh&\emph{gradual}: từ giây 30 hai đầu mút di chuyển ngược chiều, danh định 1 m/s nhân hệ số [0,85; 1,15] theo layout seed; \emph{static}: không di chuyển.\\
 Lưu lượng&UDP CBR 256 kbps, gói 512 B, 15.000 gói mỗi episode 240 giây.\\
 Đo liên kết&Probe broadcast mỗi 0,05 s; ma trận tỷ lệ nhận $d(a,b)$ theo cửa sổ 1 giây.\\
 Chỉ số chính&$\mathrm{PDR}=\dfrac{\text{số gói nhận ở sink}}{\text{số gói ứng dụng phát}}$ trên toàn episode.\\
@@ -456,9 +467,9 @@ Mỗi vòng có ba pha dùng hạt giống riêng: \emph{tuning} (chọn tham s�
 \end{itemize}
 Hiệu ứng chính là trung bình cân bằng của hai cấu hình trên các kịch bản gradual:
 \begin{equation}
-\hat\Delta=\tfrac12\left(\bar\delta_{n4}+\bar\delta_{n5}\right),\qquad \delta_{g,k}=\mathrm{PDR}_{A}(g,k)-\mathrm{PDR}_{B}(g,k),
+\hat\Delta=\frac{1}{|\mathcal G|}\sum_{g\in\mathcal G}\bar\delta_g,\qquad \delta_{g,k}=\mathrm{PDR}_{A}(g,k)-\mathrm{PDR}_{B}(g,k),
 \end{equation}
-với $k$ là cặp hạt giống. CI 95\% lấy từ 10.000 lần bootstrap theo khối kịch bản, RNG cố định.
+với $k$ là cặp hạt giống, $\mathcal G=\{n4,n5\}$ ở v2--v6 và $\mathcal G=\{n5,n7\}$ ở v7. Đơn vị lấy mẫu lại là kịch bản, không phải từng gói hoặc từng arm. Riêng endpoint chính v7 có 40 khối gradual, mỗi khối chứa 5 arm; 40 episode static còn lại chỉ dùng mô tả. CI 95\% lấy từ 10.000 lần bootstrap theo khối kịch bản, RNG cố định.
 
 \section{Vòng v2: dự báo suy giảm và di chuyển relay}
 Bộ dự báo logistic ước lượng xác suất suy giảm dịch vụ trong 10 và 20 giây tới từ đặc trưng dịch vụ và đo đạc liên kết. Khi rủi ro vượt 0,50, bộ điều khiển khởi động một đợt di chuyển relay theo kế hoạch hình học có giới hạn quãng đường, khoảng cách an toàn và thời gian nghỉ. Formal v2 so sánh 8 vai trò, trong đó so sánh chính là \code{service-v2} với bản bỏ dự báo \code{service-v2-no-forecast} (chỉ di chuyển phục hồi khi dịch vụ đã suy giảm).
@@ -493,7 +504,7 @@ Lớp \code{OverrideRouting} (kế thừa \code{Ipv4ListRouting}) chuyển gói 
 \subsection{Các arm và tiêu chí}
 \begin{table}[H]
 \centering\small
-\begin{tabularx}{\linewidth}{@{}P{4.6cm}Y@{}}
+\begin{tabularx}{\linewidth}{@{}P{4.8cm}Y@{}}
 \toprule\textbf{Arm}&\textbf{Mô tả}\\\midrule
 \code{hold}&Relay đứng yên, OLSR thuần (baseline).\\
 \code{service-v2-no-forecast}&Di chuyển phục hồi của v2, OLSR thuần.\\
@@ -515,7 +526,7 @@ OLSR của ns-3 không có metric chất lượng liên kết, nên nhóm viết
 Kiểm chứng trước đăng ký: khi tắt, HOLD nhận đúng 12.596/15.000 gói như trước trên cùng hạt giống; test round-trip định dạng gói LQ\_HELLO/LQ\_TC đạt.
 
 \subsection{Lỗi ARP và bản sửa ở v6}\label{sec:arpfix}
-Sau v5 (Mục~\ref{sec:arp}), nhóm phát hiện cache ARP của ns-3 giữ một entry ``dead'' trong \code{DeadTimeout} = 100 giây sau khi phân giải thất bại và bỏ mọi gói tới hop đó. v6 đặt \code{DeadTimeout} = 1 giây ở mọi arm, gần với hành vi của Linux (phân giải lại ở gói kế tiếp). Đây là thay đổi duy nhất so với v5.
+Sau v5 (Mục~\ref{sec:arp}), nhóm phát hiện cache ARP của ns-3 giữ một entry ``dead'' trong \code{DeadTimeout} = 100 giây sau khi phân giải thất bại và bỏ mọi gói tới hop đó. v6 đặt \code{DeadTimeout} = 1 giây ở mọi arm, để giới hạn thời gian giữ trạng thái dead trong thí nghiệm. Đây là thay đổi cấu hình mô phỏng duy nhất so với v5; không xem đây là bằng chứng tái hiện chính xác toàn bộ hành vi ARP của Linux.
 
 \subsection{Các arm và tiêu chí}
 Ba arm, relay đều đứng yên, chạy cùng binary và cùng thư viện đã vá: \code{hold} (OLSR thuần), \code{olsr-etx} (OLSR-ETX phân tán) và \code{lq-route} (ghim tuyến của v4, margin cố định 1,0). Go chỉ gồm kiểm tra kỹ thuật, không xét PDR: toàn vẹn tuyến; cờ OLSR-ETX có trong log của đúng các episode \code{olsr-etx}; OLSR-ETX làm giảm thời gian đi thẳng so với HOLD. v6 thêm hai điều kiện: cờ ARP có trong lệnh của mọi episode, và không episode nào mất trắng lúc khởi động (PDR $<5\%$ trong giây 10--60). Pha test kiểm định theo thứ tự cố định: (1) \code{lq-route} $-$ \code{olsr-etx} (endpoint chính); (2) \code{olsr-etx} $-$ \code{hold}.
@@ -523,7 +534,7 @@ Ba arm, relay đều đứng yên, chạy cùng binary và cùng thư viện đ�
 \section{Vòng v7: độ bền, độ trễ và chi phí báo hiệu}\label{sec:m7}
 v7 nhắm vào ba điểm yếu của v6, giữ nguyên bản sửa ARP:
 \begin{itemize}
-  \item \textbf{Thông tin không cân bằng:} \code{lq-route} đo liên kết bằng probe mỗi 0,05 s, OLSR-ETX qua HELLO mỗi 2 s. Arm \code{olsr-etx-fast} dùng HELLO nhanh hơn; chu kỳ được chọn ở pha tuning trong $\{0{,}5;\ 0{,}25;\ 0{,}1\}$ s (TC $=2{,}5\times$ HELLO) theo PDR cao nhất, tức là chọn baseline mạnh nhất.
+  \item \textbf{Thông tin không cân bằng:} \code{lq-route} đo liên kết bằng probe mỗi 0,05 s, OLSR-ETX qua HELLO mỗi 2 s. Arm \code{olsr-etx-fast} dùng HELLO nhanh hơn; chu kỳ được chọn ở pha tuning trong $\{0{,}5;\ 0{,}25;\ 0{,}1\}$ s (TC $=2{,}5\times$ HELLO) theo PDR cao nhất, tức là chọn cấu hình có PDR cao nhất trong ba ứng viên trên tập tuning riêng; chưa tối ưu mọi tham số OLSR-ETX.
   \item \textbf{Độ trễ điều khiển:} arm \code{lq-route-delay} chỉ áp dụng tuyến quyết định ở giây $t$ từ giây $t+2$.
   \item \textbf{Chi phí báo hiệu:} simulator đếm số byte phát ở tầng IP theo loại gói (OLSR, probe, dữ liệu, luồng nền); kiểm chứng cho thấy bộ đếm không làm đổi kết quả mô phỏng. Chi phí báo cáo về bộ điều khiển đặt tại nút nguồn được ước lượng: mỗi giây mỗi nút gửi $N-1$ giá trị chất lượng (4 B mỗi giá trị, 28 B header), tính theo số hop, cộng lệnh đổi tuyến.
   \item \textbf{Kịch bản rộng hơn:} chuỗi 5 và 7 UAV (3 và 5 relay); mọi episode có thêm hai luồng UDP nền 128 kbps đi giữa các nút trong chuỗi.
@@ -533,6 +544,8 @@ Năm arm: \code{hold}, \code{olsr-etx}, \code{olsr-etx-fast}, \code{lq-route}, \
 % ============================================================
 %  CHUONG 4
 % ============================================================
+\input{methods_v8_v9}
+
 \chapter{Kết quả}\label{chap:results}
 \section{Tổng quan các vòng thí nghiệm}
 \begin{table}[H]
@@ -544,7 +557,9 @@ v3&Ngưỡng tuning + cổng giá trị hành động&96 + 160&No-go ở validat
 v4&Ghim tuyến theo ETX&128 + 128 + 192&Dương: PDR $+4{,}18$ điểm \% ở test, 3/3 kiểm định đạt.\\
 v5&Ghim tuyến so với OLSR-ETX&96 + 144&Endpoint chính không đạt: $+3{,}89$ [$-1{,}11$; $8{,}66$]; nhiễu do lỗi ARP.\\
 v6&Như v5, đã sửa lỗi ARP&96 + 144&Dương: $+4{,}57$ [3,60; 5,55] so với OLSR-ETX, 2/2 kiểm định đạt.\\
-v7&Độ bền: HELLO nhanh, trễ 2 s, n7, luồng nền&72 + 100 + 240&Dương: $+5{,}06$ [4,21; 5,91] so với OLSR-ETX đã tinh chỉnh, 3/3 kiểm định đạt.\\\bottomrule
+v7&Độ bền: HELLO nhanh, trễ 2 s, n7, luồng nền&72 + 100 + 240&Dương: $+5{,}06$ [4,21; 5,91] so với OLSR-ETX đã tinh chỉnh, 3/3 kiểm định đạt.\\
+v8&GNN dự báo để ghim tuyến&80 + 192&Dương: $+0{,}66$ [0,38; 1,00] so với EWMA hiện tại, 3/3 kiểm định đạt.\\
+v9&Dự báo kích hoạt bố trí relay&80 + 192&Endpoint chính không đạt: giảm 0,20 s chia cắt [$-1{,}05$; $1{,}45$] so với reactive; vẫn báo cáo chi phí bay.\\\bottomrule
 \end{tabularx}
 \caption{Tóm tắt các vòng thí nghiệm.}\label{tab:overview}
 \end{table}
@@ -634,7 +649,7 @@ Cả hai vòng đạt go ở mọi điều kiện: toàn vẹn tuyến 32/32; c�
 Ở n4, ghim tuyến hơn OLSR-ETX ở 19/20 kịch bản với độ lệch chuẩn 4,1 điểm \%. Ở n5, độ lệch chuẩn của chênh lệch lên tới 22 điểm \%, trải từ $-56$ đến $+45$ điểm \%.
 
 \subsection{Chẩn đoán: lỗi ARP của ns-3}\label{sec:arp}
-Các kịch bản n5 cực đoan đều có PDR bằng 0 trong khoảng 100 giây đầu, khi relay còn đứng yên, tuyến OLSR là đi thẳng và mọi liên kết còn tốt. Arm bị ảnh hưởng thay đổi theo kịch bản: HOLD và \code{lq-route} ở hai kịch bản, OLSR-ETX ở ba kịch bản khác. Tái hiện kịch bản n5-03 cho đúng PDR 0,497 như trên server; chỉ đổi \code{ArpCache::DeadTimeout} từ 100 s xuống 1 s thì PDR là 0,955 và hết mất trắng. Cả 10 episode mất trắng của v5 đều hết khi có bản sửa. Ở v4, mọi arm cùng chạy OLSR thuần nên lỗi rơi vào tất cả arm của một kịch bản (1/32 kịch bản validation, 4/48 kịch bản test) và phần lớn triệt tiêu trong so sánh ghép cặp. Ở v5, OLSR-ETX thay đổi thời điểm gửi gói điều khiển nên lỗi rơi vào các arm khác nhau và tạo nhiễu theo cả hai chiều. Phân tích này làm sau khi đã thấy dữ liệu nên chỉ dùng để thiết kế v6; kết luận chính thức của v5 vẫn là không đạt.
+Các kịch bản n5 cực đoan đều có PDR bằng 0 trong khoảng 100 giây đầu, khi relay còn đứng yên, tuyến OLSR là đi thẳng và mọi liên kết còn tốt. Arm bị ảnh hưởng thay đổi theo kịch bản: HOLD và \code{lq-route} ở hai kịch bản, OLSR-ETX ở ba kịch bản khác. Tái hiện kịch bản n5-03 cho đúng PDR 0,497 như trên server; chỉ đổi \code{ArpCache::DeadTimeout} từ 100 s xuống 1 s thì PDR là 0,955 và hết mất trắng. Cả 10 episode mất trắng của v5 đều hết khi có bản sửa. Ở v4, mọi arm cùng chạy OLSR thuần nên lỗi rơi vào tất cả arm của một kịch bản (1/32 kịch bản validation, 4/48 kịch bản test) nên ghép cặp giảm một phần nhiễu chung, nhưng không bảo đảm tác động lỗi triệt tiêu giữa các arm. Ở v5, OLSR-ETX thay đổi thời điểm gửi gói điều khiển nên lỗi rơi vào các arm khác nhau và tạo nhiễu theo cả hai chiều. Phân tích này làm sau khi đã thấy dữ liệu nên chỉ dùng để thiết kế v6; kết luận chính thức của v5 vẫn là không đạt.
 
 \subsection{Test v6 (phân tích đã khóa)}
 \begin{table}[H]
@@ -672,53 +687,155 @@ PDR gradual (cân bằng n5/n7) của OLSR-ETX theo chu kỳ HELLO: 0,8948 (0,5 
 \end{table}
 PDR trung bình gradual: 0,883 (HOLD), 0,890 (OLSR-ETX), 0,890 (OLSR-ETX HELLO 0,5 s), 0,941 (\code{lq-route}) và 0,939 (\code{lq-route-delay}). Ghim tuyến hơn OLSR-ETX đã tinh chỉnh ở 39/40 kịch bản, kể cả khi bị trễ 2 giây; trên chuỗi 7 UAV, ghim tuyến hơn ở cả 20/20 kịch bản. Các luồng nền cũng được lợi: PDR của chúng với \code{lq-route} cao hơn với OLSR-ETX đã tinh chỉnh 1,41 điểm \% (CI 1,21 đến 1,61) và cao hơn HOLD 1,60 điểm \%.
 
+\Fig{fig_v7_paired}{Chênh PDR của từng khối gradual v7 so với ETX-fast; mỗi điểm là một so sánh ghép cặp, không phải một gói tin độc lập.}{fig:v7paired}
+Trong static, chênh PDR ghim tuyến so với ETX-fast là $+0{,}17$ điểm phần trăm, CI 95\% [$-0{,}22$; $0{,}69$], với 4 khối mỗi cấu hình. Dữ liệu này chưa cho thấy lợi ích rõ trong static. So sánh ghim tuyến với arm trễ 2 giây và các chỉ số luồng nền là mô tả; CI chứa 0 của so sánh độ trễ không phải kiểm định tương đương.
+
 \subsection{Chi phí báo hiệu}
-Hình~\ref{fig:v7cost} đặt PDR cạnh chi phí báo hiệu của từng phương pháp. OLSR thuần tốn khoảng 0,29 kB/s, OLSR-ETX 0,44 kB/s, OLSR-ETX với HELLO 0,5 s 1,78 kB/s. Ghim tuyến tốn khoảng 5,55 kB/s: OLSR vẫn chạy làm dự phòng (0,29 kB/s), probe đo liên kết (5,02 kB/s) và báo cáo về bộ điều khiển (ước lượng 0,25 kB/s). So với luồng chính (32 kB/s), báo hiệu của ghim tuyến bằng khoảng 17\%, của OLSR-ETX tinh chỉnh khoảng 6\%. Chi phí của ghim tuyến chủ yếu đến từ tần số probe, một tham số chưa được tối ưu trong đề tài.
-\Fig{fig_v7_cost}{Chi phí báo hiệu và PDR trung bình (gradual) của các arm, test v7.}{fig:v7cost}
+Hình~\ref{fig:v7overhead} tách các thành phần chi phí báo hiệu của từng phương pháp. OLSR thuần tốn khoảng 0,29 kB/s, OLSR-ETX 0,44 kB/s, OLSR-ETX với HELLO 0,5 s 1,78 kB/s. Ghim tuyến tốn khoảng 5,55 kB/s: OLSR vẫn chạy làm dự phòng (0,29 kB/s), probe đo liên kết (5,02 kB/s) và báo cáo về bộ điều khiển (ước lượng 0,25 kB/s). Tổng trên là byte tầng IP cộng báo cáo ước lượng, tính trên các lần phát trong mạng; không quy đổi trực tiếp thành phần trăm dung lượng kênh hay năng lượng bằng cách chia cho tốc độ tải tại nguồn. Probe vẫn chạy ở mọi arm, nhưng chỉ được hạch toán vào chi phí phương pháp của các arm ghim tuyến. Phần báo cáo trung tâm chưa chiếm kênh trong mô phỏng, nên chưa đo được lợi ích sau khi mô phỏng đầy đủ mọi báo hiệu. Chi phí của ghim tuyến chủ yếu đến từ tần số probe, một tham số chưa được tối ưu trong đề tài.
+\Fig{fig_v7_overhead}{Thành phần chi phí phương pháp v7: phần gạch chéo là ước lượng chưa chiếm kênh. Probe 5,018 kB/s vẫn được phát trong mọi arm, nhưng chỉ hạch toán cho phương pháp sử dụng probe.}{fig:v7overhead}
+
+\input{results_v8}
+\clearpage
+\input{results_v9}
+\Fig{fig_v9_motion_example}{Ví dụ n5 gradual với layout seed nhỏ nhất trong test: tọa độ y của nguồn, đích và relay; vùng đỏ là chia cắt đồ thị probe, đường tím là chuyển động đầu tiên. Lấy đủ bốn arm, không chọn seed theo hiệu quả.}{fig:v9motionexample}
+Hình~\ref{fig:v9motionexample} minh họa lệnh bố trí đã thực sự làm relay di
+chuyển. Các đường chỉ chiếu lên trục y; khoảng cách an toàn được kiểm tra
+trong không gian ba chiều. Hiệu quả được kết luận từ toàn bộ khối test.
 
 % ============================================================
 %  CHUONG 5
 % ============================================================
 \chapter{Thảo luận}\label{chap:discussion}
 \section{Diễn giải}
-Ba vòng v2--v4 cho một chuỗi lập luận nhất quán. Dự báo suy giảm có thể đạt chất lượng khá (PR-AUC 0,69--0,78 ở horizon 20 giây), nhưng biến hành động sai: di chuyển relay không thay đổi được tuyến mà OLSR chọn, và trong kịch bản đang xét, phần lớn tổn thất nằm ở liên kết trực tiếp mà OLSR giữ vì nó ngắn nhất theo số hop. Khi đổi sang biến hành động đúng (tuyến dữ liệu), cùng loại thông tin chất lượng liên kết đem lại lợi ích có ý nghĩa thống kê mà không tốn quãng đường bay.
+Ba vòng v2--v4 cho thấy cần đánh giá dự báo cùng với hành động sử dụng dự báo. Bộ dự báo suy giảm có PR-AUC 0,69--0,78 ở horizon 20 giây, nhưng bộ điều khiển di chuyển relay đã thử chưa cải thiện dịch vụ. Chẩn đoán cho thấy nhiều gói mất gắn với liên kết trực tiếp mà OLSR giữ theo số hop; di chuyển relay không trực tiếp thay đổi lựa chọn đó. Can thiệp vào tuyến ở v4 đem lại lợi ích PDR mà không tốn quãng đường bay trong các kịch bản đã xét. Chuỗi bằng chứng này không chứng minh vị trí relay luôn không quan trọng hoặc mọi bộ điều khiển dự báo đều kém hiệu quả.
 
 Mức tăng nhỏ dần qua các pha (tuning $+7{,}4$, validation $+4{,}7$, test $+4{,}2$ điểm \%) phù hợp với việc pha tuning dùng để chọn margin và nên lạc quan; pha test dùng hạt giống mới và kết quả vẫn dương. Lợi ích ở n5 ($+1{,}85$) nhỏ hơn n4 ($+6{,}51$) và kém ổn định hơn: bốn trong năm kịch bản giảm thuộc n5. Một phần khác biệt này có thể do lỗi ARP, vốn chỉ xuất hiện ở n5: sau khi sửa (v6), \code{lq-route} $-$ \code{hold} ở n5 là $+4{,}99$ điểm \%.
 
 Vòng v5 và v6 trả lời CH4. OLSR-ETX phân tán giải quyết đúng vấn đề mà chẩn đoán chỉ ra (gần như không còn mất gói trên liên kết trực tiếp yếu) nhưng chỉ tăng PDR 1,01 điểm \%, vì phần tiết kiệm được bị bù bởi các khoảng không có tuyến khi tuyến được tính lại. Ghim tuyến tập trung hơn OLSR-ETX 4,57 điểm \% và ổn định trên hầu hết kịch bản. Vậy lợi ích của v4 không chỉ đến từ metric ETX. Tuy nhiên, \code{lq-route} được hưởng hai lợi thế cùng lúc: điều khiển tập trung, và thông tin đo dày hơn (probe mỗi 0,05 s so với HELLO mỗi 2 s). v6 chưa tách được hai yếu tố này.
 
-Vòng v7 trả lời CH5. Tăng tốc độ HELLO cho OLSR-ETX không thu hẹp khoảng cách: chu kỳ tốt nhất (0,5 s) chỉ ngang HELLO 2 s, còn 0,1 s làm PDR giảm. Lý do là điểm yếu của OLSR-ETX nằm ở các khoảng không có tuyến khi tuyến được tính lại, không nằm ở việc đo chất lượng chậm. Ghim tuyến vẫn hơn khoảng 5 điểm \% trên cả chuỗi 5 và 7 UAV, gần như không mất lợi ích khi lệnh trễ 2 giây ($-0{,}24$ điểm \%), và giúp cả các luồng nền (có thể vì bớt truyền lại trên liên kết yếu, giải thích này chưa được kiểm chứng). Cái giá phải trả là báo hiệu nhiều hơn khoảng 3 lần, chủ yếu do probe.
+Vòng v7 trả lời CH5. Tăng tốc độ HELLO cho OLSR-ETX không thu hẹp khoảng cách: chu kỳ tốt nhất (0,5 s) chỉ ngang HELLO 2 s, còn 0,1 s làm PDR giảm. Dữ liệu mất gói theo loại tuyến gợi ý vai trò của các khoảng không có tuyến. Tuy nhiên, chưa có can thiệp tách riêng từng cơ chế để kết luận đây là nguyên nhân duy nhất hoặc tốc độ đo không có vai trò. Ghim tuyến vẫn hơn khoảng 5 điểm \% trên cả chuỗi 5 và 7 UAV, arm trễ 2 giây vẫn hơn ETX-fast; so sánh trực tiếp hai arm ghim tuyến có CI chứa 0 nên chưa chứng minh tương đương hoặc không ảnh hưởng của độ trễ, và giúp cả các luồng nền (có thể vì bớt truyền lại trên liên kết yếu, giải thích này chưa được kiểm chứng). Chi phí phương pháp cao hơn 3,12 lần ETX-fast và 12,48 lần ETX thường, chủ yếu do probe; đây là số byte tầng IP cộng phần báo cáo ước lượng, chưa phải airtime hay năng lượng.
 
-Kết hợp ghim tuyến với di chuyển phục hồi cho kết quả không nhất quán giữa validation ($-1{,}73$ so với chỉ ghim tuyến) và test ($+1{,}78$, CI 0,02 đến 4,65). Bước 2 và 3 của kiểm định đạt nhờ phần ghim tuyến; không thể kết luận rằng di chuyển đem lại lợi ích thêm.
+Kết hợp ghim tuyến với di chuyển phục hồi cho kết quả không nhất quán giữa validation ($-1{,}73$ so với chỉ ghim tuyến) và test ($+1{,}78$, CI 0,02 đến 4,65). Bước 2 và 3 kiểm tra hệ thống kết hợp so với các baseline đã định, không tách được phần đóng góp riêng của chuyển động; chưa thể kết luận di chuyển đem lại lợi ích thêm một cách ổn định.
+
+\section{Giá trị thêm của GNN trong định tuyến}
+V8 trả lời CH6 bằng một so sánh giữ nguyên luật ghim tuyến. PDR gradual tăng
+từ 95,35\% với EWMA hiện tại lên 96,01\% với GNN, tương ứng 0,66 điểm phần
+trăm (CI 95\% [0,38; 1,00]). Chênh lệch so với MLP là 0,38 điểm phần trăm
+[0,12; 0,67]. Các CI này dương trong thứ tự kiểm định đã định trước. Kết quả
+ủng hộ giá trị thêm của bộ dự báo đã triển khai trong họ kịch bản đang xét;
+chưa cô lập hoàn toàn đóng góp của truyền thông điệp vì số tham số GNN và MLP
+khác nhau. Baseline EWMA 0,5 cũng chưa được chỉnh hệ số: phân tích thăm dò ở
+Mục~\ref{sec:posthoc} cho thấy EWMA 0,2 đạt PDR tương đương GNN và EWMA 0,1
+cao hơn, nên chưa thể quy lợi ích này cho riêng thông tin dự báo.
+
+MSE test trên cùng trace giảm từ 0,001274 với EWMA xuống 0,000785 với GNN;
+MLP đạt 0,001114. Chất lượng dự báo và PDR đều cải thiện trong nghiên cứu này,
+nhưng không suy ra mọi giảm MSE đều chuyển thành tăng dịch vụ. Tổng lệnh đổi
+tuyến giảm từ 359 xuống 95, gợi ý khả năng chọn đường ổn định hơn; chưa có
+can thiệp riêng để kết luận đó là cơ chế duy nhất. Luồng nền chưa có chênh
+lệch rõ; static có PDR gần 100\% và không tạo dư địa cải thiện. Thời gian
+quyết định GNN trung vị 4,92 ms trên server chỉ cho thấy chi phí tính toán
+trong môi trường đo, chưa xác nhận triển khai trên máy bay hoặc độ trễ toàn hệ.
+
+V8 không đổi vị trí relay. Chênh thời gian mất kết nối GNN trừ EWMA là
+$-0{,}13$ giây, CI 95\% [$-0{,}97$; $0{,}68$], chưa cho thấy giảm chia cắt.
+Do đó CH7 cần nghiên cứu v9 với hành động di chuyển và endpoint mất kết nối
+riêng, thay vì suy diễn từ PDR định tuyến.
+
+\section{Di chuyển hữu ích nhưng dự báo chưa tạo lợi ích thêm rõ}
+V9 trả lời CH7: với cùng định tuyến và luật bố trí, GNN chưa giảm rõ thời
+gian chia cắt so với kích hoạt theo số đo hiện tại. Chênh reactive trừ GNN
+là 0,20 giây, CI 95\% [$-1{,}05$; $1{,}45$]; mức dương ở n7 và âm ở n5.
+PDR GNN trừ reactive là 0,34 điểm phần trăm [$-0{,}32$; $1{,}04$], được
+diễn giải mô tả do endpoint chính không đạt. So sánh GNN với MLP có CI riêng
+lẻ dương nhưng cổng khẳng định đã đóng, nên không dùng để tuyên bố nghiên
+cứu vị trí thành công. CI chứa 0 cũng không chứng minh hai trigger tương đương.
+
+Mô tả gradual cho thấy di chuyển có tác dụng lớn so với đứng yên trong
+kịch bản tách xa nhanh: reactive có PDR 88,26\%, so với 59,89\% của
+\code{route-only}; thời gian chia cắt lần lượt 31,45 và 123,43 giây. Chênh
+thời gian reactive trừ đứng yên là $-91{,}98$ giây, CI mô tả
+[$-93{,}63$; $-90{,}35$]. Tổng quãng đường relay reactive trung bình
+637,48 m; GNN 636,76 m, chênh $-0{,}72$ m [$-3{,}94$; $2{,}31$], chưa
+thấy khác biệt chi phí hình học rõ giữa hai trigger. Không episode gradual
+nào chạm ngân sách, không có quyết định bị chặn an toàn hoặc frame bị
+simulator từ chối, và toàn vẹn tuyến đạt 192/192. Điều này chỉ xác nhận
+ràng buộc của mô phỏng, không chứng nhận an toàn bay thật.
+
+Trigger reactive đã dùng ngưỡng chất lượng 0,70, nên thường di chuyển trước
+khi đồ thị ngưỡng 0,5 bị chia cắt; nó không chờ tới lúc mất kết nối mới
+hành động. Đây là một giải thích khả dĩ cho dư địa nhỏ của dự báo năm giây,
+cùng với thay đổi phân phối vận tốc và chuyển động relay so với tập fit.
+Phân tích thăm dò ở Mục~\ref{sec:posthoc} bổ sung một giải thích khác:
+phần lớn chia cắt còn lại vượt quá tầm phủ của chuỗi relay, kể cả khi relay
+được đặt cách đều lý tưởng.
+Các giải thích này chưa được kiểm định riêng; không điều chỉnh lại ngưỡng,
+huấn luyện lại hoặc thay endpoint sau khi xem test. Kết quả hỗ trợ giữ
+baseline luật cố định làm điểm xuất phát cho nghiên cứu chính sách tiếp theo.
+
+\input{exploratory_posthoc}
 
 \section{Hạn chế và mối đe dọa tính hợp lệ}
 \begin{itemize}
   \item \textbf{Điều khiển tập trung còn lý tưởng một phần:} v7 đã thêm độ trễ 2 giây và đo chi phí báo hiệu, nhưng báo cáo về bộ điều khiển chỉ được ước lượng, không mô phỏng thành gói, và thông điệp điều khiển không bị mất.
   \item \textbf{Baseline OLSR-ETX là bản cài đặt của nhóm:} làm theo olsrd nhưng không phải olsrd; v7 đã tinh chỉnh chu kỳ HELLO cho baseline trong ba mức, nhưng chưa tinh chỉnh các tham số khác như hệ số EWMA hay thời gian giữ liên kết.
   \item \textbf{v6 được quyết định sau khi thấy v5:} v5 vẫn được báo cáo đầy đủ. v6 chỉ đổi một tham số mô phỏng, được chẩn đoán và kiểm chứng trên các hạt giống đã dùng trước khi đăng ký, và chạy trên hạt giống mới với giả thuyết, arm và phân tích không đổi.
-  \item \textbf{Lỗi ARP ảnh hưởng v2--v5:} các vòng này chạy với ARP mặc định. Ở v2--v4 lỗi rơi vào mọi arm của cùng kịch bản nên so sánh ghép cặp ít bị lệch, nhưng PDR tuyệt đối ở n5 thấp hơn thực tế.
+  \item \textbf{Lỗi ARP ảnh hưởng v2--v5:} các vòng này chạy với ARP mặc định. Ở v2--v4 lỗi rơi vào mọi arm của cùng kịch bản nên ghép cặp có thể giảm nhiễu chung; không thể suy ra PDR thực tế hoặc bảo đảm so sánh hoàn toàn không bị ảnh hưởng.
   \item \textbf{Thiếu phản hồi tầng dữ liệu:} trường hợp n5-18 cho thấy chất lượng probe không đủ để đảm bảo dữ liệu đến đích.
   \item \textbf{Phạm vi kịch bản:} một họ kịch bản (chuỗi 4--7 UAV, hai đầu mút tách xa, tầm phủ 240 m), một luồng được điều khiển cùng tối đa hai luồng nền, chỉ mô phỏng.
   \item \textbf{Phân tích chẩn đoán} là khám phá, không đăng ký trước; nó chỉ được dùng để đặt giả thuyết cho v4, còn kết luận v4 đến từ pha test đã khóa.
   \item \textbf{Sửa đổi protocol:} một lỗi code ở bước chọn margin của v4 được sửa trước khi có bất kỳ kết quả chọn nào; quy tắc chọn không đổi, và sửa đổi được ghi vào protocol.
+  \item \textbf{Mô hình mới và dữ liệu phát triển:} v8 dùng GNN hồi quy 5 giây khác checkpoint đa thời điểm giai đoạn 1; dữ liệu v7 đã được quan sát được chuyển thành dữ liệu phát triển. Chỉ các seed mới của v8/v9 được dùng để kiểm tra nghiên cứu mới.
+  \item \textbf{Ablation và chi phí GNN:} MLP còn thông tin bậc nút và có ít tham số hơn GNN; chưa có đối chứng cùng số tham số. Chi phí telemetry vị trí, vận tốc và RSSI chưa được mô phỏng trên kênh, nên không áp nguyên tổng báo hiệu v7 để gọi là chi phí đầy đủ của GNN.
+  \item \textbf{Biến thiên huấn luyện:} các vòng v8/v9 dùng một seed huấn luyện cố định. Bootstrap theo kịch bản mô tả biến thiên môi trường với trọng số đã khóa. Huấn luyện lại với năm seed cho thứ tự MSE ổn định (Mục~\ref{sec:posthoc}), nhưng PDR vòng kín của các seed khác chưa được đo.
+  \item \textbf{Baseline làm mượt chưa chỉnh:} EWMA 0,5 của v4--v8 không được tinh chỉnh; thăm dò sau test cho thấy làm mượt mạnh hơn đạt hoặc vượt lợi ích PDR của GNN (Mục~\ref{sec:posthoc}).
 \end{itemize}
 
 \section{So với kế hoạch ban đầu}\label{sec:plan}
-Thuyết minh có hai phần: dự đoán chất lượng liên kết bằng GNN và hỗ trợ định tuyến. Phần dự đoán đã có kết quả ở giai đoạn 1 (Chương~\ref{chap:gnn}): Edge-SAGE vượt các baseline về Macro-F1, nhất là khi dự báo xa. Phần hỗ trợ định tuyến đã có kết quả vòng kín ở giai đoạn 2, nhưng với chất lượng liên kết \emph{đo được}. Đề tài chưa đưa GNN vào vòng điều khiển. Kết quả v4 cho thấy nơi một bộ dự đoán chất lượng liên kết có giá trị: thay chất lượng đo được bằng chất lượng dự báo để ghim tuyến \emph{trước} khi liên kết suy giảm. Đây là cách nối kết quả giai đoạn dự đoán với mục tiêu hỗ trợ định tuyến của thuyết minh.
+Thuyết minh có hai phần: dự đoán chất lượng liên kết bằng GNN và hỗ trợ định tuyến. Phần dự đoán đã có kết quả ở giai đoạn 1 (Chương~\ref{chap:gnn}): Edge-SAGE vượt các baseline về Macro-F1, nhất là khi dự báo xa. Phần hỗ trợ định tuyến được kiểm tra trước bằng chất lượng liên kết \emph{đo được} ở v4--v7, rồi bằng GNN hồi quy mới ở v8. V9 mở rộng câu hỏi sang thời điểm kích hoạt chuyển động relay. Việc tích hợp dự báo vào vòng điều khiển và việc chứng minh lợi ích là hai kết luận riêng: lợi ích chỉ được đánh giá theo endpoint và cổng kiểm định của từng nghiên cứu. Phạm vi mới vẫn chưa hoàn thành các hướng mở rộng đã nêu ở báo cáo tiến độ như GNN theo thời gian, topology phi chuỗi hoặc thử nghiệm bay thật.
 
 % ============================================================
 %  CHUONG 6
 % ============================================================
 \chapter{Kết luận và hướng phát triển}\label{chap:conclusion}
 \section{Kết luận}
-Ở giai đoạn 1, GNN có đặc trưng cạnh (Edge-SAGE) dự đoán chất lượng và sự tồn tại của liên kết UAV tốt hơn XGBoost, Logistic Regression và persistence về Macro-F1 trên seed giữ lại, với khoảng cách lớn nhất khi dự báo xa, nhưng chưa giảm được lỗi dự đoán nhầm liên kết hỏng thành ổn định. Ở giai đoạn 2, trong mô phỏng ns-3 với OLSR, việc dự báo suy giảm và di chuyển relay không cải thiện dịch vụ, vì nguồn tổn thất chính là việc OLSR chọn tuyến theo số hop chứ không phải vị trí relay. Ghim tuyến dữ liệu sang đường qua relay khi ETX tốt hơn rõ rệt tăng PDR thêm 4,18 điểm phần trăm (CI 95\%: 1,14 đến 6,36) trên pha test đã khóa, không cần di chuyển UAV, với 96/96 episode áp dụng tuyến đúng như lệnh. Sau khi sửa một lỗi ARP của ns-3, ghim tuyến tập trung cũng hơn OLSR-ETX phân tán 4,57 điểm phần trăm (CI 95\%: 3,60 đến 5,55), còn OLSR-ETX chỉ hơn OLSR thuần 1,01 điểm. Kết quả này bền vững (v7): ghim tuyến vẫn hơn OLSR-ETX đã tinh chỉnh chu kỳ HELLO 5,06 điểm phần trăm (CI 95\%: 4,21 đến 5,91), vẫn hơn khi lệnh trễ 2 giây, trên chuỗi 7 UAV và khi có luồng nền, với chi phí báo hiệu khoảng 5,6 kB/s. Giới hạn: báo cáo điều khiển chỉ được ước lượng, baseline OLSR-ETX do nhóm cài đặt, và một họ kịch bản chuỗi relay.
+Đề tài đã nối bài toán dự báo liên kết với hai hành động điều khiển cụ thể
+trong mô phỏng mạng UAV. GNN phân loại đa thời điểm ở giai đoạn 1 đạt
+Macro-F1 cao hơn các baseline trên seed giữ lại, đồng thời còn lỗi
+false-stable. Chuỗi nghiên cứu v2--v7 cho thấy cần kiểm tra nguồn mất gói và
+hành động sử dụng dự báo: ghim tuyến theo chất lượng hiện tại cải thiện
+PDR trong các kịch bản đã xét, trong khi các bộ điều khiển di chuyển đầu
+tiên không tạo lợi ích ổn định. Kết quả âm v3/v5 và lỗi ARP được giữ trong
+báo cáo, không loại bỏ khỏi quá trình nghiên cứu.
+
+V8 dùng GNN hồi quy mới và giữ nguyên luật ghim tuyến, tăng PDR 0,66 điểm
+phần trăm so với EWMA hiện tại (CI 95\% [0,38; 1,00]) và 0,38 điểm so với
+MLP ([0,12; 0,67]) trên test mới; cả ba bước kiểm định đạt, toàn vẹn tuyến
+144/144. Đây là bằng chứng vòng kín cho lợi ích của bộ dự báo đã triển khai
+trong định tuyến, với phạm vi và chi phí telemetry chưa đầy đủ đã nêu. Thăm dò
+sau test cho thấy EWMA 0,2 đạt cùng mức PDR và EWMA 0,1 cao hơn GNN 0,31 điểm,
+nên lợi ích này gắn với ước lượng chất lượng ổn định hơn; giá trị riêng của
+thông tin dự báo cần một vòng đăng ký trước với baseline đã chỉnh.
+
+V9 đã thực thi điều khiển vị trí relay, kiểm tra an toàn mô phỏng và toàn
+vẹn tuyến 192/192. Di chuyển hữu ích trong so sánh mô tả với đứng yên ở
+kịch bản tách xa nhanh, nhưng GNN chưa giảm chia cắt rõ so với trigger theo
+chất lượng hiện tại: 0,20 giây, CI [$-1{,}05$; $1{,}45$]. Vì vậy không kết
+luận dự báo đã cải thiện điều khiển vị trí hoặc ngăn được mọi chia cắt.
+Trigger reactive đã đạt khoảng 94\% mức giảm chia cắt có thể có theo giới hạn
+hình học, nên dư địa cho mọi trigger hoặc chính sách học được là nhỏ trong họ
+kịch bản này.
+Các kết quả hỗ trợ một hệ thống định tuyến dự báo cùng baseline điều khiển
+vị trí có giới hạn, và cung cấp bằng chứng để thiết kế nghiên cứu tiếp theo.
+Chưa có điều khiển UAV thật, mô hình năng lượng hoặc chính sách học tăng cường.
 
 \section{Hướng phát triển}
 \begin{itemize}
   \item Thêm phản hồi tầng dữ liệu: nhả hoặc đổi tuyến ghim khi số gói nhận sụp đổ.
   \item Giảm chi phí báo hiệu: thử tần số probe thấp hơn, hoặc dùng chính LQ của OLSR-ETX làm đầu vào cho bộ ghim tuyến; mô phỏng báo cáo điều khiển thành gói thật và cho phép mất thông điệp.
   \item So sánh với olsrd thật và với các giao thức FANET khác trong topology không phải chuỗi.
-  \item Dùng chất lượng liên kết \emph{dự báo} (mô hình GNN của giai đoạn đầu) để ghim tuyến chủ động.
+  \item Mở rộng dự báo theo thời gian, kiểm tra hiệu chuẩn dưới chuyển động relay và tách riêng ảnh hưởng của số tham số với truyền thông điệp học được. Chỉ học chính sách hành động bằng RL khi kịch bản có đánh đổi mà luật cố định khó xử lý (ngân sách bay ràng buộc, nhiều luồng, topology phi chuỗi, tần số probe), vì trong họ kịch bản hiện tại luật cố định đã gần giới hạn hình học (Mục~\ref{sec:posthoc}).
+  \item Đăng ký trước một vòng so sánh GNN với EWMA đã chỉnh hệ số trên tập tuning riêng, để kiểm định giá trị riêng của thông tin dự báo.
   \item Mở rộng kịch bản: nhiều UAV hơn, nhiều luồng, tải nền, mô hình kênh khác.
 \end{itemize}
 
@@ -774,6 +891,8 @@ Hạt giống v7&layout 3200001 trở đi, radio 3300001 trở đi\\\bottomrule
 \caption{Các tệp kết quả chính và hash.}\label{tab:hashes}
 \end{table}
 
+\input{provenance_v8_v9}
+
 \section{Lệnh chạy}
 \begin{lstlisting}
 # moi pha: freeze -> chay hang loat -> validate -> select (tuning) / analyze
@@ -787,7 +906,7 @@ python scripts/analysis/make_nckh_figures.py
 \end{lstlisting}
 Tài liệu đi kèm trong kho mã:
 \begin{itemize}
-  \item Protocol đầy đủ: \code{docs/service_v3_protocol.md} đến \code{docs/service_v7_protocol.md} (kết quả v5--v7 và chẩn đoán ARP ở mục 8).
+  \item Protocol đầy đủ: \path{docs/service_v3_protocol.md} đến \path{docs/service_v7_protocol.md} (kết quả v5--v7 và chẩn đoán ARP ở mục 8).
   \item Bản vá OLSR-ETX: \code{simulation/ns3/patches/}.
   \item Tái hiện lỗi ARP: \code{scripts/analysis/arp_blackout_repro.py}.
   \item Chẩn đoán v2: \code{reports/uav_service_v3/diagnosis/README.md}.
@@ -821,6 +940,8 @@ Tài liệu đi kèm trong kho mã:
 \bibitem{efron} B. Efron, R. J. Tibshirani. \textit{An Introduction to the Bootstrap}. Chapman \& Hall, 1993.
 \bibitem{nosek} B. A. Nosek, C. R. Ebersole, A. C. DeHaven, D. T. Mellor. The preregistration revolution. \textit{Proceedings of the National Academy of Sciences}, 115(11):2600--2606, 2018.
 \bibitem{hoerl} A. E. Hoerl, R. W. Kennard. Ridge regression: Biased estimation for nonorthogonal problems. \textit{Technometrics}, 12(1):55--67, 1970.
+\bibitem{rosati2013} S. Rosati, K. Kruzelecki, L. Traynard, B. Rimoldi. \textit{Speed-Aware Routing for UAV Ad-Hoc Networks}. arXiv:1307.6350, 2013. \url{https://arxiv.org/abs/1307.6350}.
+\bibitem{liu2025} J. Liu, P. Gong, H. Yang, S. Li, X. Gao. Cross-Layer Optimized OLSR Protocol for FANETs in Interference-Intensive Environments. \textit{Drones}, 9(11):778, 2025. \url{https://doi.org/10.3390/drones9110778}.
 \bibitem{tiendo} \HoTenA, \HoTenB. \textit{Báo cáo tiến độ nghiên cứu khoa học: Tiến độ triển khai và kết quả core matrix theo held-seed}. Trường Đại học Công nghệ Thông tin, 31/10/2026.
 \end{thebibliography}
 \end{document}

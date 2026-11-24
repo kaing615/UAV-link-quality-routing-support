@@ -1,0 +1,112 @@
+\chapter{Chuẩn bị trình bày và trả lời thầy}
+\section{Một đoạn mở đầu có thể nói bằng lời của mình}
+``Đề tài của nhóm tìm cách duy trì truyền dữ liệu khi các UAV di chuyển làm chất lượng liên kết thay đổi. Nhóm bắt đầu bằng tạo dữ liệu mô phỏng và học mô hình GNN dự báo liên kết. Sau đó nhóm đưa thông tin chất lượng vào quyết định chọn tuyến và thử kích hoạt di chuyển relay. Nhóm đánh giá bằng các phương pháp chạy trên cùng kịch bản. Kết quả mới nhất cho thấy GNN giúp thêm cho định tuyến, còn lợi ích thêm của dự báo khi kích hoạt vị trí chưa rõ. Toàn bộ kết quả hiện tại là trong mô phỏng.''
+
+Đoạn này có đủ vấn đề, cách làm và kết quả. Khi thầy muốn nghe sâu hơn, triển khai từng bước thay vì đọc một danh sách công nghệ ngay từ đầu.
+
+\section{Kể quá trình theo câu hỏi, không theo tên phiên bản}
+Có thể kể thành năm đoạn. Đầu tiên, mạng UAV di chuyển khiến liên kết thay đổi, nên nhóm muốn biết trước chất lượng liên kết. Thứ hai, nhóm dựng dữ liệu mô phỏng và học GNN; điểm dự báo tốt nhưng vẫn còn lỗi báo nhầm ổn định. Thứ ba, nhóm thử dùng dự báo để di chuyển và thấy hành động sớm chưa bảo đảm truyền gói tốt. Thứ tư, nhóm kiểm tra đường đi thực tế, củng cố phương pháp định tuyến và đối chứng. Cuối cùng, nhóm tách hai câu hỏi: dự báo có giúp chọn tuyến và có giúp kích hoạt vị trí hay không.
+
+Các tên v2--v9 hữu ích để đối chiếu hồ sơ. Trong phần nói chính, điều thầy cần hiểu là vì sao mỗi thử nghiệm dẫn tới câu hỏi tiếp theo. Nếu chưa nhớ tên một vòng, vẫn có thể trình bày đúng bằng mục tiêu, phép so sánh và kết quả của nó.
+
+\section{Năm con số nên hiểu trước khi nhớ}
+\begin{enumerate}
+\item \textbf{210 lượt, 20 UAV mỗi lượt}: quy mô dữ liệu ở giai đoạn dự báo ban đầu, khác mô phỏng chuỗi 5/7 UAV của v8/v9.
+\item \textbf{48 lượt học và 20 lượt chọn epoch}: dữ liệu cũ dùng phát triển mô hình hồi quy mới; chưa phải kết quả test v8/v9.
+\item \textbf{80 validation và 192 test mỗi nghiên cứu mới}: số lượt chạy, không phải số kịch bản độc lập cho một phép so sánh. So sánh chính dùng 40 khối gradual.
+\item \textbf{V8 tăng 0,66 điểm phần trăm PDR}: GNN so với dùng chất lượng hiện tại, CI 95\% từ 0,38 đến 1,00 điểm phần trăm.
+\item \textbf{V9 giảm trung bình 0,20 giây chia cắt}: phản ứng trừ GNN, CI 95\% từ $-1,05$ đến 1,45 giây; chưa đủ bằng chứng về lợi ích thêm.
+\end{enumerate}
+
+Đừng học các số rời khỏi đối chứng. Câu ``tăng 0,66'' còn thiếu đơn vị, so với ai và trong điều kiện nào. Câu đầy đủ là ``trên 40 khối gradual test v8, GNN tăng trung bình 0,66 điểm phần trăm PDR so với bộ chọn tuyến dùng chất lượng hiện tại''.
+
+\section{Những câu hỏi thường gặp}
+\subsection*{Đóng góp của đề tài nằm ở đâu?}
+Nhóm xây dựng và kiểm tra một quy trình nối dự báo liên kết với quyết định mạng. Điểm cần trình bày là có đối chứng để tách lợi ích của dự báo khỏi lợi ích của luật định tuyến hoặc di chuyển. Kết quả v8 cho thấy lợi ích bổ sung khi dùng GNN để chọn tuyến trong cấu hình đã thử; v9 xác định giới hạn của cách dùng cùng dự báo để kích hoạt vị trí. Không cần tuyên bố đề tài phát minh toàn bộ GNN, OLSR hay bộ mô phỏng.
+
+\subsection*{Tại sao dùng GNN?}
+Mạng UAV có các quan hệ giữa nút và liên kết nên biểu diễn bằng đồ thị phù hợp với bài toán. GNN học cách tổng hợp ngữ cảnh hàng xóm. Tuy nhiên lý do lựa chọn kiến trúc chưa phải bằng chứng nó tốt hơn: nhóm vẫn so với MLP và đối chứng không dùng dự báo. So sánh GNN--MLP hiện tại còn khác số tham số và vẫn giữ bậc nút trong MLP, nên chưa tách riêng hoàn toàn vai trò truyền thông điệp.
+
+\subsection*{Mô hình học cái gì và bộ điều khiển làm cái gì?}
+Mô hình v8/v9 học dự báo tỷ lệ nhận probe trung bình năm giây tới. Bộ điều khiển dùng thông tin đó theo luật đã đặt trước. Ở v8, luật chọn tuyến tính chi phí và quyết định đổi đường. Ở v9, luật kích hoạt và bố trí relay quyết định lúc nào di chuyển và hướng tới đâu. GNN không trực tiếp xuất một quỹ đạo bay tối ưu.
+
+\subsection*{Có điều khiển vị trí thật sự hay chỉ dự báo?}
+Có lệnh vận tốc và chuyển động relay được thực thi trong ns-3, kèm kiểm tra khoảng cách, tốc độ và quãng đường. Vì vậy đã có điều khiển vị trí trong mô phỏng. Chưa nối với autopilot và chưa bay thử UAV thật. Hai phạm vi này phải nói rõ.
+
+\subsection*{Đã dùng RL chưa?}
+Chưa. Mô hình học có giám sát từ quan sát lịch sử và nhãn tương lai. Bộ điều khiển làm theo luật cố định. RL sẽ là một hướng khác, nơi chính sách hành động được học qua tương tác và tín hiệu thưởng. Muốn bổ sung cần xác định hành động, mục tiêu, ngân sách học, giới hạn an toàn và một tập đánh giá mới. Không thể chỉ đổi tên bộ điều khiển hiện có thành RL.
+
+\subsection*{Vì sao không lấy độ chính xác dự báo làm kết luận cuối?}
+Dự báo chính xác và hành động hữu ích là hai điều khác nhau. Một dự báo tốt có thể đến lúc quá muộn, dẫn tới một hành động tốn kém, hoặc không thay được tuyến đang dùng. Vì vậy nhóm đo cả dự báo ngoại tuyến và hiệu quả dịch vụ trong vòng kín. MSE hoặc Macro-F1 không thay cho PDR.
+
+\subsection*{Dùng test v7 để học có làm rò rỉ dữ liệu không?}
+Trong nghiên cứu mới, nhóm công bố chuyển các trace cũ đó thành dữ liệu phát triển, rồi dùng seed mới để đánh giá v8/v9. Ranh giới cần giữ là không coi dữ liệu đã dùng để học là test chưa từng thấy của nghiên cứu mới, và không đưa quan sát tương lai của lượt đang chạy vào quyết định. Tên ``test v7'' mô tả vai trò ở nghiên cứu cũ, không tự quyết định vai trò mãi về sau.
+
+\subsection*{Tăng 0,66 điểm phần trăm có quá ít không?}
+Đó là lợi ích nhỏ trên nền PDR khoảng 95,35\%, đưa trung bình lên khoảng 96,01\%. Khoảng tin cậy của chênh lệch nằm trên 0 trong phép thử đã định. Việc có đáng triển khai hay không còn tùy yêu cầu dịch vụ và chi phí vận hành. Báo cáo cần giữ cả mức tăng và chi phí, thay vì chỉ nói ``có ý nghĩa thống kê'' rồi coi như đã đủ cho triển khai.
+
+\subsection*{GNN hơn OLSR-ETX 5,75 điểm phần trăm có phải tất cả nhờ AI?}
+Không thể gán như vậy. Hai bên khác cả cách quyết định tuyến và nguồn thông tin. Phép so GNN với bộ chọn tuyến dùng chất lượng hiện tại giữ luật chọn tuyến chung, nên phù hợp hơn để hỏi giá trị bổ sung của dự báo. Chính phép so đó cho chênh lệch 0,66 điểm phần trăm.
+
+\subsection*{V9 chưa đạt thì phần vị trí có thất bại hoàn toàn không?}
+Kết quả không ủng hộ giả thuyết chính rằng dự báo GNN giúp thêm rõ so với phản ứng trong cấu hình đã thử. Các nhóm di chuyển vẫn có kết quả trung bình tốt hơn đứng yên, nhưng đó là một so sánh khác. Nghiên cứu đã xác định được điều kiện mà thêm dự báo chưa tạo lợi ích rõ, và giữ nguyên kết quả này để báo cáo.
+
+\subsection*{Tại sao khoảng tin cậy chứa 0 lại chưa kết luận được?}
+Với cách lấy phản ứng trừ GNN, số dương nghĩa là GNN giảm chia cắt. Khoảng $[-1,05;1,45]$ chứa cả số âm và số dương, nên dữ liệu còn tương thích với khác biệt theo cả hai hướng. Không đủ bằng chứng về ưu thế không đồng nghĩa hai phương pháp chắc chắn bằng nhau. Một kết luận tương đương cần thiết kế kiểm định riêng.
+
+\subsection*{Tại sao không chỉnh thêm ngưỡng để v9 đạt?}
+Kết quả test đã được dùng để đánh giá một thiết kế định trước. Chỉnh ngưỡng theo chính kết quả đó rồi dùng lại nó để tuyên bố thành công sẽ làm mất ý nghĩa của đánh giá mới. Có thể dùng kết quả hiện tại để đặt giả thuyết cho vòng sau, nhưng cần kế hoạch và dữ liệu đánh giá mới.
+
+\subsection*{Vì sao chỉ 5 hoặc 7 UAV ở các thí nghiệm mới?}
+Đó là phạm vi cấu hình chuỗi mà nhóm đã kiểm chứng trong v8/v9. Nó giúp xét rõ nguồn, đích và các relay nhưng chưa đại diện mọi mạng đông nút. Giai đoạn đầu có 20 UAV cũng không tự chứng minh bộ điều khiển mới đã được kiểm tra ở quy mô đó. Mở rộng topology và quy mô là việc cần đánh giá thêm.
+
+\subsection*{Nhóm đã tính pin và chứng minh an toàn bay chưa?}
+Nhóm đã giới hạn quãng đường, tốc độ và khoảng cách trong mô phỏng. Quãng đường là chỉ số thay thế về mức chuyển động, chưa phải phép đo năng lượng. Để kết luận về pin hoặc an toàn bay cần mô hình và thực nghiệm tương ứng. Không quy 400 m thành một mức pin khi chưa có dữ liệu.
+
+\subsection*{Bước tiếp theo nên làm gì?}
+Một hướng bám sát kết quả hiện tại là thu dữ liệu có relay di chuyển rồi kiểm tra mô hình trong điều kiện đó, cùng các thử nghiệm về độ trễ và chi phí truyền số đo/lệnh. Đây là đề xuất nghiên cứu tiếp, chưa phải kết quả đã có. RL có thể đặt thành nghiên cứu riêng khi đã xác định được hành động, mục tiêu và phương pháp đánh giá phù hợp.
+
+\section{Cách trình bày trong 10 phút hoặc 25 phút}
+Với khoảng 10 phút, dành phần lớn thời gian cho bài toán, luồng dữ liệu--dự báo--hành động, cách tách v8/v9 và hai kết quả chính. Có thể lướt lịch sử v2--v7 bằng một câu giải thích vì sao nhóm chuyển trọng tâm sang định tuyến. Khi cần nói công cụ, dùng slide công cụ để gắn tên với nhiệm vụ.
+
+Với 20--25 phút, đi đủ bộ 26 slide. Dành thêm thời gian cho cách học từ dữ liệu cũ, cơ chế ra quyết định, cách ghép cặp kịch bản và vì sao kết quả vị trí chưa cho phép khẳng định. Tài liệu lời thuyết trình đi kèm có gợi ý theo từng slide; nên tập nói bằng lời của mình và bấm giờ một lần.
+
+Nếu thầy hỏi điều chưa được kiểm tra, câu trả lời phù hợp là ``phần này nhóm chưa đánh giá; kết quả hiện tại chỉ xác nhận ...''. Điền phần đã có bằng chứng cụ thể. Đừng đoán một con số để câu trả lời có vẻ đầy đủ.
+
+\section{Tự kiểm tra xem đã hiểu hay chưa}
+Thử tự vẽ một sơ đồ có năm bước: mô phỏng, thu số đo, dự báo, chọn hành động, đo lại. Ghi dưới mỗi bước một đầu vào, một đầu ra và một công cụ. Sau đó giải thích tại sao PyTorch nằm ở giai đoạn học, còn mô hình đã khóa vẫn có thể chạy ở vòng đánh giá.
+
+Tiếp theo, giải thích bốn cặp khái niệm: liên kết và tuyến; tỷ lệ nhận probe và PDR ứng dụng; học có giám sát và luật điều khiển; lượt chạy và khối kịch bản. Nếu còn lẫn một cặp, quay về chương tương ứng trước khi học thêm các con số.
+
+Cuối cùng, nói lại kết quả v8 và v9, mỗi kết quả trong hai câu. Câu đầu nêu đối chứng, mức chênh và đơn vị. Câu thứ hai nêu khoảng tin cậy và phạm vi kết luận. Làm được ba bài này là đã nắm mạch chính để báo cáo, dù chưa nhớ hết chi tiết kỹ thuật.
+
+\clearpage
+\section{Bảng tra thuật ngữ ngắn}
+\begin{table}[htbp]\centering\small
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{34mm}Y@{}}
+\toprule Thuật ngữ & Cách hiểu trong đề tài\\\midrule
+UAV / relay & Nút bay không người lái / nút chuyển tiếp dữ liệu cho nút khác.\\
+Topology & Cấu trúc nút và quan hệ kết nối của mạng.\\
+Probe / RSSI & Gói thăm dò / chỉ báo cường độ tín hiệu nhận.\\
+PDR & Tỷ lệ gói ứng dụng nhận tại đích so với số gói gửi.\\
+ETX & Chi phí số lần truyền kỳ vọng trên liên kết, dùng so sánh tuyến.\\
+GNN / MLP & Mô hình tổng hợp thông tin đồ thị / mạng nơ-ron nhiều lớp đối chứng.\\
+Feature / label & Đầu vào mô tả tình huống / đáp án mục tiêu để học và đánh giá.\\
+Epoch / trọng số & Một lượt qua dữ liệu học / các giá trị mô hình đã học được.\\
+Suy luận & Tính dự báo từ quan sát mới bằng trọng số đã có.\\
+EWMA & Trung bình làm mượt, kết hợp số đo mới với trạng thái trước đó.\\
+Seed / trace & Mã điều khiển ngẫu nhiên / chuỗi số đo ghi lại theo thời gian.\\
+Arm / episode & Một phương pháp so sánh / một lượt thực hiện phương pháp trên kịch bản.\\
+Validation / test & Kiểm tra đủ điều kiện theo kế hoạch / đánh giá cuối trên dữ liệu mới.\\
+CI / bootstrap & Khoảng tin cậy / cách lấy mẫu lại để ước lượng độ bất định.\\
+Trigger / dwell & Điều kiện kích hoạt / khoảng thời gian giữ trước lần đổi thông thường.\\
+Vòng kín & Hành động thay đổi trạng thái rồi trạng thái mới quay lại làm quan sát.\\
+RL & Học tăng cường; hướng học chính sách hành động, chưa dùng ở v8/v9.\\
+\bottomrule
+\end{tabularx}
+\caption{Các từ thường gặp trong slide và báo cáo.}\label{tab:glossary}
+\end{table}
+
+Bảng~\ref{tab:glossary} chỉ nhắc lại cách dùng từ trong tài liệu này. Với số liệu hoặc cấu hình cụ thể, đối chiếu báo cáo và hồ sơ gốc~\cite{report,repro}.
+
+\remember{Bạn không cần đọc mã nguồn để hiểu mạch nghiên cứu. Điều cần giải thích được là hệ thống quan sát gì, dự báo gì, hành động gì, so sánh với ai và bằng chứng cho phép kết luận đến đâu.}
