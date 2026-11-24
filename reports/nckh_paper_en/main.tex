@@ -1,0 +1,318 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{fontspec}
+\setmainfont{Times New Roman}
+\setmonofont{Consolas}
+\usepackage[margin=2.3cm]{geometry}
+\usepackage{amsmath,amssymb,graphicx,booktabs,tabularx,array}
+\usepackage{enumitem,caption,xurl}
+\usepackage[unicode,hidelinks]{hyperref}
+\setlength{\emergencystretch}{2em}
+\setlength{\parskip}{3pt}
+\setlist{itemsep=2pt,topsep=3pt,leftmargin=*}
+\newcommand{\code}[1]{\texttt{\detokenize{#1}}}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\title{\textbf{Does learned link-quality forecasting improve UAV routing and
+relay placement? Two pre-registered closed-loop studies}}
+\author{Nguyen Dinh Tam\thanks{Corresponding author: \href{mailto:23521389@gm.uit.edu.vn}{23521389@gm.uit.edu.vn}.} \and Vo Cong Vinh}
+\date{University of Information Technology, VNU-HCM\\November 2026}
+\begin{document}
+\maketitle
+\begin{abstract}
+Learned link-quality forecasting for UAV routing is a well-populated research
+direction, but most models are evaluated by forecast accuracy rather than by
+the network service they deliver. This paper tests that gap directly: does a
+learned forecaster improve service once it is placed inside the control loop
+and compared against a tuned baseline? A graph neural network (GNN) regresses
+the mean probe reception ratio over the next five seconds from positions,
+velocities and causal link measurements. The same weight-locked forecaster then
+drives two different actions inside ns-3.45: data route selection and relay
+repositioning. Both studies were pre-registered before any new simulation was
+run; each comprises 80 validation and 192 test episodes on fresh audited seeds,
+over chains of five or seven UAVs, with arms compared pairwise within seed
+blocks. Locked results: for routing, the graph forecast raises the packet
+delivery ratio (PDR) by 0.66 percentage points over current measured quality,
+95\% confidence interval [0.38, 1.00]; for placement control, forecasting saves
+only 0.20 disconnected seconds relative to a reactive trigger, confidence
+interval [$-1.05$, $1.45$], so the primary endpoint was not met. Three
+exploratory analyses on fresh seeds explain both outcomes and form the main
+contribution. First, the ranking by forecast error runs \emph{opposite} to the
+ranking by service: an EWMA filter with coefficient 0.1 has the worst mean
+squared error of the three estimators yet the highest PDR, beating the GNN by
+0.31 percentage points [0.04, 0.61]. Second, the entire GNN gain is reproduced
+by that one-parameter filter once its coefficient is tuned, so the benefit
+attaches to a more stable quality estimate rather than to the value of forecast
+information. Third, a geometric bound shows that ideally equispaced relays
+still leave 26.09 disconnected seconds per episode, so the reactive trigger
+already attains roughly 94\% of the achievable reduction and almost no
+headroom remains for forecasting. The practical conclusion is that in this
+scenario family a cheaper stable estimator beats a learned forecaster, and
+forecast accuracy is not a substitute for a closed-loop service experiment.
+Limitations include centralized telemetry that does not yet contend for the
+channel, a single training seed, a single chain topology family and no flight
+trial; a confirmatory study has been pre-registered to test the exploratory
+conclusion.
+\end{abstract}
+\noindent\textbf{Keywords:} UAV networks; graph neural networks; link quality;
+routing; closed-loop evaluation; pre-registration.
+\section{Introduction}
+In a chain of relaying UAVs, link degradation can cause packet loss or
+disconnect the source from the destination. Link forecasting can support two
+distinct decisions: which path packets take, and where relays are placed. Many
+works already use forecasting, position information or GNNs for UAV routing, so
+the contribution to be examined here is not a claim of first use of those
+mechanisms. The issue is how they are evaluated: a better forecasting model
+does not by itself demonstrate a better controller, and most link-quality
+estimators are assessed offline by accuracy~\cite{cerar}.
+
+The paper therefore asks its questions at the service level. First, does the
+GNN forecast improve the packet delivery ratio (PDR) over current measured
+quality when the route-selection rule is held fixed? Second, does it reduce
+disconnected seconds when routing and the relay placement rule are held fixed
+and only the motion trigger changes? Third, and most importantly, if a gain
+exists, how much of it survives once the simple baseline is tuned, and does it
+track forecast accuracy? The two consecutive studies are labelled v8 and v9 to
+link them to the experiment records in the code repository.
+
+The contributions are fourfold:
+\begin{itemize}
+\item A design that routes \emph{one weight-locked forecaster} into two
+different actions inside the same simulator, with the same binary, the same
+action rules and the same seed blocks, so that observed differences are
+attributable to the quality source rather than to system configuration.
+\item Quantitative evidence that the ranking by forecast error runs opposite to
+the ranking by service on the same traces: the estimator with the worst error
+yields the highest PDR (Section~\ref{sec:posthoc}).
+\item An ablation separating \emph{smoothing} from \emph{forecasting}: the whole
+GNN gain is reproduced by a tuned one-parameter EWMA filter.
+\item A geometric bound for the relay placement problem showing that the
+reactive rule already attains about 94\% of the achievable reduction in
+disconnection, so the negative result on the placement branch has a
+quantitative explanation rather than merely reflecting low statistical power.
+\end{itemize}
+The whole procedure was pre-registered~\cite{nosek}: endpoints, test order and
+stopping rules were written down before the first cell was run, and unfavourable
+results are reported.
+\section{Related work}
+\input{relatedwork}
+\section{Materials and methods}
+Figure~\ref{fig:design} summarises the two comparisons.
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{images/fig_v8_v9_design.pdf}
+\caption{Separating forecasting for route selection from forecasting for motion triggering.}\label{fig:design}
+\end{figure}
+\input{methods}
+\section{Results}
+\input{results}
+\input{posthoc}
+\section{Discussion}
+\subsection{Why the routing gain cannot be attributed to forecasting}
+Under the route-pinning rule the GNN yields a small but positively bounded gain
+over current quality smoothed by an EWMA with coefficient 0.5. That coefficient,
+however, was never tuned, and Section~\ref{sec:posthoc} shows that once it is,
+an EWMA with coefficient 0.2 matches the GNN exactly while 0.1 exceeds it. The
+number of route changes falls under both treatments: 95 commands for the GNN
+against 359 for EWMA 0.5. The most plausible mechanism is that the route-pinning
+controller behaves better when its input is less noisy, and that a learned
+forecaster smooths as a side effect. The v8 gain therefore attaches to
+\emph{a more stable quality estimate} rather than to the value of information
+about the future.
+
+The strongest evidence for this reading is the direction of forecast error. If
+the gain came from forecast information, the more accurate estimator would have
+to deliver better service. The opposite holds: on the same test traces the mean
+squared error of EWMA 0.1 is 0.00165, worse than EWMA 0.5 (0.00127) and the GNN
+(0.00078), yet its PDR is the highest of the three. This is a concrete instance
+of a phenomenon already documented in autonomous driving~\cite{closedloop2025},
+where rankings under open-loop evaluation do not carry over to closed-loop
+evaluation. The GNN-versus-MLP comparison likewise does not isolate the effect
+of message passing, because the two models differ in parameter count.
+
+\subsection{Why the placement branch has no headroom left}
+The primary endpoint of v9 was not met. The GNN--MLP result has an individually
+positive confidence interval but is descriptive only, because the first gate had
+already closed. Two reasons compound. The reactive trigger uses a quality
+threshold of 0.70 and therefore usually acts before the probe graph partitions
+at threshold 0.5; it does not wait for loss of contact before moving, so the
+headroom for a five-second forecast was small to begin with. More importantly,
+the geometric bound in Section~\ref{sec:posthoc} quantifies that headroom:
+ideally and instantaneously equispaced relays still leave 26.09 disconnected
+seconds per episode, against 31.45 for the reactive trigger and 123.43 for
+stationary relays. The reactive rule already attains about 94\% of the
+achievable reduction; what remains lies beyond the coverage range of the relay
+chain rather than in the timing of the trigger. In such a situation no
+forecaster, however accurate, can improve much.
+
+This is a practically useful conclusion: before investing in a learned policy
+for a placement problem, the geometric bound of that problem should be measured.
+Other explanations not yet excluded include the velocity domain shift between
+the fitting data and the v9 scenarios, and the fact that the model was fitted
+only on data with stationary relays.
+
+\subsection{Cost and scope of the comparison with OLSR-ETX}
+The largest difference reported in this paper, a PDR 5.75 percentage points
+above OLSR-ETX with fast HELLO, is the number that requires the most caution.
+Route pinning is centralized control: it has a global view, and in this
+simulation telemetry and control commands are not yet transmitted as
+channel-contending packets. With the same binary and runtime, study v7 measured
+signalling overhead of about 5.55~kB/s for route pinning, comprising 0.29~kB/s
+of fallback OLSR, 5.02~kB/s of probes and an estimated 0.25~kB/s of reports to
+the controller, against 1.78~kB/s for OLSR-ETX with 0.5~s HELLO and 0.29~kB/s
+for plain OLSR. Probes are emitted in every arm, so probe airtime is common,
+but the centralized reporting component does not contend for the channel.
+The figure of 5.75 percentage points should therefore be read as \emph{an upper
+bound for a partially idealized centralized controller}, not as the gain to be
+expected once signalling, message loss and control delay are fully simulated.
+The cost of route pinning is dominated by the probe rate, a parameter that was
+not optimised here.
+
+\subsection{Limitations}
+A confidence interval containing zero does not establish equivalence, and no
+threshold was changed and no model retrained after the test results were seen.
+Identified limitations include a single chain-topology family, a centralized
+controller that does not suffer message loss, telemetry traffic that does not
+contend for the channel, and the absence of a real UAV trial. In the placement
+study the endpoint speed differs from the training data, and relays move
+although the fitting data had them stationary. The model was not trained to
+compare counterfactual actions; it only triggers a fixed placement rule.
+Travelled distance is a geometric cost and was not converted into energy. The
+closed-loop studies use a single training seed; refitting with five seeds
+preserves the error ordering (the GNN is best on 5/5 seeds), but the closed-loop
+PDR of the other seeds has not been measured.
+
+Most important for interpretation: the three analyses in
+Section~\ref{sec:posthoc} were performed after the test results were seen, so
+they \emph{explain} the two locked outcomes rather than replacing a confirmatory
+test. The EWMA coefficients 0.1 and 0.2 were likewise chosen after v8 was seen.
+For a formal conclusion we pre-registered a study, v10, in which both quality
+sources, the measurement and the GNN forecast, are given the same smoothing
+knob and the coefficient of each family is selected on a separate tuning set
+with non-overlapping seeds; the primary endpoint is the PDR difference between
+the two after tuning. That study had not been run at the time of writing.
+\section{Conclusion}
+Two pre-registered studies on chains of five and seven UAVs yield two different
+conclusions about one forecaster: a five-second graph regressor improves PDR
+when used for route selection against an untuned EWMA, but shows no clear
+additional benefit when it only triggers a shared relay placement rule.
+Exploratory analyses show that both outcomes have a single explanation: the
+routing gain is obtainable with a tuned one-parameter filter, and placement
+control is already close to the geometric bound of the problem. The ranking by
+forecast error runs opposite to the ranking by service, so in this scenario
+family higher forecast accuracy does not buy better service.
+
+The transferable lesson concerns evaluation rather than modelling: a forecaster
+should be reported as useful to a network only when it is placed inside the
+control loop, compared against a tuned baseline, and measured over paired
+scenario blocks. The system and evidence presented here are adequate for a
+simulation study of the stated scope and do not establish readiness for flight
+deployment.
+\section*{Author and data information}
+The authors thank M.Sc. Dang Le Bao Chuong for supervising the project.
+Nguyen Dinh Tam is the principal investigator and corresponding author.
+Code repository: \url{https://github.com/kaing615/UAV-link-quality-routing-support}.
+The reproduction package accompanying the manuscript contains the packaged
+sources, models, seed plans, results and a SHA-256 manifest; full traces are
+archived on the group's server.
+\begin{thebibliography}{99}
+\bibitem{bekmezci} İ. Bekmezci, O. K. Sahingoz, Ş. Temel.
+Flying Ad-Hoc Networks (FANETs): A survey.
+\textit{Ad Hoc Networks}, 11(3):1254--1270, 2013.
+\bibitem{gupta} L. Gupta, R. Jain, G. Vaszkun.
+Survey of important issues in UAV communication networks.
+\textit{IEEE Communications Surveys \& Tutorials}, 18(2):1123--1152, 2016.
+\bibitem{hayat} S. Hayat, E. Yanmaz, R. Muzaffar.
+Survey on unmanned aerial vehicle networks for civil applications:
+A communications viewpoint.
+\textit{IEEE Communications Surveys \& Tutorials}, 18(4):2624--2661, 2016.
+\bibitem{arafat} M. Y. Arafat, S. Moh.
+Routing protocols for unmanned aerial vehicle networks: A survey.
+\textit{IEEE Access}, 7:99694--99720, 2019.
+\bibitem{lakew} D. S. Lakew, U. Sa'ad, N.-N. Dao, W. Na, S. Cho.
+Routing in flying ad hoc networks: A comprehensive survey.
+\textit{IEEE Communications Surveys \& Tutorials}, 22(2):1071--1120, 2020.
+\bibitem{rfc3626} T. Clausen, P. Jacquet.
+\textit{Optimized Link State Routing Protocol (OLSR)}. RFC 3626, 2003.
+\url{https://www.rfc-editor.org/rfc/rfc3626}.
+\bibitem{rfc7181} T. Clausen, C. Dearlove, P. Jacquet, U. Herberg.
+\textit{The Optimized Link State Routing Protocol Version 2}. RFC 7181, 2014.
+\url{https://www.rfc-editor.org/rfc/rfc7181}.
+\bibitem{decouto} D. S. J. De Couto, D. Aguayo, J. Bicket, R. Morris.
+A high-throughput path metric for multi-hop wireless routing.
+\textit{Proc. ACM MobiCom}, 2003.
+\bibitem{draves} R. Draves, J. Padhye, B. Zill.
+Routing in multi-radio, multi-hop wireless mesh networks.
+\textit{Proc. ACM MobiCom}, pp. 114--128, 2004.
+\bibitem{olsrd} olsr.org. \textit{olsrd: an ad hoc wireless mesh routing
+daemon} (link quality extension). \url{https://github.com/OLSR/olsrd}.
+\bibitem{baccour} N. Baccour, A. Koubâa, L. Mottola, M. A. Zúñiga, H. Youssef,
+C. A. Boano, M. Alves. Radio link quality estimation in wireless sensor
+networks: A survey. \textit{ACM Transactions on Sensor Networks}, 8(4), 2012.
+\bibitem{cerar} G. Cerar, H. Yetgin, M. Mohorčič, C. Fortuna.
+Machine learning for wireless link quality estimation: A survey.
+\textit{IEEE Communications Surveys \& Tutorials}, 23(2), 2021.
+\url{https://arxiv.org/abs/1812.08856}.
+\bibitem{shi2024} J. Shi et al.
+Limitations and benefits of link quality prediction in stochastic wireless
+multihop networks. \textit{International Journal of Distributed Sensor
+Networks}, 2024. \url{https://doi.org/10.1155/2024/9546316}.
+\bibitem{kipf} T. N. Kipf, M. Welling.
+Semi-supervised classification with graph convolutional networks.
+\textit{ICLR}, 2017.
+\bibitem{graphsage} W. L. Hamilton, R. Ying, J. Leskovec.
+Inductive representation learning on large graphs.
+\textit{NeurIPS}, 2017. \url{https://arxiv.org/abs/1706.02216}.
+\bibitem{gat} P. Veličković, G. Cucurull, A. Casanova, A. Romero, P. Liò,
+Y. Bengio. Graph attention networks. \textit{ICLR}, 2018.
+\bibitem{xgboost} T. Chen, C. Guestrin.
+XGBoost: A scalable tree boosting system.
+\textit{Proc. ACM KDD}, pp. 785--794, 2016.
+\bibitem{routenet} K. Rusek, J. Suárez-Varela, P. Almasan, P. Barlet-Ros,
+A. Cabellos-Aparicio. RouteNet: Leveraging graph neural networks for network
+modeling and optimization in SDN.
+\textit{IEEE Journal on Selected Areas in Communications}, 38(10):2260--2270, 2020.
+\bibitem{bai2025} Y. Bai et al.
+Link prediction of UAV networks based on dynamic graph neural network.
+\textit{IET Communications}, 2025. \url{https://doi.org/10.1049/cmu2.70092}.
+\bibitem{gnnppor} Y. Song et al.
+GNNPPOR: A proximal policy optimization multi-factor joint routing approach
+based on graph neural networks in FANETs.
+\textit{IEEE Networking Letters}, 2025.
+\bibitem{drones2026} Graph neural network-enabled intelligence for unmanned
+aerial vehicle systems: A comprehensive review.
+\textit{Drones}, 2026. \url{https://doi.org/10.3390/drones10070548}.
+\bibitem{qmr} J. Liu, Q. Wang, C. He, K. Jaffrès-Runser, Y. Xu, Z. Li, Y. Xu.
+QMR: Q-learning based multi-objective optimization routing protocol for flying
+ad hoc networks. \textit{Computer Communications}, 150:304--316, 2020.
+\bibitem{rosati2013} S. Rosati, K. Kruzelecki, L. Traynard, B. Rimoldi.
+\textit{Speed-Aware Routing for UAV Ad-Hoc Networks}.
+arXiv:1307.6350, 2013. \url{https://arxiv.org/abs/1307.6350}.
+\bibitem{liu2025} J. Liu, P. Gong, H. Yang, S. Li, X. Gao.
+Cross-layer optimized OLSR protocol for FANETs in interference-intensive
+environments. \textit{Drones}, 9(11):778, 2025.
+\url{https://doi.org/10.3390/drones9110778}.
+\bibitem{zeng2016} Y. Zeng, R. Zhang, T. J. Lim.
+Throughput maximization for UAV-enabled mobile relaying systems.
+\textit{IEEE Transactions on Communications}, 64(12):4983--4996, 2016.
+\bibitem{abir} M. A. B. S. Abir, M. Z. Chowdhury, Y. M. Jang.
+Software-defined UAV networks for 6G systems: Requirements, opportunities,
+emerging techniques, challenges, and research directions.
+\textit{IEEE Open Journal of the Communications Society}, 4:2487--2547, 2023.
+\bibitem{closedloop2025} Closing the loop: Motion prediction models beyond
+open-loop benchmarks. arXiv:2505.05638, 2025.
+\url{https://arxiv.org/abs/2505.05638}.
+\bibitem{lin2018} J. Lin.
+The neural hype and comparisons against weak baselines.
+\textit{ACM SIGIR Forum}, 52(2):40--51, 2018.
+\url{https://doi.org/10.1145/3308774.3308781}.
+\bibitem{mcgreivy2024} N. McGreivy, A. Hakim.
+Weak baselines and reporting biases lead to overoptimism in machine learning
+for fluid-related partial differential equations.
+arXiv:2407.07218, 2024. \url{https://arxiv.org/abs/2407.07218}.
+\bibitem{nosek} B. A. Nosek, C. R. Ebersole, A. C. DeHaven, D. T. Mellor.
+The preregistration revolution.
+\textit{Proceedings of the National Academy of Sciences}, 115(11):2600--2606, 2018.
+\bibitem{efron1993} B. Efron, R. J. Tibshirani.
+\textit{An Introduction to the Bootstrap}. Chapman \& Hall, 1993.
+\bibitem{ns3} ns-3 Network Simulator, version 3.45. \url{https://www.nsnam.org/}.
+\end{thebibliography}
+\end{document}

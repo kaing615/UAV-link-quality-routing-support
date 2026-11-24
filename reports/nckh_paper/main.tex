@@ -15,44 +15,82 @@
 \renewcommand{\abstractname}{Tóm tắt}
 \newcommand{\code}[1]{\texttt{\detokenize{#1}}}
 \newcolumntype{Y}{>{\raggedright\arraybackslash}X}
-\title{\textbf{Dự báo chất lượng liên kết bằng mạng nơ-ron đồ thị cho định tuyến và bố trí UAV}}
+\title{\textbf{Dự báo chất lượng liên kết học được có cải thiện định tuyến và
+bố trí relay UAV? Hai nghiên cứu vòng kín đã đăng ký trước}}
 \author{Nguyễn Đình Tâm\thanks{Tác giả liên hệ: \href{mailto:23521389@gm.uit.edu.vn}{23521389@gm.uit.edu.vn}.} \and Võ Công Vinh}
 \date{Trường Đại học Công nghệ Thông tin, ĐHQG-HCM\\Tháng 11 năm 2026}
 \begin{document}
 \maketitle
 \begin{abstract}
-Nghiên cứu đánh giá giá trị của dự báo chất lượng liên kết đối với hai hành động trong mạng phương tiện bay không người lái (UAV): chọn tuyến dữ liệu và kích hoạt bố trí lại relay. Mạng nơ-ron đồ thị (GNN) dự báo tỷ lệ nhận probe trung bình trong năm giây tiếp theo từ vị trí, vận tốc và số đo liên kết nhân quả. Mô hình được học có giám sát từ dữ liệu lịch sử; mô hình đối chứng bỏ truyền thông điệp học được, nhưng vẫn giữ đặc trưng bậc nút và có ít tham số hơn. Hai nghiên cứu vòng kín được khóa trước khi chạy, mỗi nghiên cứu gồm 80 lượt validation và 192 lượt test mới trong ns-3.45, với chuỗi năm hoặc bảy UAV và các nhóm so sánh ghép cặp theo seed. Nghiên cứu định tuyến giữ relay đứng yên và cùng luật ghim tuyến, chỉ thay chất lượng hiện tại bằng dự báo. Trên 40 khối gradual test, dự báo đồ thị tăng tỷ lệ gói đến đích (PDR) 0,66 điểm phần trăm so với chất lượng hiện tại, khoảng tin cậy 95\% [0,38; 1,00], và tăng 0,38 điểm so với mô hình bỏ truyền thông điệp, khoảng tin cậy [0,12; 0,67]. Nghiên cứu điều khiển vị trí giữ cùng định tuyến và luật bố trí, chỉ thay điều kiện kích hoạt chuyển động. Dự báo giảm trung bình 0,20 giây chia cắt đồ thị probe so với kích hoạt phản ứng, khoảng tin cậy [$-1,05$; $1,45$], nên endpoint chính không đạt. Các nhóm di chuyển có khoảng 31 giây chia cắt so với 123 giây khi đứng yên, nhưng cần khoảng 637 m tổng quãng đường relay; đây là so sánh mô tả, không chứng minh lợi ích riêng của dự báo. Kết quả cho thấy cần đánh giá bộ dự báo cùng hành động cụ thể: GNN cải thiện định tuyến trong phạm vi đã thử, còn trigger vị trí chưa thể hiện lợi ích thêm rõ. Các giới hạn gồm telemetry tập trung chưa tranh chấp kênh, một seed huấn luyện, thay đổi phân phối chuyển động ở nghiên cứu vị trí và chưa có thử nghiệm bay thật.
+Dùng mô hình học được để dự báo chất lượng liên kết cho định tuyến UAV là một
+hướng đã có nhiều công trình, nhưng phần lớn được đánh giá bằng độ chính xác dự
+báo chứ không bằng dịch vụ mạng thu được. Nghiên cứu này kiểm tra trực tiếp câu
+hỏi đó: một bộ dự báo học được có cải thiện dịch vụ hay không, khi được đặt vào
+vòng kín và so với baseline đã chỉnh tham số. Một mạng nơ-ron đồ thị (GNN) dự
+báo tỷ lệ nhận probe trung bình trong năm giây tiếp theo từ vị trí, vận tốc và
+số đo liên kết nhân quả. Cùng bộ dự báo đã khóa trọng số điều khiển hai hành
+động khác nhau trong ns-3.45: chọn tuyến dữ liệu và kích hoạt bố trí lại relay.
+Hai nghiên cứu được đăng ký trước khi chạy, mỗi nghiên cứu gồm 80 lượt
+validation và 192 lượt test trên seed mới, với chuỗi năm hoặc bảy UAV và các
+nhóm so sánh ghép cặp theo khối seed. Kết quả đã khóa: ở định tuyến, dự báo đồ
+thị tăng tỷ lệ gói đến đích (PDR) 0,66 điểm phần trăm so với chất lượng hiện
+tại, khoảng tin cậy 95\% [0,38; 1,00]; ở điều khiển vị trí, dự báo chỉ giảm
+0,20 giây chia cắt so với kích hoạt phản ứng, khoảng tin cậy [$-1,05$; $1,45$],
+nên endpoint chính không đạt. Ba phân tích thăm dò trên seed mới giải thích cả
+hai kết quả và là đóng góp chính của bài. Thứ nhất, thứ hạng theo sai số dự báo
+đi \emph{ngược} thứ hạng theo dịch vụ: EWMA hệ số 0,1 có sai số bình phương
+trung bình xấu nhất trong ba bộ ước lượng nhưng PDR cao nhất, hơn GNN 0,31 điểm
+phần trăm [0,04; 0,61]. Thứ hai, toàn bộ mức tăng của GNN đạt được bằng một bộ
+lọc EWMA một tham số được chỉnh hệ số, nên lợi ích gắn với ước lượng chất lượng
+ổn định hơn chứ chưa phải giá trị của thông tin dự báo. Thứ ba, một giới hạn
+hình học cho thấy relay đặt cách đều lý tưởng vẫn còn 26,09 giây chia cắt mỗi
+lượt, nên luật kích hoạt phản ứng đã đạt khoảng 94\% mức giảm khả thi và gần
+như không còn dư địa cho dự báo. Kết luận thực hành: trong họ kịch bản này, một
+bộ ước lượng ổn định rẻ hơn thắng một bộ dự báo học được, và độ chính xác dự báo
+không thay thế được thí nghiệm dịch vụ vòng kín. Các giới hạn gồm telemetry tập
+trung chưa tranh chấp kênh, một seed huấn luyện, một họ topology chuỗi và chưa
+có thử nghiệm bay thật; một nghiên cứu khẳng định đã được đăng ký trước để kiểm
+tra kết luận thăm dò.
 \end{abstract}
-\noindent\textbf{Từ khóa:} mạng UAV; mạng nơ-ron đồ thị; chất lượng liên kết; định tuyến; điều khiển vị trí.
+\noindent\textbf{Từ khóa:} mạng UAV; mạng nơ-ron đồ thị; chất lượng liên kết;
+định tuyến; đánh giá vòng kín; đăng ký trước.
 \section{Giới thiệu}
 Trong chuỗi UAV làm relay, suy giảm liên kết có thể gây mất gói hoặc chia cắt
 nguồn--đích. Dự báo liên kết có thể hỗ trợ hai quyết định khác nhau: chọn đường
-đi của gói tin và đặt lại vị trí relay. Một mô hình dự báo tốt hơn chưa tự động
-chứng minh một bộ điều khiển tốt hơn; cần so sánh vòng kín với cùng luật hành
-động và các kịch bản ghép cặp.
+đi của gói tin và đặt lại vị trí relay. Nhiều công trình đã dùng dự báo, vị trí
+hoặc GNN cho định tuyến UAV, nên đóng góp cần kiểm tra ở đây không phải tuyên
+bố lần đầu dùng các cơ chế đó. Vấn đề là cách đánh giá: một mô hình dự báo tốt
+hơn chưa tự động chứng minh một bộ điều khiển tốt hơn, và phần lớn mô hình ước
+lượng chất lượng liên kết được đánh giá ngoại tuyến bằng độ chính xác~\cite{cerar}.
 
-ETX đưa xác suất truyền thành công vào chi phí đường đi, thay cho chỉ đếm
-hop~\cite{decouto}. Predictive-OLSR đã dùng vận tốc tương đối và GPS để điều
-chỉnh chất lượng đường~\cite{rosati2013}. Vì vậy, đóng góp cần kiểm tra ở đây
-là giá trị thêm của dự báo học được trong một hệ thống có kiểm soát, không
-phải tuyên bố lần đầu dùng dự báo hoặc vị trí trong định tuyến UAV.
-GraphSAGE cung cấp cơ chế học tổng hợp thông tin hàng xóm trên
-đồ thị~\cite{graphsage}; nghiên cứu dùng một biến thể có đặc trưng cạnh
-để hồi quy chất lượng liên kết.
+Bài báo vì vậy đặt câu hỏi ở mức dịch vụ. Thứ nhất, dự báo GNN có cải thiện tỷ
+lệ gói đến đích (PDR) so với chất lượng hiện tại khi giữ nguyên luật chọn
+tuyến? Thứ hai, dự báo có giảm số giây chia cắt khi giữ cùng định tuyến và cùng
+luật bố trí relay, chỉ thay cơ chế kích hoạt chuyển động? Thứ ba, và quan trọng
+nhất, nếu có lợi ích thì lợi ích đó còn lại bao nhiêu khi baseline đơn giản
+được chỉnh tham số, và nó có tương ứng với độ chính xác dự báo? Hai nghiên cứu
+kế tiếp được ký hiệu v8 và v9 để liên kết với các hồ sơ thực nghiệm trong kho mã.
 
-OLSR-LCN kết hợp tuổi thọ liên kết, nhiễu và tải nút trong mở rộng
-OLSR~\cite{liu2025}. Tối ưu quỹ đạo relay và công suất cũng đã được nghiên
-cứu trong hệ thống mobile relaying~\cite{zeng2016}. Nghiên cứu hiện tại dùng
-luật bố trí đơn giản để kiểm tra riêng thời điểm kích hoạt bằng dự báo;
-không giải bài toán quỹ đạo tối ưu hoặc so sánh hiệu năng trực tiếp với các
-công trình trên. Điểm nhấn là tách các phép so sánh, giữ seed và nguồn đã
-khóa, kiểm tra lệnh thực thi, và phân biệt chất lượng dự báo với dịch vụ mạng.
-
-Bài báo đặt hai câu hỏi. Thứ nhất, dự báo GNN có cải thiện tỷ lệ gói đến đích
-(PDR) so với chất lượng hiện tại khi giữ nguyên luật chọn tuyến? Thứ hai,
-dự báo có giảm số giây chia cắt khi giữ cùng định tuyến và cùng luật bố trí
-relay, chỉ thay cơ chế kích hoạt chuyển động? Hai nghiên cứu kế tiếp được
-ký hiệu v8 và v9 để liên kết với các hồ sơ thực nghiệm trong kho mã.
+Đóng góp của bài gồm bốn điểm:
+\begin{itemize}
+\item Một thiết kế tách riêng \emph{cùng một bộ dự báo đã khóa trọng số} cho
+hai hành động khác nhau trong cùng simulator, cùng binary, cùng luật hành động
+và cùng khối seed, nên chênh lệch quan sát được quy cho nguồn chất lượng chứ
+không cho cấu hình hệ thống.
+\item Bằng chứng định lượng rằng thứ hạng theo sai số dự báo đi ngược thứ hạng
+theo dịch vụ trên cùng tập trace: bộ ước lượng có sai số xấu nhất lại cho PDR
+cao nhất (Mục~\ref{sec:posthoc}).
+\item Một ablation tách \emph{làm mượt} khỏi \emph{dự báo}: toàn bộ mức tăng của
+GNN đạt được bằng một EWMA một tham số được chỉnh hệ số.
+\item Một giới hạn hình học của bài toán bố trí relay, cho thấy luật phản ứng
+đã đạt khoảng 94\% mức giảm chia cắt khả thi, nên kết quả âm ở nhánh điều khiển
+vị trí có một lời giải thích định lượng chứ không chỉ là thiếu lực kiểm định.
+\end{itemize}
+Toàn bộ quy trình được đăng ký trước~\cite{nosek}: endpoint, thứ tự kiểm định
+và quy tắc dừng được viết ra trước khi chạy cell đầu tiên, và cả kết quả bất
+lợi đều được báo cáo.
+\section{Công trình liên quan}
+\input{relatedwork}
 \section{Vật liệu và phương pháp}
 Hình~\ref{fig:design} tóm tắt hai phép so sánh.
 \begin{figure}[htbp]
@@ -63,74 +101,203 @@ Hình~\ref{fig:design} tóm tắt hai phép so sánh.
 \input{methods}
 \section{Kết quả}
 \input{results}
+\input{posthoc}
 \section{Thảo luận}
-Hai nghiên cứu cho các kết luận khác nhau về cùng một bộ dự báo. Với luật
-ghim tuyến, GNN đem lại lợi ích thêm nhỏ nhưng CI dương; so sánh với MLP
-ủng hộ lợi ích của cấu hình GNN đã thử, chưa cô lập riêng ảnh hưởng của
-truyền thông điệp vì số tham số khác nhau. Việc ít đổi tuyến hơn là một
-giải thích khả dĩ, chưa được can thiệp kiểm tra riêng.
+\subsection{Vì sao lợi ích định tuyến không quy được cho dự báo}
+Với luật ghim tuyến, GNN đem lại lợi ích thêm nhỏ nhưng khoảng tin cậy dương so
+với chất lượng hiện tại làm mượt bằng EWMA hệ số 0,5. Nhưng hệ số đó chưa được
+chỉnh, và Mục~\ref{sec:posthoc} cho thấy khi chỉnh thì EWMA 0,2 đạt đúng cùng
+mức, còn EWMA 0,1 vượt GNN. Đồng thời số lệnh đổi tuyến giảm theo cả hai cách:
+GNN 95 lệnh, EWMA 0,5 là 359 lệnh. Cơ chế hợp lý nhất là bộ ghim tuyến có hành
+vi tốt hơn khi đầu vào ít nhiễu, và một bộ dự báo học được cũng làm mượt như
+một tác dụng phụ. Vì vậy lợi ích của v8 gắn với \emph{một ước lượng chất lượng
+ổn định hơn}, chưa phải giá trị riêng của thông tin về tương lai.
 
-Với điều khiển vị trí, endpoint chính không đạt. Kết quả GNN--MLP có CI
-riêng lẻ dương chỉ mang tính mô tả vì cổng đầu tiên đã đóng. Trigger reactive
-dùng ngưỡng chất lượng 0,70, thường đã hành động trước chia cắt đồ thị
-ngưỡng 0,5; nó không chờ đến khi mất liên lạc mới di chuyển. Do đó dư địa
-cho dự báo năm giây có thể nhỏ. Chuyển miền vận tốc và việc mô hình chỉ
-được fit trên relay đứng yên cũng là các khả năng cần kiểm tra tiếp.
-Không có phép thử riêng để chọn một giải thích làm nguyên nhân duy nhất.
+Dấu hiệu mạnh nhất cho kết luận này là chiều của sai số dự báo. Nếu lợi ích đến
+từ thông tin dự báo thì bộ ước lượng chính xác hơn phải cho dịch vụ tốt hơn.
+Thực tế ngược lại: trên cùng trace test, sai số bình phương trung bình của EWMA
+0,1 là 0,00165, xấu hơn EWMA 0,5 (0,00127) và GNN (0,00078), nhưng PDR của nó
+cao nhất. Đây là trường hợp cụ thể của hiện tượng đã ghi nhận ở lái tự
+động~\cite{closedloop2025}: thứ hạng theo đánh giá hở không chuyển sang thứ hạng
+theo đánh giá vòng kín. So sánh GNN với MLP cũng chưa cô lập riêng ảnh hưởng của
+truyền thông điệp, vì hai mô hình khác số tham số.
 
-Di chuyển giảm mạnh mất kết nối so với relay đứng yên ở kịch bản nhanh,
-nhưng lợi ích đó chưa chứng minh phần đóng góp riêng của dự báo. Chi phí
-hình học tương tự giữa trigger GNN và reactive, trong khi GNN cần tính
-toán và telemetry bổ sung. CI chứa 0 không chứng minh tương đương; cũng
-không đủ căn cứ để thêm một mô hình phức tạp chỉ từ chênh lệch điểm ước lượng.
-Không thay ngưỡng hoặc huấn luyện lại sau khi thấy test. Hướng tiếp theo
-là thu thập dữ liệu relay di chuyển, kiểm tra hiệu chuẩn và báo hiệu trên
-kênh, rồi đăng ký một nghiên cứu mới nếu học chính sách bằng RL.
+\subsection{Vì sao nhánh điều khiển vị trí không còn dư địa}
+Endpoint chính của v9 không đạt. Kết quả GNN--MLP có khoảng tin cậy riêng lẻ
+dương chỉ mang tính mô tả vì cổng đầu tiên đã đóng. Có hai lý do cộng dồn.
+Trigger reactive dùng ngưỡng chất lượng 0,70, thường đã hành động trước khi đồ
+thị probe chia cắt ở ngưỡng 0,5; nó không chờ mất liên lạc mới di chuyển, nên
+dư địa cho dự báo năm giây vốn đã nhỏ. Quan trọng hơn, phân tích giới hạn hình
+học ở Mục~\ref{sec:posthoc} định lượng dư địa đó: relay đặt cách đều tức thời
+một cách lý tưởng vẫn còn 26,09 giây chia cắt mỗi lượt, so với 31,45 giây của
+reactive và 123,43 giây của đứng yên. Luật phản ứng đã đạt khoảng 94\% mức giảm
+khả thi; phần còn lại nằm ngoài tầm phủ của chuỗi relay chứ không nằm ở thời
+điểm kích hoạt. Trong tình huống như vậy, không một bộ dự báo nào, dù chính xác
+đến đâu, có thể cải thiện nhiều.
 
+Đây là một kết luận có ích về mặt thực hành: trước khi đầu tư vào một chính
+sách học được cho bài toán bố trí, nên đo giới hạn hình học của chính bài toán
+đó. Nhóm cũng ghi nhận các khả năng khác chưa loại trừ, gồm chuyển miền vận tốc
+giữa dữ liệu fit và kịch bản v9, và việc mô hình chỉ được fit trên dữ liệu
+relay đứng yên.
 
-Các giới hạn đã xác định gồm một họ topology chuỗi relay, bộ điều khiển
-tập trung chưa chịu mất thông điệp, lưu lượng telemetry chưa tranh chấp kênh,
-và chưa có thử nghiệm UAV thật. Ở nghiên cứu vị trí, tốc độ đầu mút khác dữ
-liệu huấn luyện, đồng thời relay chuyển từ đứng yên trong dữ liệu fit sang
-di chuyển. Mô hình không được huấn luyện để so sánh các hành động phản thực;
-nó chỉ kích hoạt một luật bố trí cố định. Quãng đường di chuyển chỉ là chi phí hình học, chưa được
-chuyển đổi thành năng lượng.
-Mỗi mô hình chỉ có một seed huấn luyện; CI bootstrap theo kịch bản điều kiện
-trên trọng số đã khóa, chưa mô tả biến thiên giữa các lần huấn luyện.
+\subsection{Chi phí và phạm vi của so sánh với OLSR-ETX}
+Chênh lệch lớn nhất trong bài, PDR cao hơn 5,75 điểm phần trăm so với OLSR-ETX
+HELLO nhanh, là con số cần đọc thận trọng nhất. Phương pháp ghim tuyến là điều
+khiển tập trung: nó có tầm nhìn toàn mạng, và trong mô phỏng này telemetry cùng
+lệnh điều khiển chưa được truyền thành gói cạnh tranh kênh. Với cùng binary và
+runtime, nghiên cứu v7 đo chi phí báo hiệu khoảng 5,55 kB/s cho ghim tuyến,
+gồm OLSR dự phòng 0,29 kB/s, probe 5,02 kB/s và báo cáo về bộ điều khiển ước
+lượng 0,25 kB/s, so với 1,78 kB/s của OLSR-ETX HELLO 0,5 giây và 0,29 kB/s của
+OLSR thuần. Probe được phát ở mọi arm nên airtime của probe là chung, nhưng
+phần báo cáo tập trung thì chưa chiếm kênh. Vì vậy con số 5,75 điểm phần trăm
+nên được hiểu là \emph{giới hạn trên của một bộ điều khiển tập trung lý tưởng
+hóa một phần}, không phải mức lợi ích có thể kỳ vọng sau khi mô phỏng đầy đủ
+báo hiệu, mất thông điệp và độ trễ điều khiển. Chi phí của ghim tuyến chủ yếu
+đến từ tần số probe, một tham số chưa được tối ưu.
+
+\subsection{Giới hạn}
+Khoảng tin cậy chứa 0 không chứng minh tương đương, và nhóm không thay ngưỡng
+hoặc huấn luyện lại sau khi thấy kết quả test. Các giới hạn đã xác định gồm một
+họ topology chuỗi relay, bộ điều khiển tập trung chưa chịu mất thông điệp, lưu
+lượng telemetry chưa tranh chấp kênh, và chưa có thử nghiệm UAV thật. Ở nghiên
+cứu vị trí, tốc độ đầu mút khác dữ liệu huấn luyện, đồng thời relay chuyển từ
+đứng yên trong dữ liệu fit sang di chuyển. Mô hình không được huấn luyện để so
+sánh các hành động phản thực; nó chỉ kích hoạt một luật bố trí cố định. Quãng
+đường di chuyển chỉ là chi phí hình học, chưa được chuyển thành năng lượng. Các
+nghiên cứu vòng kín dùng một seed huấn luyện; huấn luyện lại với năm seed giữ
+nguyên thứ tự sai số (GNN tốt nhất ở 5/5 seed), nhưng PDR vòng kín của các seed
+khác chưa được đo.
+
+Quan trọng nhất về mặt diễn giải: ba phân tích ở Mục~\ref{sec:posthoc} được làm
+sau khi thấy kết quả test, nên chúng \emph{giải thích} hai kết quả đã khóa chứ
+không thay thế một phép kiểm định khẳng định. Hệ số EWMA 0,1 và 0,2 cũng được
+chọn sau khi xem v8. Để kết luận chính thức, nhóm đã đăng ký trước một nghiên
+cứu v10 trong đó cả hai nguồn chất lượng, số đo và dự báo GNN, đều được cấp
+cùng một núm làm mượt và hệ số của mỗi họ được chọn trên một tập tuning riêng
+với seed không trùng; endpoint chính là chênh PDR giữa hai bên sau khi chỉnh.
+Nghiên cứu đó chưa chạy tại thời điểm viết bài.
 \section{Kết luận}
-Trong hai nghiên cứu đã khóa trên chuỗi 5/7 UAV, GNN hồi quy năm giây
-cải thiện PDR khi dùng cho lựa chọn tuyến, nhưng chưa thể hiện lợi ích
-thêm rõ khi chỉ kích hoạt một luật bố trí relay chung. Kết luận về dự báo
-cần gắn với hành động và baseline cụ thể; độ chính xác dự báo cao hơn
-không thay thế thí nghiệm dịch vụ vòng kín. Hệ thống và bằng chứng hiện
-có phù hợp cho đánh giá mô phỏng trong phạm vi công bố, chưa xác nhận
-khả năng triển khai bay thật.
+Hai nghiên cứu đã khóa trên chuỗi 5/7 UAV cho hai kết luận khác nhau về cùng
+một bộ dự báo: GNN hồi quy năm giây cải thiện PDR khi dùng cho lựa chọn tuyến
+so với EWMA chưa chỉnh, nhưng không thể hiện lợi ích thêm rõ khi chỉ kích hoạt
+một luật bố trí relay chung. Các phân tích thăm dò cho thấy cả hai kết quả có
+cùng một lời giải thích: lợi ích định tuyến đạt được bằng một bộ lọc một tham
+số đã chỉnh hệ số, và điều khiển vị trí đã gần giới hạn hình học của bài toán.
+Thứ hạng theo sai số dự báo đi ngược thứ hạng theo dịch vụ, nên trong họ kịch
+bản này độ chính xác dự báo cao hơn không mua được dịch vụ tốt hơn.
+
+Bài học có thể chuyển sang các công trình khác không nằm ở mô hình mà ở cách
+đánh giá: một bộ dự báo chỉ nên được công bố là có ích cho mạng khi nó được đặt
+vào vòng kín, đối chứng với baseline đã chỉnh tham số, và đo trên khối kịch bản
+ghép cặp. Hệ thống và bằng chứng hiện có phù hợp cho đánh giá mô phỏng trong
+phạm vi công bố, chưa xác nhận khả năng triển khai bay thật.
 \section*{Thông tin tác giả và dữ liệu}
 Nhóm cảm ơn ThS. Đặng Lê Bảo Chương đã hướng dẫn đề tài.
 Nguyễn Đình Tâm là người thực hiện chính và tác giả liên hệ.
 Kho mã nền: \url{https://github.com/kaing615/UAV-link-quality-routing-support}.
 Gói tái lập đi kèm bản thảo chứa nguồn đóng gói, mô hình, kế hoạch seed,
 kết quả và manifest SHA-256; trace đầy đủ được lưu trên server của nhóm.
-\begin{thebibliography}{9}
-\bibitem{decouto} D. S. J. De Couto, D. Aguayo, J. Bicket, R. Morris.
-A high-throughput path metric for multi-hop wireless routing.
-\textit{Proc. ACM MobiCom}, 2003.
-\bibitem{rosati2013} S. Rosati, K. Kruzelecki, L. Traynard, B. Rimoldi.
-\textit{Speed-Aware Routing for UAV Ad-Hoc Networks}.
-arXiv:1307.6350, 2013. \url{https://arxiv.org/abs/1307.6350}.
-\bibitem{graphsage} W. L. Hamilton, R. Ying, J. Leskovec.
-Inductive representation learning on large graphs.
-\textit{NeurIPS}, 2017. \url{https://arxiv.org/abs/1706.02216}.
-\bibitem{liu2025} J. Liu, P. Gong, H. Yang, S. Li, X. Gao.
-Cross-Layer Optimized OLSR Protocol for FANETs in Interference-Intensive Environments.
-\textit{Drones}, 9(11):778, 2025. \url{https://doi.org/10.3390/drones9110778}.
-\bibitem{zeng2016} Y. Zeng, R. Zhang, T. J. Lim.
-Throughput maximization for UAV-enabled mobile relaying systems.
-\textit{IEEE Transactions on Communications}, 64(12):4983--4996, 2016.
+\begin{thebibliography}{99}
+\bibitem{bekmezci} İ. Bekmezci, O. K. Sahingoz, Ş. Temel.
+Flying Ad-Hoc Networks (FANETs): A survey.
+\textit{Ad Hoc Networks}, 11(3):1254--1270, 2013.
+\bibitem{gupta} L. Gupta, R. Jain, G. Vaszkun.
+Survey of important issues in UAV communication networks.
+\textit{IEEE Communications Surveys \& Tutorials}, 18(2):1123--1152, 2016.
+\bibitem{hayat} S. Hayat, E. Yanmaz, R. Muzaffar.
+Survey on unmanned aerial vehicle networks for civil applications:
+A communications viewpoint.
+\textit{IEEE Communications Surveys \& Tutorials}, 18(4):2624--2661, 2016.
+\bibitem{arafat} M. Y. Arafat, S. Moh.
+Routing protocols for unmanned aerial vehicle networks: A survey.
+\textit{IEEE Access}, 7:99694--99720, 2019.
+\bibitem{lakew} D. S. Lakew, U. Sa'ad, N.-N. Dao, W. Na, S. Cho.
+Routing in flying ad hoc networks: A comprehensive survey.
+\textit{IEEE Communications Surveys \& Tutorials}, 22(2):1071--1120, 2020.
 \bibitem{rfc3626} T. Clausen, P. Jacquet.
 \textit{Optimized Link State Routing Protocol (OLSR)}. RFC 3626, 2003.
 \url{https://www.rfc-editor.org/rfc/rfc3626}.
+\bibitem{rfc7181} T. Clausen, C. Dearlove, P. Jacquet, U. Herberg.
+\textit{The Optimized Link State Routing Protocol Version 2}. RFC 7181, 2014.
+\url{https://www.rfc-editor.org/rfc/rfc7181}.
+\bibitem{decouto} D. S. J. De Couto, D. Aguayo, J. Bicket, R. Morris.
+A high-throughput path metric for multi-hop wireless routing.
+\textit{Proc. ACM MobiCom}, 2003.
+\bibitem{draves} R. Draves, J. Padhye, B. Zill.
+Routing in multi-radio, multi-hop wireless mesh networks.
+\textit{Proc. ACM MobiCom}, tr. 114--128, 2004.
+\bibitem{olsrd} olsr.org. \textit{olsrd: an ad hoc wireless mesh routing
+daemon} (link quality extension). \url{https://github.com/OLSR/olsrd}.
+\bibitem{baccour} N. Baccour, A. Koubâa, L. Mottola, M. A. Zúñiga, H. Youssef,
+C. A. Boano, M. Alves. Radio link quality estimation in wireless sensor
+networks: A survey. \textit{ACM Transactions on Sensor Networks}, 8(4), 2012.
+\bibitem{cerar} G. Cerar, H. Yetgin, M. Mohorčič, C. Fortuna.
+Machine learning for wireless link quality estimation: A survey.
+\textit{IEEE Communications Surveys \& Tutorials}, 23(2), 2021.
+\url{https://arxiv.org/abs/1812.08856}.
+\bibitem{shi2024} J. Shi et al.
+Limitations and benefits of link quality prediction in stochastic wireless
+multihop networks. \textit{International Journal of Distributed Sensor
+Networks}, 2024. \url{https://doi.org/10.1155/2024/9546316}.
+\bibitem{kipf} T. N. Kipf, M. Welling.
+Semi-supervised classification with graph convolutional networks.
+\textit{ICLR}, 2017.
+\bibitem{graphsage} W. L. Hamilton, R. Ying, J. Leskovec.
+Inductive representation learning on large graphs.
+\textit{NeurIPS}, 2017. \url{https://arxiv.org/abs/1706.02216}.
+\bibitem{gat} P. Veličković, G. Cucurull, A. Casanova, A. Romero, P. Liò,
+Y. Bengio. Graph attention networks. \textit{ICLR}, 2018.
+\bibitem{xgboost} T. Chen, C. Guestrin.
+XGBoost: A scalable tree boosting system.
+\textit{Proc. ACM KDD}, tr. 785--794, 2016.
+\bibitem{routenet} K. Rusek, J. Suárez-Varela, P. Almasan, P. Barlet-Ros,
+A. Cabellos-Aparicio. RouteNet: Leveraging graph neural networks for network
+modeling and optimization in SDN.
+\textit{IEEE Journal on Selected Areas in Communications}, 38(10):2260--2270, 2020.
+\bibitem{bai2025} Y. Bai et al.
+Link prediction of UAV networks based on dynamic graph neural network.
+\textit{IET Communications}, 2025. \url{https://doi.org/10.1049/cmu2.70092}.
+\bibitem{gnnppor} Y. Song et al.
+GNNPPOR: A proximal policy optimization multi-factor joint routing approach
+based on graph neural networks in FANETs.
+\textit{IEEE Networking Letters}, 2025.
+\bibitem{drones2026} Graph neural network-enabled intelligence for unmanned
+aerial vehicle systems: A comprehensive review.
+\textit{Drones}, 2026. \url{https://doi.org/10.3390/drones10070548}.
+\bibitem{qmr} J. Liu, Q. Wang, C. He, K. Jaffrès-Runser, Y. Xu, Z. Li, Y. Xu.
+QMR: Q-learning based multi-objective optimization routing protocol for flying
+ad hoc networks. \textit{Computer Communications}, 150:304--316, 2020.
+\bibitem{rosati2013} S. Rosati, K. Kruzelecki, L. Traynard, B. Rimoldi.
+\textit{Speed-Aware Routing for UAV Ad-Hoc Networks}.
+arXiv:1307.6350, 2013. \url{https://arxiv.org/abs/1307.6350}.
+\bibitem{liu2025} J. Liu, P. Gong, H. Yang, S. Li, X. Gao.
+Cross-layer optimized OLSR protocol for FANETs in interference-intensive
+environments. \textit{Drones}, 9(11):778, 2025.
+\url{https://doi.org/10.3390/drones9110778}.
+\bibitem{zeng2016} Y. Zeng, R. Zhang, T. J. Lim.
+Throughput maximization for UAV-enabled mobile relaying systems.
+\textit{IEEE Transactions on Communications}, 64(12):4983--4996, 2016.
+\bibitem{abir} M. A. B. S. Abir, M. Z. Chowdhury, Y. M. Jang.
+Software-defined UAV networks for 6G systems: Requirements, opportunities,
+emerging techniques, challenges, and research directions.
+\textit{IEEE Open Journal of the Communications Society}, 4:2487--2547, 2023.
+\bibitem{closedloop2025} Closing the loop: Motion prediction models beyond
+open-loop benchmarks. arXiv:2505.05638, 2025.
+\url{https://arxiv.org/abs/2505.05638}.
+\bibitem{lin2018} J. Lin.
+The neural hype and comparisons against weak baselines.
+\textit{ACM SIGIR Forum}, 52(2):40--51, 2018.
+\url{https://doi.org/10.1145/3308774.3308781}.
+\bibitem{mcgreivy2024} N. McGreivy, A. Hakim.
+Weak baselines and reporting biases lead to overoptimism in machine learning
+for fluid-related partial differential equations.
+arXiv:2407.07218, 2024. \url{https://arxiv.org/abs/2407.07218}.
+\bibitem{nosek} B. A. Nosek, C. R. Ebersole, A. C. DeHaven, D. T. Mellor.
+The preregistration revolution.
+\textit{Proceedings of the National Academy of Sciences}, 115(11):2600--2606, 2018.
 \bibitem{efron1993} B. Efron, R. J. Tibshirani.
 \textit{An Introduction to the Bootstrap}. Chapman \& Hall, 1993.
+\bibitem{ns3} ns-3 Network Simulator, phiên bản 3.45. \url{https://www.nsnam.org/}.
 \end{thebibliography}
 \end{document}

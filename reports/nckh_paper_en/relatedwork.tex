@@ -1,0 +1,67 @@
+\subsection{Link-quality-aware routing}
+FANETs are characterised by high mobility and rapidly changing
+topology~\cite{bekmezci}, and both the general UAV network
+surveys~\cite{gupta,hayat} and the routing-specific
+surveys~\cite{arafat,lakew} treat link durability as a decisive factor.
+OLSR~\cite{rfc3626} selects routes by hop count: a link counts as usable as
+soon as HELLO messages traverse it in both directions, and its packet loss does
+not enter the path cost. OLSRv2~\cite{rfc7181} adds a link-metric framework, but
+the OLSR implementation in ns-3 follows RFC 3626. ETX~\cite{decouto} and
+ETT~\cite{draves} replace hop count with a cost reflecting loss and bandwidth;
+olsrd~\cite{olsrd} brings ETX into OLSR and is the natural distributed baseline
+for any link-quality-aware routing method.
+
+\subsection{Link-quality forecasting and GNNs}
+Link-quality estimation is a research direction in its own right, ranging from
+packet-statistics estimators~\cite{baccour} to machine-learning
+models~\cite{cerar}. GNNs learn node representations through iterated message
+passing: GCN~\cite{kipf}, GraphSAGE~\cite{graphsage} with neighbour aggregation
+that generalises to graphs unseen during training, and GAT~\cite{gat} with
+attention weights per neighbour. A UAV network is naturally a time-varying
+graph, which makes GNNs a reasonable candidate. In wired networks,
+RouteNet~\cite{routenet} uses a GNN to predict delay and loss from topology and
+routing. In UAV networks, Bai et al.~\cite{bai2025} predict links with a dynamic
+GNN and take GraphSAGE and node2vec themselves as baselines;
+GNNPPOR~\cite{gnnppor} couples a GNN with PPO for path selection in FANETs; and
+a recent review~\cite{drones2026} surveys GNN applications across UAV systems.
+Within FANETs, QMR~\cite{qmr} uses Q-learning for multi-objective next-hop
+selection, and XGBoost~\cite{xgboost} is the strong tabular baseline that any
+GNN evaluation needs. Predictive-OLSR~\cite{rosati2013} uses GPS and relative
+velocity to adjust ETX weights, while OLSR-LCN~\cite{liu2025} combines link
+lifetime, interference and node load. In other words, \emph{using forecasting,
+position information or GNNs for UAV routing is no longer a new idea}; the open
+question is what such a model is actually worth when measured by service.
+
+\subsection{The gap between accuracy and service benefit}
+Cerar et al.~\cite{cerar} observe in their survey that most link-quality
+estimation models are evaluated offline by accuracy and are rarely placed
+inside a routing loop to measure the service benefit. Shi et al.~\cite{shi2024}
+show that several families of machine-learning models converge on the same
+accuracy ceiling imposed by channel stochasticity. In other fields this gap is
+well documented: in autonomous driving, the ranking of motion predictors shifts
+substantially when evaluation moves from open loop to closed
+loop~\cite{closedloop2025}; in information retrieval, much of the reported gain
+of neural models disappears once baselines are properly tuned~\cite{lin2018};
+and in machine learning for partial differential equations, 79\% of surveyed
+articles compare against a weak baseline~\cite{mcgreivy2024}.
+Pre-registration~\cite{nosek} is a direct countermeasure against reselecting a
+configuration after seeing the results.
+
+\subsection{Relay placement}
+Work on relay trajectory optimisation~\cite{zeng2016} controls UAV positions to
+maximise throughput, usually with an analytic channel model and the assumption
+that traffic follows the relay chain the controller selects. Software-defined
+UAV networks~\cite{abir} employ a controller with a global view; the drawbacks
+usually cited are signalling overhead, control delay and scalability. This work
+does not solve the optimal trajectory problem; it keeps a fixed equispacing
+placement rule in order to isolate the \emph{trigger timing}, and additionally
+measures a geometric bound so that the distance between that rule and the best
+achievable outcome is known.
+
+\subsection{The targeted gap}
+To the best of our knowledge, no prior work in UAV networking (i) drives two
+different actions from one weight-locked forecaster inside the same simulator,
+(ii) pre-registers the endpoints and the test order and then reports
+unfavourable results as well, and (iii) contrasts the ranking by forecast error
+with the ranking by service on the same set of traces. Those are the three
+points this paper targets.

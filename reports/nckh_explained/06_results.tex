@@ -29,6 +29,16 @@ Trên cùng các trace test của nhóm chất lượng hiện tại, MSE lần 
 
 Số lệnh đổi tuyến trên toàn test là 95 với GNN, 208 với MLP và 359 với chất lượng hiện tại. Việc ít đổi tuyến hơn là một giải thích khả dĩ cho hiệu quả dịch vụ, nhưng nghiên cứu chưa có phép can thiệp riêng để chứng minh đây là nguyên nhân duy nhất.
 
+\section{Kiểm tra thêm: lợi ích đến từ dự báo hay từ làm mượt?}
+Sau test v8, nhóm chạy thêm một thăm dò gọi là v8x, gồm 200 lượt trên 40 khối gradual mới. Thăm dò này giữ nguyên luật chọn tuyến và chỉ đổi mức làm mượt của EWMA. Bộ chọn tuyến ``chất lượng hiện tại'' của v8 trộn 50\% số đo mới với 50\% giá trị cũ (EWMA 0,5).
+\begin{itemize}
+\item GNN hơn EWMA 0,5 khoảng 0,78 điểm phần trăm, tức kết quả v8 lặp lại được.
+\item EWMA 0,2 (tin số cũ nhiều hơn) cũng hơn EWMA 0,5 đúng 0,78 điểm, ngang GNN.
+\item EWMA 0,1 hơn EWMA 0,5 khoảng 1,09 điểm và hơn GNN 0,31 điểm, khoảng tin cậy từ 0,04 đến 0,61.
+\item Giữ tuyến lâu hơn (dwell 15 giây) không giúp gì.
+\end{itemize}
+EWMA 0,1 lại là bộ dự báo kém nhất theo MSE (khoảng 0,00165), nhưng cho PDR cao nhất. Vì vậy điều quan trọng là ước lượng chất lượng ít dao động, không phải độ chính xác của dự báo. Đây là phân tích sau test, không đăng ký trước. Nó không xóa kết quả v8, nhưng cho thấy v8 chưa chứng minh được giá trị riêng của dự báo so với một bộ lọc đơn giản đã chỉnh hệ số.
+
 V8 cũng chưa cho thấy lợi ích giảm chia cắt rõ ràng so với nhóm hiện tại. Vì vậy không kéo kết luận PDR sang mọi chỉ số khác. Kết quả chính là cải thiện tỷ lệ gói đến đích trong cấu hình đã thử~\cite{paper}.
 
 \section{V9: chưa chứng minh dự báo hơn phản ứng}
@@ -61,12 +71,14 @@ Có vài cách giải thích hợp lý nhưng chưa được kiểm tra riêng. 
 
 Một vấn đề khác là điều kiện v9 khác dữ liệu học: đầu mút nhanh hơn và relay bắt đầu di chuyển. Mô hình được học từ relay đứng yên có thể chưa thích hợp cho mọi trạng thái đó. Ngoài ra, các nhóm chuyển động đều đi tới cùng kiểu vị trí. Dự báo chỉ thay thời điểm kích hoạt, chưa khai thác khả năng chọn một hành động khác.
 
-Các ý trên là giả thuyết để nghiên cứu tiếp. Báo cáo không chọn một ý làm nguyên nhân chắc chắn chỉ từ kết quả hiện có.
+Một phân tích sau test cho câu trả lời định lượng hơn, gọi là giới hạn hình học. Từ dữ liệu, khoảng 180 m là khoảng cách mà một liên kết chỉ còn khoảng một nửa khả năng đạt ngưỡng. Cuối mỗi lượt, hai đầu mút cách nhau quá xa: kể cả khi các relay đứng cách đều hoàn hảo và di chuyển tức thời, mỗi lượt vẫn chia cắt khoảng 26 giây. Nhóm phản ứng có 31,45 giây, tức đã đạt khoảng 94\% mức giảm có thể có. Dư địa còn lại cho mọi cách kích hoạt, kể cả dự báo hay học tăng cường, chỉ khoảng 5 giây.
+
+Các ý còn lại vẫn là giả thuyết để nghiên cứu tiếp. Báo cáo không chọn một ý làm nguyên nhân chắc chắn chỉ từ kết quả hiện có.
 
 \section{Những giới hạn phải nói khi bảo vệ}
 Hai nghiên cứu mới chủ yếu xét họ cấu trúc chuỗi năm hoặc bảy UAV. Quan sát và lệnh điều khiển tập trung chưa được truyền thành lưu lượng tranh chấp kênh đầy đủ. Chưa có lỗi mất lệnh và giới hạn tính toán trên thiết bị bay được đánh giá toàn diện. Chưa có mô hình năng lượng bay, thử nghiệm autopilot hay bay thật.
 
-Mỗi mô hình mới chỉ có một seed huấn luyện. Khoảng tin cậy bootstrap điều kiện trên trọng số đã khóa, chưa biểu diễn biến thiên giữa nhiều lần học. MLP không khớp hoàn toàn số tham số với GNN. Những điều này giới hạn phạm vi kết luận, không làm số liệu đã đo biến mất.
+Các nghiên cứu vòng kín dùng một seed huấn luyện. Khi học lại với năm seed, GNN vẫn có MSE thấp nhất ở cả năm lần, nhưng PDR vòng kín của các lần học khác chưa được đo. Baseline EWMA 0,5 của v8 chưa được chỉnh hệ số. MLP không khớp hoàn toàn số tham số với GNN. Những điều này giới hạn phạm vi kết luận, không làm số liệu đã đo biến mất.
 
-\remember{Cách báo cáo đúng là: GNN cải thiện định tuyến trong phạm vi thử nghiệm; phần kích hoạt vị trí chưa cho thấy lợi ích thêm rõ so với phản ứng. Không biến kết quả chưa rõ thành thành công, cũng không coi nó là bằng chứng GNN luôn vô ích.}
+\remember{Cách báo cáo đúng là: GNN cải thiện định tuyến so với EWMA 0,5 trong phạm vi thử nghiệm, nhưng EWMA mượt hơn cũng đạt mức đó; phần kích hoạt vị trí chưa cho thấy lợi ích thêm rõ so với phản ứng và đã gần giới hạn hình học. Không biến kết quả chưa rõ thành thành công, cũng không coi nó là bằng chứng GNN luôn vô ích.}
 

@@ -1,0 +1,59 @@
+\subsection{Định tuyến theo chất lượng liên kết}
+FANET có tính di động cao và topology thay đổi nhanh~\cite{bekmezci}, nên các
+khảo sát về mạng UAV~\cite{gupta,hayat} và về định tuyến
+FANET~\cite{arafat,lakew} đều xem độ bền liên kết là yếu tố quyết định.
+OLSR~\cite{rfc3626} chọn tuyến theo số hop: một liên kết được coi là dùng được
+chỉ cần HELLO đi qua hai chiều, mức tổn thất gói không vào chi phí tuyến.
+OLSRv2~\cite{rfc7181} thêm khung metric nhưng bản OLSR trong ns-3 theo RFC 3626.
+ETX~\cite{decouto} và ETT~\cite{draves} thay số hop bằng chi phí phản ánh tổn
+thất và băng thông; olsrd~\cite{olsrd} đưa ETX vào OLSR và là baseline phân tán
+tự nhiên cho mọi phương pháp định tuyến theo chất lượng liên kết.
+
+\subsection{Dự báo chất lượng liên kết và GNN}
+Ước lượng chất lượng liên kết là một hướng riêng, từ các bộ ước lượng thống kê
+gói~\cite{baccour} đến các mô hình học máy~\cite{cerar}. GNN học biểu diễn nút
+bằng truyền thông điệp lặp lại: GCN~\cite{kipf}, GraphSAGE~\cite{graphsage} với
+tổng hợp lân cận áp dụng được cho đồ thị chưa thấy, GAT~\cite{gat} gán trọng số
+chú ý. Mạng UAV tự nhiên là đồ thị biến thiên theo thời gian nên GNN là ứng viên
+hợp lý. Trong mạng có dây, RouteNet~\cite{routenet} dùng GNN dự đoán trễ và mất
+gói từ topology và tuyến. Trong mạng UAV, Bai và cộng sự~\cite{bai2025} dự đoán
+liên kết bằng GNN động và lấy chính GraphSAGE cùng node2vec làm đối chứng;
+GNNPPOR~\cite{gnnppor} ghép GNN với PPO để chọn tuyến trong FANET; một khảo sát
+gần đây~\cite{drones2026} tổng hợp các hướng dùng GNN cho hệ thống UAV. Trong
+FANET, QMR~\cite{qmr} dùng Q-learning chọn bước kế tiếp theo nhiều mục tiêu, và
+XGBoost~\cite{xgboost} là baseline bảng mạnh cần có khi đánh giá GNN.
+Predictive-OLSR~\cite{rosati2013} dùng GPS và vận tốc tương đối để điều chỉnh
+trọng số ETX; OLSR-LCN~\cite{liu2025} kết hợp tuổi thọ liên kết, nhiễu và tải
+nút. Nghĩa là \emph{dùng dự báo, vị trí hoặc GNN cho định tuyến UAV không còn
+là ý tưởng mới}; câu hỏi còn mở là lợi ích thực tế của nó khi đo bằng dịch vụ.
+
+\subsection{Khoảng cách giữa độ chính xác và lợi ích dịch vụ}
+Khảo sát của Cerar và cộng sự~\cite{cerar} nhận xét rằng phần lớn mô hình ước
+lượng chất lượng liên kết được đánh giá ngoại tuyến bằng độ chính xác, ít khi
+được đặt vào vòng định tuyến để đo lợi ích dịch vụ. Shi và cộng
+sự~\cite{shi2024} cho thấy nhiều họ mô hình học máy cùng chạm một trần độ chính
+xác do tính ngẫu nhiên của kênh. Ở các lĩnh vực khác, khoảng cách này đã được
+ghi nhận rõ: trong lái tự động, thứ hạng của các bộ dự báo chuyển động thay đổi
+đáng kể khi chuyển từ đánh giá hở sang đánh giá vòng kín~\cite{closedloop2025};
+trong truy hồi thông tin, phần lớn lợi ích báo cáo của mô hình nơ-ron biến mất
+khi baseline được chỉnh đúng~\cite{lin2018}; trong học máy cho phương trình đạo
+hàm riêng, 79\% bài so sánh với một baseline yếu~\cite{mcgreivy2024}. Đăng ký
+trước~\cite{nosek} là biện pháp trực tiếp chống việc chọn lại cấu hình sau khi
+thấy kết quả.
+
+\subsection{Điều khiển vị trí relay}
+Hướng tối ưu quỹ đạo relay~\cite{zeng2016} điều khiển vị trí UAV để tối đa
+thông lượng, thường với mô hình kênh giải tích và giả định tuyến đi qua chuỗi
+relay mà bộ điều khiển chọn. Mạng UAV định nghĩa bằng phần mềm~\cite{abir} dùng
+bộ điều khiển có tầm nhìn toàn mạng, với nhược điểm thường được nêu là chi phí
+báo hiệu, độ trễ điều khiển và khả năng mở rộng. Nghiên cứu này không giải bài
+toán quỹ đạo tối ưu; nó giữ một luật bố trí cách đều cố định để tách riêng
+\emph{thời điểm kích hoạt}, và đo thêm một giới hạn hình học để biết luật đó
+còn cách mức tốt nhất khả thi bao xa.
+
+\subsection{Khoảng trống được nhắm tới}
+Chưa có công trình nào trong mạng UAV, theo hiểu biết của nhóm, (i) cho cùng
+một bộ dự báo đã khóa điều khiển hai hành động khác nhau trong cùng simulator,
+(ii) đăng ký trước endpoint và thứ tự kiểm định rồi báo cáo cả kết quả bất lợi,
+và (iii) đối chiếu thứ hạng theo sai số dự báo với thứ hạng theo dịch vụ trên
+cùng tập trace. Đó là ba điểm bài báo này nhắm tới.

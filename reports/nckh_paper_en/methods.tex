@@ -1,0 +1,183 @@
+\subsection{Problem statement}
+At time $t$ the network is a graph $G_t=(V,E_t)$ whose vertices $V$ are the
+UAVs. Each edge $e=(a,b)$ carries a measured quality $d_e(t)\in[0,1]$, the probe
+reception ratio within a one-second window. A quality estimator produces the
+decision variable $x_e(t)$ in one of two families:
+\begin{align}
+\text{measure and smooth:}\quad & x_e(t)=\alpha\, d_e(t)+(1-\alpha)\,x_e(t-1),\label{eq:ewma}\\
+\text{learned forecast:}\quad & x_e(t)=\hat g_e(t)\approx
+\frac{1}{H}\sum_{\tau=t+1}^{t+H} d_e(\tau),\qquad H=5\ \text{s}.\label{eq:fore}
+\end{align}
+Equation~\eqref{eq:ewma} is a one-parameter EWMA; $\alpha=0.5$ is the
+configuration inherited from earlier studies and serves as the v8 baseline.
+Equation~\eqref{eq:fore} is the GNN regressor, trained by supervised learning on
+historical data and using only causal observations up to time $t$.
+
+Both actions consume the same $x$. The routing action selects the path
+\begin{equation}
+\pi_t=\arg\min_{P\in\mathcal{P}(s,d)}\ \sum_{e\in P}\frac{1}{\max(x_e(t),\varepsilon)},
+\label{eq:etx}
+\end{equation}
+that is, an ETX-style cost~\cite{decouto} evaluated on $x$ rather than on raw
+measurements, under the route-pinning rule with margin and dwell described in
+Section~\ref{sub:v8}. The placement action uses the best bottleneck path quality
+\begin{equation}
+Q(t)=\max_{P\in\mathcal{P}(s,d)}\ \min_{e\in P} x_e(t),
+\label{eq:bottleneck}
+\end{equation}
+and triggers a fixed relay motion rule when $Q(t)$ falls below a threshold.
+
+The central distinction of this paper lies between two measures taken on the
+same $x$. \emph{Forecast} quality is measured by the mean squared error
+$\mathrm{MSE}=\mathbb{E}\big[(x_e(t)-\frac{1}{H}\sum_\tau d_e(\tau))^2\big]$,
+computed offline over traces. \emph{Service} quality is measured by PDR and
+disconnected seconds, computed in closed loop while $x$ actually
+drives~\eqref{eq:etx} or~\eqref{eq:bottleneck}. The question of the paper is
+whether these two measures rank estimators in the same order.
+
+\subsection{Environment and experimental design}
+The experiments use ns-3.45~\cite{ns3}, Wi-Fi 802.11g and OLSR~\cite{rfc3626} on
+chains of five or seven UAVs. Source and destination sit at the two ends of the
+chain and the remaining nodes act as relays. Each episode lasts 240~s with a
+256~kbps UDP main flow and two 128~kbps background flows. Two contexts are used,
+static and gradual: the endpoints either stay still or separate from second 30.
+The binary and runtime are inherited from the previous studies, including the
+OLSR-ETX baseline implemented by the group and an ARP DeadTimeout of 1~s. Every
+arm uses the same binary, channel, traffic and block seeds.
+
+The simulation area is $1800\times1200$~m with altitudes of 50--150~m. The
+initial spacing between consecutive nodes is nominally 24~m with up to 0.72~m of
+jitter per coordinate. The channel combines log-distance path loss (exponent
+2.2, 40~dB reference loss at 1~m) with Nakagami fading ($m=3$, $1.5$ and $1$ for
+distances below 96~m, 96--180~m and above 180~m respectively). Transmit power is
+20~dBm and the PHY rate is fixed at 6~Mbps. The nominal 240~m range is used to
+set receiver sensitivity and is not a distance-based link cut-off. Warmup lasts
+10~s; probes are broadcast every 0.05~s and aggregated over a one-second window;
+the main flow uses 512~B packets, 15{,}000 packets per episode.
+
+The protocol was written before the new simulations. Each phase packages the
+source code, model, seed plan and runtime identity under SHA-256; the test phase
+inherits exactly the sources and model of validation. Each cell runs once, and a
+four-worker queue holds a server-wide lock. Validation comprises 80 cells (two
+static and eight gradual per configuration, four arms); the test comprises 192
+cells (four static and 20 gradual per configuration, four arms). No model was
+reselected on the basis of validation or test service results.
+
+\subsection{Link forecasting and the control model}
+The model forecasts the mean probe reception ratio over the next five seconds,
+not a link survival probability. The development data consist of 48 HOLD traces
+from the v7 test phase for fitting and 20 HOLD validation traces from v7 for
+epoch selection. These already-observed data are treated wholly as development
+data for the new studies; v8 and v9 use independent audited seeds. Each episode
+yields 236 valid forecast origins, giving 11{,}328 fitting samples and 4{,}720
+epoch-selection samples; correlated frames are not treated as independent
+replicates when testing control effectiveness.
+
+The inputs comprise only current and past observations. The eight node features
+are coordinates relative to the formation centroid, velocity, neighbour degree
+and mean reception ratio. The seven edge features are distance, RSSI, current
+reception ratio, an EWMA with coefficient 0.5, the reception-ratio difference,
+the separation velocity and the magnitude of relative velocity. Coordinates and
+distances are divided by 240~m, velocities by 10~m/s, and RSSI is transformed as
+$(\mathrm{RSSI}+90)/40$ with missing values encoded as $-100$~dBm. An edge
+participates in message passing only if its current reception ratio is at least
+0.1. No future mission trajectory is read.
+
+Edge-SAGE comprises two mean-aggregation layers with edge features, 64
+dimensions and ReLU, followed by a 64-dimensional node-pair decoder with a
+sigmoid and symmetrised logits. The GNN has 19{,}137 parameters. The MLP drops
+the two learned message-passing branches, leaving 13{,}505 parameters, and still
+retains the node-degree feature. The ablation therefore does not separate the
+effect of message passing from the difference in model capacity. Both use MSE
+loss, Adam with learning rate 0.001, weight decay $10^{-5}$, batch size 128,
+gradient clipping at norm 5, at most 60 epochs, patience 10 and seed 20261123.
+The GNN and MLP selected epochs 58 and 59. The largest discrepancy between the
+NumPy and PyTorch inference paths over 40 check snapshots is
+$1.19\times10^{-7}$. This is supervised learning; neither study uses
+reinforcement learning.
+
+\subsection{Routing study v8}\label{sub:v8}
+The four arms are current quality (\code{lq-route}), the GNN forecast
+(\code{gnn-route}), the MLP forecast (\code{mlp-route}) and OLSR-ETX-fast. The
+three route-pinning arms share the same ETX rule with margin 1.0, a three-step
+warmup and a five-second dwell; the broken-link check still uses a current
+reception ratio below 0.1. ETX-fast uses the HELLO interval of 0.5~s and TC
+interval of 1.25~s selected in v7. Relays stay still, and each gradual endpoint
+has a nominal speed of 1~m/s multiplied by a factor in $[0.85, 1.15]$ drawn per
+layout seed. The source moves along $+y$ and the destination along $-y$; the
+same seed yields the same endpoint motion across arms. Validation checks
+technical criteria only: cell count, route correctness, simulator flags,
+forecasting, counters and background flows, no startup blackout and no relay
+motion. The go decision does not depend on any PDR difference.
+
+The three tests in fixed order are the PDR difference of GNN minus current, GNN
+minus MLP, and then GNN minus ETX-fast. A step succeeds when the lower bound of
+the 95\% confidence interval is positive; an affirmative interpretation is
+permitted only when every preceding step has succeeded. Test MSE is measured
+separately for the GNN, the MLP and the EWMA on the same \code{lq-route} traces,
+kept apart from closed-loop PDR.
+
+\subsection{Placement study v9}
+Study v9 keeps the v8 weights unchanged and routes on current quality in every
+arm. The arms are stationary relays, reactive motion triggering, GNN triggering
+and MLP triggering. The best path quality is $Q=\max_P\min_{e\in P}q_e$. After
+three frames, the reactive arm triggers if the current EWMA has $Q<0.70$ in two
+consecutive frames; the GNN and MLP arms add the analogous condition on the
+forecast. A forecast edge is used only if its current measurement is at least
+0.1.
+
+Relays are ordered by their projection onto the line joining the current
+endpoints and then directed towards points that divide that segment equally. The
+limits are 8~m/s, 400~m per relay, a 1~m deadband, at most ten steps per burst
+and a five-step rest. Motion stops early after three frames in which the current
+quality, and the forecast where applicable, are at least 0.80. An in-step
+minimum separation check must reach 5~m; otherwise the relay motion command is
+set to zero. This rule is identical in every arm with motion, only the trigger
+differs.
+
+The nominal speed of each gradual endpoint rises to 2~m/s, retaining the
+per-seed random factor of v8, in order to create a disconnection challenge; this
+differs from the 1~m/s fitting distribution. Validation requires the technical
+and safety criteria to pass and at least 8 of 16 stationary gradual baseline
+episodes to lose connectivity for at least five seconds. If that fails, the test
+does not run and the speed is not retuned within the same study.
+
+The primary endpoint is the disconnected seconds of the reactive arm minus those
+of the GNN arm; the subsequent steps consider the PDR of GNN minus reactive, and
+then the disconnected seconds of MLP minus GNN. Disconnection means that source
+and destination lie in different connected components of the probe graph
+thresholded at 0.5, counted over frames 1--240. The seconds during which OLSR
+has no route, and PDR, are separate quantities. This is a measured
+graph-threshold partition, not a proof that no radio packet whatsoever could
+cross between components. Travelled distance, longest outage, number of motion
+bursts and background-flow PDR are descriptive.
+
+\subsection{Statistical analysis and cost}
+Each comparison keeps all four arms within the same seed block; the bootstrap
+draws 10{,}000 resamples over the 40 gradual test blocks, 20 per configuration,
+balanced between n5 and n7, with RNG seed 20261120. The
+bootstrap~\cite{efron1993} is applied at the scenario level so that correlations
+between arms are preserved. Negative results and gated steps are still
+reported. A confidence interval containing zero does not establish equivalence.
+Static results are descriptive only, with eight blocks.
+
+The collector measures whole-decision latency on an eight-vCPU KVM virtual
+machine (Intel Xeon Silver 4110 at 2.10~GHz) running four workers, each with
+compute libraries restricted to a single thread. Probes are emitted in every
+arm; centralized telemetry and commands are not yet transmitted as
+channel-contending packets. Computation time is not converted into end-to-end
+control delay, bytes are not converted into airtime, and travelled distance is
+not converted into energy.
+
+Signalling overhead was measured in study v7 with the same binary and runtime,
+so the following figures apply to the v8 configuration: about 0.29~kB/s for
+plain OLSR, 0.44~kB/s for OLSR-ETX, 1.78~kB/s for OLSR-ETX with 0.5~s HELLO, and
+about 5.55~kB/s for route pinning, comprising 0.29~kB/s of fallback OLSR,
+5.02~kB/s of probes and an estimated 0.25~kB/s of reports to the controller.
+These are IP-layer bytes plus the estimated reporting component and are not
+converted into a percentage of channel capacity. Probes are emitted in every
+arm, so probe airtime is common across arms, but it is charged only to the
+methods that consume probes. The centralized reporting component does not
+contend for the channel in simulation. Every comparison between route pinning
+and OLSR-ETX in this paper must therefore be read as an upper bound for a
+partially idealized centralized controller.

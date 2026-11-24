@@ -1,5 +1,42 @@
+\subsection{Phát biểu bài toán}
+Mạng ở thời điểm $t$ là đồ thị $G_t=(V,E_t)$ với $V$ là tập UAV. Mỗi cạnh
+$e=(a,b)$ có chất lượng đo được $d_e(t)\in[0,1]$, là tỷ lệ nhận probe trong
+cửa sổ một giây. Bộ ước lượng chất lượng tạo ra một đại lượng $x_e(t)$ dùng cho
+quyết định, theo một trong hai họ:
+\begin{align}
+\text{đo và làm mượt:}\quad & x_e(t)=\alpha\, d_e(t)+(1-\alpha)\,x_e(t-1),\label{eq:ewma}\\
+\text{dự báo học được:}\quad & x_e(t)=\hat g_e(t)\approx
+\frac{1}{H}\sum_{\tau=t+1}^{t+H} d_e(\tau),\qquad H=5\ \text{giây}.\label{eq:fore}
+\end{align}
+Công thức~\eqref{eq:ewma} là EWMA một tham số; $\alpha=0{,}5$ là cấu hình của
+các nghiên cứu trước và được dùng làm baseline của v8. Công thức~\eqref{eq:fore}
+là bộ hồi quy GNN, học có giám sát từ dữ liệu lịch sử và chỉ dùng quan sát
+nhân quả tới thời điểm $t$.
+
+Hai hành động dùng chung $x$. Hành động định tuyến chọn đường
+\begin{equation}
+\pi_t=\arg\min_{P\in\mathcal{P}(s,d)}\ \sum_{e\in P}\frac{1}{\max(x_e(t),\varepsilon)},
+\label{eq:etx}
+\end{equation}
+tức chi phí kiểu ETX~\cite{decouto} tính trên $x$ thay vì trên số đo thô, với
+luật ghim tuyến có margin và dwell mô tả ở Mục~\ref{sub:v8}. Hành động bố trí
+dùng chất lượng đường tốt nhất
+\begin{equation}
+Q(t)=\max_{P\in\mathcal{P}(s,d)}\ \min_{e\in P} x_e(t),
+\label{eq:bottleneck}
+\end{equation}
+và kích hoạt một luật di chuyển relay cố định khi $Q(t)$ xuống dưới ngưỡng.
+
+Phân biệt trung tâm của bài là giữa hai thước đo trên cùng một $x$. Chất lượng
+\emph{dự báo} đo bằng sai số bình phương trung bình
+$\mathrm{MSE}=\mathbb{E}\big[(x_e(t)-\frac{1}{H}\sum_\tau d_e(\tau))^2\big]$,
+tính ngoại tuyến trên trace. Chất lượng \emph{dịch vụ} đo bằng PDR và số giây
+chia cắt, tính trong vòng kín khi $x$ thật sự điều khiển~\eqref{eq:etx}
+hoặc~\eqref{eq:bottleneck}. Câu hỏi của bài là hai thước đo này có xếp hạng các
+bộ ước lượng theo cùng một thứ tự hay không.
+
 \subsection{Môi trường và thiết kế thí nghiệm}
-Thực nghiệm dùng ns-3.45, Wi-Fi 802.11g và OLSR~\cite{rfc3626} trên chuỗi 5 hoặc 7 UAV.
+Thực nghiệm dùng ns-3.45~\cite{ns3}, Wi-Fi 802.11g và OLSR~\cite{rfc3626} trên chuỗi 5 hoặc 7 UAV.
 Nguồn và đích ở hai đầu chuỗi; các nút còn lại làm relay. Mỗi episode dài
 240 giây, luồng chính UDP 256 kbps, hai luồng nền 128 kbps. Hai bối cảnh gồm
 static và gradual: đầu mút đứng yên hoặc di chuyển tách xa từ giây 30.
@@ -49,7 +86,7 @@ patience 10, seed 20261123. GNN/MLP chọn epoch 58/59. Sai số lớn nhất gi
 suy luận NumPy và PyTorch trên 40 snapshot kiểm tra là $1{,}19\times10^{-7}$.
 Đây là học có giám sát; các nghiên cứu không dùng học tăng cường.
 
-\subsection{Nghiên cứu định tuyến v8}
+\subsection{Nghiên cứu định tuyến v8}\label{sub:v8}
 Bốn arm là chất lượng hiện tại (\code{lq-route}), dự báo GNN
 (\code{gnn-route}), dự báo MLP (\code{mlp-route}) và OLSR-ETX-fast.
 Ba arm ghim tuyến giữ cùng luật ETX với margin 1,0, warmup ba bước và dwell
@@ -107,3 +144,14 @@ Intel Xeon Silver 4110 2,10 GHz), chạy bốn worker, mỗi worker giới hạn
 viện tính toán về một luồng. Probe phát trong mọi arm; telemetry và lệnh tập trung chưa được
 truyền thành gói cạnh tranh kênh. Không quy thời gian tính thành độ trễ điều
 khiển đầu cuối, số byte thành airtime, hoặc quãng đường thành năng lượng.
+
+Chi phí báo hiệu được đo ở nghiên cứu v7 với cùng binary và runtime, nên các
+con số sau áp dụng cho cấu hình của v8: OLSR thuần khoảng 0,29 kB/s, OLSR-ETX
+0,44 kB/s, OLSR-ETX với HELLO 0,5 giây 1,78 kB/s, và ghim tuyến khoảng
+5,55 kB/s gồm OLSR dự phòng 0,29 kB/s, probe 5,02 kB/s và báo cáo về bộ điều
+khiển ước lượng 0,25 kB/s. Đây là byte tầng IP cộng phần báo cáo ước lượng,
+không quy đổi thành phần trăm dung lượng kênh. Probe được phát ở mọi arm nên
+airtime của probe là chung giữa các arm, nhưng chỉ được hạch toán vào chi phí
+của các phương pháp sử dụng probe. Phần báo cáo tập trung chưa chiếm kênh trong
+mô phỏng. Vì vậy mọi so sánh giữa ghim tuyến và OLSR-ETX trong bài phải được
+đọc như giới hạn trên của một bộ điều khiển tập trung lý tưởng hóa một phần.

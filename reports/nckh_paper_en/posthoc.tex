@@ -1,0 +1,43 @@
+\subsection{Exploratory analysis: forecasting or smoothing?}\label{sec:posthoc}
+The analyses in this section were carried out after the v8 and v9 test results
+were available. They were not pre-registered and they do not change the locked
+conclusions of either study. They run on fresh seeds and aim to answer
+\emph{why} the two studies turned out as they did; their role is explanatory,
+not confirmatory.
+
+\subsubsection{A geometric bound on placement control}
+Over all node pairs in the 192 v9 test traces, the probability that an edge has
+a reception ratio of at least 0.5 was estimated as a function of 3D distance;
+that probability falls below 0.5 from about 180~m. Given the actual endpoint
+trajectories, an ideal controller that instantaneously equispaces the relays
+still incurs a mean of 26.09 disconnected seconds per gradual episode (48.68 for
+n5 and 3.51 for n7), assuming independent fading across hops. The reactive
+trigger incurs 31.45 seconds and stationary relays 123.43, so the reactive rule
+already attains about 94\% of the achievable reduction.
+
+\subsubsection{Forecast error runs opposite to service}
+The exploratory study v8x uses 200 fresh episodes over 40 gradual blocks with
+the same binary, the same route-pinning rule and the same locked GNN weights;
+only the smoothing of current quality changes (Table~\ref{tab:smooth}). All
+cells were valid and passed the route integrity checks.
+\begin{table}[htbp]
+\centering\small
+\begin{tabularx}{\linewidth}{@{}Yp{3.6cm}p{2.0cm}@{}}
+\toprule
+\textbf{Comparison (v8x, gradual)}&\textbf{PDR (points), 95\% CI}&\textbf{Route changes}\\\midrule
+\code{gnn-route} $-$ EWMA 0.5&$+0.78$ [0.40, 1.17]&$-7.3$\\
+EWMA 0.2 $-$ EWMA 0.5&$+0.78$ [0.42, 1.14]&$-6.0$\\
+EWMA 0.1 $-$ EWMA 0.5&$+1.09$ [0.76, 1.43]&$-8.0$\\
+Dwell 15 s $-$ EWMA 0.5&$-0.02$ [$-0.31$, 0.27]&$-4.4$\\
+\code{gnn-route} $-$ EWMA 0.1&$-0.31$ [$-0.61$, $-0.04$]&$+0.7$\\
+\bottomrule
+\end{tabularx}
+\caption{Exploratory study v8x: paired differences, block bootstrap, balanced between n5 and n7; route-change commands are counted per episode.}\label{tab:smooth}
+\end{table}
+The GNN gain reproduces on fresh seeds, but a more heavily smoothed EWMA matches
+or exceeds it, whereas lengthening the route dwell has no effect. On the same v8
+test traces the five-second MSE of EWMA 0.1 (0.00165) is worse than that of EWMA
+0.5 (0.00127) and of the GNN (0.00078), even though it delivers the highest PDR,
+so forecast accuracy does not explain the PDR benefit. Refitting the GNN and MLP
+with five seeds gives MSE values of $0.000778\pm0.000035$ and
+$0.001111\pm0.000038$, with the GNN better on all five seeds.

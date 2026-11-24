@@ -1,6 +1,6 @@
 \chapter{Chuẩn bị trình bày và trả lời thầy}
 \section{Một đoạn mở đầu có thể nói bằng lời của mình}
-``Đề tài của nhóm tìm cách duy trì truyền dữ liệu khi các UAV di chuyển làm chất lượng liên kết thay đổi. Nhóm bắt đầu bằng tạo dữ liệu mô phỏng và học mô hình GNN dự báo liên kết. Sau đó nhóm đưa thông tin chất lượng vào quyết định chọn tuyến và thử kích hoạt di chuyển relay. Nhóm đánh giá bằng các phương pháp chạy trên cùng kịch bản. Kết quả mới nhất cho thấy GNN giúp thêm cho định tuyến, còn lợi ích thêm của dự báo khi kích hoạt vị trí chưa rõ. Toàn bộ kết quả hiện tại là trong mô phỏng.''
+``Đề tài của nhóm tìm cách duy trì truyền dữ liệu khi các UAV di chuyển làm chất lượng liên kết thay đổi. Nhóm bắt đầu bằng tạo dữ liệu mô phỏng và học mô hình GNN dự báo liên kết. Sau đó nhóm đưa thông tin chất lượng vào quyết định chọn tuyến và thử kích hoạt di chuyển relay. Nhóm đánh giá bằng các phương pháp chạy trên cùng kịch bản. Kết quả cho thấy chọn tuyến theo chất lượng liên kết giúp rõ; GNN giúp thêm so với cách làm mượt ban đầu, nhưng một cách làm mượt đơn giản đã chỉnh cũng đạt mức đó, còn lợi ích thêm của dự báo khi kích hoạt vị trí chưa rõ. Toàn bộ kết quả hiện tại là trong mô phỏng.''
 
 Đoạn này có đủ vấn đề, cách làm và kết quả. Khi thầy muốn nghe sâu hơn, triển khai từng bước thay vì đọc một danh sách công nghệ ngay từ đầu.
 
@@ -14,7 +14,7 @@ Các tên v2--v9 hữu ích để đối chiếu hồ sơ. Trong phần nói ch�
 \item \textbf{210 lượt, 20 UAV mỗi lượt}: quy mô dữ liệu ở giai đoạn dự báo ban đầu, khác mô phỏng chuỗi 5/7 UAV của v8/v9.
 \item \textbf{48 lượt học và 20 lượt chọn epoch}: dữ liệu cũ dùng phát triển mô hình hồi quy mới; chưa phải kết quả test v8/v9.
 \item \textbf{80 validation và 192 test mỗi nghiên cứu mới}: số lượt chạy, không phải số kịch bản độc lập cho một phép so sánh. So sánh chính dùng 40 khối gradual.
-\item \textbf{V8 tăng 0,66 điểm phần trăm PDR}: GNN so với dùng chất lượng hiện tại, CI 95\% từ 0,38 đến 1,00 điểm phần trăm.
+\item \textbf{V8 tăng 0,66 điểm phần trăm PDR}: GNN so với dùng chất lượng hiện tại (EWMA 0,5), CI 95\% từ 0,38 đến 1,00 điểm phần trăm; thăm dò sau test cho thấy EWMA mượt hơn đạt mức tương đương.
 \item \textbf{V9 giảm trung bình 0,20 giây chia cắt}: phản ứng trừ GNN, CI 95\% từ $-1,05$ đến 1,45 giây; chưa đủ bằng chứng về lợi ích thêm.
 \end{enumerate}
 
@@ -33,8 +33,11 @@ Mô hình v8/v9 học dự báo tỷ lệ nhận probe trung bình năm giây t�
 \subsection*{Có điều khiển vị trí thật sự hay chỉ dự báo?}
 Có lệnh vận tốc và chuyển động relay được thực thi trong ns-3, kèm kiểm tra khoảng cách, tốc độ và quãng đường. Vì vậy đã có điều khiển vị trí trong mô phỏng. Chưa nối với autopilot và chưa bay thử UAV thật. Hai phạm vi này phải nói rõ.
 
-\subsection*{Đã dùng RL chưa?}
-Chưa. Mô hình học có giám sát từ quan sát lịch sử và nhãn tương lai. Bộ điều khiển làm theo luật cố định. RL sẽ là một hướng khác, nơi chính sách hành động được học qua tương tác và tín hiệu thưởng. Muốn bổ sung cần xác định hành động, mục tiêu, ngân sách học, giới hạn an toàn và một tập đánh giá mới. Không thể chỉ đổi tên bộ điều khiển hiện có thành RL.
+\subsection*{Đã dùng RL chưa? Sao không dùng?}
+Chưa. Mô hình học có giám sát từ quan sát lịch sử và nhãn tương lai. Bộ điều khiển làm theo luật cố định. RL sẽ là một hướng khác, nơi chính sách hành động được học qua tương tác và tín hiệu thưởng. Nhóm đã kiểm tra dư địa trước khi đề xuất RL. Ở điều khiển vị trí, relay đặt lý tưởng vẫn chia cắt khoảng 26 giây so với 31 giây của luật phản ứng, nên luật hiện tại đã đạt khoảng 94\% mức có thể. Ở định tuyến, một bộ lọc một tham số đã ngang GNN. RL chỉ đáng làm khi kịch bản có đánh đổi mà luật cố định khó xử lý, ví dụ ngân sách bay ràng buộc, nhiều luồng hoặc topology không phải chuỗi.
+
+\subsection*{Sao không dùng trung bình đơn giản thay cho GNN?}
+Đây là câu hỏi nhóm đã tự kiểm tra. Trong thăm dò v8x trên 200 lượt mới, EWMA 0,2 đạt PDR ngang GNN và EWMA 0,1 cao hơn GNN 0,31 điểm phần trăm. Điều này cho thấy lợi ích ở v8 chủ yếu đến từ ước lượng chất lượng ổn định hơn. Vì thăm dò này làm sau khi xem v8, nhóm đăng ký trước một vòng riêng (v10), cho cả EWMA và GNN cùng được chỉnh mức làm mượt trên tập tuning riêng rồi mới so trên test mới. Câu trả lời trung thực là: GNN dự báo chính xác hơn, nhưng độ chính xác đó chưa chuyển thành lợi ích PDR vượt một bộ lọc đã chỉnh.
 
 \subsection*{Vì sao không lấy độ chính xác dự báo làm kết luận cuối?}
 Dự báo chính xác và hành động hữu ích là hai điều khác nhau. Một dự báo tốt có thể đến lúc quá muộn, dẫn tới một hành động tốn kém, hoặc không thay được tuyến đang dùng. Vì vậy nhóm đo cả dự báo ngoại tuyến và hiệu quả dịch vụ trong vòng kín. MSE hoặc Macro-F1 không thay cho PDR.
@@ -46,7 +49,7 @@ Trong nghiên cứu mới, nhóm công bố chuyển các trace cũ đó thành 
 Đó là lợi ích nhỏ trên nền PDR khoảng 95,35\%, đưa trung bình lên khoảng 96,01\%. Khoảng tin cậy của chênh lệch nằm trên 0 trong phép thử đã định. Việc có đáng triển khai hay không còn tùy yêu cầu dịch vụ và chi phí vận hành. Báo cáo cần giữ cả mức tăng và chi phí, thay vì chỉ nói ``có ý nghĩa thống kê'' rồi coi như đã đủ cho triển khai.
 
 \subsection*{GNN hơn OLSR-ETX 5,75 điểm phần trăm có phải tất cả nhờ AI?}
-Không thể gán như vậy. Hai bên khác cả cách quyết định tuyến và nguồn thông tin. Phép so GNN với bộ chọn tuyến dùng chất lượng hiện tại giữ luật chọn tuyến chung, nên phù hợp hơn để hỏi giá trị bổ sung của dự báo. Chính phép so đó cho chênh lệch 0,66 điểm phần trăm.
+Không thể gán như vậy. Hai bên khác cả cách quyết định tuyến và nguồn thông tin. Phép so GNN với bộ chọn tuyến dùng chất lượng hiện tại giữ luật chọn tuyến chung, nên phù hợp hơn để hỏi giá trị bổ sung của dự báo. Chính phép so đó cho chênh lệch 0,66 điểm phần trăm, và phần lớn mức đó cũng đạt được bằng EWMA đã chỉnh. Phần lớn của 5,75 điểm đến từ việc ghim tuyến tập trung theo chất lượng liên kết.
 
 \subsection*{V9 chưa đạt thì phần vị trí có thất bại hoàn toàn không?}
 Kết quả không ủng hộ giả thuyết chính rằng dự báo GNN giúp thêm rõ so với phản ứng trong cấu hình đã thử. Các nhóm di chuyển vẫn có kết quả trung bình tốt hơn đứng yên, nhưng đó là một so sánh khác. Nghiên cứu đã xác định được điều kiện mà thêm dự báo chưa tạo lợi ích rõ, và giữ nguyên kết quả này để báo cáo.

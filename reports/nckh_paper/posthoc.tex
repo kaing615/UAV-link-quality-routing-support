@@ -1,0 +1,26 @@
+\subsection{Thăm dò sau test: dự báo hay làm mượt?}\label{sec:posthoc}
+Các phân tích trong mục này được làm sau khi đã có kết quả test v8/v9, không
+được đăng ký trước và không thay đổi kết luận đã khóa của hai nghiên cứu. Chúng
+chạy trên seed mới và nhằm trả lời \emph{vì sao} hai nghiên cứu cho kết quả như
+vậy; vai trò của chúng là giải thích, không phải khẳng định.
+
+\subsubsection{Giới hạn hình học của điều khiển vị trí}
+Từ mọi cặp nút trong 192 trace test v9, xác suất một cạnh có tỷ lệ nhận ít nhất 0,5 được ước lượng theo khoảng cách 3D; xác suất này xuống dưới 0,5 từ khoảng 180~m. Với quỹ đạo đầu mút thực tế, một bộ điều khiển lý tưởng đặt relay cách đều tức thời vẫn có trung bình 26,09 giây chia cắt mỗi lượt gradual (n5: 48,68; n7: 3,51), giả định fading độc lập giữa các hop. Trigger reactive có 31,45 giây và đứng yên có 123,43 giây, nên reactive đã đạt khoảng 94\% mức giảm có thể có.
+
+\subsubsection{Sai số dự báo đi ngược dịch vụ}
+Nghiên cứu thăm dò v8x dùng 200 lượt mới trên 40 khối gradual, với cùng binary, luật ghim tuyến và trọng số GNN đã khóa; chỉ đổi cách làm mượt chất lượng hiện tại (Bảng~\ref{tab:smooth}). Mọi cell hợp lệ và đạt kiểm tra toàn vẹn tuyến.
+\begin{table}[htbp]
+\centering\small
+\begin{tabularx}{\linewidth}{@{}Yp{3.6cm}p{2.0cm}@{}}
+\toprule
+\textbf{So sánh (v8x, gradual)}&\textbf{PDR (điểm \%), CI 95\%}&\textbf{Đổi tuyến}\\\midrule
+\code{gnn-route} $-$ EWMA 0,5&$+0{,}78$ [0,40; 1,17]&$-7{,}3$\\
+EWMA 0,2 $-$ EWMA 0,5&$+0{,}78$ [0,42; 1,14]&$-6{,}0$\\
+EWMA 0,1 $-$ EWMA 0,5&$+1{,}09$ [0,76; 1,43]&$-8{,}0$\\
+Dwell 15 s $-$ EWMA 0,5&$-0{,}02$ [$-0{,}31$; 0,27]&$-4{,}4$\\
+\code{gnn-route} $-$ EWMA 0,1&$-0{,}31$ [$-0{,}61$; $-0{,}04$]&$+0{,}7$\\
+\bottomrule
+\end{tabularx}
+\caption{Thăm dò v8x: chênh lệch ghép cặp, bootstrap theo khối, cân bằng n5/n7; số lệnh đổi tuyến tính trên mỗi lượt.}\label{tab:smooth}
+\end{table}
+Lợi ích của GNN lặp lại trên seed mới, nhưng EWMA mượt hơn đạt mức tương đương hoặc cao hơn, trong khi tăng thời gian giữ tuyến không có tác dụng. Trên cùng trace test v8, MSE năm giây của EWMA 0,1 (0,00165) kém hơn EWMA 0,5 (0,00127) và GNN (0,00078) dù cho PDR cao nhất, nên độ chính xác dự báo không giải thích được lợi ích PDR. Huấn luyện lại GNN và MLP với năm seed cho MSE $0{,}000778\pm0{,}000035$ và $0{,}001111\pm0{,}000038$; GNN tốt hơn ở cả năm seed.
