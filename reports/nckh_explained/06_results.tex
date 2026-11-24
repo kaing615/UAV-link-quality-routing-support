@@ -39,6 +39,16 @@ Sau test v8, nhóm chạy thêm một thăm dò gọi là v8x, gồm 200 lượt
 \end{itemize}
 EWMA 0,1 lại là bộ dự báo kém nhất theo MSE (khoảng 0,00165), nhưng cho PDR cao nhất. Vì vậy điều quan trọng là ước lượng chất lượng ít dao động, không phải độ chính xác của dự báo. Đây là phân tích sau test, không đăng ký trước. Nó không xóa kết quả v8, nhưng cho thấy v8 chưa chứng minh được giá trị riêng của dự báo so với một bộ lọc đơn giản đã chỉnh hệ số.
 
+\section{V10: kiểm định lại một cách công bằng}
+Vì v8x được làm sau khi đã xem v8, nhóm đăng ký trước một vòng mới là v10, rồi mới chạy. Điểm mấu chốt là \emph{cho cả hai bên cùng một núm làm mượt}: EWMA được chọn hệ số $\alpha$, còn dự báo GNN cũng được làm mượt thêm với hệ số $\beta$. Mỗi bên được chọn hệ số tốt nhất trên một tập tuning riêng (160 lượt), sau đó mới thi trên 144 lượt test mới.
+\begin{itemize}
+\item Tuning chọn $\alpha=0{,}1$ cho EWMA và $\beta=0{,}1$ cho GNN.
+\item Kết quả chính: GNN đã làm mượt chỉ hơn EWMA đã làm mượt \textbf{0,08 điểm phần trăm}, khoảng tin cậy 95\% từ $-0{,}11$ đến $0{,}29$. Khoảng này chứa 0, nên \textbf{không phát hiện khác biệt}.
+\item GNN thắng ở 22/40 khối gradual, hòa 2 khối, gần như chia đôi.
+\item EWMA 0,1 vẫn là bộ dự báo kém nhất theo MSE (0,00166) nhưng PDR ngang GNN (95,98\% so với 96,07\%).
+\end{itemize}
+Kết luận trung thực: trong các kịch bản đã thử, lợi ích định tuyến của GNN đến từ việc làm cho ước lượng chất lượng ổn định hơn, và một bộ lọc một tham số đã chỉnh cũng làm được điều đó. Khoảng tin cậy chứa 0 không có nghĩa hai cách chắc chắn bằng nhau; nó chỉ có nghĩa dữ liệu chưa thấy khác biệt.
+
 V8 cũng chưa cho thấy lợi ích giảm chia cắt rõ ràng so với nhóm hiện tại. Vì vậy không kéo kết luận PDR sang mọi chỉ số khác. Kết quả chính là cải thiện tỷ lệ gói đến đích trong cấu hình đã thử~\cite{paper}.
 
 \section{V9: chưa chứng minh dự báo hơn phản ứng}

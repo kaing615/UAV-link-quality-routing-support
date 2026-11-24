@@ -1,4 +1,4 @@
-\section{Hồ sơ bổ sung v8 và v9}
+\section{Hồ sơ bổ sung v8, v9 và v10}
 
 Mỗi queue được khởi chạy một lần; bảng thời gian không cộng smoke, fit, validate hoặc analyze. Bảng~\ref{tab:newqueues} được tính từ thời điểm bắt đầu/kết thúc wrapper của các cell; Bảng~\ref{tab:newhashes} liên kết kết quả với package đã khóa.
 
@@ -11,6 +11,9 @@ v8&validation&80&24,88\\
 v8&test&192&68,42\\
 v9&validation&80&28,33\\
 v9&test&192&64,57\\
+v10&tuning&160&48,06\\
+v10&validation&60&17,53\\
+v10&test&144&41,85\\
 \bottomrule
 \end{tabularx}
 \caption{Số cell và thời gian queue của các nghiên cứu bổ sung.}\label{tab:newqueues}
@@ -32,10 +35,15 @@ v9&test&192&64,57\\
 \path{uav_service_v9/results/packages/test/freeze.json}&\code{a7223951c34ebf64}\\
 \path{uav_service_v9/results/packages/validation/freeze.json}&\code{1c0f2141875bcedd}\\
 \path{uav_service_v9/results/selection.json}&\code{a3219acae53168db}\\
+\path{uav_service_v10/results/analysis/test/analysis.json}&\code{3db3548fa7fa9cf5}\\
+\path{uav_service_v10/results/analysis/validation/go.json}&\code{563b4ad9b7ed4285}\\
+\path{uav_service_v10/results/analysis/tuning/tuning-selection.json}&\code{fd69f63153c4815b}\\
+\path{uav_service_v10/results/packages/test/freeze.json}&\code{1a45c61d9b442a95}\\
+\path{uav_service_v10/results/packages/tuning/freeze.json}&\code{75990cd07ae22747}\\
 \bottomrule
 \end{tabularx}
 \caption{Định danh kết quả mới. Hash đầy đủ và danh sách tệp nằm trong export-manifest.json của từng nghiên cứu.}\label{tab:newhashes}
 \end{table}
 
 
-V8 dùng layout seed 3400001 trở đi, radio seed 3500001 trở đi; v9 dùng 3600001 và 3700001 trở đi. Mỗi freeze chứa toàn bộ seed plan và source snapshot. Mô hình hồi quy nằm trong \path{reports/uav_service_v8/model/selection.json}; selection v9 giữ nguyên trọng số, thêm metadata điều khiển vị trí. Hướng dẫn tái lập và kiểm toán: \path{reports/nckh_final/REPRODUCIBILITY.md}.
+V8 dùng layout seed 3400001 trở đi, radio seed 3500001 trở đi; v9 dùng 3600001 và 3700001 trở đi; v8x thăm dò dùng 3800001 và 3900001; v10 dùng 4000001/4100001 cho tuning và 4200001/4300001 cho validation/test. Protocol v10 được commit (\code{1a026f5}) trước khi chạy bất kỳ cell v10 nào. Mỗi freeze chứa toàn bộ seed plan và source snapshot. Mô hình hồi quy nằm trong \path{reports/uav_service_v8/model/selection.json}; selection v9 giữ nguyên trọng số, thêm metadata điều khiển vị trí. Hướng dẫn tái lập và kiểm toán: \path{reports/nckh_final/REPRODUCIBILITY.md}.

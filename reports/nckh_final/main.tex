@@ -172,7 +172,7 @@ Tp. Hồ Chí Minh, \NgayBaoCao
 \pagenumbering{roman}
 \chapter*{TÓM TẮT NỘI DUNG}
 \addcontentsline{toc}{chapter}{TÓM TẮT NỘI DUNG}
-Đề tài nghiên cứu việc dùng chất lượng liên kết để hỗ trợ định tuyến và điều khiển vị trí trong mạng phương tiện bay không người lái (UAV). Dự báo chính xác chưa bảo đảm hành động điều khiển có ích, nên nghiên cứu đánh giá riêng dự báo ngoại tuyến và dịch vụ mạng vòng kín. Giai đoạn đầu dùng mạng nơ-ron đồ thị trên 210 lượt mô phỏng và cho thấy ưu thế Macro-F1, đồng thời ghi nhận lỗi dự đoán liên kết hỏng thành ổn định. Các vòng tiếp theo phát triển ghim tuyến theo chất lượng hiện tại; ở vòng kiểm tra độ bền, phương pháp tăng tỷ lệ gói đến đích (PDR) 5,06 điểm phần trăm so với OLSR-ETX đã tinh chỉnh, với chi phí báo hiệu cao hơn. Hai nghiên cứu bổ sung dùng bộ hồi quy đồ thị mới dự báo tỷ lệ nhận probe trung bình năm giây tới, học từ dữ liệu lịch sử và khóa trước mô phỏng mới. Mỗi nghiên cứu có 80 lượt validation và 192 lượt test trên chuỗi năm hoặc bảy UAV; phân tích bootstrap theo khối seed, giữ các nhóm so sánh ghép cặp. Khi giữ relay đứng yên và cùng luật chọn tuyến, dự báo đồ thị tăng PDR 0,66 điểm phần trăm so với chất lượng hiện tại, khoảng tin cậy 95\% [0,38; 1,00], và tăng 0,38 điểm so với mô hình bỏ truyền thông điệp; thăm dò sau test cho thấy một EWMA làm mượt mạnh hơn đạt mức tương đương, nên lợi ích chưa thể quy cho riêng thông tin dự báo. Khi giữ cùng định tuyến và luật bố trí relay, kích hoạt chuyển động bằng dự báo chỉ giảm 0,20 giây chia cắt so với kích hoạt theo chất lượng hiện tại, khoảng tin cậy [$-1,05$; $1,45$]; endpoint chính không đạt. Di chuyển giảm chia cắt rõ trong so sánh mô tả với đứng yên, nhưng cần khoảng 637 m tổng quãng đường relay mỗi lượt. Phần lớn chia cắt còn lại vượt quá tầm phủ của chuỗi relay ngay cả khi relay được đặt lý tưởng. Kết quả ủng hộ lợi ích của ước lượng chất lượng ổn định hơn cho định tuyến trong phạm vi đã xét, chưa chứng minh lợi ích thêm của dự báo cho trigger vị trí. Hệ thống mới được kiểm tra trong ns-3, chưa tích hợp UAV thật; telemetry tập trung chưa cạnh tranh kênh, chỉ có một seed huấn luyện và một họ topology. Dữ liệu, mã nguồn đóng gói và kết quả được liên kết bằng hash để kiểm tra tái lập.
+Đề tài nghiên cứu việc dùng chất lượng liên kết để hỗ trợ định tuyến và điều khiển vị trí trong mạng phương tiện bay không người lái (UAV). Dự báo chính xác chưa bảo đảm hành động điều khiển có ích, nên nghiên cứu đánh giá riêng dự báo ngoại tuyến và dịch vụ mạng vòng kín. Giai đoạn đầu dùng mạng nơ-ron đồ thị trên 210 lượt mô phỏng và cho thấy ưu thế Macro-F1, đồng thời ghi nhận lỗi dự đoán liên kết hỏng thành ổn định. Các vòng tiếp theo phát triển ghim tuyến theo chất lượng hiện tại; ở vòng kiểm tra độ bền, phương pháp tăng tỷ lệ gói đến đích (PDR) 5,06 điểm phần trăm so với OLSR-ETX đã tinh chỉnh, với chi phí báo hiệu cao hơn. Hai nghiên cứu bổ sung dùng bộ hồi quy đồ thị mới dự báo tỷ lệ nhận probe trung bình năm giây tới, học từ dữ liệu lịch sử và khóa trước mô phỏng mới. Mỗi nghiên cứu có 80 lượt validation và 192 lượt test trên chuỗi năm hoặc bảy UAV; phân tích bootstrap theo khối seed, giữ các nhóm so sánh ghép cặp. Khi giữ relay đứng yên và cùng luật chọn tuyến, dự báo đồ thị tăng PDR 0,66 điểm phần trăm so với chất lượng hiện tại, khoảng tin cậy 95\% [0,38; 1,00], và tăng 0,38 điểm so với mô hình bỏ truyền thông điệp; thăm dò sau test cho thấy một EWMA làm mượt mạnh hơn đạt mức tương đương. Vòng v10 đăng ký trước, cho cả EWMA và GNN cùng chọn hệ số làm mượt trên tập tuning riêng, rồi so trên 144 lượt test mới: GNN chỉ hơn 0,08 điểm phần trăm, khoảng tin cậy [$-0{,}11$; $0{,}29$], không phát hiện khác biệt. Khi giữ cùng định tuyến và luật bố trí relay, kích hoạt chuyển động bằng dự báo chỉ giảm 0,20 giây chia cắt so với kích hoạt theo chất lượng hiện tại, khoảng tin cậy [$-1,05$; $1,45$]; endpoint chính không đạt. Di chuyển giảm chia cắt rõ trong so sánh mô tả với đứng yên, nhưng cần khoảng 637 m tổng quãng đường relay mỗi lượt. Phần lớn chia cắt còn lại vượt quá tầm phủ của chuỗi relay ngay cả khi relay được đặt lý tưởng. Kết quả ủng hộ lợi ích của ước lượng chất lượng ổn định hơn cho định tuyến trong phạm vi đã xét, chưa chứng minh lợi ích thêm của dự báo cho trigger vị trí. Hệ thống mới được kiểm tra trong ns-3, chưa tích hợp UAV thật; telemetry tập trung chưa cạnh tranh kênh, các vòng kín dùng một seed huấn luyện và một họ topology. Dữ liệu, mã nguồn đóng gói và kết quả được liên kết bằng hash để kiểm tra tái lập.
 
 \noindent\textbf{Từ khóa:} mạng UAV; mạng nơ-ron đồ thị; chất lượng liên kết; định tuyến; điều khiển vị trí.
 \clearpage
@@ -263,6 +263,7 @@ Trong mạng UAV (FANET), các UAV có thể làm relay để nối hai đầu m
   \item \textbf{CH5.} Lợi ích có còn khi OLSR-ETX được tăng tốc độ thông tin, khi lệnh điều khiển bị trễ, với nhiều UAV hơn và có luồng nền hay không, và phải trả bao nhiêu báo hiệu? (vòng v7)
   \item \textbf{CH6.} Khi giữ cùng luật chọn tuyến, dự báo GNN có tăng PDR so với chất lượng hiện tại và mô hình bỏ truyền thông điệp hay không? (vòng v8)
   \item \textbf{CH7.} Khi giữ cùng luật định tuyến và bố trí relay, kích hoạt chuyển động bằng dự báo có giảm thời gian chia cắt so với kích hoạt theo số đo hiện tại hay không? (vòng v9)
+  \item \textbf{CH8.} Khi cả EWMA và GNN đều được làm mượt với hệ số chọn trên tập tuning riêng, dự báo GNN có còn tăng PDR không? (vòng v10)
 \end{itemize}
 
 \section{Đối chiếu với thuyết minh và điều chỉnh hướng}
@@ -274,7 +275,7 @@ Mô phỏng ns-3.45, Wi-Fi 802.11g, OLSR; chuỗi 4--7 UAV (2--5 relay); hai b�
 \section{Đóng góp}
 \begin{itemize}
   \item Một mô hình GNN có đặc trưng cạnh (Edge-SAGE) dự đoán chất lượng và sự tồn tại của liên kết UAV ở bốn mốc dự báo, vượt các mô hình đối chứng về Macro-F1 trên seed giữ lại (giai đoạn 1).
-  \item Một quy trình thí nghiệm vòng kín có đăng ký trước, khóa bằng hash, tái lập được, áp dụng cho tám vòng v2--v9 (2.524 episode hợp lệ trong các pha chính thức; không cộng 210 lượt ngoại tuyến, smoke hoặc các lần tái hiện chẩn đoán).
+  \item Một quy trình thí nghiệm vòng kín có đăng ký trước, khóa bằng hash, tái lập được, áp dụng cho chín vòng v2--v10 (2.888 episode hợp lệ trong các pha chính thức; không cộng 210 lượt ngoại tuyến, smoke hoặc các lần tái hiện chẩn đoán).
   \item Hai kết quả âm có kiểm soát: dự báo cộng di chuyển relay (v2) và cổng giá trị hành động (v3) không cải thiện PDR.
   \item Chẩn đoán định lượng: phần lớn tổn thất trong các kịch bản đã xét gắn với tuyến trực tiếp do OLSR chọn theo số hop; từ đó đặt giả thuyết kiểm tra điều khiển tuyến.
   \item Một phương pháp ghim tuyến theo ETX có trễ (hysteresis) kèm cơ chế kiểm tra toàn vẹn giữa lệnh và tuyến simulator áp dụng; tăng PDR có ý nghĩa thống kê trên pha test đã khóa.
@@ -282,6 +283,7 @@ Mô phỏng ns-3.45, Wi-Fi 802.11g, OLSR; chuỗi 4--7 UAV (2--5 relay); hai b�
   \item Phát hiện, tái hiện và sửa một lỗi mô phỏng (thời hạn ARP 100 giây của ns-3) làm nhiễu các so sánh định tuyến.
   \item Kiểm tra độ bền (v7): lợi ích của ghim tuyến còn quan sát được trước baseline OLSR-ETX đã được tinh chỉnh chu kỳ HELLO, trước độ trễ điều khiển 2 giây, trên chuỗi 7 UAV và khi có luồng nền; kèm đo chi phí báo hiệu của từng phương pháp.
   \item Tích hợp GNN hồi quy vào luật chọn tuyến và kiểm tra bằng seed mới: tăng PDR 0,66 điểm phần trăm so với số đo hiện tại; mô hình xuất NumPy, truy vết dự báo và kiểm tra lệnh thực thi. Thăm dò sau test (200 episode mới) cho thấy EWMA mượt hơn đạt mức tương đương, nên đóng góp được xác định là ước lượng chất lượng ổn định hơn, chưa phải giá trị riêng của dự báo.
+  \item Một kiểm định đăng ký trước (v10) cho cả EWMA và GNN cùng được chỉnh hệ số làm mượt: không phát hiện khác biệt PDR ($+0{,}08$ điểm phần trăm, CI [$-0{,}11$; $0{,}29$]); sai số dự báo xếp hạng các bộ ước lượng khác với dịch vụ mạng.
   \item Bộ điều khiển vị trí relay với cùng luật bố trí và ba trigger đối chiếu; công bố kết quả không đạt về lợi ích thêm của dự báo, cùng số giây chia cắt, quãng đường và kiểm tra an toàn mô phỏng.
 \end{itemize}
 
@@ -559,7 +561,8 @@ v5&Ghim tuyến so với OLSR-ETX&96 + 144&Endpoint chính không đạt: $+3{,}
 v6&Như v5, đã sửa lỗi ARP&96 + 144&Dương: $+4{,}57$ [3,60; 5,55] so với OLSR-ETX, 2/2 kiểm định đạt.\\
 v7&Độ bền: HELLO nhanh, trễ 2 s, n7, luồng nền&72 + 100 + 240&Dương: $+5{,}06$ [4,21; 5,91] so với OLSR-ETX đã tinh chỉnh, 3/3 kiểm định đạt.\\
 v8&GNN dự báo để ghim tuyến&80 + 192&Dương: $+0{,}66$ [0,38; 1,00] so với EWMA hiện tại, 3/3 kiểm định đạt.\\
-v9&Dự báo kích hoạt bố trí relay&80 + 192&Endpoint chính không đạt: giảm 0,20 s chia cắt [$-1{,}05$; $1{,}45$] so với reactive; vẫn báo cáo chi phí bay.\\\bottomrule
+v9&Dự báo kích hoạt bố trí relay&80 + 192&Endpoint chính không đạt: giảm 0,20 s chia cắt [$-1{,}05$; $1{,}45$] so với reactive; vẫn báo cáo chi phí bay.\\
+v10&GNN và EWMA cùng chỉnh làm mượt&160 + 60 + 144&Không phát hiện khác biệt: $+0{,}08$ [$-0{,}11$; $0{,}29$]; $\alpha^\ast=\beta^\ast=0{,}1$.\\\bottomrule
 \end{tabularx}
 \caption{Tóm tắt các vòng thí nghiệm.}\label{tab:overview}
 \end{table}
@@ -701,6 +704,8 @@ Hình~\ref{fig:v7overhead} tách các thành phần chi phí báo hiệu của t
 Hình~\ref{fig:v9motionexample} minh họa lệnh bố trí đã thực sự làm relay di
 chuyển. Các đường chỉ chiếu lên trục y; khoảng cách an toàn được kiểm tra
 trong không gian ba chiều. Hiệu quả được kết luận từ toàn bộ khối test.
+\clearpage
+\input{results_v10}
 
 % ============================================================
 %  CHUONG 5
@@ -788,7 +793,7 @@ baseline luật cố định làm điểm xuất phát cho nghiên cứu chính 
   \item \textbf{Mô hình mới và dữ liệu phát triển:} v8 dùng GNN hồi quy 5 giây khác checkpoint đa thời điểm giai đoạn 1; dữ liệu v7 đã được quan sát được chuyển thành dữ liệu phát triển. Chỉ các seed mới của v8/v9 được dùng để kiểm tra nghiên cứu mới.
   \item \textbf{Ablation và chi phí GNN:} MLP còn thông tin bậc nút và có ít tham số hơn GNN; chưa có đối chứng cùng số tham số. Chi phí telemetry vị trí, vận tốc và RSSI chưa được mô phỏng trên kênh, nên không áp nguyên tổng báo hiệu v7 để gọi là chi phí đầy đủ của GNN.
   \item \textbf{Biến thiên huấn luyện:} các vòng v8/v9 dùng một seed huấn luyện cố định. Bootstrap theo kịch bản mô tả biến thiên môi trường với trọng số đã khóa. Huấn luyện lại với năm seed cho thứ tự MSE ổn định (Mục~\ref{sec:posthoc}), nhưng PDR vòng kín của các seed khác chưa được đo.
-  \item \textbf{Baseline làm mượt chưa chỉnh:} EWMA 0,5 của v4--v8 không được tinh chỉnh; thăm dò sau test cho thấy làm mượt mạnh hơn đạt hoặc vượt lợi ích PDR của GNN (Mục~\ref{sec:posthoc}).
+  \item \textbf{Baseline làm mượt chưa chỉnh ở v4--v8:} EWMA 0,5 không được tinh chỉnh; v10 đã chỉnh hệ số cho cả hai bên trên tập tuning riêng (Mục~\ref{sec:r10}), nhưng chỉ trong lưới năm giá trị và một họ kịch bản.
 \end{itemize}
 
 \section{So với kế hoạch ban đầu}\label{sec:plan}
@@ -814,8 +819,11 @@ MLP ([0,12; 0,67]) trên test mới; cả ba bước kiểm định đạt, toà
 144/144. Đây là bằng chứng vòng kín cho lợi ích của bộ dự báo đã triển khai
 trong định tuyến, với phạm vi và chi phí telemetry chưa đầy đủ đã nêu. Thăm dò
 sau test cho thấy EWMA 0,2 đạt cùng mức PDR và EWMA 0,1 cao hơn GNN 0,31 điểm,
-nên lợi ích này gắn với ước lượng chất lượng ổn định hơn; giá trị riêng của
-thông tin dự báo cần một vòng đăng ký trước với baseline đã chỉnh.
+nên lợi ích này gắn với ước lượng chất lượng ổn định hơn. Vòng v10 đăng ký
+trước xác nhận điều đó: khi cả hai bên cùng được chỉnh hệ số làm mượt, GNN
+chỉ hơn EWMA 0,08 điểm phần trăm, CI [$-0{,}11$; $0{,}29$], không phát hiện
+khác biệt. Trong họ kịch bản đã xét, thông tin dự báo của GNN chưa đem lại
+lợi ích PDR vượt một bộ lọc đơn giản đã chỉnh.
 
 V9 đã thực thi điều khiển vị trí relay, kiểm tra an toàn mô phỏng và toàn
 vẹn tuyến 192/192. Di chuyển hữu ích trong so sánh mô tả với đứng yên ở
@@ -835,7 +843,7 @@ Chưa có điều khiển UAV thật, mô hình năng lượng hoặc chính sá
   \item Giảm chi phí báo hiệu: thử tần số probe thấp hơn, hoặc dùng chính LQ của OLSR-ETX làm đầu vào cho bộ ghim tuyến; mô phỏng báo cáo điều khiển thành gói thật và cho phép mất thông điệp.
   \item So sánh với olsrd thật và với các giao thức FANET khác trong topology không phải chuỗi.
   \item Mở rộng dự báo theo thời gian, kiểm tra hiệu chuẩn dưới chuyển động relay và tách riêng ảnh hưởng của số tham số với truyền thông điệp học được. Chỉ học chính sách hành động bằng RL khi kịch bản có đánh đổi mà luật cố định khó xử lý (ngân sách bay ràng buộc, nhiều luồng, topology phi chuỗi, tần số probe), vì trong họ kịch bản hiện tại luật cố định đã gần giới hạn hình học (Mục~\ref{sec:posthoc}).
-  \item Đăng ký trước một vòng so sánh GNN với EWMA đã chỉnh hệ số trên tập tuning riêng, để kiểm định giá trị riêng của thông tin dự báo.
+  \item Kiểm tra độ bền theo seed huấn luyện và ablation cùng số tham số (v11, đã đăng ký trong \code{docs/service_v11_protocol.md}, dùng $\alpha^\ast=0{,}1$ của v10 làm baseline).
   \item Mở rộng kịch bản: nhiều UAV hơn, nhiều luồng, tải nền, mô hình kênh khác.
 \end{itemize}
 

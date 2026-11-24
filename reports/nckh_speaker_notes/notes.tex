@@ -232,7 +232,7 @@ PDR là số gói đến đích chia cho số gói gửi. Thời gian chia cắt
 
 \addcontentsline{toc}{section}{Slide 20: GNN tăng tỷ lệ gói đến đích}
 
-Kết quả chính của v8 là GNN tăng PDR trung bình khoảng 0,66 điểm phần trăm so với dùng chất lượng hiện tại. PDR hai nhóm lần lượt khoảng 96,01\% và 95,35\%. Khoảng tin cậy từ 0,38 đến 1,00 điểm phần trăm nằm trên không, nên có bằng chứng lợi ích trong phạm vi phép thử. Mức tăng khá nhỏ và cần nói đúng đơn vị điểm phần trăm. Nó không phải tăng 66\%, cũng không bảo đảm mọi kịch bản đều tốt hơn. GNN cũng vượt MLP và OLSR-ETX nhanh trong chuỗi kiểm định đã khóa.
+Kết quả chính của v8 là GNN tăng PDR trung bình khoảng 0,66 điểm phần trăm so với dùng chất lượng hiện tại. PDR hai nhóm lần lượt khoảng 96,01\% và 95,35\%. Khoảng tin cậy từ 0,38 đến 1,00 điểm phần trăm nằm trên không, nên có bằng chứng lợi ích trong phạm vi phép thử. Mức tăng khá nhỏ và cần nói đúng đơn vị điểm phần trăm. Nó không phải tăng 66\%, cũng không bảo đảm mọi kịch bản đều tốt hơn. GNN cũng vượt MLP và OLSR-ETX nhanh trong chuỗi kiểm định đã khóa. Lưu ý quan trọng: đối chứng ở đây là EWMA 0,5 chưa được chỉnh. Slide tiếp sau cho thấy khi chỉnh hệ số làm mượt cho cả hai bên, khác biệt này không còn.
 
 {\small\textcolor{gray}{Nguồn đối chiếu: nckh\_paper/results.tex, v8.}}
 
@@ -264,11 +264,35 @@ Nếu so với relay đứng yên, nhóm di chuyển phản ứng có thời gia
 
 \needspace{8\baselineskip}
 
-\section*{Slide 23. Kết quả hiện tại thuộc môi trường mô phỏng}
+\section*{Slide 23. Làm mượt đơn giản đạt mức của GNN}
 
-\addcontentsline{toc}{section}{Slide 23: Kết quả hiện tại thuộc môi trường mô phỏng}
+\addcontentsline{toc}{section}{Slide 23: Làm mượt đơn giản đạt mức của GNN}
 
-Nhóm đã có điều khiển vị trí, nhưng đó là điều khiển vận tốc relay bên trong bộ mô phỏng. Hệ thống chưa nối với autopilot để điều khiển UAV thật. Mô hình học có giám sát, còn luật hành động được đặt trước, nên chưa dùng reinforcement learning. Ngoài ra, mô hình mới chỉ được huấn luyện với một seed. Các khoảng tin cậy phản ánh biến động giữa kịch bản với trọng số đã khóa, chưa phản ánh toàn bộ biến động giữa nhiều lần huấn luyện.
+Sau v8, nhóm tự hỏi: lợi ích của GNN có phải chỉ do làm mượt? Một thăm dò cho thấy EWMA mượt hơn đạt mức tương đương, nên nhóm đăng ký trước vòng v10 để kiểm định công bằng. Cả EWMA và GNN đều được thêm một núm làm mượt, và mỗi bên chọn hệ số tốt nhất trên một tập tuning riêng; cả hai cùng chọn 0,1. Trên 144 lượt test mới, GNN đã làm mượt chỉ hơn EWMA đã làm mượt 0,08 điểm phần trăm, khoảng tin cậy từ âm 0,11 đến 0,29. Khoảng này chứa không, nên không phát hiện khác biệt. EWMA 0,1 thậm chí là bộ dự báo kém nhất theo sai số MSE nhưng PDR vẫn ngang GNN. Vì vậy lợi ích định tuyến đến từ việc ước lượng chất lượng ổn định hơn, không phải từ thông tin dự báo. Không nói hai cách tương đương; chỉ nói dữ liệu chưa thấy khác biệt.
+
+{\small\textcolor{gray}{Nguồn đối chiếu: nckh\_final/results\_v10.tex; reports/uav\_service\_v10/results/analysis/test/analysis.json.}}
+
+
+
+\needspace{8\baselineskip}
+
+\section*{Slide 24. Di chuyển đã gần giới hạn hình học}
+
+\addcontentsline{toc}{section}{Slide 24: Di chuyển đã gần giới hạn hình học}
+
+Vì sao dự báo không giúp kích hoạt di chuyển? Nhóm tính một giới hạn: nếu các relay luôn đứng cách đều hoàn hảo và di chuyển tức thời, mỗi lượt vẫn chia cắt khoảng 26 giây, vì cuối lượt hai đầu mút đã ở quá xa so với tầm phủ của chuỗi relay. Bộ phản ứng có 31,45 giây, tức đã đạt khoảng 94\% mức giảm có thể có so với đứng yên. Dư địa còn lại cho mọi cách kích hoạt, kể cả dự báo hay học tăng cường, chỉ khoảng 5 giây. Đây là phân tích sau test, có giả định fading độc lập giữa các hop, nên dùng để giải thích chứ không phải kết luận chính thức.
+
+{\small\textcolor{gray}{Nguồn đối chiếu: nckh\_final/exploratory\_posthoc.tex; evidence/exploratory/v9-geometric-bound.json.}}
+
+
+
+\needspace{8\baselineskip}
+
+\section*{Slide 25. Kết quả hiện tại thuộc môi trường mô phỏng}
+
+\addcontentsline{toc}{section}{Slide 25: Kết quả hiện tại thuộc môi trường mô phỏng}
+
+Nhóm đã có điều khiển vị trí, nhưng đó là điều khiển vận tốc relay bên trong bộ mô phỏng. Hệ thống chưa nối với autopilot để điều khiển UAV thật. Mô hình học có giám sát, còn luật hành động được đặt trước, nên chưa dùng reinforcement learning. Ngoài ra, mô hình mới chỉ được huấn luyện với một seed. Các khoảng tin cậy phản ánh biến động giữa kịch bản với trọng số đã khóa, chưa phản ánh toàn bộ biến động giữa nhiều lần huấn luyện. Khi học lại với năm seed, GNN vẫn có sai số dự báo thấp nhất ở cả năm lần, nhưng PDR vòng kín của các seed khác chưa được đo.
 
 {\small\textcolor{gray}{Nguồn đối chiếu: nckh\_paper/discussion trong main.tex; REPRODUCIBILITY.md.}}
 
@@ -276,9 +300,9 @@ Nhóm đã có điều khiển vị trí, nhưng đó là điều khiển vận 
 
 \needspace{8\baselineskip}
 
-\section*{Slide 24. Kết luận phải gắn với đúng phép so sánh}
+\section*{Slide 26. Kết luận phải gắn với đúng phép so sánh}
 
-\addcontentsline{toc}{section}{Slide 24: Kết luận phải gắn với đúng phép so sánh}
+\addcontentsline{toc}{section}{Slide 26: Kết luận phải gắn với đúng phép so sánh}
 
 Có ba bước suy luận cần tránh. Điểm dự báo tốt không tự chứng minh PDR cao. PDR cao trong mô phỏng chưa chứng minh triển khai bay thật thành công. Di chuyển có ích so với đứng yên cũng chưa chứng minh dự báo GNN tạo ra phần lợi ích đó. Nhóm thiết kế các đối chứng để tách những câu hỏi này. Với khoảng tin cậy chứa không, cách nói đúng là chưa đủ bằng chứng về khác biệt theo phép thử, không phải chắc chắn không có tác dụng.
 
@@ -288,11 +312,11 @@ Có ba bước suy luận cần tránh. Điểm dự báo tốt không tự ch�
 
 \needspace{8\baselineskip}
 
-\section*{Slide 25. Nhóm đã có mô hình và hồ sơ kiểm chứng}
+\section*{Slide 27. Nhóm đã có mô hình và hồ sơ kiểm chứng}
 
-\addcontentsline{toc}{section}{Slide 25: Nhóm đã có mô hình và hồ sơ kiểm chứng}
+\addcontentsline{toc}{section}{Slide 27: Nhóm đã có mô hình và hồ sơ kiểm chứng}
 
-Sản phẩm của đề tài gồm mô hình dự báo, quy trình điều khiển trong mô phỏng, các thí nghiệm có đối chứng và hồ sơ kết quả để kiểm tra lại. Nhóm đã tổng hợp thành báo cáo 51 trang và bản bài báo bảy trang. Trong các pha chính thức v2 đến v9 có 2.524 lượt hợp lệ, ngoài 210 lượt ngoại tuyến ban đầu. Những số lượng này thể hiện phạm vi công việc, còn kết luận khoa học vẫn phải dựa vào từng phép so sánh cụ thể.
+Sản phẩm của đề tài gồm mô hình dự báo, quy trình điều khiển trong mô phỏng, các thí nghiệm có đối chứng và hồ sơ kết quả để kiểm tra lại. Nhóm đã tổng hợp thành báo cáo 58 trang và bản bài báo 12 trang. Trong các pha chính thức v2 đến v10 có 2.888 lượt hợp lệ, ngoài 210 lượt ngoại tuyến ban đầu. Những số lượng này thể hiện phạm vi công việc, còn kết luận khoa học vẫn phải dựa vào từng phép so sánh cụ thể.
 
 {\small\textcolor{gray}{Nguồn đối chiếu: nckh\_final/main.pdf; nckh\_paper/main.pdf; nckh\_submission/manifest.json.}}
 
@@ -300,11 +324,11 @@ Sản phẩm của đề tài gồm mô hình dự báo, quy trình điều khi�
 
 \needspace{8\baselineskip}
 
-\section*{Slide 26. Dự báo có ích khi gắn với đúng hành động}
+\section*{Slide 28. Dự báo có ích khi gắn với đúng hành động}
 
-\addcontentsline{toc}{section}{Slide 26: Dự báo có ích khi gắn với đúng hành động}
+\addcontentsline{toc}{section}{Slide 28: Dự báo có ích khi gắn với đúng hành động}
 
-Điều nhóm rút ra là phải đánh giá dự báo cùng hành động mà nó phục vụ. Trong cấu hình đã thử, GNN cải thiện định tuyến. Với kích hoạt vị trí, lợi ích thêm so với phản ứng chưa rõ. Hướng tiếp theo có cơ sở là bổ sung dữ liệu có relay di chuyển, kiểm tra độ trễ và chi phí truyền thông điều khiển. Nếu mở rộng sang RL, nhóm cần một nghiên cứu mới với kế hoạch huấn luyện và đánh giá riêng. Nhóm giữ nguyên kết quả hiện tại để báo cáo cả mặt đạt và chưa đạt.
+Điều nhóm rút ra là phải đánh giá dự báo cùng hành động mà nó phục vụ và cùng một baseline đã được chỉnh. Trong định tuyến, chọn tuyến theo chất lượng liên kết giúp rõ, và phần lợi ích thêm của GNN đạt được bằng một bộ lọc đơn giản đã chỉnh, như v10 cho thấy. Trong kích hoạt vị trí, luật phản ứng đã đạt khoảng 94\% mức giảm chia cắt có thể có, nên còn rất ít dư địa cho dự báo. Bước tiếp theo đã đăng ký là kiểm tra độ bền theo seed huấn luyện. Học tăng cường chỉ đáng làm khi kịch bản có một đánh đổi mà luật cố định khó xử lý, như ngân sách bay ràng buộc, nhiều luồng hoặc topology không phải chuỗi.
 
 {\small\textcolor{gray}{Nguồn đối chiếu: nckh\_paper/main.tex, kết luận và thảo luận.}}
 

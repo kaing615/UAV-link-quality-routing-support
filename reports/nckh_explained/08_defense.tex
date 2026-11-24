@@ -37,7 +37,7 @@ Có lệnh vận tốc và chuyển động relay được thực thi trong ns-3
 Chưa. Mô hình học có giám sát từ quan sát lịch sử và nhãn tương lai. Bộ điều khiển làm theo luật cố định. RL sẽ là một hướng khác, nơi chính sách hành động được học qua tương tác và tín hiệu thưởng. Nhóm đã kiểm tra dư địa trước khi đề xuất RL. Ở điều khiển vị trí, relay đặt lý tưởng vẫn chia cắt khoảng 26 giây so với 31 giây của luật phản ứng, nên luật hiện tại đã đạt khoảng 94\% mức có thể. Ở định tuyến, một bộ lọc một tham số đã ngang GNN. RL chỉ đáng làm khi kịch bản có đánh đổi mà luật cố định khó xử lý, ví dụ ngân sách bay ràng buộc, nhiều luồng hoặc topology không phải chuỗi.
 
 \subsection*{Sao không dùng trung bình đơn giản thay cho GNN?}
-Đây là câu hỏi nhóm đã tự kiểm tra. Trong thăm dò v8x trên 200 lượt mới, EWMA 0,2 đạt PDR ngang GNN và EWMA 0,1 cao hơn GNN 0,31 điểm phần trăm. Điều này cho thấy lợi ích ở v8 chủ yếu đến từ ước lượng chất lượng ổn định hơn. Vì thăm dò này làm sau khi xem v8, nhóm đăng ký trước một vòng riêng (v10), cho cả EWMA và GNN cùng được chỉnh mức làm mượt trên tập tuning riêng rồi mới so trên test mới. Câu trả lời trung thực là: GNN dự báo chính xác hơn, nhưng độ chính xác đó chưa chuyển thành lợi ích PDR vượt một bộ lọc đã chỉnh.
+Đây là câu hỏi nhóm đã tự kiểm tra. Trong thăm dò v8x trên 200 lượt mới, EWMA 0,2 đạt PDR ngang GNN và EWMA 0,1 cao hơn GNN 0,31 điểm phần trăm. Điều này cho thấy lợi ích ở v8 chủ yếu đến từ ước lượng chất lượng ổn định hơn. Vì thăm dò này làm sau khi xem v8, nhóm đăng ký trước một vòng riêng (v10), cho cả EWMA và GNN cùng được chỉnh mức làm mượt trên tập tuning riêng rồi mới so trên test mới. Kết quả v10: GNN đã làm mượt chỉ hơn EWMA đã làm mượt 0,08 điểm phần trăm, khoảng tin cậy từ $-0{,}11$ đến $0{,}29$, tức không phát hiện khác biệt. Câu trả lời trung thực là: GNN dự báo chính xác hơn, nhưng độ chính xác đó không chuyển thành lợi ích PDR vượt một bộ lọc đã chỉnh trong các kịch bản đã thử.
 
 \subsection*{Vì sao không lấy độ chính xác dự báo làm kết luận cuối?}
 Dự báo chính xác và hành động hữu ích là hai điều khác nhau. Một dự báo tốt có thể đến lúc quá muộn, dẫn tới một hành động tốn kém, hoặc không thay được tuyến đang dùng. Vì vậy nhóm đo cả dự báo ngoại tuyến và hiệu quả dịch vụ trong vòng kín. MSE hoặc Macro-F1 không thay cho PDR.
@@ -72,7 +72,7 @@ Một hướng bám sát kết quả hiện tại là thu dữ liệu có relay 
 \section{Cách trình bày trong 10 phút hoặc 25 phút}
 Với khoảng 10 phút, dành phần lớn thời gian cho bài toán, luồng dữ liệu--dự báo--hành động, cách tách v8/v9 và hai kết quả chính. Có thể lướt lịch sử v2--v7 bằng một câu giải thích vì sao nhóm chuyển trọng tâm sang định tuyến. Khi cần nói công cụ, dùng slide công cụ để gắn tên với nhiệm vụ.
 
-Với 20--25 phút, đi đủ bộ 26 slide. Dành thêm thời gian cho cách học từ dữ liệu cũ, cơ chế ra quyết định, cách ghép cặp kịch bản và vì sao kết quả vị trí chưa cho phép khẳng định. Tài liệu lời thuyết trình đi kèm có gợi ý theo từng slide; nên tập nói bằng lời của mình và bấm giờ một lần.
+Với 20--25 phút, đi đủ bộ 28 slide. Dành thêm thời gian cho cách học từ dữ liệu cũ, cơ chế ra quyết định, cách ghép cặp kịch bản và vì sao kết quả vị trí chưa cho phép khẳng định. Tài liệu lời thuyết trình đi kèm có gợi ý theo từng slide; nên tập nói bằng lời của mình và bấm giờ một lần.
 
 Nếu thầy hỏi điều chưa được kiểm tra, câu trả lời phù hợp là ``phần này nhóm chưa đánh giá; kết quả hiện tại chỉ xác nhận ...''. Điền phần đã có bằng chứng cụ thể. Đừng đoán một con số để câu trả lời có vẻ đầy đủ.
 

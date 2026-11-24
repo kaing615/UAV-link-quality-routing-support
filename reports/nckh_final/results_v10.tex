@@ -1,0 +1,44 @@
+\section{Vòng v10: GNN so với EWMA đã chỉnh (đăng ký trước)}\label{sec:r10}
+Thăm dò v8x (Mục~\ref{sec:posthoc}) cho thấy EWMA mượt hơn đạt mức PDR của GNN. Thăm dò đó được làm sau khi xem v8 và chỉ chỉnh hệ số cho EWMA, nên chưa đủ để kết luận. V10 được đăng ký trước (commit \code{1a026f5}, \code{docs/service_v10_protocol.md}) để trả lời câu hỏi CH8: \emph{khi cả hai nguồn chất lượng đều được làm mượt với hệ số tốt nhất chọn trên tập tuning riêng, dự báo GNN có còn tăng PDR không?}
+
+\subsection{Thiết kế}
+Mọi arm dùng luật ghim tuyến, binary, cờ và trọng số GNN của v8; relay đứng yên. Họ EWMA dùng $q_t=\alpha d_t+(1-\alpha)q_{t-1}$ trên tỷ lệ nhận hiện tại. Họ GNN dùng cùng dạng làm mượt trên dự báo, $q_t=\beta\hat g_t+(1-\beta)q_{t-1}$, với $\beta=1$ chính là \code{gnn-route} của v8. Cho GNN cùng một núm làm mượt để phép so sánh không nghiêng về EWMA.
+\begin{itemize}
+\item \textbf{Tuning} (160 episode, 16 khối gradual mới): năm giá trị $\alpha$ và năm giá trị $\beta$ trong $\{1{,}0;\,0{,}5;\,0{,}3;\,0{,}2;\,0{,}1\}$ ($\alpha$ dùng 0,05 thay cho 1,0). Mỗi họ chọn hệ số có PDR gradual trung bình cân bằng cao nhất; hòa thì chọn hệ số lớn hơn.
+\item \textbf{Validation} (60 episode) chỉ xét kỹ thuật; \textbf{test} (144 episode, 40 khối gradual và 8 khối static mới) với ba arm: \code{lq-route} (EWMA 0,5 như v8), \code{ewma-tuned} ($\alpha^\ast$) và \code{gnn-tuned} ($\beta^\ast$).
+\item \textbf{H1 (chính):} PDR(\code{gnn-tuned}) $-$ PDR(\code{ewma-tuned}), CI 95\% hai phía với ba kết luận khóa trước: GNN tốt hơn nếu cận dưới $>0$; EWMA tốt hơn nếu cận trên $<0$; không phát hiện khác biệt nếu CI chứa 0, và không diễn giải đó là tương đương. \textbf{H2:} PDR(\code{ewma-tuned}) $-$ PDR(\code{lq-route}), chỉ được khẳng định khi H1 có kết luận theo một hướng.
+\end{itemize}
+Seed của cả ba pha được kiểm toán không trùng mọi kế hoạch trước, kể cả v8x.
+
+\subsection{Kết quả}
+Tuning hợp lệ 160/160 cell và chọn $\alpha^\ast=0{,}1$, $\beta^\ast=0{,}1$ (Bảng~\ref{tab:v10tuning}). Validation hợp lệ 60/60 cell và đạt go; test hợp lệ 144/144 cell. Toàn vẹn tuyến, trace dự báo và relay đứng yên đạt ở mọi episode, không có mất trắng lúc khởi động.
+\begin{table}[H]
+\centering\small
+\begin{tabularx}{\linewidth}{@{}YR{1.5cm}R{1.5cm}R{1.5cm}R{1.5cm}R{1.5cm}@{}}
+\toprule\textbf{Hệ số}&\textbf{1,0}&\textbf{0,5}&\textbf{0,3}&\textbf{0,2}&\textbf{0,1}\\\midrule
+EWMA ($\alpha$; 0,05: 96,05)&--&95,34&95,89&95,92&\textbf{96,24}\\
+GNN làm mượt ($\beta$)&96,16&96,34&96,33&96,22&\textbf{96,38}\\\bottomrule
+\end{tabularx}
+\caption{Tuning v10: PDR gradual trung bình cân bằng n5/n7 (\%), chỉ dùng để chọn hệ số.}\label{tab:v10tuning}
+\end{table}
+\begin{table}[H]
+\centering\small
+\begin{tabularx}{\linewidth}{@{}YR{3.7cm}R{2.4cm}P{3.5cm}@{}}
+\toprule\textbf{So sánh (test v10, gradual)}&\textbf{Chênh PDR (điểm \%), CI 95\%}&\textbf{n5 / n7}&\textbf{Kết luận}\\\midrule
+H1: \code{gnn-tuned} $-$ \code{ewma-tuned}&$+0{,}08$ [$-0{,}11$; 0,29]&0,18 / $-0{,}01$&Không phát hiện khác biệt\\
+H2: \code{ewma-tuned} $-$ \code{lq-route}&$+0{,}90$ [0,51; 1,35]&1,19 / 0,61&Chỉ mô tả\\
+\code{gnn-tuned} $-$ \code{lq-route} (mô tả)&$+0{,}98$ [0,60; 1,42]&--&--\\\bottomrule
+\end{tabularx}
+\caption{Test v10: 40 khối gradual ghép cặp, bootstrap 10.000 lần, cân bằng n5/n7.}\label{tab:v10test}
+\end{table}
+\begin{table}[H]
+\centering\small
+\begin{tabularx}{\linewidth}{@{}YR{3.0cm}R{2.4cm}R{2.4cm}R{2.0cm}@{}}
+\toprule\textbf{Arm}&\textbf{PDR (\%, TB $\pm$ SD)}&\textbf{Đổi tuyến (tổng)}&\textbf{Chia cắt (s)}&\textbf{MSE 5 s}\\\midrule
+\code{lq-route} (EWMA 0,5)&95,08 $\pm$ 2,72&385&31,18&0,00129\\
+\code{ewma-tuned} (EWMA 0,1)&95,98 $\pm$ 2,44&83&30,27&0,00166\\
+\code{gnn-tuned} (GNN, $\beta=0{,}1$)&96,07 $\pm$ 2,36&61&30,52&0,00123\\\bottomrule
+\end{tabularx}
+\caption{Mô tả gradual test v10. MSE tính trên cùng trace \code{lq-route}, cân bằng n5/n7.}\label{tab:v10means}
+\end{table}
+Endpoint chính không phát hiện khác biệt: GNN đã làm mượt chỉ hơn EWMA đã chỉnh 0,08 điểm phần trăm, và CI chứa 0. GNN cao hơn ở 22/40 khối gradual, hòa 2 khối. Vì H1 không có kết luận theo một hướng, H2 chỉ được báo cáo mô tả, dù CI của nó nằm trên 0. Static có PDR như nhau ở cả ba arm. Một lần nữa, thứ hạng theo sai số dự báo không trùng thứ hạng theo dịch vụ: EWMA 0,1 có MSE kém nhất nhưng PDR ngang GNN đã làm mượt. Kết quả này phù hợp với thăm dò v8x và cho thấy, trong họ kịch bản đã xét, lợi ích định tuyến của v8 đến từ việc làm mượt ước lượng chất lượng chứ không phải từ thông tin dự báo của GNN. CI $[-0{,}11;\,0{,}29]$ vẫn cho phép một khác biệt nhỏ theo cả hai hướng; v10 không chứng minh hai phương pháp tương đương.
