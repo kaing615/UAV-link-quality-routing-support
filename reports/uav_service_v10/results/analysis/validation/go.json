@@ -1,0 +1,23 @@
+{
+  "criteria": {
+    "complete": {
+      "passed": true
+    },
+    "forecast_traces_ok": {
+      "passed": true
+    },
+    "no_startup_blackout": {
+      "cells": [],
+      "passed": true
+    },
+    "relays_stationary": {
+      "passed": true
+    },
+    "route_integrity_ok": {
+      "passed": true
+    }
+  },
+  "go": true,
+  "schema": "service-v10-go-v1",
+  "validation_freeze_sha256": "4231202d1c235c4bc42120c1f12a51144f1969d5d86ddcd48b7d35b6a20b099d"
+}
