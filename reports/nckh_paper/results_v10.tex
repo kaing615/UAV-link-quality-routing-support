@@ -1,0 +1,66 @@
+\subsection{Nghiên cứu khẳng định: dự báo so với làm mượt đã chỉnh}\label{sec:v10}
+Ba phân tích ở Mục~\ref{sec:posthoc} được làm sau khi thấy kết quả test, và hệ
+số EWMA 0,1 cũng được chọn sau khi xem v8, nên chúng chưa đủ để kết luận. Vì
+vậy nhóm đăng ký trước một nghiên cứu thứ ba (v10, \code{docs/service_v10_protocol.md},
+viết trước khi chạy cell đầu tiên) để kiểm tra trực tiếp câu hỏi còn lại: khi
+\emph{cả hai} nguồn chất lượng được làm mượt với hệ số tốt nhất của chính nó,
+dự báo GNN có còn tăng PDR không?
+
+Mọi arm dùng luật ghim tuyến, binary, cờ và trọng số GNN đã khóa của v8; relay
+đứng yên. Họ EWMA làm mượt số đo hiện tại, $q_t=\alpha d_t+(1-\alpha)q_{t-1}$;
+họ GNN được cấp cùng một núm trên dự báo, $q_t=\beta\hat g_t+(1-\beta)q_{t-1}$,
+trong đó $\beta=1$ chính là \code{gnn-route} của v8. Hệ số của mỗi họ được chọn
+trên một pha tuning riêng gồm 160 episode với seed không trùng mọi kế hoạch
+trước (kể cả v8x), theo đúng một tiêu chí khóa trước: PDR gradual trung bình
+cân bằng n5/n7 cao nhất trong họ, hòa thì lấy hệ số lớn hơn. Tuning hợp lệ
+160/160 cell và chọn $\alpha^\ast=\beta^\ast=0{,}1$. Validation hợp lệ 60/60
+cell, đạt go theo tiêu chí kỹ thuật, và test hợp lệ 144/144 cell với toàn vẹn
+tuyến, trace dự báo và relay đứng yên đạt ở mọi episode.
+
+\begin{table}[htbp]
+\centering\small
+\begin{tabularx}{\linewidth}{@{}Yp{3.4cm}p{1.9cm}p{2.6cm}@{}}
+\toprule
+\textbf{So sánh (test v10)}&\textbf{Chênh PDR (điểm \%), CI 95\%}&\textbf{n5 / n7}&\textbf{Kết luận}\\\midrule
+H1: \code{gnn-tuned} $-$ \code{ewma-tuned}&$+0{,}08$ [$-0{,}11$; 0,29]&0,18 / $-0{,}01$&Không phát hiện khác biệt\\
+H2: \code{ewma-tuned} $-$ \code{lq-route}&$+0{,}90$ [0,51; 1,35]&1,19 / 0,61&Chỉ mô tả\\
+\code{gnn-tuned} $-$ \code{lq-route}&$+0{,}98$ [0,60; 1,42]&--&Chỉ mô tả\\
+\bottomrule
+\end{tabularx}
+\caption{Test v10: 40 khối gradual ghép cặp, bootstrap 10.000 lần theo khối, cân bằng n5/n7.}\label{tab:v10test}
+\end{table}
+
+\begin{table}[htbp]
+\centering\small
+\begin{tabularx}{\linewidth}{@{}Yp{2.7cm}p{2.0cm}p{1.9cm}p{1.6cm}@{}}
+\toprule
+\textbf{Arm}&\textbf{PDR (\%, TB $\pm$ SD)}&\textbf{Đổi tuyến (tổng)}&\textbf{Chia cắt (s)}&\textbf{MSE 5 s}\\\midrule
+\code{lq-route} (EWMA 0,5)&95,08 $\pm$ 2,72&385&31,18&0,00129\\
+\code{ewma-tuned} (EWMA 0,1)&95,98 $\pm$ 2,44&83&30,27&0,00166\\
+\code{gnn-tuned} (GNN, $\beta=0{,}1$)&96,07 $\pm$ 2,36&61&30,52&0,00123\\
+\bottomrule
+\end{tabularx}
+\caption{Mô tả gradual test v10; MSE năm giây tính trên cùng trace \code{lq-route}, cân bằng n5/n7.}\label{tab:v10means}
+\end{table}
+
+Endpoint chính không phát hiện khác biệt (Bảng~\ref{tab:v10test}): sau khi cả
+hai bên được chỉnh, GNN hơn EWMA 0,08 điểm phần trăm với CI 95\%
+$[-0{,}11;\,0{,}29]$, và GNN cao hơn ở 22/40 khối gradual, thấp hơn ở 16, hòa 2.
+Vì H1 không đi đến kết luận có hướng, H2 chỉ được báo cáo mô tả dù CI của nó
+nằm trên 0; ba arm có PDR như nhau ở các khối static. Chênh thời gian chia cắt
+giữa hai arm đã chỉnh là $+0{,}25$ giây, CI $[-0{,}53;\,1{,}00]$, và chênh PDR
+luồng nền là $-0{,}08$ điểm phần trăm, CI $[-0{,}22;\,0{,}06]$.
+
+Kết quả này xác nhận kết luận thăm dò bằng một phép kiểm định đã đăng ký trước:
+mức tăng +0,66 điểm phần trăm của v8 không đòi hỏi một bộ dự báo học được, vì
+một EWMA một tham số được chỉnh hệ số đạt cùng mức (+0,90 so với cùng baseline
+EWMA 0,5 chưa chỉnh). Hướng của sai số dự báo lặp lại ở quy mô khẳng định: trên
+cùng trace test, EWMA 0,1 có MSE năm giây kém nhất trong ba arm (0,00166 so với
+0,00123 của GNN đã làm mượt) nhưng PDR không hề kém hơn
+(Bảng~\ref{tab:v10means}). Số lệnh đổi tuyến giảm đơn điệu theo mức làm mượt,
+từ 385 xuống 83 và 61, phù hợp với cơ chế đã nêu: bộ ghim tuyến hoạt động tốt
+hơn khi đầu vào ít nhiễu, và một bộ dự báo học được làm mượt như một tác dụng
+phụ. Khoảng tin cậy $[-0{,}11;\,0{,}29]$ vẫn cho phép một khác biệt nhỏ theo cả
+hai hướng, nên v10 không chứng minh hai phương pháp tương đương; nó chỉ cho
+thấy phần lợi ích quy được riêng cho thông tin dự báo, nếu có, nhỏ hơn 0,3 điểm
+phần trăm trong họ kịch bản này.

@@ -3,9 +3,9 @@
 Tác giả chính/liên hệ: Nguyễn Đình Tâm, 23521389@gm.uit.edu.vn.
 Đồng tác giả: Võ Công Vinh. Người hướng dẫn: ThS. Đặng Lê Bảo Chương.
 
-`main.pdf` là bản xuất cuối (12 trang). `main.tex`, `relatedwork.tex`,
-`methods.tex`, `results.tex`, `posthoc.tex` và thư mục `images/` tạo thành dự án
-LaTeX độc lập, biên dịch bằng XeLaTeX:
+`main.pdf` là bản xuất cuối (13 trang). `main.tex`, `relatedwork.tex`,
+`methods.tex`, `results.tex`, `posthoc.tex`, `results_v10.tex` và thư mục
+`images/` tạo thành dự án LaTeX độc lập, biên dịch bằng XeLaTeX:
 
 ```text
 latexmk -xelatex -interaction=nonstopmode -halt-on-error -outdir=build main.tex
@@ -14,10 +14,12 @@ latexmk -xelatex -interaction=nonstopmode -halt-on-error -outdir=build main.tex
 Bài báo dùng bố cục chung, chưa theo định dạng một tạp chí hoặc hội nghị
 cụ thể. Khi chọn nơi nộp, cần áp mẫu và quy định tác giả của nơi đó.
 
-Các số liệu được lấy từ kết quả v8/v9/v8x đã khóa, được kiểm toán trong
+Các số liệu được lấy từ kết quả v8/v9/v8x/v10 đã khóa, được kiểm toán trong
 `../nckh_final/evidence/`. Từ gốc kho mã, có thể dựng lại bảng và chép các
 hình đã kiểm toán bằng `python reports/nckh_paper/render_results.py`.
-Không dùng script đó để chạy mô phỏng hoặc thay đổi phân tích.
+Không dùng script đó để chạy mô phỏng hoặc thay đổi phân tích. Script chỉ sinh
+`results.tex` (v8/v9); `results_v10.tex` viết tay từ
+`reports/uav_service_v10/results/analysis/test/analysis.json`.
 
 ## Luận đề của bài
 
@@ -35,12 +37,13 @@ dự báo chất lượng liên kết học được có cải thiện *dịch v
    lượt, nên trigger phản ứng đã đạt ~94% mức giảm khả thi — kết quả âm của v9
    có lời giải thích định lượng.
 
-Hai kết quả đã đăng ký trước: v8 H1/H2/H3 đạt, v9 endpoint chính **không đạt**.
-Ba phân tích trên là **thăm dò sau test**, có vai trò giải thích chứ không
-khẳng định; `docs/service_v10_protocol.md` đã đăng ký phép kiểm định khẳng định
-(GNN và EWMA cùng được cấp một núm làm mượt, hệ số chọn trên tuning riêng) và
-`docs/service_v11_protocol.md` đăng ký phần độ bền theo seed huấn luyện cùng
-ablation cùng số tham số. Cả hai chưa chạy.
+Ba kết quả đã đăng ký trước: v8 H1/H2/H3 đạt, v9 endpoint chính **không đạt**,
+v10 H1 **không phát hiện khác biệt** (+0,08 pp [−0,11; 0,29]). Ba phân tích
+trên ban đầu là **thăm dò sau test**; kết luận số 2 (làm mượt, không phải dự
+báo) đã được v10 kiểm chứng bằng một phép kiểm định đăng ký trước
+(`docs/service_v10_protocol.md`, chạy 24/11/2026, Mục `results_v10.tex`). Hai
+kết luận còn lại vẫn là thăm dò. `docs/service_v11_protocol.md` đăng ký phần độ
+bền theo seed huấn luyện cùng ablation cùng số tham số và **chưa chạy**.
 
 Tất cả kết quả là mô phỏng; GNN học có giám sát, luật điều khiển cố định, không
 dùng RL hoặc điều khiển UAV thật. So sánh với OLSR-ETX (+5,75 pp) là giới hạn
@@ -55,4 +58,4 @@ chưa được truyền thành gói cạnh tranh kênh, chi phí báo hiệu 5,5
   dịch tiếng Anh và áp template.
 - **Cần người hướng dẫn thông qua:** luận đề đã đổi từ "đề xuất GNN" sang
   "kiểm chứng giá trị thực của dự báo học được".
-- Chạy v10 rồi v11 (theo đúng thứ tự ghi trong protocol v11).
+- Chạy v11 (v10 đã xong, α\* = 0,1 là baseline của v11).

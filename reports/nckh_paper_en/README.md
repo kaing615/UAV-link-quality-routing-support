@@ -7,7 +7,8 @@ is only for international submission.
 Principal/corresponding author: Nguyen Dinh Tam, 23521389@gm.uit.edu.vn.
 Co-author: Vo Cong Vinh. Supervisor: M.Sc. Dang Le Bao Chuong.
 
-`main.pdf` is the current export (13 pages). Build with XeLaTeX:
+`main.pdf` is the current export (14 pages, includes the v10 confirmatory
+section in `results_v10.tex`). Build with XeLaTeX:
 
 ```text
 latexmk -xelatex -interaction=nonstopmode -halt-on-error -outdir=build main.tex
@@ -37,12 +38,12 @@ against `../nckh_final/evidence/`, remember that the Vietnamese sources write
 
 ## Blocking items before submission
 
-1. **Run v10, then v11** (`docs/service_v10_protocol.md`,
-   `docs/service_v11_protocol.md`). For an international journal these are
-   effectively mandatory: any reviewer will ask whether the GNN gain survives a
-   tuned baseline (v10), whether it is robust across training seeds (v11 H1) and
-   whether the GNN-versus-MLP ablation is confounded by parameter count
-   (v11 H2). All three are currently stated as limitations in the paper itself.
+1. **Run v11** (`docs/service_v11_protocol.md`). v10 is done: it ran on
+   2026-11-24 and is reported in `results_v10.tex` (H1 $+0.08$ pp
+   [$-0.11$, 0.29], no difference detected), so the tuned-baseline question a
+   reviewer would raise first is now answered in the paper. What remains is
+   robustness across training seeds (v11 H1) and the parameter-matched
+   GNN-versus-MLP ablation (v11 H2); both are still stated as limitations.
 2. **Supervisor sign-off on the thesis change** — from "we propose a GNN" to
    "we test what a learned forecaster is actually worth".
 3. **Apply the venue template** once the venue is fixed.

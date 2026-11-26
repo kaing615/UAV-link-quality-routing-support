@@ -1,0 +1,71 @@
+\subsection{Confirmatory study: forecasting versus tuned smoothing}\label{sec:v10}
+The three analyses in Section~\ref{sec:posthoc} were performed after the test
+results were seen, and the EWMA coefficient 0.1 was itself chosen after v8, so
+on their own they cannot settle the question. We therefore pre-registered a
+third study (v10, \code{docs/service_v10_protocol.md}, written before the first
+cell was run) to test the remaining question directly: once \emph{both} quality
+sources are smoothed with the coefficient that is best for each of them, does
+the GNN forecast still raise PDR?
+
+Every arm uses the route-pinning rule, the binary, the flags and the locked GNN
+weights of v8, with stationary relays. The EWMA family smooths the current
+measurement, $q_t=\alpha d_t+(1-\alpha)q_{t-1}$; the GNN family is given the
+same knob on the forecast, $q_t=\beta\hat g_t+(1-\beta)q_{t-1}$, where
+$\beta=1$ is exactly \code{gnn-route} of v8. The coefficient of each family was
+selected on a separate tuning phase of 160 episodes whose seeds are audited
+disjoint from every earlier plan including v8x, under a single pre-registered
+criterion: the highest n5/n7-balanced mean gradual PDR within the family, ties
+broken towards the larger coefficient. Tuning returned 160/160 valid cells and
+selected $\alpha^\ast=\beta^\ast=0.1$. Validation returned 60/60 valid cells and
+passed its technical gate, and the test returned 144/144 valid cells with route
+integrity, forecast traces and relay stationarity verified in every episode.
+
+\begin{table}[htbp]
+\centering\small
+\begin{tabularx}{\linewidth}{@{}Yp{3.4cm}p{1.9cm}p{2.4cm}@{}}
+\toprule
+\textbf{Comparison (v10 test)}&\textbf{PDR difference (pp), 95\% CI}&\textbf{n5 / n7}&\textbf{Verdict}\\\midrule
+H1: \code{gnn-tuned} $-$ \code{ewma-tuned}&$+0.08$ [$-0.11$, 0.29]&0.18 / $-0.01$&No difference detected\\
+H2: \code{ewma-tuned} $-$ \code{lq-route}&$+0.90$ [0.51, 1.35]&1.19 / 0.61&Descriptive only\\
+\code{gnn-tuned} $-$ \code{lq-route}&$+0.98$ [0.60, 1.42]&--&Descriptive only\\
+\bottomrule
+\end{tabularx}
+\caption{The v10 test: 40 paired gradual blocks, 10{,}000 block bootstrap resamples, balanced across n5 and n7.}\label{tab:v10test}
+\end{table}
+
+\begin{table}[htbp]
+\centering\small
+\begin{tabularx}{\linewidth}{@{}Yp{2.7cm}p{2.1cm}p{2.0cm}p{1.5cm}@{}}
+\toprule
+\textbf{Arm}&\textbf{PDR (\%, mean $\pm$ SD)}&\textbf{Route changes (total)}&\textbf{Disconnected (s)}&\textbf{5~s MSE}\\\midrule
+\code{lq-route} (EWMA 0.5)&95.08 $\pm$ 2.72&385&31.18&0.00129\\
+\code{ewma-tuned} (EWMA 0.1)&95.98 $\pm$ 2.44&83&30.27&0.00166\\
+\code{gnn-tuned} (GNN, $\beta=0.1$)&96.07 $\pm$ 2.36&61&30.52&0.00123\\
+\bottomrule
+\end{tabularx}
+\caption{Descriptive statistics for the v10 gradual test; the five-second MSE is computed on the same \code{lq-route} traces, balanced across n5 and n7.}\label{tab:v10means}
+\end{table}
+
+The primary endpoint detected no difference (Table~\ref{tab:v10test}): once both
+sides are tuned, the GNN leads the EWMA by 0.08 percentage points with a 95\%
+confidence interval of $[-0.11, 0.29]$, and it is higher in 22 of 40 gradual
+blocks, lower in 16 and tied in 2. Because H1 reached no directional conclusion,
+H2 is reported descriptively even though its interval lies above zero; all three
+arms deliver the same PDR on the static blocks. Between the two tuned arms the
+difference in disconnected time is $+0.25$ seconds, CI $[-0.53, 1.00]$, and the
+background-flow PDR difference is $-0.08$ percentage points, CI $[-0.22, 0.06]$.
+
+This confirms the exploratory conclusion through a pre-registered test: the
+$+0.66$ percentage point gain of v8 does not require a learned forecaster,
+because a tuned one-parameter EWMA reaches the same level ($+0.90$ against the
+same untuned EWMA 0.5 baseline). The direction of forecast error also repeats at
+confirmatory scale: on the same test traces EWMA 0.1 has the worst five-second
+MSE of the three arms (0.00166 against 0.00123 for the smoothed GNN) yet no
+worse PDR (Table~\ref{tab:v10means}). Route-change counts fall monotonically
+with the amount of smoothing, from 385 to 83 and 61, consistent with the
+proposed mechanism: the route-pinning controller behaves better on a less noisy
+input, and a learned forecaster smooths as a side effect. The interval
+$[-0.11, 0.29]$ still admits a small difference in either direction, so v10 does
+not establish equivalence; it shows that whatever gain is attributable to
+forecast information as such is smaller than 0.3 percentage points in this
+scenario family.

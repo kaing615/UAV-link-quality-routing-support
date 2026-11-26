@@ -30,7 +30,7 @@ vòng kín và so với baseline đã chỉnh tham số. Một mạng nơ-ron đ
 báo tỷ lệ nhận probe trung bình trong năm giây tiếp theo từ vị trí, vận tốc và
 số đo liên kết nhân quả. Cùng bộ dự báo đã khóa trọng số điều khiển hai hành
 động khác nhau trong ns-3.45: chọn tuyến dữ liệu và kích hoạt bố trí lại relay.
-Hai nghiên cứu được đăng ký trước khi chạy, mỗi nghiên cứu gồm 80 lượt
+Ba nghiên cứu được đăng ký trước khi chạy; hai nghiên cứu đầu mỗi nghiên cứu gồm 80 lượt
 validation và 192 lượt test trên seed mới, với chuỗi năm hoặc bảy UAV và các
 nhóm so sánh ghép cặp theo khối seed. Kết quả đã khóa: ở định tuyến, dự báo đồ
 thị tăng tỷ lệ gói đến đích (PDR) 0,66 điểm phần trăm so với chất lượng hiện
@@ -45,12 +45,16 @@ lọc EWMA một tham số được chỉnh hệ số, nên lợi ích gắn v�
 ổn định hơn chứ chưa phải giá trị của thông tin dự báo. Thứ ba, một giới hạn
 hình học cho thấy relay đặt cách đều lý tưởng vẫn còn 26,09 giây chia cắt mỗi
 lượt, nên luật kích hoạt phản ứng đã đạt khoảng 94\% mức giảm khả thi và gần
-như không còn dư địa cho dự báo. Kết luận thực hành: trong họ kịch bản này, một
+như không còn dư địa cho dự báo. Một nghiên cứu thứ ba, đăng ký trước và chạy
+trên seed mới, kiểm chứng kết luận quan trọng nhất trong ba kết luận đó: khi cả
+hai nguồn chất lượng được cấp cùng một tham số làm mượt và hệ số của mỗi bên
+được chọn trên tập tuning riêng, chênh PDR giữa dự báo GNN và số đo làm mượt là
+0,08 điểm phần trăm, khoảng tin cậy [$-0,11$; $0,29$], không phát hiện khác
+biệt. Kết luận thực hành: trong họ kịch bản này, một
 bộ ước lượng ổn định rẻ hơn thắng một bộ dự báo học được, và độ chính xác dự báo
 không thay thế được thí nghiệm dịch vụ vòng kín. Các giới hạn gồm telemetry tập
 trung chưa tranh chấp kênh, một seed huấn luyện, một họ topology chuỗi và chưa
-có thử nghiệm bay thật; một nghiên cứu khẳng định đã được đăng ký trước để kiểm
-tra kết luận thăm dò.
+có thử nghiệm bay thật.
 \end{abstract}
 \noindent\textbf{Từ khóa:} mạng UAV; mạng nơ-ron đồ thị; chất lượng liên kết;
 định tuyến; đánh giá vòng kín; đăng ký trước.
@@ -68,8 +72,10 @@ lệ gói đến đích (PDR) so với chất lượng hiện tại khi giữ ng
 tuyến? Thứ hai, dự báo có giảm số giây chia cắt khi giữ cùng định tuyến và cùng
 luật bố trí relay, chỉ thay cơ chế kích hoạt chuyển động? Thứ ba, và quan trọng
 nhất, nếu có lợi ích thì lợi ích đó còn lại bao nhiêu khi baseline đơn giản
-được chỉnh tham số, và nó có tương ứng với độ chính xác dự báo? Hai nghiên cứu
-kế tiếp được ký hiệu v8 và v9 để liên kết với các hồ sơ thực nghiệm trong kho mã.
+được chỉnh tham số, và nó có tương ứng với độ chính xác dự báo? Ba nghiên cứu
+kế tiếp được ký hiệu v8, v9 và v10 để liên kết với các hồ sơ thực nghiệm trong
+kho mã: v8 và v9 kiểm định hai hành động, v10 là nghiên cứu khẳng định được
+đăng ký trước sau khi thấy kết quả của hai nghiên cứu đó.
 
 Đóng góp của bài gồm bốn điểm:
 \begin{itemize}
@@ -81,7 +87,9 @@ không cho cấu hình hệ thống.
 theo dịch vụ trên cùng tập trace: bộ ước lượng có sai số xấu nhất lại cho PDR
 cao nhất (Mục~\ref{sec:posthoc}).
 \item Một ablation tách \emph{làm mượt} khỏi \emph{dự báo}: toàn bộ mức tăng của
-GNN đạt được bằng một EWMA một tham số được chỉnh hệ số.
+GNN đạt được bằng một EWMA một tham số được chỉnh hệ số. Kết luận này được kiểm
+chứng bằng một nghiên cứu khẳng định đã đăng ký trước, trong đó cả hai nguồn
+chất lượng đều được chỉnh trên tập tuning riêng (Mục~\ref{sec:v10}).
 \item Một giới hạn hình học của bài toán bố trí relay, cho thấy luật phản ứng
 đã đạt khoảng 94\% mức giảm chia cắt khả thi, nên kết quả âm ở nhánh điều khiển
 vị trí có một lời giải thích định lượng chứ không chỉ là thiếu lực kiểm định.
@@ -102,6 +110,7 @@ Hình~\ref{fig:design} tóm tắt hai phép so sánh.
 \section{Kết quả}
 \input{results}
 \input{posthoc}
+\input{results_v10}
 \section{Thảo luận}
 \subsection{Vì sao lợi ích định tuyến không quy được cho dự báo}
 Với luật ghim tuyến, GNN đem lại lợi ích thêm nhỏ nhưng khoảng tin cậy dương so
@@ -112,6 +121,16 @@ GNN 95 lệnh, EWMA 0,5 là 359 lệnh. Cơ chế hợp lý nhất là bộ ghim
 vi tốt hơn khi đầu vào ít nhiễu, và một bộ dự báo học được cũng làm mượt như
 một tác dụng phụ. Vì vậy lợi ích của v8 gắn với \emph{một ước lượng chất lượng
 ổn định hơn}, chưa phải giá trị riêng của thông tin về tương lai.
+
+Cách diễn giải này không chỉ dựa vào phân tích thăm dò. Nghiên cứu v10
+(Mục~\ref{sec:v10}) cấp cho cả hai nguồn chất lượng cùng một núm làm mượt, chọn
+hệ số của mỗi họ trên một tập tuning seed riêng, rồi kiểm định chênh lệch còn
+lại trên seed test mới: kết quả là $+0{,}08$ điểm phần trăm với khoảng tin cậy
+$[-0{,}11;\,0{,}29]$, tức không phát hiện khác biệt, trong khi chính bộ lọc một
+tham số đó nâng PDR thêm 0,90 điểm phần trăm so với baseline chưa chỉnh của v8.
+Lợi ích quan sát được ở v8 vì vậy nằm ở tham số làm mượt chứ không ở dự báo, và
+khi tham số đó được chỉnh cho cả hai bên thì phần đóng góp riêng của mô hình học
+được nhỏ hơn 0,3 điểm phần trăm.
 
 Dấu hiệu mạnh nhất cho kết luận này là chiều của sai số dự báo. Nếu lợi ích đến
 từ thông tin dự báo thì bộ ước lượng chính xác hơn phải cho dịch vụ tốt hơn.
@@ -170,13 +189,17 @@ nguyên thứ tự sai số (GNN tốt nhất ở 5/5 seed), nhưng PDR vòng k�
 khác chưa được đo.
 
 Quan trọng nhất về mặt diễn giải: ba phân tích ở Mục~\ref{sec:posthoc} được làm
-sau khi thấy kết quả test, nên chúng \emph{giải thích} hai kết quả đã khóa chứ
-không thay thế một phép kiểm định khẳng định. Hệ số EWMA 0,1 và 0,2 cũng được
-chọn sau khi xem v8. Để kết luận chính thức, nhóm đã đăng ký trước một nghiên
-cứu v10 trong đó cả hai nguồn chất lượng, số đo và dự báo GNN, đều được cấp
-cùng một núm làm mượt và hệ số của mỗi họ được chọn trên một tập tuning riêng
-với seed không trùng; endpoint chính là chênh PDR giữa hai bên sau khi chỉnh.
-Nghiên cứu đó chưa chạy tại thời điểm viết bài.
+sau khi thấy kết quả test, nên bản thân chúng \emph{giải thích} hai kết quả đã
+khóa chứ không thay thế một phép kiểm định khẳng định. Hệ số EWMA 0,1 và 0,2
+cũng được chọn sau khi xem v8. Vì vậy kết luận quan trọng nhất trong ba kết
+luận đó đã được kiểm định lại bằng nghiên cứu v10 (Mục~\ref{sec:v10}), đăng ký
+trước và chạy trên seed mới, và nó xác nhận kết luận thăm dò. Hai kết luận còn
+lại vẫn giữ nguyên trạng thái thăm dò: chiều nghịch giữa sai số dự báo và dịch
+vụ tuy lặp lại ở v10 nhưng chưa phải endpoint khóa trước của một nghiên cứu
+riêng, và giới hạn hình học là một phân tích trên trace chứ không phải một phép
+kiểm định. Phần độ bền theo seed huấn luyện cùng một ablation cùng số tham số
+đã được đăng ký trước trong \code{docs/service_v11_protocol.md} và chưa chạy
+tại thời điểm viết bài.
 \section{Kết luận}
 Hai nghiên cứu đã khóa trên chuỗi 5/7 UAV cho hai kết luận khác nhau về cùng
 một bộ dự báo: GNN hồi quy năm giây cải thiện PDR khi dùng cho lựa chọn tuyến
@@ -186,6 +209,14 @@ cùng một lời giải thích: lợi ích định tuyến đạt được bằ
 số đã chỉnh hệ số, và điều khiển vị trí đã gần giới hạn hình học của bài toán.
 Thứ hạng theo sai số dự báo đi ngược thứ hạng theo dịch vụ, nên trong họ kịch
 bản này độ chính xác dự báo cao hơn không mua được dịch vụ tốt hơn.
+
+Nghiên cứu thứ ba, đăng ký trước sau khi thấy hai kết quả trên, đưa lời giải
+thích đó qua một phép kiểm định: khi số đo và dự báo GNN cùng được chỉnh một
+tham số làm mượt trên tập tuning riêng, chênh PDR còn lại là 0,08 điểm phần
+trăm với khoảng tin cậy $[-0{,}11;\,0{,}29]$ và không phát hiện khác biệt, dù
+chính tham số đó mang lại 0,90 điểm phần trăm so với baseline chưa chỉnh. Đây
+là một kết quả không phát hiện khác biệt với khoảng tin cậy hẹp, không phải một
+phép kiểm định thiếu lực.
 
 Bài học có thể chuyển sang các công trình khác không nằm ở mô hình mà ở cách
 đánh giá: một bộ dự báo chỉ nên được công bố là có ích cho mạng khi nó được đặt

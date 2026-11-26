@@ -26,8 +26,8 @@ and compared against a tuned baseline? A graph neural network (GNN) regresses
 the mean probe reception ratio over the next five seconds from positions,
 velocities and causal link measurements. The same weight-locked forecaster then
 drives two different actions inside ns-3.45: data route selection and relay
-repositioning. Both studies were pre-registered before any new simulation was
-run; each comprises 80 validation and 192 test episodes on fresh audited seeds,
+repositioning. Three studies were pre-registered before any new simulation was
+run; the first two comprise 80 validation and 192 test episodes on fresh audited seeds,
 over chains of five or seven UAVs, with arms compared pairwise within seed
 blocks. Locked results: for routing, the graph forecast raises the packet
 delivery ratio (PDR) by 0.66 percentage points over current measured quality,
@@ -44,13 +44,17 @@ attaches to a more stable quality estimate rather than to the value of forecast
 information. Third, a geometric bound shows that ideally equispaced relays
 still leave 26.09 disconnected seconds per episode, so the reactive trigger
 already attains roughly 94\% of the achievable reduction and almost no
-headroom remains for forecasting. The practical conclusion is that in this
+headroom remains for forecasting. A third study, pre-registered and run on
+fresh seeds, then tests the most important of those three conclusions: when both
+quality sources are given the same smoothing parameter and each coefficient is
+selected on a separate tuning set, the PDR difference between the GNN forecast
+and the smoothed measurement is 0.08 percentage points, confidence interval
+[$-0.11$, $0.29$], with no difference detected. The practical conclusion is that in this
 scenario family a cheaper stable estimator beats a learned forecaster, and
 forecast accuracy is not a substitute for a closed-loop service experiment.
 Limitations include centralized telemetry that does not yet contend for the
 channel, a single training seed, a single chain topology family and no flight
-trial; a confirmatory study has been pre-registered to test the exploratory
-conclusion.
+trial.
 \end{abstract}
 \noindent\textbf{Keywords:} UAV networks; graph neural networks; link quality;
 routing; closed-loop evaluation; pre-registration.
@@ -70,8 +74,10 @@ quality when the route-selection rule is held fixed? Second, does it reduce
 disconnected seconds when routing and the relay placement rule are held fixed
 and only the motion trigger changes? Third, and most importantly, if a gain
 exists, how much of it survives once the simple baseline is tuned, and does it
-track forecast accuracy? The two consecutive studies are labelled v8 and v9 to
-link them to the experiment records in the code repository.
+track forecast accuracy? The three consecutive studies are labelled v8, v9 and
+v10 to link them to the experiment records in the code repository: v8 and v9
+test the two actions, and v10 is a confirmatory study pre-registered after their
+results were seen.
 
 The contributions are fourfold:
 \begin{itemize}
@@ -83,7 +89,9 @@ attributable to the quality source rather than to system configuration.
 the ranking by service on the same traces: the estimator with the worst error
 yields the highest PDR (Section~\ref{sec:posthoc}).
 \item An ablation separating \emph{smoothing} from \emph{forecasting}: the whole
-GNN gain is reproduced by a tuned one-parameter EWMA filter.
+GNN gain is reproduced by a tuned one-parameter EWMA filter. This conclusion is
+then checked by a pre-registered confirmatory study in which both quality
+sources are tuned on a separate tuning set (Section~\ref{sec:v10}).
 \item A geometric bound for the relay placement problem showing that the
 reactive rule already attains about 94\% of the achievable reduction in
 disconnection, so the negative result on the placement branch has a
@@ -105,6 +113,7 @@ Figure~\ref{fig:design} summarises the two comparisons.
 \section{Results}
 \input{results}
 \input{posthoc}
+\input{results_v10}
 \section{Discussion}
 \subsection{Why the routing gain cannot be attributed to forecasting}
 Under the route-pinning rule the GNN yields a small but positively bounded gain
@@ -117,6 +126,17 @@ controller behaves better when its input is less noisy, and that a learned
 forecaster smooths as a side effect. The v8 gain therefore attaches to
 \emph{a more stable quality estimate} rather than to the value of information
 about the future.
+
+This reading does not rest on exploratory analysis alone. Study v10
+(Section~\ref{sec:v10}) gives both quality sources the same smoothing knob,
+selects the coefficient of each family on a separate tuning seed set, and then
+tests the remaining difference on fresh test seeds: the result is $+0.08$
+percentage points with a confidence interval of $[-0.11, 0.29]$, that is, no
+difference detected, while that same one-parameter filter raises PDR by 0.90
+percentage points over the untuned baseline of v8. The gain observed in v8
+therefore lies in the smoothing parameter rather than in the forecast, and once
+that parameter is tuned for both sides the contribution attributable to the
+learned model is smaller than 0.3 percentage points.
 
 The strongest evidence for this reading is the direction of forecast error. If
 the gain came from forecast information, the more accurate estimator would have
@@ -181,14 +201,17 @@ preserves the error ordering (the GNN is best on 5/5 seeds), but the closed-loop
 PDR of the other seeds has not been measured.
 
 Most important for interpretation: the three analyses in
-Section~\ref{sec:posthoc} were performed after the test results were seen, so
-they \emph{explain} the two locked outcomes rather than replacing a confirmatory
-test. The EWMA coefficients 0.1 and 0.2 were likewise chosen after v8 was seen.
-For a formal conclusion we pre-registered a study, v10, in which both quality
-sources, the measurement and the GNN forecast, are given the same smoothing
-knob and the coefficient of each family is selected on a separate tuning set
-with non-overlapping seeds; the primary endpoint is the PDR difference between
-the two after tuning. That study had not been run at the time of writing.
+Section~\ref{sec:posthoc} were performed after the test results were seen, so by
+themselves they \emph{explain} the two locked outcomes rather than replacing a
+confirmatory test. The EWMA coefficients 0.1 and 0.2 were likewise chosen after
+v8 was seen. The most important of those three conclusions was therefore
+re-tested by study v10 (Section~\ref{sec:v10}), pre-registered and run on fresh
+seeds, which confirms it. The other two remain exploratory: the reversal between
+forecast error and service repeats in v10 but was never the locked endpoint of a
+study of its own, and the geometric bound is a trace analysis rather than a
+hypothesis test. Robustness across training seeds together with a
+parameter-matched ablation is pre-registered in
+\code{docs/service_v11_protocol.md} and had not been run at the time of writing.
 \section{Conclusion}
 Two pre-registered studies on chains of five and seven UAVs yield two different
 conclusions about one forecaster: a five-second graph regressor improves PDR
@@ -199,6 +222,14 @@ routing gain is obtainable with a tuned one-parameter filter, and placement
 control is already close to the geometric bound of the problem. The ranking by
 forecast error runs opposite to the ranking by service, so in this scenario
 family higher forecast accuracy does not buy better service.
+
+A third study, pre-registered once those two outcomes were known, puts that
+explanation to a test: when the measurement and the GNN forecast are both tuned
+on the same smoothing parameter using a separate tuning set, the remaining PDR
+difference is 0.08 percentage points with a confidence interval of
+$[-0.11, 0.29]$ and no difference is detected, even though that same parameter
+is worth 0.90 percentage points against the untuned baseline. This is a
+no-difference result with a narrow interval, not an underpowered test.
 
 The transferable lesson concerns evaluation rather than modelling: a forecaster
 should be reported as useful to a network only when it is placed inside the
